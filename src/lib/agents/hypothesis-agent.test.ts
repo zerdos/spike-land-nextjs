@@ -72,9 +72,7 @@ describe("HypothesisAgent", () => {
       ];
 
       mockGenerateContent.mockResolvedValue({
-        response: {
-          text: () => JSON.stringify(mockHypotheses),
-        },
+        text: JSON.stringify(mockHypotheses),
       });
 
       (prisma.hypothesis.create as any).mockImplementation((args: any) => ({
@@ -118,9 +116,7 @@ describe("HypothesisAgent", () => {
       ];
 
       mockGenerateContent.mockResolvedValue({
-        response: {
-          text: () => JSON.stringify(mockVariants),
-        },
+        text: JSON.stringify(mockVariants),
       });
 
       const result = await agent.generateVariants({
@@ -148,9 +144,7 @@ describe("HypothesisAgent", () => {
       });
 
       mockGenerateContent.mockResolvedValue({
-        response: {
-          text: () => "Analysis insights...",
-        },
+        text: "Analysis insights...",
       });
 
       const result = await agent.analyzeResults({ experimentId: "exp-1" });
@@ -172,9 +166,7 @@ describe("HypothesisAgent", () => {
       });
 
       mockGenerateContent.mockResolvedValue({
-        response: {
-          text: () => "Analysis insights...",
-        },
+        text: "Analysis insights...",
       });
 
       const result = await agent.analyzeResults({ experimentId: "exp-1" });

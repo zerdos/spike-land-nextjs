@@ -1,5 +1,7 @@
 import {
   calculateConfidenceInterval,
+  calculateEffectSize,
+  calculatePValue,
   calculateRequiredSampleSize,
   getWinner,
   isStatisticallySignificant,
@@ -44,6 +46,20 @@ export interface WinnerSelection {
   reason: string;
 }
 
+interface ParsedHypothesis {
+  title: string;
+  description: string;
+  theoreticalBasis: string;
+  expectedOutcome: string;
+  confidence: number;
+  priority?: number;
+}
+
+interface ParsedVariant {
+  content: string;
+  variationType: string;
+}
+
 export class HypothesisAgent {
   private ai = getGeminiClient();
   private model = "gemini-2.0-flash"; // Using a fast/capable model (adjust if needed)
@@ -79,7 +95,6 @@ export class HypothesisAgent {
 
     if (!workspace) throw new Error("Workspace not found");
 
-    // Fetch recent top performing posts
     // Fetch recent top performing posts
     const topPosts = await prisma.socialPost.findMany({
       where: {
@@ -131,7 +146,6 @@ export class HypothesisAgent {
     `;
 
     // 3. Generate with AI
-    // 3. Generate with AI
     try {
       const response = await this.ai.models.generateContent({
         model: this.model,
@@ -144,7 +158,7 @@ export class HypothesisAgent {
         if (!Array.isArray(hypotheses)) return [];
 
         // Save to database
-        const saved = await Promise.all(hypotheses.map(async (h: any) => {
+        const saved = await Promise.all(hypotheses.map(async (h: ParsedHypothesis) => {
           return prisma.hypothesis.create({
             data: {
               workspaceId: workspace.id,
@@ -249,7 +263,10 @@ export class HypothesisAgent {
       try {
         const variants = JSON.parse(jsonStr || "[]");
         if (!Array.isArray(variants)) throw new Error("AI did not return an array");
-        return variants.map((v: any) => v.content || v); // Handle object or string
+        return variants.map((v: ParsedVariant | string): VariantContent => ({
+          content: typeof v === "string" ? v : v.content,
+          variationType: typeof v === "string" ? "unknown" : v.variationType,
+        }));
       } catch (e) {
         logger.error("Failed to parse AI variants", { error: e });
         return [];
@@ -301,6 +318,10 @@ export class HypothesisAgent {
       };
     });
 
+    if (results.length === 0) {
+      throw new Error("No variants found in experiment");
+    }
+
     // Check statistical significance (simplified pairwise against best)
     // Note: This is a simplified check.
     const isSignificant = isStatisticallySignificant(
@@ -308,15 +329,15 @@ export class HypothesisAgent {
       alpha,
     );
 
-    // Determines winner
-    // We need to map our results back to the format ab-testing expects (Variant interface)
+    const control = results[0]!;
+
+    // Determine winner
     const variantsForWinner = results.map(r => ({
       id: r.id,
       name: r.id,
       visitors: r.visitors,
       conversions: r.conversions,
     }));
-
     const winner = getWinner(variantsForWinner, alpha);
 
     // Save results to DB (ExperimentResult)
@@ -329,8 +350,11 @@ export class HypothesisAgent {
         sampleSize: r.visitors,
         confidenceLevel: experiment.significanceLevel,
         confidenceInterval: r.confidenceInterval,
-        pValue: 0, // Need to calc p-value per variant or global
-        effectSize: 0, // Placeholder
+        pValue: calculatePValue([
+          { visitors: control.visitors, conversions: control.conversions },
+          { visitors: r.visitors, conversions: r.conversions },
+        ]),
+        effectSize: calculateEffectSize(control.metricValue, r.metricValue),
       })),
     });
 
