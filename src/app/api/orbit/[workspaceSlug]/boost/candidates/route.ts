@@ -4,7 +4,7 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
-import type { BoostRecommendationStatus } from "@/generated/prisma";
+import type { BoostRecommendationStatus, Prisma } from "@/generated/prisma";
 import prisma from "@/lib/prisma";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -31,7 +31,7 @@ export async function GET(
     }
 
     // Query recommendations
-    const whereClause: any = {
+    const whereClause: Prisma.PostBoostRecommendationWhereInput = {
       workspaceId: workspace.id,
     };
 
@@ -74,7 +74,17 @@ export async function GET(
 
     // We will augment the response with post content.
     const enrichedCandidates = await Promise.all(candidates.map(async (candidate) => {
-      let postContent: any = null;
+      let postContent: {
+        content: string;
+        publishedAt: Date | null;
+        assets: {
+          asset: {
+            r2Key: string;
+            fileType: string;
+          };
+        }[];
+      } | null = null;
+
       if (candidate.postType === "SOCIAL_POST") {
         postContent = await prisma.socialPost.findUnique({
           where: { id: candidate.postId },
@@ -85,15 +95,15 @@ export async function GET(
               take: 1,
               select: {
                 asset: {
-                   select: {
-                     r2Key: true, // Assuming we use this for image
-                     // or publicUrl if available
-                     fileType: true,
-                   }
-                }
-              }
-            }
-          }
+                  select: {
+                    r2Key: true, // Assuming we use this for image
+                    // or publicUrl if available
+                    fileType: true,
+                  },
+                },
+              },
+            },
+          },
         });
       }
 

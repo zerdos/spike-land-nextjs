@@ -3,20 +3,42 @@
 import { CandidateCard } from "@/components/orbit/boost/CandidateCard";
 import { PerformanceChart } from "@/components/orbit/boost/PerformanceChart";
 import { Button } from "@/components/ui/button";
+import type { PostBoostRecommendation } from "@/generated/prisma";
 import { Loader2, RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface BoostDashboardClientProps {
   workspaceSlug: string;
 }
 
+type EnrichedCandidate = PostBoostRecommendation & {
+  postPerformance?: {
+    engagementRate: number;
+    engagementVelocity: number;
+    boostScore: number | null;
+    impressions: number;
+    engagementCount: number;
+    estimatedROI?: number | null;
+  } | null;
+  postContent?: {
+    content: string;
+    publishedAt: Date | null;
+    assets: {
+      asset: {
+        r2Key: string;
+        fileType: string;
+      };
+    }[];
+  } | null;
+};
+
 export function BoostDashboardClient({ workspaceSlug }: BoostDashboardClientProps) {
-  const [candidates, setCandidates] = useState<any[]>([]);
+  const [candidates, setCandidates] = useState<EnrichedCandidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [detecting, setDetecting] = useState(false);
 
-  const fetchCandidates = async () => {
+  const fetchCandidates = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(`/api/orbit/${workspaceSlug}/boost/candidates?status=PENDING`);
@@ -29,11 +51,11 @@ export function BoostDashboardClient({ workspaceSlug }: BoostDashboardClientProp
     } finally {
       setLoading(false);
     }
-  };
+  }, [workspaceSlug]);
 
   useEffect(() => {
     fetchCandidates();
-  }, [workspaceSlug]);
+  }, [fetchCandidates]);
 
   const handleDetect = async () => {
     try {
@@ -64,7 +86,7 @@ export function BoostDashboardClient({ workspaceSlug }: BoostDashboardClientProp
   };
 
   // Prepare chart data
-  const chartData = candidates.slice(0, 5).map(c => ({
+  const chartData = candidates.slice(0, 5).map((c) => ({
     name: c.postContent?.content?.slice(0, 15) + "..." || "Post",
     impressions: c.postPerformance?.impressions || 0,
     engagement: c.postPerformance?.engagementCount || 0,
@@ -88,55 +110,59 @@ export function BoostDashboardClient({ workspaceSlug }: BoostDashboardClientProp
           </p>
         </div>
         <div className="flex gap-2">
-            <Button
-                variant="outline"
-                onClick={handleDetect}
-                disabled={detecting}
-            >
-                {detecting ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                )}
-                Run Detection
-            </Button>
+          <Button
+            variant="outline"
+            onClick={handleDetect}
+            disabled={detecting}
+          >
+            {detecting
+              ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )
+              : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+            Run Detection
+          </Button>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="col-span-full lg:col-span-2">
-           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-             {candidates.length === 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+            {candidates.length === 0
+              ? (
                 <div className="col-span-full flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-                    <h3 className="text-lg font-semibold">No candidates found</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Try running detection to find new opportunities.
-                    </p>
-                    <Button
-                        variant="secondary"
-                        className="mt-4"
-                        onClick={handleDetect}
-                    >
-                        Detect Now
-                    </Button>
+                  <h3 className="text-lg font-semibold">No candidates found</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Try running detection to find new opportunities.
+                  </p>
+                  <Button
+                    variant="secondary"
+                    className="mt-4"
+                    onClick={handleDetect}
+                  >
+                    Detect Now
+                  </Button>
                 </div>
-             ) : (
-                 candidates.map((candidate) => (
-                    <CandidateCard
-                        key={candidate.id}
-                        candidate={candidate}
-                        onBoost={handleBoost}
-                    />
-                 ))
-             )}
-           </div>
+              )
+              : (
+                candidates.map((candidate) => (
+                  <CandidateCard
+                    key={candidate.id}
+                    candidate={candidate}
+                    onBoost={handleBoost}
+                  />
+                ))
+              )}
+          </div>
         </div>
 
         <div className="col-span-full lg:col-span-1">
-            <div className="sticky top-6 flex flex-col gap-4">
-                <PerformanceChart data={chartData} />
-                {/* Additional widgets can go here */}
-            </div>
+          <div className="sticky top-6 flex flex-col gap-4">
+            <PerformanceChart data={chartData} />
+            {/* Additional widgets can go here */}
+          </div>
         </div>
       </div>
     </div>
