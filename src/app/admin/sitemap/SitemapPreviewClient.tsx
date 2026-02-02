@@ -30,8 +30,9 @@ interface SitemapPreviewClientProps {
 /**
  * Maximum number of iframes to load concurrently.
  * Limited to prevent browser performance issues and excessive network requests.
+ * Reduced to 1 to prevent server overload (ECONNRESET) in CI environments.
  */
-const MAX_CONCURRENT_LOADS = 4;
+const MAX_CONCURRENT_LOADS = 1;
 
 type PathStatus = "queued" | "loading" | "loaded" | "error";
 
