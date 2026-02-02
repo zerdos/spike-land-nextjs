@@ -428,4 +428,7 @@ export type {
   BoostEffectivenessAnalysis,
   OrganicMetricsSnapshot,
   TargetingCriteria,
+  BoostRecommendation,
+  RecommendationType,
+  RecommendationStatus,
 } from "./boost-analytics";

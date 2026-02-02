@@ -1,5 +1,19 @@
 export type BoostStatus = "ACTIVE" | "PAUSED" | "COMPLETED" | "CANCELLED";
 
+export type RecommendationType =
+  | "BOOST_HIGH_PERFORMER"
+  | "BOOST_TRENDING"
+  | "OPTIMIZE_TARGETING"
+  | "INCREASE_BUDGET"
+  | "ADJUST_TIMING"
+  | "REPLICATE_SUCCESS";
+
+export type RecommendationStatus =
+  | "PENDING"
+  | "APPLIED"
+  | "DISMISSED"
+  | "EXPIRED";
+
 export interface BoostCampaignData {
   id: string;
   workspaceId: string;
@@ -84,4 +98,28 @@ export interface BoostEffectivenessAnalysis {
     organicVsPaidCostRatio: number;
   };
   recommendations: string[];
+}
+
+export interface BoostRecommendation {
+  id: string;
+  workspaceId: string;
+  suggestedPostId: string | null;
+  recommendationType: RecommendationType;
+  confidence: number;
+  priority: number;
+  suggestedBudget: number;
+  suggestedDuration: number;
+  suggestedTiming: Date;
+  suggestedTargeting: TargetingCriteria;
+  projectedReach: number;
+  projectedConversions: number;
+  projectedRoi: number;
+  confidenceInterval: { low: number; high: number };
+  reason: string;
+  supportingData: Record<string, any>;
+  status: RecommendationStatus;
+  appliedAt: Date | null;
+  resultingBoostId: string | null;
+  createdAt: Date;
+  expiresAt: Date;
 }
