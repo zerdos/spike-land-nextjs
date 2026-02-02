@@ -5019,10 +5019,16 @@ model CreativeChannel {
 model CreativeSet {
   id          String   @id @default(cuid())
   name        String
-  briefId     String
-  brief       CampaignBrief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+  briefId     String?
+  brief       CampaignBrief? @relation(fields: [briefId], references: [id], onDelete: Cascade)
 
   // Generation metadata
+  seedContent     String? @db.Text // Optional content for direct generation
+  variationConfig Json? // Tone, length, audience overrides
+  errorMessage    String?
+  progress        Int      @default(0)
+  jobStatus       JobStatus @default(PENDING)
+
   generatedAt     DateTime @default(now())
   generatedById   String
   generatedBy     User     @relation(fields: [generatedById], references: [id], onDelete: Cascade)
@@ -5055,6 +5061,14 @@ model CreativeVariant {
   bodyText      String? @db.Text
   callToAction  String?
 
+  // Extended properties
+  tone          String?
+  length        String?
+  aiPrompt      String? @db.Text
+  aiModel       String?
+  format        String?
+  placement     String?
+
   // Image variants
   assetId       String?
   asset         Asset? @relation(fields: [assetId], references: [id], onDelete: SetNull)
@@ -5077,12 +5091,30 @@ model CreativeVariant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  performanceHistory CreativePerformance[]
-  fatigueAlerts      CreativeFatigueAlert[]
+  performanceHistory    CreativePerformance[]
+  fatigueAlerts         CreativeFatigueAlert[]
+  performancePrediction VariantPerformancePrediction?
 
   @@index([setId])
   @@index([assetId])
   @@map("creative_variants")
+}
+
+// Performance predictions for variants
+model VariantPerformancePrediction {
+  id                String                @id @default(cuid())
+  variantId         String                @unique
+  predictedCTR      Float                 // Predicted click-through rate
+  predictedER       Float                 // Predicted engagement rate
+  predictedCR       Float                 // Predicted conversion rate
+  confidenceScore   Float                 // 0-100, AI confidence in prediction
+  factorsAnalyzed   Json                  // What factors contributed to prediction
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  variant           CreativeVariant       @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@map("variant_performance_predictions")
 }
 
 model CreativePerformance {

@@ -1,0 +1,99 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { type CreativeSet, type CreativeVariant } from "@prisma/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
+
+interface VariantListProps {
+  jobId: string;
+}
+
+type JobData = CreativeSet & {
+  variants: CreativeVariant[];
+};
+
+export function VariantList({ jobId }: VariantListProps) {
+  const [data, setData] = useState<JobData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`/api/creative-factory/jobs/${jobId}`);
+        if (!response.ok) throw new Error("Failed to fetch job");
+        const json = await response.json();
+        setData(json);
+
+        if (json.jobStatus === "COMPLETED" || json.jobStatus === "FAILED") {
+          clearInterval(intervalId);
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load variants");
+      }
+    };
+
+    fetchData();
+    intervalId = setInterval(fetchData, 2000); // Poll every 2s
+
+    return () => clearInterval(intervalId);
+  }, [jobId]);
+
+  if (error) return <div className="text-red-500">{error}</div>;
+  if (!data) return <div>Loading...</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">Generation Status: {data.jobStatus}</h3>
+        {data.jobStatus === "PROCESSING" && <Loader2 className="animate-spin" />}
+      </div>
+
+      {data.errorMessage && (
+        <div className="p-4 bg-red-50 text-red-600 rounded">{data.errorMessage}</div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {data.variants.map((variant) => (
+          <Card key={variant.id} className="h-full flex flex-col">
+            <CardHeader>
+              <CardTitle className="text-base font-bold">
+                Variant {variant.variantNumber}
+              </CardTitle>
+              <div className="flex gap-2">
+                <Badge variant="outline">{variant.tone}</Badge>
+                <Badge variant="secondary">{variant.length}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 flex-1">
+              <div>
+                <span className="text-xs font-semibold text-muted-foreground uppercase">Headline</span>
+                <p className="font-medium">{variant.headline}</p>
+              </div>
+              <div>
+                <span className="text-xs font-semibold text-muted-foreground uppercase">Body</span>
+                <p className="text-sm whitespace-pre-wrap">{variant.bodyText}</p>
+              </div>
+              {variant.callToAction && (
+                <div>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">CTA</span>
+                  <p className="text-sm font-medium text-primary">{variant.callToAction}</p>
+                </div>
+              )}
+              {variant.aiPrompt && (
+                <div className="mt-4 pt-4 border-t">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">Image Prompt</span>
+                  <p className="text-xs text-muted-foreground italic">{variant.aiPrompt}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}

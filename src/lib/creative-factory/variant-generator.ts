@@ -1,63 +1,195 @@
 import prisma from "@/lib/prisma";
-import { type CampaignBrief, type CreativeVariant } from "@prisma/client";
+import { type CreativeSet, type CreativeVariant, JobStatus, CreativeVariantType, VariantStatus } from "@prisma/client";
+import { generateCopyVariants, type GeneratedCopyVariant } from "./generators/copy-generator";
+import { suggestImagesForCopy, type ImageSuggestion } from "./generators/image-suggester";
+import logger from "@/lib/logger";
 
-// Stub for Gemini client
-async function generateTextVariants(_params: {
-  brief: CampaignBrief;
-  count: number;
-}): Promise<unknown[]> {
-  // TODO: Implement Gemini integration
-  return [];
-}
-
-// Stub for MCP generation
-async function generateImageVariants(_params: {
-  brief: CampaignBrief;
-  count: number;
-}): Promise<unknown[]> {
-  // TODO: Implement MCP integration
-  return [];
-}
-
-export async function generateCreativeVariants(params: {
-  brief: CampaignBrief;
-  count: number;
-  includeText: boolean;
-  includeImages: boolean;
+export interface GenerationJobParams {
+  workspaceId: string;
   userId: string;
-}): Promise<{ setId: string; variants: CreativeVariant[]; }> {
-  // 1. Create CreativeSet
+  briefId?: string;
+  seedContent?: string;
+  count: number;
+  tone?: string;
+  targetLength?: "short" | "medium" | "long";
+  includeImages?: boolean;
+  targetAudience?: string;
+  platform?: string;
+}
+
+/**
+ * Creates the CreativeSet record for a generation job.
+ */
+export async function createGenerationJob(
+  params: GenerationJobParams
+): Promise<{ id: string; name: string; contentToUse: string; audienceToUse: string }> {
+  const { briefId, seedContent, workspaceId, userId, count, tone, targetLength, targetAudience } = params;
+
+  if (!briefId && !seedContent) {
+    throw new Error("Either briefId or seedContent is required");
+  }
+
+  // Fetch brief name if available
+  let setName = "Generated Variants";
+  let contentToUse = seedContent || "";
+  let audienceToUse = targetAudience || "";
+
+  if (briefId) {
+    const brief = await prisma.campaignBrief.findUnique({
+      where: { id: briefId },
+    });
+    if (brief) {
+      setName = `Variants for ${brief.name}`;
+      // Use brief content if seedContent is empty
+      if (!contentToUse) {
+        contentToUse = brief.keyMessages.join("\n") || brief.toneOfVoice || "";
+      }
+      // Use brief audience if not provided (handling JSON field)
+      if (!audienceToUse && brief.targetAudience) {
+        audienceToUse = JSON.stringify(brief.targetAudience);
+      }
+    }
+  }
+
+  // Create the job record (CreativeSet)
   const set = await prisma.creativeSet.create({
     data: {
-      name: `Variants for ${params.brief.name}`,
-      briefId: params.brief.id,
-      generatedById: params.userId,
-      modelVersion: "gemini-2.0-flash", // Default
-      generationPrompt: "Auto-generated from brief", // Placeholder
+      name: setName,
+      briefId: briefId || null, // Allow null if using seed content
+      generatedById: userId,
+      modelVersion: "gemini-2.0-flash",
+      generationPrompt: `Generate ${count} variants with tone: ${tone || "auto"}`,
       status: "DRAFT",
+      jobStatus: "PENDING",
+      progress: 0,
+      seedContent: contentToUse,
+      variationConfig: {
+        tone,
+        length: targetLength,
+        audience: audienceToUse,
+      },
     },
   });
 
-  const variants: CreativeVariant[] = [];
+  return {
+    id: set.id,
+    name: setName,
+    contentToUse,
+    audienceToUse
+  };
+}
 
-  // 2. Generate text variants using Gemini
-  if (params.includeText) {
-    await generateTextVariants({
-      brief: params.brief,
-      count: params.count,
+/**
+ * Processes the generation job.
+ * Updates progress and creates variants.
+ */
+export async function processGenerationJob(
+  setId: string,
+  params: GenerationJobParams,
+  seedContent: string,
+  audience: string
+) {
+  try {
+    await prisma.creativeSet.update({
+      where: { id: setId },
+      data: { jobStatus: "PROCESSING", progress: 10 },
     });
-    // TODO: Save to DB
-  }
 
-  // 3. Generate image variants using MCP
-  if (params.includeImages) {
-    await generateImageVariants({
-      brief: params.brief,
+    // 1. Generate Text Variants
+    const copyVariants = await generateCopyVariants({
+      seedContent,
+      tone: params.tone,
+      targetLength: params.targetLength,
       count: params.count,
+      targetAudience: audience,
+      platform: params.platform,
     });
-    // TODO: Save to DB with imageJobId
-  }
 
-  // 4. Return set with pending variants
-  return { setId: set.id, variants };
+    await prisma.creativeSet.update({
+      where: { id: setId },
+      data: { progress: 50 },
+    });
+
+    // 2. Create CreativeVariants and optionally generate image suggestions
+    for (const [index, copy] of copyVariants.entries()) {
+      // Create Text Variant
+      const variant = await prisma.creativeVariant.create({
+        data: {
+          setId,
+          variantNumber: index + 1,
+          variantType: params.includeImages ? "COMBINED" : "TEXT_ONLY",
+          status: "READY",
+          // Copy fields
+          headline: copy.headline,
+          bodyText: copy.bodyText,
+          callToAction: copy.callToAction,
+          // Metadata
+          tone: copy.tone,
+          length: copy.length,
+          aiModel: "gemini-2.0-flash",
+          format: params.platform || "generic",
+        },
+      });
+
+      // Generate Image Suggestions if requested
+      if (params.includeImages) {
+        try {
+          const suggestions = await suggestImagesForCopy({
+            copyText: `${copy.headline}\n${copy.bodyText}`,
+            targetAudience: audience,
+            count: 1, // One image per copy variant for now
+          });
+
+          if (suggestions.length > 0) {
+            const suggestion = suggestions[0];
+            await prisma.creativeVariant.update({
+              where: { id: variant.id },
+              data: {
+                aiPrompt: suggestion.imagePrompt,
+                // We could also store style/reasoning in a JSON field if we added one
+              },
+            });
+          }
+        } catch (error) {
+          logger.warn("Failed to suggest image for variant", { variantId: variant.id, error });
+        }
+      }
+    }
+
+    // Complete Job
+    await prisma.creativeSet.update({
+      where: { id: setId },
+      data: {
+        jobStatus: "COMPLETED",
+        status: "ACTIVE", // Mark as active/ready for review
+        progress: 100,
+      },
+    });
+
+  } catch (error) {
+    logger.error("Generation job failed", { setId, error });
+    await prisma.creativeSet.update({
+      where: { id: setId },
+      data: {
+        jobStatus: "FAILED",
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
+      },
+    });
+  }
+}
+
+/**
+ * Legacy wrapper for backward compatibility or simple usage.
+ * Warning: Uses unawaited background promise. Use createGenerationJob + processGenerationJob with queue/after() instead.
+ */
+export async function startVariantGeneration(
+  params: GenerationJobParams
+): Promise<string> {
+  const { id, contentToUse, audienceToUse } = await createGenerationJob(params);
+
+  void processGenerationJob(id, params, contentToUse, audienceToUse).catch((err) => {
+    logger.error("Background generation failed", { error: err, setId: id });
+  });
+
+  return id;
 }

@@ -2073,7 +2073,12 @@ erDiagram
 "creative_sets" {
   String id PK
   String name
-  String briefId FK
+  String briefId FK "nullable"
+  String seedContent "nullable"
+  Json variationConfig "nullable"
+  String errorMessage "nullable"
+  Int progress
+  JobStatus jobStatus
   DateTime generatedAt
   String generatedById FK
   String modelVersion
@@ -2089,6 +2094,12 @@ erDiagram
   String headline "nullable"
   String bodyText "nullable"
   String callToAction "nullable"
+  String tone "nullable"
+  String length "nullable"
+  String aiPrompt "nullable"
+  String aiModel "nullable"
+  String format "nullable"
+  String placement "nullable"
   String assetId FK "nullable"
   String imageJobId FK,UK "nullable"
   Int variantNumber
@@ -2097,6 +2108,17 @@ erDiagram
   Int conversions
   Float ctr
   VariantStatus status
+  DateTime createdAt
+  DateTime updatedAt
+}
+"variant_performance_predictions" {
+  String id PK
+  String variantId FK,UK
+  Float predictedCTR
+  Float predictedER
+  Float predictedCR
+  Float confidenceScore
+  Json factorsAnalyzed
   DateTime createdAt
   DateTime updatedAt
 }
@@ -2346,11 +2368,12 @@ erDiagram
 "brief_templates" }o--|| "workspaces" : workspace
 "brief_templates" }o--|| "users" : createdBy
 "creative_channels" }o--|| "campaign_briefs" : brief
-"creative_sets" }o--|| "campaign_briefs" : brief
+"creative_sets" }o--o| "campaign_briefs" : brief
 "creative_sets" }o--|| "users" : generatedBy
 "creative_variants" }o--|| "creative_sets" : set
 "creative_variants" }o--o| "assets" : asset
 "creative_variants" |o--o| "mcp_generation_jobs" : imageJob
+"variant_performance_predictions" |o--|| "creative_variants" : variant
 "creative_performance" }o--|| "creative_variants" : variant
 "creative_fatigue_alerts" }o--|| "creative_variants" : variant
 "creative_fatigue_alerts" }o--o| "users" : resolvedBy
@@ -4969,6 +4992,11 @@ Properties as follows:
 - `id`:
 - `name`:
 - `briefId`:
+- `seedContent`:
+- `variationConfig`:
+- `errorMessage`:
+- `progress`:
+- `jobStatus`:
 - `generatedAt`:
 - `generatedById`:
 - `modelVersion`:
@@ -4987,6 +5015,12 @@ Properties as follows:
 - `headline`:
 - `bodyText`:
 - `callToAction`:
+- `tone`:
+- `length`:
+- `aiPrompt`:
+- `aiModel`:
+- `format`:
+- `placement`:
 - `assetId`:
 - `imageJobId`:
 - `variantNumber`:
@@ -4995,6 +5029,20 @@ Properties as follows:
 - `conversions`:
 - `ctr`:
 - `status`:
+- `createdAt`:
+- `updatedAt`:
+
+### `variant_performance_predictions`
+
+Properties as follows:
+
+- `id`:
+- `variantId`:
+- `predictedCTR`:
+- `predictedER`:
+- `predictedCR`:
+- `confidenceScore`:
+- `factorsAnalyzed`:
 - `createdAt`:
 - `updatedAt`:
 

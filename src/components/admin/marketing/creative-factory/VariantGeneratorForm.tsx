@@ -1,0 +1,222 @@
+"use client";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2 } from "lucide-react";
+
+const formSchema = z.object({
+  seedContent: z.string().min(10, "Seed content is required (min 10 chars)"),
+  tone: z.string().optional(),
+  length: z.enum(["short", "medium", "long"]),
+  count: z.coerce.number().min(1).max(10).default(3),
+  includeImages: z.boolean().default(false),
+  targetAudience: z.string().optional(),
+});
+
+interface VariantGeneratorFormProps {
+  workspaceId: string;
+  onJobStarted: (jobId: string) => void;
+}
+
+export function VariantGeneratorForm({
+  workspaceId,
+  onJobStarted,
+}: VariantGeneratorFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      seedContent: "",
+      tone: "professional",
+      length: "medium",
+      count: 3,
+      includeImages: false,
+      targetAudience: "",
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/creative-factory/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...values,
+          workspaceId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to start generation");
+      }
+
+      const data = await response.json();
+      onJobStarted(data.setId);
+    } catch (error) {
+      console.error(error);
+      // TODO: Show toast error
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="seedContent"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Seed Content / Product Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Describe your product or paste existing copy..."
+                  className="min-h-[120px]"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="tone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tone</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select tone" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="professional">Professional</SelectItem>
+                    <SelectItem value="casual">Casual</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                    <SelectItem value="friendly">Friendly</SelectItem>
+                    <SelectItem value="humorous">Humorous</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="length"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Length</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select length" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="short">Short (Tweet/Headline)</SelectItem>
+                    <SelectItem value="medium">Medium (Post)</SelectItem>
+                    <SelectItem value="long">Long (Article/Email)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="targetAudience"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Target Audience (Optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. Small Business Owners" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="count"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Number of Variants</FormLabel>
+                <FormControl>
+                  <Input type="number" min={1} max={10} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="includeImages"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Generate Image Suggestions</FormLabel>
+                <FormDescription>
+                  AI will suggest visual concepts for each variant.
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Generate Variants
+        </Button>
+      </form>
+    </Form>
+  );
+}
