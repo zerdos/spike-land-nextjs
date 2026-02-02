@@ -4,7 +4,6 @@ import { suggestImagesForCopy } from "./generators/image-suggester";
 import logger from "@/lib/logger";
 
 export interface GenerationJobParams {
-  workspaceId: string;
   userId: string;
   briefId?: string;
   seedContent?: string;

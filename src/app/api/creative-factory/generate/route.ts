@@ -30,7 +30,6 @@ export async function POST(req: NextRequest) {
     }
 
     const jobParams: GenerationJobParams = {
-      workspaceId: body.workspaceId,
       userId: session.user.id,
       briefId: body.briefId,
       seedContent: body.seedContent,

@@ -37,7 +37,6 @@ describe("startVariantGeneration", () => {
     (copyGenerator.generateCopyVariants as any).mockResolvedValue([]);
 
     const result = await startVariantGeneration({
-      workspaceId: "ws-1",
       userId: "user-1",
       seedContent: "Test content",
       count: 3,
@@ -65,7 +64,6 @@ describe("startVariantGeneration", () => {
     (copyGenerator.generateCopyVariants as any).mockResolvedValue([]);
 
     await startVariantGeneration({
-      workspaceId: "ws-1",
       userId: "user-1",
       briefId: "brief-1",
       count: 3,
