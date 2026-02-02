@@ -1,0 +1,35 @@
+import React, { memo } from "react";
+import { Handle, Position } from "reactflow";
+import { Zap } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { WorkflowNodeData } from "../types";
+
+const ActionNode = ({ data }: { data: WorkflowNodeData }) => {
+  return (
+    <Card className="min-w-[200px] border-l-4 border-l-purple-500 shadow-sm">
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="w-3 h-3 bg-gray-400 border-2 border-white"
+      />
+      <CardHeader className="p-3 pb-0">
+        <div className="flex items-center gap-2">
+          <div className="bg-purple-100 p-1 rounded-md">
+            <Zap className="h-4 w-4 text-purple-600" />
+          </div>
+          <CardTitle className="text-sm font-medium">{data.label}</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="p-3 pt-2 text-xs text-muted-foreground">
+        {data.description || "Performs an action"}
+      </CardContent>
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="w-3 h-3 bg-purple-500 border-2 border-white"
+      />
+    </Card>
+  );
+};
+
+export default memo(ActionNode);

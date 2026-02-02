@@ -1,64 +1,37 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import ReactFlow, {
-  addEdge,
-  applyEdgeChanges,
-  applyNodeChanges,
-  Background,
-  Controls,
-} from "reactflow";
-import type { Edge, Node, OnConnect, OnEdgesChange, OnNodesChange } from "reactflow";
+import React, { useMemo } from "react";
+import { ReactFlowProvider } from "reactflow";
+import NodePalette from "./NodePalette";
+import WorkflowCanvas from "./WorkflowCanvas";
+import NodeConfigPanel from "./config/NodeConfigPanel";
+import { useWorkflowEditor } from "./hooks/useWorkflowEditor";
+import { WorkflowNode } from "./types";
 
-import "reactflow/dist/style.css";
+const WorkflowEditorContent = () => {
+  const editor = useWorkflowEditor();
 
-const initialNodes: Node[] = [
-  {
-    id: "1",
-    data: { label: "Hello" },
-    position: { x: 0, y: 0 },
-    type: "input",
-  },
-  { id: "2", data: { label: "World" }, position: { x: 100, y: 100 } },
-];
-
-const initialEdges: Edge[] = [
-  { id: "1-2", source: "1", target: "2", label: "to the", type: "step" },
-];
-
-const WorkflowEditor = () => {
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
-
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes],
-  );
-
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges],
-  );
-
-  const onConnect: OnConnect = useCallback(
-    (connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges],
-  );
+  const selectedNode = useMemo(() => {
+    return editor.nodes.find((node) => node.selected) as WorkflowNode | null;
+  }, [editor.nodes]);
 
   return (
-    <div style={{ height: "100vh", width: "100%" }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-      >
-        <Background />
-        <Controls />
-      </ReactFlow>
+    <div className="flex h-[calc(100vh-4rem)] w-full">
+      <NodePalette />
+      <WorkflowCanvas editor={editor} />
+      <NodeConfigPanel
+        selectedNode={selectedNode || null}
+        onNodeChange={editor.updateNodeData}
+      />
     </div>
+  );
+};
+
+const WorkflowEditor = () => {
+  return (
+    <ReactFlowProvider>
+      <WorkflowEditorContent />
+    </ReactFlowProvider>
   );
 };
 
