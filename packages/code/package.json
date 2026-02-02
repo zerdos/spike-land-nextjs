@@ -106,7 +106,7 @@
     "@tanstack/react-router": "1.157.17",
     "@tanstack/router-plugin": "1.157.17",
     "@types/aria-query": "5.0.4",
-    "@types/node": "25.1.0",
+    "@types/node": "25.2.0",
     "@typescript/ata": "0.9.8",
     "@uidotdev/usehooks": "2.4.1",
     "ai": "6.0.64",
