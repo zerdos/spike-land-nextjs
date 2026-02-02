@@ -17,6 +17,8 @@ import type {
   SocialPost,
 } from "../types";
 
+import { YouTubeResumableUploader } from "../youtube/resumable-uploader";
+
 const YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3";
 const GOOGLE_OAUTH_AUTHORIZE = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
@@ -27,6 +29,7 @@ const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const YOUTUBE_SCOPES = [
   "https://www.googleapis.com/auth/youtube.readonly",
   "https://www.googleapis.com/auth/youtube.force-ssl",
+  "https://www.googleapis.com/auth/youtube.upload",
 ].join(" ");
 
 /**
@@ -492,21 +495,86 @@ export class YouTubeClient implements ISocialClient {
   }
 
   /**
-   * Create a post - NOT SUPPORTED for YouTube
+   * Upload a video to YouTube with resumable upload protocol
    *
-   * YouTube videos must be uploaded through YouTube Studio or the
-   * resumable upload API (which requires video file data).
-   *
-   * @throws Error always - use YouTube Studio to upload videos
+   * @param content - Video title (required)
+   * @param options - Video file, description, tags, privacy settings
+   * @returns Upload result with video ID and processing status
    */
   async createPost(
-    _content: string,
-    _options?: PostOptions,
+    content: string,
+    options?: PostOptions & {
+      videoFile?: File | Buffer;
+      description?: string;
+      tags?: string[];
+      categoryId?: string;
+      privacyStatus?: "public" | "private" | "unlisted";
+      scheduledPublishTime?: Date;
+    },
   ): Promise<PostResult> {
-    throw new Error(
-      "YouTube does not support direct post creation. " +
-        "Use YouTube Studio (https://studio.youtube.com) to upload videos.",
+    if (!options?.videoFile) {
+      throw new Error(
+        "YouTube requires a video file. Use videoFile option to upload a video.",
+      );
+    }
+
+    const uploader = new YouTubeResumableUploader();
+
+    // Upload in chunks
+    let fileBuffer: Buffer;
+    if (Buffer.isBuffer(options.videoFile)) {
+      fileBuffer = options.videoFile;
+    } else {
+      // Handle File object (Web API)
+      const arrayBuffer = await options.videoFile.arrayBuffer();
+      fileBuffer = Buffer.from(arrayBuffer);
+    }
+
+    // Initialize resumable upload
+    const { uploadUrl } = await uploader.initiate(
+      this.getAccessTokenOrThrow(),
+      {
+        file: fileBuffer,
+        title: content,
+        description: options.description,
+        tags: options.tags,
+        categoryId: options.categoryId || "22", // Default to "People & Blogs"
+        privacyStatus: options.privacyStatus || "private",
+        publishAt: options.scheduledPublishTime?.toISOString(),
+      },
     );
+
+    const chunkSize = 256 * 1024; // 256 KB
+    let uploadedBytes = 0;
+    let videoId: string | undefined;
+
+    while (uploadedBytes < fileBuffer.length) {
+      const chunk = fileBuffer.slice(uploadedBytes, uploadedBytes + chunkSize);
+      const result = await uploader.uploadChunk(
+        uploadUrl,
+        chunk,
+        uploadedBytes,
+        fileBuffer.length,
+      );
+
+      uploadedBytes += chunk.length;
+
+      if (result.status === "complete") {
+        videoId = result.videoId;
+        break;
+      }
+    }
+
+    if (!videoId) {
+      throw new Error("Video upload completed but no video ID returned");
+    }
+
+    return {
+      platformPostId: videoId,
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      publishedAt: new Date(), // It might be scheduled or processing, but we return current time as created time
+      // Processing may still be ongoing - client should poll separately
+    };
   }
 
   /**
@@ -865,7 +933,7 @@ export class YouTubeClient implements ISocialClient {
   /**
    * Get access token or throw if not set
    */
-  private getAccessTokenOrThrow(): string {
+  public getAccessTokenOrThrow(): string {
     if (!this.accessToken) {
       throw new Error(
         "Access token is required. Call exchangeCodeForTokens first.",
