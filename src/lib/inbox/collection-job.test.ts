@@ -423,8 +423,8 @@ describe("Collection Job", () => {
         const results = await jobPromise;
 
         expect(results).toHaveLength(2);
-        expect(results[0].status).toBe("RATE_LIMITED");
-        expect(results[1].status).toBe("COMPLETED");
+        expect(results[0]?.status).toBe("RATE_LIMITED");
+        expect(results[1]?.status).toBe("COMPLETED");
     });
   });
 
@@ -447,8 +447,8 @@ describe("Collection Job", () => {
       const results = await runGlobalCollectionJob();
 
       expect(results.size).toBe(2);
-      expect(results.has("ws-1")).toBe(true);
-      expect(results.has("ws-2")).toBe(true);
+      expect(results?.has("ws-1")).toBe(true);
+      expect(results?.has("ws-2")).toBe(true);
     });
   });
 });
