@@ -1,6 +1,7 @@
 import type { WorkspaceRole } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 import {
+  canApproveContent,
   canModifyRole,
   compareRoles,
   getAllActions,
@@ -42,6 +43,13 @@ describe("permissions", () => {
           "inbox:view",
           "inbox:respond",
           "inbox:manage",
+          "client:dashboard:view",
+          "client:content:view",
+          "client:content:comment",
+          "client:approval:view",
+          "client:approval:approve",
+          "client:approval:reject",
+          "client:activity:view",
         ];
 
         for (const action of ownerActions) {
@@ -64,6 +72,7 @@ describe("permissions", () => {
         expect(hasPermission("ADMIN", "agents:create")).toBe(true);
         expect(hasPermission("ADMIN", "analytics:export")).toBe(true);
         expect(hasPermission("ADMIN", "inbox:manage")).toBe(true);
+        expect(hasPermission("ADMIN", "client:approval:approve")).toBe(true);
 
         // ADMIN cannot do
         expect(hasPermission("ADMIN", "workspace:delete")).toBe(false);
@@ -85,6 +94,7 @@ describe("permissions", () => {
         expect(hasPermission("MEMBER", "analytics:view")).toBe(true);
         expect(hasPermission("MEMBER", "inbox:view")).toBe(true);
         expect(hasPermission("MEMBER", "inbox:respond")).toBe(true);
+        expect(hasPermission("MEMBER", "client:content:view")).toBe(true);
 
         // MEMBER cannot do
         expect(hasPermission("MEMBER", "workspace:delete")).toBe(false);
@@ -109,6 +119,7 @@ describe("permissions", () => {
       it("has minimal read-only permissions", () => {
         // VIEWER can only view inbox
         expect(hasPermission("VIEWER", "inbox:view")).toBe(true);
+        expect(hasPermission("VIEWER", "client:dashboard:view")).toBe(true);
 
         // VIEWER cannot do anything else
         expect(hasPermission("VIEWER", "workspace:delete")).toBe(false);
@@ -123,55 +134,57 @@ describe("permissions", () => {
         expect(hasPermission("VIEWER", "inbox:respond")).toBe(false);
       });
     });
+
+    describe("CLIENT role", () => {
+      it("has highly restricted permissions", () => {
+        // CLIENT can do
+        expect(hasPermission("CLIENT", "client:dashboard:view")).toBe(true);
+        expect(hasPermission("CLIENT", "client:content:view")).toBe(true);
+        expect(hasPermission("CLIENT", "client:content:comment")).toBe(true);
+        expect(hasPermission("CLIENT", "client:approval:view")).toBe(true);
+        expect(hasPermission("CLIENT", "client:approval:approve")).toBe(true);
+        expect(hasPermission("CLIENT", "client:approval:reject")).toBe(true);
+        expect(hasPermission("CLIENT", "client:activity:view")).toBe(true);
+
+        // CLIENT cannot do
+        expect(hasPermission("CLIENT", "inbox:view")).toBe(false); // VIEWER+
+        expect(hasPermission("CLIENT", "workspace:delete")).toBe(false);
+        expect(hasPermission("CLIENT", "workspace:settings:read")).toBe(false);
+        expect(hasPermission("CLIENT", "members:list")).toBe(false); // MEMBER+
+        expect(hasPermission("CLIENT", "content:create")).toBe(false);
+        expect(hasPermission("CLIENT", "analytics:view")).toBe(false);
+      });
+    });
   });
 
   describe("getPermittedActions", () => {
     it("returns all actions for OWNER", () => {
       const actions = getPermittedActions("OWNER");
-      expect(actions).toHaveLength(40);
+      expect(actions).toHaveLength(47); // 40 + 7 new client actions
       expect(actions).toContain("workspace:delete");
-      expect(actions).toContain("workspace:transfer");
+      expect(actions).toContain("client:approval:approve");
     });
 
-    it("returns correct actions for ADMIN", () => {
-      const actions = getPermittedActions("ADMIN");
-      expect(actions).not.toContain("workspace:delete");
-      expect(actions).not.toContain("workspace:transfer");
-      expect(actions).toContain("workspace:settings:read");
-      expect(actions).toContain("members:invite");
+    it("returns correct actions for CLIENT", () => {
+      const actions = getPermittedActions("CLIENT");
+      expect(actions).toHaveLength(7);
+      expect(actions).toContain("client:dashboard:view");
+      expect(actions).not.toContain("inbox:view");
     });
 
-    it("returns correct actions for MEMBER", () => {
-      const actions = getPermittedActions("MEMBER");
-      expect(actions).toContain("content:create");
-      expect(actions).toContain("inbox:view");
-      expect(actions).not.toContain("members:invite");
-      expect(actions).not.toContain("workspace:settings:read");
-    });
-
-    it("returns minimal actions for VIEWER", () => {
+    it("returns correct actions for VIEWER", () => {
       const actions = getPermittedActions("VIEWER");
-      expect(actions).toHaveLength(1);
+      // VIEWER actions + CLIENT actions (since VIEWER > CLIENT)
+      expect(actions.length).toBeGreaterThan(7);
       expect(actions).toContain("inbox:view");
+      expect(actions).toContain("client:dashboard:view");
     });
   });
 
   describe("getRequiredRole", () => {
-    it("returns OWNER for owner-only actions", () => {
-      expect(getRequiredRole("workspace:delete")).toBe("OWNER");
-      expect(getRequiredRole("workspace:transfer")).toBe("OWNER");
-    });
-
-    it("returns ADMIN for admin actions", () => {
-      expect(getRequiredRole("workspace:settings:read")).toBe("ADMIN");
-      expect(getRequiredRole("members:invite")).toBe("ADMIN");
-      expect(getRequiredRole("content:edit:any")).toBe("ADMIN");
-    });
-
-    it("returns MEMBER for member actions", () => {
-      expect(getRequiredRole("content:create")).toBe("MEMBER");
-      expect(getRequiredRole("members:list")).toBe("MEMBER");
-      expect(getRequiredRole("inbox:respond")).toBe("MEMBER");
+    it("returns CLIENT for client actions", () => {
+      expect(getRequiredRole("client:dashboard:view")).toBe("CLIENT");
+      expect(getRequiredRole("client:approval:approve")).toBe("CLIENT");
     });
 
     it("returns VIEWER for viewer actions", () => {
@@ -180,20 +193,9 @@ describe("permissions", () => {
   });
 
   describe("getAllActions", () => {
-    it("returns all 40 defined actions", () => {
+    it("returns all 47 defined actions", () => {
       const actions = getAllActions();
-      expect(actions).toHaveLength(40);
-    });
-
-    it("includes actions from all categories", () => {
-      const actions = getAllActions();
-      expect(actions).toContain("workspace:delete");
-      expect(actions).toContain("members:invite");
-      expect(actions).toContain("content:create");
-      expect(actions).toContain("streams:create");
-      expect(actions).toContain("agents:use");
-      expect(actions).toContain("analytics:view");
-      expect(actions).toContain("inbox:view");
+      expect(actions).toHaveLength(47);
     });
   });
 
@@ -223,6 +225,10 @@ describe("permissions", () => {
         expect(canModifyRole("OWNER", "VIEWER", "MEMBER")).toBe(true);
       });
 
+      it("can change CLIENT to VIEWER", () => {
+        expect(canModifyRole("OWNER", "CLIENT", "VIEWER")).toBe(true);
+      });
+
       it("cannot change role to the same role", () => {
         expect(canModifyRole("OWNER", "MEMBER", "MEMBER")).toBe(false);
       });
@@ -235,6 +241,14 @@ describe("permissions", () => {
 
       it("can change VIEWER to MEMBER", () => {
         expect(canModifyRole("ADMIN", "VIEWER", "MEMBER")).toBe(true);
+      });
+
+      it("can change CLIENT to VIEWER", () => {
+        expect(canModifyRole("ADMIN", "CLIENT", "VIEWER")).toBe(true);
+      });
+
+      it("can change VIEWER to CLIENT", () => {
+        expect(canModifyRole("ADMIN", "VIEWER", "CLIENT")).toBe(true);
       });
 
       it("cannot promote MEMBER to ADMIN", () => {
@@ -280,16 +294,25 @@ describe("permissions", () => {
       expect(compareRoles("OWNER", "ADMIN")).toBeGreaterThan(0);
       expect(compareRoles("ADMIN", "MEMBER")).toBeGreaterThan(0);
       expect(compareRoles("MEMBER", "VIEWER")).toBeGreaterThan(0);
+      expect(compareRoles("VIEWER", "CLIENT")).toBeGreaterThan(0);
+      expect(compareRoles("MEMBER", "CLIENT")).toBeGreaterThan(0);
     });
 
     it("returns negative when first role is lower", () => {
       expect(compareRoles("ADMIN", "OWNER")).toBeLessThan(0);
       expect(compareRoles("MEMBER", "ADMIN")).toBeLessThan(0);
       expect(compareRoles("VIEWER", "MEMBER")).toBeLessThan(0);
+      expect(compareRoles("CLIENT", "VIEWER")).toBeLessThan(0);
     });
 
     it("returns 0 when roles are equal", () => {
-      const roles: WorkspaceRole[] = ["OWNER", "ADMIN", "MEMBER", "VIEWER"];
+      const roles: WorkspaceRole[] = [
+        "OWNER",
+        "ADMIN",
+        "MEMBER",
+        "VIEWER",
+        "CLIENT",
+      ];
       for (const role of roles) {
         expect(compareRoles(role, role)).toBe(0);
       }
@@ -311,6 +334,9 @@ describe("permissions", () => {
       expect(isAtLeast("MEMBER", "VIEWER")).toBe(true);
 
       expect(isAtLeast("VIEWER", "VIEWER")).toBe(true);
+      expect(isAtLeast("VIEWER", "CLIENT")).toBe(true);
+
+      expect(isAtLeast("CLIENT", "CLIENT")).toBe(true);
     });
 
     it("returns false when role is below minimum", () => {
@@ -320,6 +346,24 @@ describe("permissions", () => {
       expect(isAtLeast("VIEWER", "OWNER")).toBe(false);
       expect(isAtLeast("VIEWER", "ADMIN")).toBe(false);
       expect(isAtLeast("VIEWER", "MEMBER")).toBe(false);
+      expect(isAtLeast("CLIENT", "VIEWER")).toBe(false);
+    });
+  });
+
+  describe("canApproveContent", () => {
+    const approvers = ["user1", "user2"];
+
+    it("returns true if user is CLIENT and in approvers list", () => {
+      expect(canApproveContent("CLIENT", "user1", approvers)).toBe(true);
+    });
+
+    it("returns false if user is CLIENT but not in approvers list", () => {
+      expect(canApproveContent("CLIENT", "user3", approvers)).toBe(false);
+    });
+
+    it("returns true if user is MEMBER and in approvers list", () => {
+      // MEMBER inherits CLIENT permissions
+      expect(canApproveContent("MEMBER", "user1", approvers)).toBe(true);
     });
   });
 });

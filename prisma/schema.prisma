@@ -100,6 +100,12 @@ model User {
   // Workflow relations
   workflows Workflow[]
 
+  // Client Collaboration relations
+  submittedApprovals ApprovalItem[]   @relation("SubmittedApprovals")
+  stageApprovals     StageApproval[]  @relation("StageApprovals")
+  comments           ContentComment[]
+  clientActivities   ClientActivity[]
+
   // Content Library
   assetFolders        AssetFolder[]
   assets              Asset[]
@@ -1010,6 +1016,198 @@ enum RequirementPriority {
   CRITICAL
 }
 
+// =============================================================================
+// Client Collaboration Portal Models (Epic #519)
+// =============================================================================
+
+/// Multi-stage approval workflow configuration
+model ApprovalWorkflow {
+  id          String   @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  name        String   // e.g., "Client Campaign Review"
+  description String?
+  isActive    Boolean  @default(true)
+
+  stages      ApprovalStage[]  // Ordered stages
+  items       ApprovalItem[]   // Content items in this workflow
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([workspaceId, isActive])
+  @@map("approval_workflows")
+}
+
+/// Individual stages within an approval workflow
+model ApprovalStage {
+  id         String   @id @default(cuid())
+  workflowId String
+  workflow   ApprovalWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  name       String   // e.g., "Legal Review", "Client Approval"
+  sequence   Int      // Order in workflow (1, 2, 3...)
+  approvers  Json     // Array of userId strings who can approve this stage
+
+  // Settings
+  requireAllApprovers Boolean @default(false)  // True = unanimous, False = any one
+  isOptional          Boolean @default(false)  // Can skip this stage
+
+  approvals  StageApproval[]  // Approval records for this stage
+
+  createdAt  DateTime @default(now())
+
+  @@unique([workflowId, sequence])
+  @@index([workflowId])
+  @@map("approval_stages")
+}
+
+/// Content items submitted for approval
+model ApprovalItem {
+  id          String   @id @default(cuid())
+  workflowId  String
+  workflow    ApprovalWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // Link to content
+  contentType String   // "draft", "scheduled_post", "asset"
+  contentId   String   // ID of the draft/post/asset
+
+  // Status
+  status         ApprovalStatus @default(PENDING)
+  currentStage   Int?           // Current stage sequence number
+  submittedById  String
+  submittedBy    User           @relation("SubmittedApprovals", fields: [submittedById], references: [id])
+
+  submittedAt DateTime @default(now())
+  completedAt DateTime?
+
+  stageApprovals StageApproval[]
+  comments       ContentComment[] @relation("ApprovalComments")
+
+  @@index([workflowId, status])
+  @@index([contentType, contentId])
+  @@map("approval_items")
+}
+
+/// Individual approval decisions for a stage
+model StageApproval {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      ApprovalItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  stageId   String
+  stage     ApprovalStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  approverId String
+  approver   User   @relation("StageApprovals", fields: [approverId], references: [id])
+
+  decision   ApprovalDecision
+  note       String?  @db.Text
+  decidedAt  DateTime @default(now())
+
+  @@unique([itemId, stageId, approverId])
+  @@index([itemId])
+  @@index([stageId])
+  @@map("stage_approvals")
+}
+
+/// Comments on content items (drafts, posts, assets)
+model ContentComment {
+  id        String   @id @default(cuid())
+
+  // Content linkage
+  contentType String  // "draft", "post", "asset", "approval_item"
+  contentId   String  // ID of the content
+
+  // Thread structure
+  parentId    String?
+  parent      ContentComment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     ContentComment[] @relation("CommentThread")
+
+  // Comment data
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content     String   @db.Text
+
+  // Mentions
+  mentions    Json?    // Array of userId strings mentioned with @
+
+  // Status
+  isEdited    Boolean  @default(false)
+  editedAt    DateTime?
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+
+  // Approval workflow link (optional)
+  approvalItemId String?
+  approvalItem   ApprovalItem? @relation("ApprovalComments", fields: [approvalItemId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([contentType, contentId])
+  @@index([authorId])
+  @@index([parentId])
+  @@index([approvalItemId])
+  @@map("content_comments")
+}
+
+/// Activity feed for client-visible events
+model ClientActivity {
+  id          String   @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Activity details
+  type        ClientActivityType
+  actorId     String?  // User who triggered the activity
+  actor       User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  // Target entity
+  targetType  String   // "draft", "post", "comment", "approval"
+  targetId    String
+
+  // Activity data
+  title       String
+  description String?  @db.Text
+  metadata    Json?    // Additional activity context
+
+  // Visibility
+  isVisibleToClients Boolean @default(true)
+
+  createdAt   DateTime @default(now())
+
+  @@index([workspaceId, createdAt(sort: Desc)])
+  @@index([workspaceId, isVisibleToClients, createdAt(sort: Desc)])
+  @@index([targetType, targetId])
+  @@map("client_activities")
+}
+
+enum ApprovalStatus {
+  PENDING       // Awaiting approval
+  IN_REVIEW     // Currently being reviewed
+  APPROVED      // All stages approved
+  REJECTED      // Rejected at some stage
+  CHANGES_REQUESTED  // Feedback provided, needs revision
+}
+
+enum ApprovalDecision {
+  APPROVE
+  REJECT
+  REQUEST_CHANGES
+}
+
+enum ClientActivityType {
+  CONTENT_SUBMITTED      // Content submitted for review
+  CONTENT_APPROVED       // Content approved
+  CONTENT_REJECTED       // Content rejected
+  COMMENT_ADDED          // New comment added
+  COMMENT_MENTION        // User mentioned in comment
+  STAGE_COMPLETED        // Approval stage completed
+  WORKFLOW_COMPLETED     // Full workflow completed
+  STATUS_CHANGED         // Content status changed
+}
+
 enum RequirementStatus {
   PENDING
   IN_PROGRESS
@@ -1177,6 +1375,12 @@ enum AuditAction {
   RELAY_DRAFT_REJECT
   RELAY_DRAFT_EDIT
   RELAY_DRAFT_SEND
+
+  // Client Collaboration actions
+  APPROVAL_WORKFLOW_CREATE
+  APPROVAL_ITEM_SUBMIT
+  APPROVAL_DECISION
+  COMMENT_CREATE
 }
 
 enum ErrorEnvironment {
@@ -2522,6 +2726,7 @@ enum WorkspaceRole {
   ADMIN
   MEMBER
   VIEWER
+  CLIENT
 }
 
 // Brand Brain Enums
@@ -2660,6 +2865,10 @@ model Workspace {
 
   // Workflow relations
   workflows Workflow[]
+
+  // Client Collaboration relations
+  approvalWorkflows ApprovalWorkflow[]
+  clientActivities  ClientActivity[]
 
   // Notification system
   notifications Notification[]
