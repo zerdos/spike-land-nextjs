@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { registerStepHandler } from "@/lib/workflows/workflow-executor";
+import { registerStepHandler } from "@/lib/workflows/step-registry";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockGenerateHypotheses } = vi.hoisted(() => ({
@@ -7,19 +7,20 @@ const { mockGenerateHypotheses } = vi.hoisted(() => ({
 }));
 
 // Mock dependencies
-vi.mock("@/lib/workflows/workflow-executor", () => {
+vi.mock("@/lib/workflows/step-registry", () => {
   const handlers = new Map();
   return {
     registerStepHandler: vi.fn((type, handler) => {
       handlers.set(type, handler);
     }),
-    HypothesisAgent: vi.fn().mockImplementation(() => ({
-      generateHypotheses: vi.fn().mockResolvedValue([]),
-      designExperiment: vi.fn(),
-    })),
     __handlers: handlers,
   };
 });
+
+vi.mock("@/lib/workflows/workflow-executor", () => ({
+  // Keep empty mock if needed for other imports, or remove if unused.
+  // Assuming hypothesis-agent-actions doesn't use workflow-executor directly anymore.
+}));
 
 vi.mock("@/lib/agents/hypothesis-agent", () => {
   class MockHypothesisAgent {
@@ -88,7 +89,11 @@ describe("HypothesisAgent Actions", () => {
           workspaceId: "explicit-ws-1",
         },
       };
-      const context = { workflowId: "wf-1" };
+      const context = {
+        workflowId: "wf-1",
+        runId: "run-1",
+        previousOutputs: new Map(),
+      };
 
       const result = await executeHandler("generate_hypotheses", step, context);
 

@@ -192,13 +192,15 @@ export class HypothesisAgent {
     variants: number;
     primaryMetric: string;
     secondaryMetrics?: string[];
+    baselineRate?: number;
+    minimumDetectableEffect?: number;
   }): Promise<ExperimentDesign> {
     const { hypothesisId, variants } = params;
 
     // Estimate baseline conversion rate (placeholder - should come from analytics)
-    // TODO: Fetch these from historical analytics data
-    const BASELINE_RATE = 0.05; // 5% engagement rate
-    const MINIMUM_DETECTABLE_EFFECT = 0.2; // Detect 20% relative improvement
+    // TODO: Fetch these from historical analytics data if not provided
+    const BASELINE_RATE = params.baselineRate ?? 0.05; // Default 5% engagement rate
+    const MINIMUM_DETECTABLE_EFFECT = params.minimumDetectableEffect ?? 0.2; // Default 20% relative improvement
 
     const sampleSize = calculateRequiredSampleSize(BASELINE_RATE, MINIMUM_DETECTABLE_EFFECT);
 
