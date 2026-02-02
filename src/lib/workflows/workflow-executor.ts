@@ -13,6 +13,7 @@ import type {
   WorkflowStepData,
 } from "@/types/workflow";
 import type { Prisma, WorkflowStep } from "@prisma/client";
+import "./actions/hypothesis-agent-actions";
 
 /**
  * Step handler function type
