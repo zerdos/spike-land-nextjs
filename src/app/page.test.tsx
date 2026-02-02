@@ -11,6 +11,7 @@ vi.mock("next/cache", () => ({
 vi.mock("@/components/orbit-landing", () => ({
   ABTestingSection: () => <div data-testid="ab-testing-section">ABTestingSection</div>,
   AIAutomationSection: () => <div data-testid="ai-automation-section">AIAutomationSection</div>,
+  BlogPreviewSection: () => <div data-testid="blog-preview-section">BlogPreviewSection</div>,
   EcosystemOverview: () => <div data-testid="ecosystem-overview">EcosystemOverview</div>,
   OrbitCTA: () => <div data-testid="orbit-cta">OrbitCTA</div>,
   OrbitHero: () => <div data-testid="orbit-hero">OrbitHero</div>,
@@ -26,6 +27,7 @@ describe("Home Page", () => {
     expect(screen.getByTestId("ai-automation-section")).toBeInTheDocument();
     expect(screen.getByTestId("ab-testing-section")).toBeInTheDocument();
     expect(screen.getByTestId("ecosystem-overview")).toBeInTheDocument();
+    expect(screen.getByTestId("blog-preview-section")).toBeInTheDocument();
     expect(screen.getByTestId("orbit-cta")).toBeInTheDocument();
   });
 });
