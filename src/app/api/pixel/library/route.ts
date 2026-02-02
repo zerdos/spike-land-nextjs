@@ -15,11 +15,15 @@ export async function GET(request: Request) {
 
   const orderBy = (() => {
     switch (sort) {
-      case "date_asc": return { createdAt: "asc" as const };
-      case "name_asc": return { name: "asc" as const };
-      case "name_desc": return { name: "desc" as const };
+      case "date_asc":
+        return { createdAt: "asc" as const };
+      case "name_asc":
+        return { name: "asc" as const };
+      case "name_desc":
+        return { name: "desc" as const };
       case "date_desc":
-      default: return { createdAt: "desc" as const };
+      default:
+        return { createdAt: "desc" as const };
     }
   })();
 

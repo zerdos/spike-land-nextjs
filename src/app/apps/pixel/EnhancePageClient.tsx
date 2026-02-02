@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
 import { useUserAlbums } from "@/hooks/useUserAlbums";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
-import { Settings2, Images } from "lucide-react";
+import { Images, Settings2 } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 
 interface EnhancePageClientProps {

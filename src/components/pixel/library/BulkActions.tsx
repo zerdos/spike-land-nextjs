@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Trash2, FolderPlus, Tag } from "lucide-react";
+import { FolderPlus, Tag, Trash2 } from "lucide-react";
 
 interface BulkActionsProps {
   selectedCount: number;
@@ -20,22 +20,27 @@ export function BulkActions({ selectedCount, onClearSelection, onDelete }: BulkA
 
         <div className="h-4 w-px bg-border mx-1" />
 
-        <Button variant="ghost" size="sm" onClick={onDelete} className="text-destructive hover:text-destructive hover:bg-destructive/10">
-            <Trash2 className="mr-2 h-4 w-4" /> Delete
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onDelete}
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="mr-2 h-4 w-4" /> Delete
         </Button>
 
         <Button variant="ghost" size="sm" disabled className="text-muted-foreground">
-            <FolderPlus className="mr-2 h-4 w-4" /> Add to Album
+          <FolderPlus className="mr-2 h-4 w-4" /> Add to Album
         </Button>
 
         <Button variant="ghost" size="sm" disabled className="text-muted-foreground">
-            <Tag className="mr-2 h-4 w-4" /> Tag
+          <Tag className="mr-2 h-4 w-4" /> Tag
         </Button>
 
         <div className="h-4 w-px bg-border mx-1" />
 
         <Button variant="ghost" size="sm" onClick={onClearSelection}>
-            Cancel
+          Cancel
         </Button>
       </Card>
     </div>

@@ -300,7 +300,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         tier,
         status: "PROCESSING",
         currentStage: null,
-          enhancementType: blendImageData ? "BLEND" : "STANDARD",
+        enhancementType: blendImageData ? "BLEND" : "STANDARD",
         tokensCost: result.tokensCost || 0,
         enhancedUrl: null,
         enhancedR2Key: null,

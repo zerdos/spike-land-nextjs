@@ -1,11 +1,11 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { Link } from "@/components/ui/link";
 import { MasonryGridUniform } from "@/components/ui/masonry-grid";
 import { getBestThumbnail } from "@/lib/images/get-best-thumbnail";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import Image from "next/image";
-import { Link } from "@/components/ui/link";
 
 interface LibraryImage extends EnhancedImage {
   enhancementJobs: ImageEnhancementJob[];
@@ -34,7 +34,9 @@ export function LibraryGrid({ images, selectedIds, onToggleSelect }: LibraryGrid
         return (
           <div key={image.id} className="group relative">
             <div
-              className={`relative aspect-square rounded-xl overflow-hidden bg-muted/30 transition-all duration-200 border-2 ${isSelected ? "border-primary ring-2 ring-primary/20" : "border-transparent"}`}
+              className={`relative aspect-square rounded-xl overflow-hidden bg-muted/30 transition-all duration-200 border-2 ${
+                isSelected ? "border-primary ring-2 ring-primary/20" : "border-transparent"
+              }`}
             >
               <Image
                 src={getBestThumbnail(image, true)}
@@ -49,9 +51,11 @@ export function LibraryGrid({ images, selectedIds, onToggleSelect }: LibraryGrid
 
               <div className="absolute top-2 left-2 z-10">
                 <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={() => onToggleSelect(image.id)}
-                    className={`data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground ${!isSelected ? "opacity-0 group-hover:opacity-100 bg-white/80" : ""}`}
+                  checked={isSelected}
+                  onCheckedChange={() => onToggleSelect(image.id)}
+                  className={`data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground ${
+                    !isSelected ? "opacity-0 group-hover:opacity-100 bg-white/80" : ""
+                  }`}
                 />
               </div>
 
@@ -63,8 +67,10 @@ export function LibraryGrid({ images, selectedIds, onToggleSelect }: LibraryGrid
             </div>
 
             <div className="mt-1 px-1">
-                <p className="text-xs font-medium truncate">{image.name || "Untitled"}</p>
-                <p className="text-[10px] text-muted-foreground">{new Date(image.createdAt).toLocaleDateString()}</p>
+              <p className="text-xs font-medium truncate">{image.name || "Untitled"}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {new Date(image.createdAt).toLocaleDateString()}
+              </p>
             </div>
           </div>
         );

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { GalleryGrid } from "@/components/gallery/GalleryGrid";
 import { GalleryFilters } from "@/components/gallery/GalleryFilters";
+import { GalleryGrid } from "@/components/gallery/GalleryGrid";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import type { EnhancedImage, ImageEnhancementJob, User } from "@prisma/client";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface PublicImage extends EnhancedImage {
   enhancementJobs: ImageEnhancementJob[];
@@ -66,9 +66,7 @@ export function GalleryClient() {
   };
 
   const toggleTag = (tag: string) => {
-    setActiveTags(prev =>
-        prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
+    setActiveTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
   };
 
   return (
@@ -76,10 +74,10 @@ export function GalleryClient() {
       {/* Filters only show if we have some data or existing filters */}
       {(allTags.length > 0 || activeTags.length > 0) && (
         <GalleryFilters
-            tags={allTags.concat(activeTags.filter(t => !allTags.includes(t)))} // Ensure active tags are visible
-            activeTags={activeTags}
-            onToggleTag={toggleTag}
-            onClear={() => setActiveTags([])}
+          tags={allTags.concat(activeTags.filter(t => !allTags.includes(t)))} // Ensure active tags are visible
+          activeTags={activeTags}
+          onToggleTag={toggleTag}
+          onClear={() => setActiveTags([])}
         />
       )}
 

@@ -32,12 +32,21 @@ export async function POST(
     // Note: postIds and force params could be used for filtering in the future
     // Currently we detect all eligible posts in the workspace
 
+<<<<<<< HEAD
     // Default configuration
     const config: BoostDetectorConfig = {
       engagementThreshold: 0.05, // 5% engagement rate
       velocityThreshold: 10, // 10 engagements per hour
       minImpressions: 100,
       lookbackPeriod: 7, // 7 days
+=======
+    // 2. Run detection algorithm
+    const config = {
+      engagementThreshold: 0.05, // 5%
+      velocityThreshold: 5, // 5 engagements per hour
+      minImpressions: 500,
+      lookbackPeriod: 30,
+>>>>>>> c39bb716 (fix: ups)
     };
 
     // Detect opportunities

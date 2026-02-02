@@ -40,7 +40,7 @@ export function GalleryGrid({ images }: GalleryGridProps) {
               onClick={() => setSelectedImage(image)}
               type="button"
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+                if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   setSelectedImage(image);
                 }
@@ -60,30 +60,37 @@ export function GalleryGrid({ images }: GalleryGridProps) {
                 <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                        {image.user.image ? (
-                            <Image
-                                src={image.user.image}
-                                width={20}
-                                height={20}
-                                className="rounded-full border border-white/20"
-                                alt={image.user.name || "User"}
-                            />
-                        ) : (
-                            <div className="w-5 h-5 rounded-full bg-white/20" />
-                        )}
-                        <span className="text-xs text-white/90 font-medium truncate">
-                            {image.user.name || "Anonymous"}
-                        </span>
+                      {image.user.image
+                        ? (
+                          <Image
+                            src={image.user.image}
+                            width={20}
+                            height={20}
+                            className="rounded-full border border-white/20"
+                            alt={image.user.name || "User"}
+                          />
+                        )
+                        : <div className="w-5 h-5 rounded-full bg-white/20" />}
+                      <span className="text-xs text-white/90 font-medium truncate">
+                        {image.user.name || "Anonymous"}
+                      </span>
                     </div>
                     {job?.tier && (
                       <div className="flex gap-1 mt-1 flex-wrap">
-                        <Badge variant="outline" className="text-[10px] h-5 bg-black/40 text-white border-white/20 backdrop-blur-sm">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] h-5 bg-black/40 text-white border-white/20 backdrop-blur-sm"
+                        >
                           {job.tier.replace("TIER_", "")}
                         </Badge>
                         {image.tags.slice(0, 2).map(tag => (
-                            <Badge key={tag} variant="secondary" className="text-[10px] h-5 bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm border-transparent">
-                                {tag}
-                            </Badge>
+                          <Badge
+                            key={tag}
+                            variant="secondary"
+                            className="text-[10px] h-5 bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm border-transparent"
+                          >
+                            {tag}
+                          </Badge>
                         ))}
                       </div>
                     )}

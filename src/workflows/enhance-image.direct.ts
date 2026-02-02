@@ -28,6 +28,7 @@ import {
   type ReferenceImageData,
 } from "@/lib/ai/gemini-client";
 import { retryWithBackoff } from "@/lib/errors/retry-logic";
+import { applyAutoTags } from "@/lib/images/auto-tagger";
 import {
   detectMimeType,
   getDefaultDimensions,
@@ -49,7 +50,6 @@ import {
   validateCropDimensions,
   validateEnhanceImageInput,
 } from "./enhance-image.shared";
-import { applyAutoTags } from "@/lib/images/auto-tagger";
 
 export type { EnhanceImageInput };
 

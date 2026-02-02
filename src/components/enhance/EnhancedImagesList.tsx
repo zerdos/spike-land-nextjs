@@ -138,8 +138,11 @@ export function EnhancedImagesList({
                         {statusBadge.text}
                       </Badge>
                       {image.enhancementJobs[0]?.enhancementType &&
-                       image.enhancementJobs[0].enhancementType !== "STANDARD" && (
-                        <Badge variant="outline" className="text-xs bg-black/50 text-white border-white/20">
+                        image.enhancementJobs[0].enhancementType !== "STANDARD" && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-black/50 text-white border-white/20"
+                        >
                           {image.enhancementJobs[0].enhancementType}
                         </Badge>
                       )}

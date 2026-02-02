@@ -496,6 +496,74 @@ erDiagram
   Json metadata "nullable"
   DateTime createdAt
 }
+"approval_workflows" {
+  String id PK
+  String workspaceId FK
+  String name
+  String description "nullable"
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+}
+"approval_stages" {
+  String id PK
+  String workflowId FK
+  String name
+  Int sequence
+  Json approvers
+  Boolean requireAllApprovers
+  Boolean isOptional
+  DateTime createdAt
+}
+"approval_items" {
+  String id PK
+  String workflowId FK
+  String contentType
+  String contentId
+  ApprovalStatus status
+  Int currentStage "nullable"
+  String submittedById FK
+  DateTime submittedAt
+  DateTime completedAt "nullable"
+}
+"stage_approvals" {
+  String id PK
+  String itemId FK
+  String stageId FK
+  String approverId FK
+  ApprovalDecision decision
+  String note "nullable"
+  DateTime decidedAt
+}
+"content_comments" {
+  String id PK
+  String contentType
+  String contentId
+  String parentId FK "nullable"
+  String authorId FK
+  String content
+  Json mentions "nullable"
+  Boolean isEdited
+  DateTime editedAt "nullable"
+  Boolean isDeleted
+  DateTime deletedAt "nullable"
+  String approvalItemId FK "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"client_activities" {
+  String id PK
+  String workspaceId FK
+  ClientActivityType type
+  String actorId FK "nullable"
+  String targetType
+  String targetId
+  String title
+  String description "nullable"
+  Json metadata "nullable"
+  Boolean isVisibleToClients
+  DateTime createdAt
+}
 "featured_gallery_items" {
   String id PK
   String title
@@ -2180,6 +2248,18 @@ erDiagram
 "audit_retention_policies" }o--o| "workspaces" : workspace
 "inbox_suggested_responses" }o--|| "inbox_items" : inboxItem
 "escalation_events" }o--|| "inbox_items" : inboxItem
+"approval_workflows" }o--|| "workspaces" : workspace
+"approval_stages" }o--|| "approval_workflows" : workflow
+"approval_items" }o--|| "approval_workflows" : workflow
+"approval_items" }o--|| "users" : submittedBy
+"stage_approvals" }o--|| "approval_items" : item
+"stage_approvals" }o--|| "approval_stages" : stage
+"stage_approvals" }o--|| "users" : approver
+"content_comments" }o--o| "content_comments" : parent
+"content_comments" }o--|| "users" : author
+"content_comments" }o--o| "approval_items" : approvalItem
+"client_activities" }o--|| "workspaces" : workspace
+"client_activities" }o--o| "users" : actor
 "featured_gallery_items" }o--o| "enhanced_images" : sourceImage
 "featured_gallery_items" }o--o| "image_enhancement_jobs" : sourceJob
 "featured_gallery_items" }o--|| "users" : creator
@@ -2960,6 +3040,104 @@ Properties as follows:
 - `reason`:
 - `triggeredBy`:
 - `metadata`:
+- `createdAt`:
+
+### `approval_workflows`
+
+Multi-stage approval workflow configuration
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `description`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+
+### `approval_stages`
+
+Individual stages within an approval workflow
+
+Properties as follows:
+
+- `id`:
+- `workflowId`:
+- `name`:
+- `sequence`:
+- `approvers`:
+- `requireAllApprovers`:
+- `isOptional`:
+- `createdAt`:
+
+### `approval_items`
+
+Content items submitted for approval
+
+Properties as follows:
+
+- `id`:
+- `workflowId`:
+- `contentType`:
+- `contentId`:
+- `status`:
+- `currentStage`:
+- `submittedById`:
+- `submittedAt`:
+- `completedAt`:
+
+### `stage_approvals`
+
+Individual approval decisions for a stage
+
+Properties as follows:
+
+- `id`:
+- `itemId`:
+- `stageId`:
+- `approverId`:
+- `decision`:
+- `note`:
+- `decidedAt`:
+
+### `content_comments`
+
+Comments on content items (drafts, posts, assets)
+
+Properties as follows:
+
+- `id`:
+- `contentType`:
+- `contentId`:
+- `parentId`:
+- `authorId`:
+- `content`:
+- `mentions`:
+- `isEdited`:
+- `editedAt`:
+- `isDeleted`:
+- `deletedAt`:
+- `approvalItemId`:
+- `createdAt`:
+- `updatedAt`:
+
+### `client_activities`
+
+Activity feed for client-visible events
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `type`:
+- `actorId`:
+- `targetType`:
+- `targetId`:
+- `title`:
+- `description`:
+- `metadata`:
+- `isVisibleToClients`:
 - `createdAt`:
 
 ### `featured_gallery_items`

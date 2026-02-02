@@ -1,4 +1,3 @@
-
 import prisma from "@/lib/prisma";
 
 export function extractTagsFromAnalysis(analysisJson: unknown): string[] {
@@ -31,9 +30,9 @@ export function extractTagsFromAnalysis(analysisJson: unknown): string[] {
   }
 
   if (Array.isArray(analysis["visualElements"])) {
-     analysis["visualElements"].forEach((el: unknown) => {
-        if (typeof el === "string") tags.add(el.toLowerCase().trim());
-     });
+    analysis["visualElements"].forEach((el: unknown) => {
+      if (typeof el === "string") tags.add(el.toLowerCase().trim());
+    });
   }
 
   // Filter out empty strings and limit to top 15
