@@ -36,7 +36,7 @@ export function getActionDefinition(type: WorkflowActionType): ActionDefinition 
 /**
  * Validate action configuration against schema
  */
-export function validateActionConfig(type: WorkflowActionType, config: unknown): boolean {
+export function validateActionConfig(type: WorkflowActionType, _config: unknown): boolean {
   const definition = getActionDefinition(type);
   if (!definition) {
     return false;
