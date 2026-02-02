@@ -18,7 +18,9 @@ describe("LandingPageStructuredData", () => {
       expect(organization).toBeDefined();
       expect(organization.name).toBe("Spike Land");
 
-      const localBusiness = json["@graph"].find((item: any) => item["@type"] === "ProfessionalService");
+      const localBusiness = json["@graph"].find((item: any) =>
+        item["@type"] === "ProfessionalService"
+      );
       expect(localBusiness).toBeDefined();
       expect(localBusiness.address.addressCountry).toBe("GB");
 

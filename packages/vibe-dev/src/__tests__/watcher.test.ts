@@ -82,7 +82,7 @@ describe("Watcher Module", () => {
 
   describe("watchCodespace", () => {
     it("should start watching file", () => {
-      const w = watcher.watchCodespace("code1");
+      const _w = watcher.watchCodespace("code1");
 
       expect(w.codespaceId).toBe("code1");
       expect(w.watcher).toBe(mockWatcher);
@@ -92,7 +92,7 @@ describe("Watcher Module", () => {
 
     it("should sync changes when file changes", async () => {
       vi.useFakeTimers();
-      const w = watcher.watchCodespace("code1", { debounceMs: 100 });
+      const _w = watcher.watchCodespace("code1", { debounceMs: 100 });
 
       // Extract the change handler
       const changeHandler = mockWatcher.on.mock.calls.find(call => call[0] === "change")?.[1];

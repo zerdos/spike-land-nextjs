@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { JSX } from "react";
+import type { JSX } from "react";
 
 interface TechItem {
   name: string;

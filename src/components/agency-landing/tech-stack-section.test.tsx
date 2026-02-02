@@ -6,8 +6,16 @@ import { TechStackSection } from "./tech-stack-section";
 vi.mock("framer-motion", () => ({
   motion: {
     div: (
-      { children, className, initial, whileInView, viewport, transition, whileHover, ...props }:
-        any,
+      {
+        children,
+        className,
+        _initial,
+        _whileInView,
+        _viewport,
+        _transition,
+        _whileHover,
+        ...props
+      }: any,
     ) => (
       <div className={className} {...props}>
         {children}
