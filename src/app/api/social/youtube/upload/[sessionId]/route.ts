@@ -6,7 +6,8 @@ import { getValidAccessToken } from "@/lib/social/token-refresh";
 import { YouTubeClient } from "@/lib/social/clients/youtube";
 import { pollVideoProcessingStatus } from "@/lib/social/youtube/video-processor";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,

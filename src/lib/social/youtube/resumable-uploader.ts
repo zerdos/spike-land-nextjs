@@ -13,7 +13,8 @@
 const RESUMABLE_UPLOAD_URL = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status";
 
 export interface VideoMetadata {
-  file: File | Buffer;
+  file?: File | Buffer;
+  fileSize?: number;
   title: string;
   description?: string;
   tags?: string[];
@@ -43,11 +44,19 @@ export class YouTubeResumableUploader {
    */
   async initiate(
     accessToken: string,
-    metadata: VideoMetadata
+    metadata: VideoMetadata,
   ): Promise<UploadInitiateResult> {
-    const fileSize = metadata.file instanceof Buffer
-      ? metadata.file.length
-      : metadata.file.size;
+    let fileSize = metadata.fileSize;
+
+    if (fileSize === undefined) {
+      if (!metadata.file) {
+        throw new Error("Either file or fileSize must be provided");
+      }
+      fileSize =
+        metadata.file instanceof Buffer
+          ? metadata.file.length
+          : metadata.file.size;
+    }
 
     const body = {
       snippet: {

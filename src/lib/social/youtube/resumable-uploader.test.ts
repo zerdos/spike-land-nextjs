@@ -16,7 +16,7 @@ describe("YouTubeResumableUploader", () => {
   });
 
   describe("initiate", () => {
-    it("should initiate upload and return uploadUrl and sessionId", async () => {
+    it("should initiate upload with file object and return uploadUrl", async () => {
       const mockUploadUrl = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&upload_id=session123";
 
       fetchMock.mockResolvedValueOnce({
@@ -50,6 +50,43 @@ describe("YouTubeResumableUploader", () => {
         uploadUrl: mockUploadUrl,
         sessionId: "session123",
       });
+    });
+
+    it("should initiate upload with explicit fileSize", async () => {
+      const mockUploadUrl = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&upload_id=session123";
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        headers: {
+          get: (key: string) => key === "Location" ? mockUploadUrl : null,
+        },
+      });
+
+      const metadata = {
+        fileSize: 12345,
+        title: "Test Video",
+        privacyStatus: "private" as const,
+      };
+
+      await uploader.initiate(mockAccessToken, metadata);
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            "X-Upload-Content-Length": "12345",
+          }),
+        })
+      );
+    });
+
+    it("should throw error if both file and fileSize are missing", async () => {
+      const metadata = {
+        title: "Test",
+        privacyStatus: "private" as const,
+      };
+
+      await expect(uploader.initiate(mockAccessToken, metadata)).rejects.toThrow("Either file or fileSize must be provided");
     });
 
     it("should throw error if uploadUrl is missing", async () => {

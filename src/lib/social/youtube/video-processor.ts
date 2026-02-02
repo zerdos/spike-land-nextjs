@@ -62,6 +62,9 @@ export async function pollVideoProcessingStatus(
     return client.getAccessTokenOrThrow();
   };
 
+  let lastStatus: ProcessingStatus["status"] | undefined;
+  let lastDetails: ProcessingStatus["processingDetails"] | undefined;
+
   while (attempts < maxAttempts) {
     if (Date.now() - startTime > timeoutMs) {
       return { status: "timeout" };
@@ -77,14 +80,10 @@ export async function pollVideoProcessingStatus(
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        // If 401/403, maybe token expired?
-        // But we rely on client to handle token refresh?
-        // YouTubeClient methods don't auto-refresh on 401 usually unless built-in.
-        // The current YouTubeClient throws on error.
         console.warn(`Polling error: ${response.statusText}`);
       } else {
         const data = await response.json();
@@ -95,17 +94,20 @@ export async function pollVideoProcessingStatus(
           const processingDetails = item.processingDetails;
           const status = item.status?.uploadStatus;
 
-          // processingDetails.processingStatus can be:
-          // "processing", "succeeded", "failed", "terminated"
-
-          if (status === "processed" || processingDetails?.processingStatus === "succeeded") {
+          if (
+            status === "processed" ||
+            processingDetails?.processingStatus === "succeeded"
+          ) {
             return {
               status: "processed",
               processingDetails,
             };
           }
 
-          if (processingDetails?.processingStatus === "failed" || processingDetails?.processingStatus === "terminated") {
+          if (
+            processingDetails?.processingStatus === "failed" ||
+            processingDetails?.processingStatus === "terminated"
+          ) {
             return {
               status: "failed",
               processingDetails,
@@ -113,17 +115,29 @@ export async function pollVideoProcessingStatus(
           }
 
           // Still processing
-        } else {
-            // Video not found yet? (Consistency delay)
+          lastStatus = "processing";
+          lastDetails = processingDetails;
         }
       }
-
     } catch (error) {
       console.error("Polling exception:", error);
     }
 
+    // If we've reached maxAttempts, don't wait, just check if we have a last known status
+    if (attempts >= maxAttempts) {
+      break;
+    }
+
     // Wait for interval
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+
+  // If we have a last known status, return it (e.g. processing)
+  if (lastStatus) {
+    return {
+      status: lastStatus,
+      processingDetails: lastDetails,
+    };
   }
 
   return { status: "timeout" };

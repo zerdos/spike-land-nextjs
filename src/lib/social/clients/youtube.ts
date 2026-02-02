@@ -521,7 +521,7 @@ export class YouTubeClient implements ISocialClient {
     const uploader = new YouTubeResumableUploader();
 
     // Initialize resumable upload
-    const { uploadUrl, sessionId } = await uploader.initiate(
+    const { uploadUrl } = await uploader.initiate(
       this.getAccessTokenOrThrow(),
       {
         file: options.videoFile,

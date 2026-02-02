@@ -5,7 +5,8 @@ import prisma from "@/lib/prisma";
 import { getValidAccessToken } from "@/lib/social/token-refresh";
 import { YouTubeResumableUploader } from "@/lib/social/youtube/resumable-uploader";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const { data: session, error: authError } = await tryCatch(auth());
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // Construct metadata for uploader
   const videoMetadata = {
-    file: { size: fileSize } as any, // Mock file object with size for header
+    fileSize, // Pass explicit file size
     title: metadata.title,
     description: metadata.description,
     tags: metadata.tags,
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   };
 
   const { data: uploadResult, error: uploadError } = await tryCatch(
-    uploader.initiate(tokenResult.accessToken, videoMetadata)
+    uploader.initiate(tokenResult.accessToken, videoMetadata),
   );
 
   if (uploadError || !uploadResult) {
