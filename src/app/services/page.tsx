@@ -18,8 +18,9 @@ export default function ServicesPage() {
             Services & Solutions
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-white/60">
-            We build cutting-edge software solutions, specializing in AI integration, rapid
-            prototyping, and full-stack development to bring your ideas to life.
+            Based in Brighton, working with businesses across the UK. We build cutting-edge software
+            solutions, specializing in AI integration, rapid prototyping, and full-stack development
+            to bring your ideas to life.
           </p>
         </ScrollReveal>
       </section>

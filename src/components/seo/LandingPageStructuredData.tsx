@@ -33,9 +33,17 @@ export function LandingPageStructuredData() {
         "image": "https://spike.land/opengraph-image",
         "address": {
           "@type": "PostalAddress",
+          "addressLocality": "Brighton",
+          "addressRegion": "East Sussex",
           "addressCountry": "GB",
         },
+        "areaServed": {
+          "@type": "Country",
+          "name": "United Kingdom",
+        },
         "priceRange": "$$",
+        "description":
+          "AI-powered software development and social media solutions. Based in Brighton, working with businesses across the UK.",
       },
       {
         "@type": "Service",

@@ -36,7 +36,10 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-xl font-bold tracking-tight text-white font-heading">Spike Land</h3>
             <p className="text-sm text-muted-foreground">
-              AI-Powered Social Media Command Center. Manage all your accounts with AI agents.
+              AI-Powered Software & Social Media Solutions.
+            </p>
+            <p className="text-xs text-muted-foreground/70">
+              📍 Based in Brighton, working with businesses across the UK
             </p>
           </div>
 

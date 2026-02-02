@@ -50,16 +50,17 @@ export default function AboutPage() {
             <CardContent className="space-y-4 text-muted-foreground">
               <p>
                 Spike Land is the culmination of years of engineering excellence and a passion for
-                scalable technology. The journey began with a simple observation: while social
-                platforms were evolving rapidly, the tools to manage them were lagging behind, often
-                trapping creative minds in repetitive administrative tasks.
+                scalable technology. Based in Brighton, UK, the journey began with a simple
+                observation: while social platforms were evolving rapidly, the tools to manage them
+                were lagging behind, often trapping creative minds in repetitive administrative
+                tasks.
               </p>
               <p>
                 Drawing on deep technical expertise gained from working with some of the UK&apos;s
                 most recognizable brands, our founder set out to build a solution that combines the
                 reliability of enterprise systems with the agility required for the modern creator
-                economy. Spike Land isn't just a tool; it's a force multiplier for your digital
-                presence.
+                economy. From our Brighton studio, we work with businesses across the UK—Spike Land
+                isn&apos;t just a tool; it&apos;s a force multiplier for your digital presence.
               </p>
             </CardContent>
           </Card>
