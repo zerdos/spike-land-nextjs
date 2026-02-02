@@ -24,6 +24,30 @@ interface WorkflowCanvasProps {
   editor: ReturnType<typeof useWorkflowEditor>;
 }
 
+// Simple fallback UUID generator
+function generateUUID() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+      // Cast to satisfy TypeScript that crypto is defined here
+      const safeCrypto = crypto as any;
+      return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+        (
+          Number(c) ^
+          (safeCrypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (Number(c) / 4)))
+        ).toString(16),
+      );
+  }
+
+  // Fallback for no crypto (e.g. non-secure context or old envs)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 const WorkflowCanvasContent = ({ editor }: WorkflowCanvasProps) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(
@@ -56,7 +80,7 @@ const WorkflowCanvasContent = ({ editor }: WorkflowCanvasProps) => {
       });
 
       const newNode: WorkflowNode = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         type,
         position,
         data: {

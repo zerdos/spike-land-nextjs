@@ -23,6 +23,24 @@ export interface HttpRequestOutput extends ActionOutput {
   headers: Record<string, string>;
 }
 
+// Simple check for private IPs (not exhaustive but covers common cases)
+function isPrivateIp(hostname: string): boolean {
+  if (hostname === "localhost") return true;
+
+  // IPv4 checks
+  if (hostname.startsWith("127.")) return true;
+  if (hostname.startsWith("10.")) return true;
+  if (hostname.startsWith("192.168.")) return true;
+  if (hostname.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./)) return true;
+
+  // IPv6 checks (simple)
+  if (hostname === "::1") return true;
+  if (hostname.startsWith("fc00:")) return true;
+  if (hostname.startsWith("fe80:")) return true;
+
+  return false;
+}
+
 export const httpRequestAction: WorkflowAction<
   HttpRequestInput,
   HttpRequestOutput
@@ -31,6 +49,17 @@ export const httpRequestAction: WorkflowAction<
 
   validate: (input) => {
     HttpRequestInputSchema.parse(input);
+
+    // Additional security check
+    try {
+      const url = new URL(input.url);
+      if (isPrivateIp(url.hostname)) {
+        throw new Error("Requests to private networks are not allowed");
+      }
+    } catch (e) {
+      if (e instanceof z.ZodError) throw e;
+      throw new Error("Invalid URL or restricted host");
+    }
   },
 
   execute: async (input) => {

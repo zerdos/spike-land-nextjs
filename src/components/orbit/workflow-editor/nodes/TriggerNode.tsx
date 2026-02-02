@@ -6,14 +6,18 @@ import type { WorkflowNodeData } from "../types";
 
 export const TriggerNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
   // Try to determine trigger type from config or fallback
-  const triggerType = (data.config?.["triggerType"] as string) || "schedule";
+  // Safely access triggerType from data.config if it exists
+  const config = data.config as Record<string, unknown> | undefined;
+  const triggerType = (config?.["triggerType"] as string) || "schedule";
   const metadata = TRIGGER_REGISTRY.find((m) => m.type === triggerType);
 
   const IconComponent =
     metadata &&
     (Icons[metadata.icon as keyof typeof Icons] as React.ElementType);
   const FallbackIcon = Icons.Zap;
-  const Icon = (IconComponent || FallbackIcon) as any; // Cast to any to avoid weird 'never' type error
+  // Use 'any' cast here to satisfy TypeScript when assigning to a React component variable
+  // This is safe because we know it's a valid component from Lucide or the fallback
+  const Icon = (IconComponent || FallbackIcon) as any;
 
   return (
     <Card

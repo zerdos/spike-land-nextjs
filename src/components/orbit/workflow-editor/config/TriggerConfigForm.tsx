@@ -14,11 +14,12 @@ import type { WorkflowNode } from "../types";
 
 export const TriggerConfigForm = ({ node }: { node: WorkflowNode }) => {
   const { setNodes } = useReactFlow();
-  const triggerType = (node.data.config["triggerType"] as string) || "schedule";
+  const config = node.data.config as Record<string, unknown>;
+  const triggerType = (config["triggerType"] as string) || "schedule";
   const metadata =
     TRIGGER_REGISTRY.find((m) => m.type === triggerType) || TRIGGER_REGISTRY[0];
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: unknown) => {
     setNodes((nds) =>
       nds.map((n) => {
         if (n.id === node.id) {
@@ -91,7 +92,7 @@ export const TriggerConfigForm = ({ node }: { node: WorkflowNode }) => {
           </Label>
           {field.type === "string" && (
             <Input
-              value={(node.data.config[field.name] as string) || ""}
+              value={(config[field.name] as string) || ""}
               onChange={(e) => handleChange(field.name, e.target.value)}
               placeholder={field.placeholder}
             />
@@ -100,9 +101,9 @@ export const TriggerConfigForm = ({ node }: { node: WorkflowNode }) => {
             <Textarea
               className="font-mono text-xs min-h-[100px]"
               value={
-                typeof node.data.config[field.name] === "object"
-                  ? JSON.stringify(node.data.config[field.name], null, 2)
-                  : (node.data.config[field.name] as string) || ""
+                typeof config[field.name] === "object"
+                  ? JSON.stringify(config[field.name], null, 2)
+                  : (config[field.name] as string) || ""
               }
               onChange={(e) => {
                 const val = e.target.value;

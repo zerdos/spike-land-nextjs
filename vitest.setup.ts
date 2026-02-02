@@ -10,6 +10,50 @@ import { afterEach, beforeAll, vi } from "vitest";
 // Mock env vars
 process.env.DATABASE_URL = "postgresql://mock:5432/mock";
 
+// Mock reactflow
+vi.mock("reactflow", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("reactflow")>();
+  // We need to use real state for hooks to work in tests
+  // We can't import React directly here because of hoisting, but we can require it or assume it's available in the test env
+  // However, simple useState mock might be enough if we just proxy to React's useState
+  // But inside vi.mock factory, we can't easily access 'react'.
+
+  // A workaround is to not mock the hooks if they are just wrappers, but useNodesState IS a wrapper.
+  // If we can't easily use real useState, we might just stick to the simple mock and accept that state doesn't update in unit tests unless we use a more complex mock setup.
+
+  // BUT, for the test to pass, we need state updates.
+  // Let's try to import React dynamically.
+  const React = await import("react");
+
+  return {
+    ...actual,
+    useNodesState: (initial: any) => {
+      const [nodes, setNodes] = React.useState(initial);
+      const onNodesChange = vi.fn();
+      return [nodes, setNodes, onNodesChange];
+    },
+    useEdgesState: (initial: any) => {
+      const [edges, setEdges] = React.useState(initial);
+      const onEdgesChange = vi.fn();
+      return [edges, setEdges, onEdgesChange];
+    },
+    useReactFlow: vi.fn(() => ({
+      setNodes: vi.fn(),
+      setEdges: vi.fn(),
+      project: vi.fn((pos) => pos),
+    })),
+    ReactFlowProvider: ({ children }: { children: React.ReactNode }) => children,
+    Panel: ({ children }: { children: React.ReactNode }) => children,
+    Controls: () => null,
+    Background: () => null,
+    MiniMap: () => null,
+    Handle: () => null,
+    applyNodeChanges: vi.fn(),
+    applyEdgeChanges: vi.fn(),
+    addEdge: vi.fn(),
+  };
+});
+
 // Polyfill for jsdom - missing pointer capture methods and scrollIntoView
 if (typeof Element !== "undefined") {
   Element.prototype.hasPointerCapture = Element.prototype.hasPointerCapture ||

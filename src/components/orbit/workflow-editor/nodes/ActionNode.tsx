@@ -9,8 +9,9 @@ export const ActionNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
   // Ideally, data.type should be specific action type, but Prisma StepType is just "ACTION".
   // So data.config.actionType holds the real action type.
 
+  const config = data.config as Record<string, unknown> | undefined;
   const actionType =
-    (data.config?.["actionType"] as string) || data.type.toLowerCase();
+    (config?.["actionType"] as string) || data.type.toLowerCase();
   const metadata = ACTION_REGISTRY.find((m) => m.type === actionType);
 
   // Dynamic icon
@@ -18,6 +19,8 @@ export const ActionNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
     metadata &&
     (Icons[metadata.icon as keyof typeof Icons] as React.ElementType);
   const FallbackIcon = Icons.Activity;
+  // Use 'any' cast here to satisfy TypeScript when assigning to a React component variable
+  // This is safe because we know it's a valid component from Lucide or the fallback
   const Icon = (IconComponent || FallbackIcon) as any;
 
   return (
