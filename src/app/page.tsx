@@ -1,6 +1,7 @@
 import {
   ABTestingSection,
   AIAutomationSection,
+  BlogPreviewSection,
   EcosystemOverview,
   OrbitCTA,
   OrbitHero,
@@ -34,6 +35,9 @@ export default function Home() {
 
       {/* Ecosystem Overview - Bento grid of all features */}
       <EcosystemOverview />
+
+      {/* Blog Preview - Latest updates */}
+      <BlogPreviewSection />
 
       {/* Final CTA - Sign up prompt */}
       <OrbitCTA />
