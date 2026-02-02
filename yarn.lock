@@ -8196,7 +8196,7 @@ __metadata:
   resolution: "@spike-npm-land/vibe-dev@workspace:packages/vibe-dev"
   dependencies:
     "@types/node": "npm:^20.0.0"
-    chokidar: "npm:^3.5.3"
+    chokidar: "npm:^5.0.0"
     commander: "npm:^12.0.0"
     tsup: "npm:^8.0.0"
     tsx: "npm:^4.7.0"
