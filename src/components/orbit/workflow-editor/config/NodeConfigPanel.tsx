@@ -1,13 +1,13 @@
 import React from "react";
-import { WorkflowNode } from "../types";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import type { WorkflowNode } from "../types";
+import { CardHeader, CardTitle } from "@/components/ui/card";
 import TriggerConfigForm from "./TriggerConfigForm";
 import ActionConfigForm from "./ActionConfigForm";
 import ConditionConfigForm from "./ConditionConfigForm";
 
 interface NodeConfigPanelProps {
   selectedNode: WorkflowNode | null;
-  onNodeChange: (id: string, data: any) => void;
+  onNodeChange: (id: string, data: unknown) => void;
 }
 
 const NodeConfigPanel = ({ selectedNode, onNodeChange }: NodeConfigPanelProps) => {
@@ -19,7 +19,7 @@ const NodeConfigPanel = ({ selectedNode, onNodeChange }: NodeConfigPanelProps) =
     );
   }
 
-  const handleDataChange = (newData: any) => {
+  const handleDataChange = (newData: unknown) => {
     onNodeChange(selectedNode.id, newData);
   };
 

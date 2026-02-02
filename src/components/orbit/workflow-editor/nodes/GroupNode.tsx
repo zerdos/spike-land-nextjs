@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { WorkflowNodeData } from "../types";
+import type { WorkflowNodeData } from "../types";
 
 const GroupNode = ({ data }: { data: WorkflowNodeData }) => {
   return (

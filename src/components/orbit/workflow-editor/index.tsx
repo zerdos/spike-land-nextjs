@@ -6,7 +6,7 @@ import NodePalette from "./NodePalette";
 import WorkflowCanvas from "./WorkflowCanvas";
 import NodeConfigPanel from "./config/NodeConfigPanel";
 import { useWorkflowEditor } from "./hooks/useWorkflowEditor";
-import { WorkflowNode } from "./types";
+import type { WorkflowNode } from "./types";
 
 const WorkflowEditorContent = () => {
   const editor = useWorkflowEditor();

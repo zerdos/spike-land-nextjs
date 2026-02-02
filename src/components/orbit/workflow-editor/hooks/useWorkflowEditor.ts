@@ -3,6 +3,8 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
+} from "reactflow";
+import type {
   Connection,
   Edge,
   Node,
@@ -28,11 +30,11 @@ export const useWorkflowEditor = () => {
   );
 
   const updateNodeData = useCallback(
-    (id: string, data: any) => {
+    (id: string, data: unknown) => {
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === id) {
-            return { ...node, data: { ...node.data, ...data } };
+            return { ...node, data: { ...node.data, ...(data as object) } };
           }
           return node;
         })

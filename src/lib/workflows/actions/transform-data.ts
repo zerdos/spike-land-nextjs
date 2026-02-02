@@ -8,13 +8,13 @@ const TransformDataInputSchema = z.object({
 });
 
 export interface TransformDataInput extends ActionInput {
-  data: any;
+  data: unknown;
   transformation: string;
   type: "map" | "filter" | "extract";
 }
 
 export interface TransformDataOutput extends ActionOutput {
-  result: any;
+  result: unknown;
 }
 
 export const transformDataAction: WorkflowAction<
@@ -35,12 +35,12 @@ export const transformDataAction: WorkflowAction<
     let result = input.data;
 
     if (input.type === "extract") {
-        if (input.data && typeof input.data === 'object') {
+        if (input.data && typeof input.data === 'object' && input.data !== null) {
             const path = input.transformation.split('.');
-            let current = input.data;
+            let current: unknown = input.data;
             for (const key of path) {
-                if (current && typeof current === 'object' && key in current) {
-                    current = current[key];
+                if (current && typeof current === 'object' && key in (current as Record<string, unknown>)) {
+                    current = (current as Record<string, unknown>)[key];
                 } else {
                     current = undefined;
                     break;

@@ -1,11 +1,11 @@
 import { Zap, Globe, RefreshCw, Layers, FileJson } from "lucide-react";
-import { WorkflowActionType } from "./action-types";
+import type { WorkflowActionType } from "./action-types";
 
 export interface ActionMetadata {
   type: WorkflowActionType;
   label: string;
   description: string;
-  icon: any;
+  icon: React.ElementType;
   category: "Communication" | "Data" | "Logic" | "Integration" | "AI";
 }
 

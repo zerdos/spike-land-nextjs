@@ -1,6 +1,6 @@
 import React from "react";
 import { Play, Zap, GitFork, BoxSelect } from "lucide-react";
-import { WorkflowNodeType } from "./types";
+import type { WorkflowNodeType } from "./types";
 
 const NodePaletteItem = ({
   type,

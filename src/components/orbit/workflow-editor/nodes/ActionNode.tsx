@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { Handle, Position } from "reactflow";
 import { Zap } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { WorkflowNodeData } from "../types";
+import type { WorkflowNodeData } from "../types";
 
 const ActionNode = ({ data }: { data: WorkflowNodeData }) => {
   return (

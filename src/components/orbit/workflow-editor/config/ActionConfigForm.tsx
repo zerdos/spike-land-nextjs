@@ -1,17 +1,16 @@
 import React from "react";
-import { WorkflowNode } from "../types";
+import type { WorkflowNode } from "../types";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ActionConfigFormProps {
   node: WorkflowNode;
-  onChange: (data: any) => void;
+  onChange: (data: unknown) => void;
 }
 
 const ActionConfigForm = ({ node, onChange }: ActionConfigFormProps) => {
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: unknown) => {
     onChange({
       ...node.data,
       config: {
@@ -26,7 +25,7 @@ const ActionConfigForm = ({ node, onChange }: ActionConfigFormProps) => {
       <div className="space-y-2">
         <Label htmlFor="action-type">Action Type</Label>
         <Select
-          value={node.data.config?.actionType || "send_notification"}
+          value={(node.data.config?.actionType as string) || "send_notification"}
           onValueChange={(val) => handleChange("actionType", val)}
         >
           <SelectTrigger>
@@ -45,7 +44,7 @@ const ActionConfigForm = ({ node, onChange }: ActionConfigFormProps) => {
          <div className="space-y-2">
             <Label>Message</Label>
             <Textarea
-                value={node.data.config?.message || ""}
+                value={(node.data.config?.message as string) || ""}
                 onChange={(e) => handleChange("message", e.target.value)}
                 placeholder="Enter notification message"
             />

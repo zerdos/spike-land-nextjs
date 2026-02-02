@@ -16,14 +16,14 @@ const ParallelExecutionInputSchema = z.object({
 });
 
 export interface ParallelExecutionInput extends ActionInput {
-  items: any[];
+  items: unknown[];
   actionType: string;
-  actionConfig: Record<string, any>;
+  actionConfig: Record<string, unknown>;
   concurrency?: number;
 }
 
 export interface ParallelExecutionOutput extends ActionOutput {
-  results: any[];
+  results: unknown[];
   failedCount: number;
 }
 
@@ -43,7 +43,7 @@ export const parallelExecutionAction: WorkflowAction<
     ParallelExecutionInputSchema.parse(input);
   },
 
-  execute: async (input) => {
+  execute: async (_input) => {
     // This is a placeholder as actual parallel execution of other actions requires access to the action registry/dispatcher.
     // In a real implementation, we would dynamic import or have the dispatcher passed in context.
 

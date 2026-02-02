@@ -6,7 +6,7 @@ const LoopInputSchema = z.object({
 });
 
 export interface LoopInput extends ActionInput {
-  items: any[];
+  items: unknown[];
 }
 
 export interface LoopOutput extends ActionOutput {

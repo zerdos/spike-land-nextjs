@@ -1,5 +1,5 @@
 import React from "react";
-import { WorkflowNode } from "../types";
+import type { WorkflowNode } from "../types";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,13 +7,13 @@ import CronPicker from "./CronPicker";
 
 interface TriggerConfigFormProps {
   node: WorkflowNode;
-  onChange: (data: any) => void;
+  onChange: (data: unknown) => void;
 }
 
 const TriggerConfigForm = ({ node, onChange }: TriggerConfigFormProps) => {
   const config = node.data.config || {};
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: unknown) => {
     onChange({
       config: {
         ...config,
@@ -27,7 +27,7 @@ const TriggerConfigForm = ({ node, onChange }: TriggerConfigFormProps) => {
       <div className="space-y-2">
         <Label htmlFor="trigger-type">Trigger Type</Label>
         <Select
-          value={config.triggerType || "schedule"}
+          value={(config.triggerType as string) || "schedule"}
           onValueChange={(val) => handleChange("triggerType", val)}
         >
           <SelectTrigger>
@@ -45,7 +45,7 @@ const TriggerConfigForm = ({ node, onChange }: TriggerConfigFormProps) => {
         <div className="space-y-2">
           <Label>Schedule</Label>
           <CronPicker
-            value={config.cron || "* * * * *"}
+            value={(config.cron as string) || "* * * * *"}
             onChange={(val) => handleChange("cron", val)}
           />
         </div>
@@ -63,7 +63,7 @@ const TriggerConfigForm = ({ node, onChange }: TriggerConfigFormProps) => {
         <div className="space-y-2">
            <Label>Event Type</Label>
            <Input
-             value={config.eventType || ""}
+             value={(config.eventType as string) || ""}
              onChange={(e) => handleChange("eventType", e.target.value)}
              placeholder="e.g. user.created"
            />

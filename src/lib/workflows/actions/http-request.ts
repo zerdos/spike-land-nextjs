@@ -13,13 +13,13 @@ export interface HttpRequestInput extends ActionInput {
   url: string;
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
   timeout?: number;
 }
 
 export interface HttpRequestOutput extends ActionOutput {
   status: number;
-  data: any;
+  data: unknown;
   headers: Record<string, string>;
 }
 
@@ -60,11 +60,12 @@ export const httpRequestAction: WorkflowAction<
         data,
         headers,
       };
-    } catch (error: any) {
-        if (error.name === 'AbortError') {
+    } catch (error: unknown) {
+        if (error instanceof Error && error.name === 'AbortError') {
              throw new Error(`Request timed out after ${input.timeout || 10000}ms`);
         }
-        throw new Error(`HTTP Request failed: ${error.message}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`HTTP Request failed: ${message}`);
     } finally {
       clearTimeout(timeoutId);
     }

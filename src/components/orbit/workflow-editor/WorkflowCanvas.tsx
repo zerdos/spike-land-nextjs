@@ -2,16 +2,15 @@ import React, { useCallback, useRef, useState } from "react";
 import ReactFlow, {
   Background,
   Controls,
-  ReactFlowInstance,
-  Node,
 } from "reactflow";
+import type { ReactFlowInstance, Node } from "reactflow";
 import "reactflow/dist/style.css";
-import { useWorkflowEditor } from "./hooks/useWorkflowEditor";
+import type { useWorkflowEditor } from "./hooks/useWorkflowEditor";
 import TriggerNode from "./nodes/TriggerNode";
 import ActionNode from "./nodes/ActionNode";
 import ConditionNode from "./nodes/ConditionNode";
 import GroupNode from "./nodes/GroupNode";
-import { WorkflowNodeType } from "./types";
+import type { WorkflowNodeType } from "./types";
 
 const nodeTypes = {
   trigger: TriggerNode,
