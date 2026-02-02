@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { type CreativePerformance, type FatigueSeverity } from "@prisma/client";
 
 interface FatigueMetrics {
@@ -23,7 +23,9 @@ function calculateCTRTrend(performance: CreativePerformance[]): number[] {
   for (let i = 0; i < performance.length; i++) {
     const start = Math.max(0, i - window + 1);
     const slice = performance.slice(start, i + 1);
-    const avg = slice.reduce((sum, p) => sum + p.ctr, 0) / slice.length;
+    const avg = slice.length > 0
+      ? slice.reduce((sum, p) => sum + p.ctr, 0) / slice.length
+      : 0;
     smoothed.push(avg);
   }
 
@@ -38,12 +40,18 @@ function detectDecayPattern(ctrTrend: number[]): {
 
   const peak = Math.max(...ctrTrend);
   const current = ctrTrend[ctrTrend.length - 1];
+
+  if (current === undefined) return { percentDecline: 0, consecutiveDeclineDays: 0 };
+
   const percentDecline = peak > 0 ? ((peak - current) / peak) * 100 : 0;
 
   // Count consecutive declining days
   let consecutiveDeclineDays = 0;
   for (let i = ctrTrend.length - 1; i > 0; i--) {
-    if (ctrTrend[i] < ctrTrend[i - 1]) {
+    const currentVal = ctrTrend[i];
+    const prevVal = ctrTrend[i - 1];
+
+    if (currentVal !== undefined && prevVal !== undefined && currentVal < prevVal) {
       consecutiveDeclineDays++;
     } else {
       break;
@@ -100,14 +108,22 @@ export async function detectCreativeFatigue(variantId: string): Promise<{
     hasFatigue = true;
   }
 
+  // Handle potential empty array for performance.map
+  const maxCtr = performance.length > 0
+    ? Math.max(...performance.map((p: CreativePerformance) => p.ctr))
+    : 0;
+
+  // Get last element safely
+  const lastPerformance = performance[performance.length - 1];
+
   return {
     hasFatigue,
     severity,
     metrics: {
       ctrDecayPercent: decay.percentDecline,
       daysActive: performance.length,
-      currentCTR: performance[performance.length - 1].ctr,
-      peakCTR: Math.max(...performance.map(p => p.ctr)),
+      currentCTR: lastPerformance?.ctr,
+      peakCTR: maxCtr,
     },
   };
 }
