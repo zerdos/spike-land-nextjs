@@ -6,10 +6,10 @@
 
 ```json
 {
-  "react-native-wgpu": "^0.4.1",
+  "react-native-wgpu": "0.4.1",
   "three": "0.172.0",
-  "@react-three/fiber": "^9.4.0",
-  "wgpu-matrix": "^3.0.2",
+  "@react-three/fiber": "9.4.0",
+  "wgpu-matrix": "3.0.2",
   "@types/three": "0.172.0"
 }
 ```

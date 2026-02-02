@@ -2315,6 +2315,50 @@ model SocialMetricAnomaly {
   @@map("social_metric_anomalies")
 }
 
+/// AI-generated hypotheses for experiments
+model Hypothesis {
+  id               String   @id @default(cuid())
+  workspaceId      String
+
+  // Hypothesis details
+  title            String
+  description      String   @db.Text
+  theoreticalBasis String?  @db.Text // Why this might work
+  expectedOutcome  String?  @db.Text // Predicted result
+
+  // AI metadata
+  confidence       Float?   // AI's confidence (0-1)
+  generatedBy      String   @default("hypothesis-agent")
+  reasoning        String?  @db.Text // AI's reasoning
+
+  // Experiment linkage
+  experimentId     String?  @unique // Link to SocialPostAbTest
+
+  // Status tracking
+  status           HypothesisStatus @default(PROPOSED)
+  priority         Int      @default(0) // 0-100 ranking
+
+  // Audit
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  experiment       SocialPostAbTest? @relation(fields: [experimentId], references: [id])
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([priority])
+}
+
+enum HypothesisStatus {
+  PROPOSED      // AI generated, awaiting review
+  APPROVED      // User approved, ready for experiment
+  TESTING       // Experiment running
+  VALIDATED     // Hypothesis confirmed by experiment
+  REJECTED      // Hypothesis disproven
+  ARCHIVED      // Not tested or outdated
+}
+
 /// A/B testing for social media posts
 /// Allows testing different variations of content
 /// Resolves #840
@@ -2331,6 +2375,8 @@ model SocialPostAbTest {
   workspace    Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   originalPost SocialPost                @relation(fields: [originalPostId], references: [id], onDelete: Cascade)
   variants     SocialPostAbTestVariant[]
+  hypothesis   Hypothesis?
+  results      ExperimentResult[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2356,13 +2402,46 @@ model SocialPostAbTestVariant {
   clicks      Int @default(0)
 
   // Relations
-  test SocialPostAbTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+  test    SocialPostAbTest   @relation(fields: [testId], references: [id], onDelete: Cascade)
+  results ExperimentResult[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([testId])
   @@map("social_post_ab_test_variants")
+}
+
+/// Detailed experiment results with statistical analysis
+model ExperimentResult {
+  id               String   @id @default(cuid())
+  experimentId     String   // SocialPostAbTest ID
+  variantId        String?  // SocialPostAbTestVariant ID
+
+  // Metric tracking
+  metricName       String   // "engagement_rate", "ctr", "conversion_rate"
+  metricValue      Float
+  sampleSize       Int
+
+  // Statistical analysis
+  confidenceLevel  Float?   // 0.95 for 95% CI
+  confidenceInterval Json?  // {lower: X, upper: Y}
+  pValue           Float?
+  effect           String?  // "POSITIVE", "NEGATIVE", "NEUTRAL"
+  effectSize       Float?   // Cohen's d or similar
+
+  // AI insights
+  interpretation   String?  @db.Text // AI-generated explanation
+
+  // Audit
+  createdAt        DateTime @default(now())
+
+  experiment       SocialPostAbTest @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  variant          SocialPostAbTestVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([experimentId])
+  @@index([variantId])
+  @@index([metricName])
 }
 
 // NOTE: Organic-to-Ad models defined at end of file (see line ~4488)
@@ -2534,6 +2613,7 @@ model Workspace {
   contentRewrites        ContentRewrite[]
   socialAccounts         SocialAccount[]
   abTests                SocialPostAbTest[]
+  hypotheses             Hypothesis[]
   scheduledPosts         ScheduledPost[]
   inboxItems             InboxItem[]
   // Comprehensive audit logs

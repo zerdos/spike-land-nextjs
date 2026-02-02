@@ -149,3 +149,61 @@ export function getWinner(
     return currentConversionRate > bestConversionRate ? current : best;
   });
 }
+
+/**
+ * Calculates the Z-score for a given confidence level.
+ *
+ * @param confidenceLevel - The confidence level (e.g., 0.95).
+ * @returns The Z-score.
+ */
+export function getZScore(confidenceLevel: number): number {
+  const alpha = 1 - confidenceLevel;
+  return jStat.normal.inv(1 - alpha / 2, 0, 1);
+}
+
+/**
+ * Calculate confidence intervals for variant metrics
+ */
+export function calculateConfidenceInterval(
+  successes: number,
+  total: number,
+  confidenceLevel: number = 0.95,
+): { lower: number; upper: number; } {
+  // Wilson score interval (more accurate for proportions)
+  const z = getZScore(confidenceLevel);
+  // Avoid division by zero
+  if (total === 0) return { lower: 0, upper: 0 };
+
+  const p = successes / total;
+  const denominator = 1 + (z * z) / total;
+
+  const center = (p + (z * z) / (2 * total)) / denominator;
+  const margin = (z * Math.sqrt((p * (1 - p) + (z * z) / (4 * total)) / total)) / denominator;
+
+  return {
+    lower: Math.max(0, center - margin),
+    upper: Math.min(1, center + margin),
+  };
+}
+
+/**
+ * Calculate effect size (Cohen's h for proportions)
+ */
+export function calculateEffectSize(
+  p1: number, // Control proportion
+  p2: number, // Variant proportion
+): number {
+  const phi1 = 2 * Math.asin(Math.sqrt(p1));
+  const phi2 = 2 * Math.asin(Math.sqrt(p2));
+  return phi2 - phi1;
+}
+
+/**
+ * Interpret effect size
+ */
+export function interpretEffectSize(h: number): "SMALL" | "MEDIUM" | "LARGE" {
+  const absH = Math.abs(h);
+  if (absH < 0.2) return "SMALL";
+  if (absH < 0.5) return "MEDIUM";
+  return "LARGE";
+}

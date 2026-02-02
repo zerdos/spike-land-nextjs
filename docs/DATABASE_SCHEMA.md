@@ -1052,6 +1052,22 @@ erDiagram
   Float percentChange
   DateTime createdAt
 }
+"Hypothesis" {
+  String id PK
+  String workspaceId FK
+  String title
+  String description
+  String theoreticalBasis "nullable"
+  String expectedOutcome "nullable"
+  Float confidence "nullable"
+  String generatedBy
+  String reasoning "nullable"
+  String experimentId FK,UK "nullable"
+  HypothesisStatus status
+  Int priority
+  DateTime createdAt
+  DateTime updatedAt
+}
 "social_post_ab_tests" {
   String id PK
   String workspaceId FK
@@ -1073,6 +1089,21 @@ erDiagram
   Int clicks
   DateTime createdAt
   DateTime updatedAt
+}
+"ExperimentResult" {
+  String id PK
+  String experimentId FK
+  String variantId FK "nullable"
+  String metricName
+  Float metricValue
+  Int sampleSize
+  Float confidenceLevel "nullable"
+  Json confidenceInterval "nullable"
+  Float pValue "nullable"
+  String effect "nullable"
+  Float effectSize "nullable"
+  String interpretation "nullable"
+  DateTime createdAt
 }
 "workspaces" {
   String id PK
@@ -2195,9 +2226,13 @@ erDiagram
 "social_post_accounts" }o--|| "social_accounts" : account
 "social_metrics" }o--|| "social_accounts" : account
 "social_metric_anomalies" }o--|| "social_accounts" : account
+"Hypothesis" }o--|| "workspaces" : workspace
+"Hypothesis" |o--o| "social_post_ab_tests" : experiment
 "social_post_ab_tests" }o--|| "workspaces" : workspace
 "social_post_ab_tests" }o--|| "social_posts" : originalPost
 "social_post_ab_test_variants" }o--|| "social_post_ab_tests" : test
+"ExperimentResult" }o--|| "social_post_ab_tests" : experiment
+"ExperimentResult" }o--o| "social_post_ab_test_variants" : variant
 "workspace_apps" }o--|| "workspaces" : workspace
 "workspace_apps" |o--|| "apps" : app
 "workspace_favorites" }o--|| "users" : user
@@ -3626,6 +3661,27 @@ Properties as follows:
 - `percentChange`:
 - `createdAt`:
 
+### `Hypothesis`
+
+AI-generated hypotheses for experiments
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `title`:
+- `description`:
+- `theoreticalBasis`:
+- `expectedOutcome`:
+- `confidence`:
+- `generatedBy`:
+- `reasoning`:
+- `experimentId`:
+- `status`:
+- `priority`:
+- `createdAt`:
+- `updatedAt`:
+
 ### `social_post_ab_tests`
 
 A/B testing for social media posts
@@ -3661,6 +3717,26 @@ Properties as follows:
 - `clicks`:
 - `createdAt`:
 - `updatedAt`:
+
+### `ExperimentResult`
+
+Detailed experiment results with statistical analysis
+
+Properties as follows:
+
+- `id`:
+- `experimentId`:
+- `variantId`:
+- `metricName`:
+- `metricValue`:
+- `sampleSize`:
+- `confidenceLevel`:
+- `confidenceInterval`:
+- `pValue`:
+- `effect`:
+- `effectSize`:
+- `interpretation`:
+- `createdAt`:
 
 ### `workspaces`
 
