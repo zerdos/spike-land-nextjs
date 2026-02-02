@@ -6,7 +6,11 @@ export type WorkflowActionType =
   | "send_notification"
   | "call_ai_agent"
   | "update_record"
-  | "conditional";
+  | "conditional"
+  | "http_request"
+  | "transform_data"
+  | "parallel_execution"
+  | "loop";
 
 /**
  * The common interface for all workflow actions.

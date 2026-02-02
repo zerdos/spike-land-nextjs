@@ -1,17 +1,14 @@
-import type { ActionInput, ActionOutput } from "./action-types";
+import type { ActionInput, ActionOutput, WorkflowActionType } from "./action-types";
 import { callAiAgentAction } from "./call-ai-agent";
 import { conditionalAction } from "./conditional";
 import { interpolate } from "./interpolation";
 import { postToPlatformAction } from "./post-to-platform";
 import { sendNotificationAction } from "./send-notification";
 import { updateRecordAction } from "./update-record";
-
-type WorkflowActionType =
-  | "send_notification"
-  | "update_record"
-  | "call_ai_agent"
-  | "post_to_platform"
-  | "conditional";
+import { httpRequestAction } from "./http-request";
+import { transformDataAction } from "./transform-data";
+import { parallelExecutionAction } from "./parallel-execution";
+import { loopAction } from "./loop";
 
 interface AnyWorkflowAction {
   type: string;
@@ -26,6 +23,10 @@ const actions: Record<WorkflowActionType, AnyWorkflowAction> = {
   call_ai_agent: callAiAgentAction as unknown as AnyWorkflowAction,
   post_to_platform: postToPlatformAction as unknown as AnyWorkflowAction,
   conditional: conditionalAction as unknown as AnyWorkflowAction,
+  http_request: httpRequestAction as unknown as AnyWorkflowAction,
+  transform_data: transformDataAction as unknown as AnyWorkflowAction,
+  parallel_execution: parallelExecutionAction as unknown as AnyWorkflowAction,
+  loop: loopAction as unknown as AnyWorkflowAction,
 };
 
 export async function dispatchAction(

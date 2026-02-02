@@ -1,64 +1,116 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useMemo } from "react";
 import ReactFlow, {
-  addEdge,
-  applyEdgeChanges,
-  applyNodeChanges,
   Background,
   Controls,
+  ReactFlowProvider,
+  Node,
+  NodeTypes,
 } from "reactflow";
-import type { Edge, Node, OnConnect, OnEdgesChange, OnNodesChange } from "reactflow";
-
 import "reactflow/dist/style.css";
 
-const initialNodes: Node[] = [
+import NodePalette from "./NodePalette";
+import TriggerNode from "./nodes/TriggerNode";
+import ActionNode from "./nodes/ActionNode";
+import ConditionNode from "./nodes/ConditionNode";
+import GroupNode from "./nodes/GroupNode";
+import NodeConfigPanel from "./config/NodeConfigPanel";
+import { WorkflowNodeData } from "./types";
+import { useWorkflowEditor } from "./hooks/useWorkflowEditor";
+
+// Define custom node types
+const nodeTypes: NodeTypes = {
+  trigger: TriggerNode,
+  action: ActionNode,
+  condition: ConditionNode,
+  group: GroupNode,
+};
+
+const initialNodes: Node<WorkflowNodeData>[] = [
   {
     id: "1",
-    data: { label: "Hello" },
-    position: { x: 0, y: 0 },
-    type: "input",
+    type: "trigger",
+    position: { x: 250, y: 50 },
+    data: { label: "Schedule Trigger", type: "trigger", config: { type: "schedule", cron: "0 9 * * *" } },
   },
-  { id: "2", data: { label: "World" }, position: { x: 100, y: 100 } },
 ];
 
-const initialEdges: Edge[] = [
-  { id: "1-2", source: "1", target: "2", label: "to the", type: "step" },
-];
+const WorkflowCanvas = () => {
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const {
+    nodes,
+    edges,
+    selectedNodeId,
+    setSelectedNodeId,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    onDragOver,
+    onDrop,
+    updateNodeData,
+  } = useWorkflowEditor(initialNodes);
 
-const WorkflowEditor = () => {
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+    setSelectedNodeId(node.id);
+  }, [setSelectedNodeId]);
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes],
+  const onPaneClick = useCallback(() => {
+    setSelectedNodeId(null);
+  }, [setSelectedNodeId]);
+
+  const handleDrop = useCallback(
+    (event: React.DragEvent) => {
+        // cast ref to required type or pass ref directly if hook handles types.
+        // hook expects React.RefObject<HTMLDivElement>
+        onDrop(event, reactFlowWrapper);
+    },
+    [onDrop]
   );
 
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges],
-  );
-
-  const onConnect: OnConnect = useCallback(
-    (connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges],
+  const selectedNode = useMemo(
+    () => nodes.find((n) => n.id === selectedNodeId) || null,
+    [nodes, selectedNodeId]
   );
 
   return (
-    <div style={{ height: "100vh", width: "100%" }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-      >
-        <Background />
-        <Controls />
-      </ReactFlow>
+    <div className="flex h-screen w-full">
+      <NodePalette />
+      <div className="flex-1 h-full relative" ref={reactFlowWrapper}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          onInit={instance => instance.fitView()}
+          onDrop={handleDrop}
+          onDragOver={onDragOver}
+          onNodeClick={onNodeClick}
+          onPaneClick={onPaneClick}
+          fitView
+        >
+          <Background />
+          <Controls />
+        </ReactFlow>
+      </div>
+      {selectedNode && (
+        <NodeConfigPanel
+          node={selectedNode}
+          onChange={updateNodeData}
+          onClose={() => setSelectedNodeId(null)}
+        />
+      )}
     </div>
+  );
+};
+
+const WorkflowEditor = () => {
+  return (
+    <ReactFlowProvider>
+      <WorkflowCanvas />
+    </ReactFlowProvider>
   );
 };
 
