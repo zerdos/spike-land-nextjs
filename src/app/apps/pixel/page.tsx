@@ -63,24 +63,51 @@ export default async function PixelPage() {
   }
 
   // For authenticated users, fetch their images and show the app
-  const images = await prisma.enhancedImage.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    include: {
-      enhancementJobs: {
-        where: {
-          status: { not: "CANCELLED" },
-        },
-        orderBy: {
-          createdAt: "desc",
+  console.log("[PixelPage] Fetching images for user:", session.user.id);
+
+  let images;
+  try {
+    // First, test basic DB connectivity
+    const testQuery = await prisma.$queryRaw`SELECT 1 as test`;
+    console.log("[PixelPage] DB connectivity test passed:", testQuery);
+
+    images = await prisma.enhancedImage.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      include: {
+        enhancementJobs: {
+          where: {
+            status: { not: "CANCELLED" },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
         },
       },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    console.log("[PixelPage] Successfully fetched", images.length, "images");
+  } catch (error) {
+    console.error("[PixelPage] Error details:", {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    throw error;
+  }
+
+  console.log("[PixelPage] Rendering client component with", images.length, "images");
+
+  // Log images data structure for debugging
+  if (images.length > 0) {
+    console.log(
+      "[PixelPage] First image structure:",
+      JSON.stringify(images[0], null, 2).slice(0, 500),
+    );
+  }
 
   return (
     <div className="min-h-screen bg-grid-pattern">
