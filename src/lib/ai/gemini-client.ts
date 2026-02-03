@@ -11,6 +11,7 @@ import type { AnalysisConfig, PromptConfig } from "./pipeline-types";
 export const VALID_GEMINI_MODELS = [
   "gemini-3-pro-image-preview",
   "gemini-2.5-flash-image",
+  "gemini-3-flash-preview",
 ] as const;
 
 /**
@@ -41,6 +42,7 @@ export function getModelForTier(tier: TierModelKey): string {
  * Uses premium model (gemini-3-pro-image-preview) as default.
  */
 export const DEFAULT_MODEL = "gemini-3-pro-image-preview";
+export const AGENT_CHAT_MODEL = "gemini-3-flash-preview";
 export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defaults
 
 /**
@@ -1197,7 +1199,7 @@ Be concise, helpful, and provide practical solutions.`;
 
   const { data: response, error } = await tryCatch(
     ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: AGENT_CHAT_MODEL,
       contents,
       config: {
         systemInstruction: systemPrompt,
@@ -1253,7 +1255,7 @@ export async function generateStructuredResponse<T>(
 
   const { data: response, error } = await tryCatch(
     ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: AGENT_CHAT_MODEL,
       contents: [
         {
           role: "user",
