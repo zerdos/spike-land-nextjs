@@ -40,10 +40,10 @@ export async function triggerBoxProvisioning(boxId: string): Promise<void> {
 
   // 1. Prioritize Cloud Function / Webhook via Environment Variable
   // This allows for external infrastructure (like a serverless function) to handle provisioning
-  const provisioningUrl = process.env.BOX_PROVISIONING_WEBHOOK_URL;
+  const provisioningUrl = process.env["BOX_PROVISIONING_WEBHOOK_URL"];
   if (provisioningUrl) {
     try {
-      const secret = process.env.BOX_PROVISIONING_SECRET ?? "";
+      const secret = process.env["BOX_PROVISIONING_SECRET"] ?? "";
       const response = await fetch(provisioningUrl, {
         method: "POST",
         headers: {

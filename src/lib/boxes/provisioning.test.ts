@@ -45,13 +45,13 @@ describe('triggerBoxProvisioning', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-    delete process.env.BOX_PROVISIONING_WEBHOOK_URL;
-    delete process.env.BOX_PROVISIONING_SECRET;
+    delete process.env["BOX_PROVISIONING_WEBHOOK_URL"];
+    delete process.env["BOX_PROVISIONING_SECRET"];
   });
 
   it('should trigger webhook if ENV var is set', async () => {
-    process.env.BOX_PROVISIONING_WEBHOOK_URL = 'https://example.com/provision';
-    process.env.BOX_PROVISIONING_SECRET = 'secret';
+    process.env["BOX_PROVISIONING_WEBHOOK_URL"] = 'https://example.com/provision';
+    process.env["BOX_PROVISIONING_SECRET"] = 'secret';
 
     vi.mocked(prisma.box.findUnique).mockResolvedValue(mockBox as any);
     vi.mocked(global.fetch).mockResolvedValue({
@@ -81,7 +81,7 @@ describe('triggerBoxProvisioning', () => {
   });
 
   it('should set status to ERROR if webhook fails', async () => {
-    process.env.BOX_PROVISIONING_WEBHOOK_URL = 'https://example.com/provision';
+    process.env["BOX_PROVISIONING_WEBHOOK_URL"] = 'https://example.com/provision';
 
     vi.mocked(prisma.box.findUnique).mockResolvedValue(mockBox as any);
     vi.mocked(global.fetch).mockResolvedValue({
