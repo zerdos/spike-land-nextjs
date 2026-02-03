@@ -62,9 +62,7 @@ export async function triggerBoxProvisioning(boxId: string): Promise<void> {
         if (!response.ok) {
           await failBox(`Webhook failed: ${response.status} ${response.statusText}`);
         } else {
-          console.log(
-            `[BoxProvisioning] Successfully triggered provisioning webhook for box ${boxId}`,
-          );
+          console.log(`[BoxProvisioning] Successfully triggered provisioning webhook for box ${boxId}`);
         }
         return;
       } catch (error) {
@@ -75,8 +73,7 @@ export async function triggerBoxProvisioning(boxId: string): Promise<void> {
 
     // 2. Fallback to Workflow Trigger
     // Try to find a relevant workspace for the user to look for a provisioning workflow
-    const personalWorkspace = box.user.workspaceMembers.find(m => m.workspace.isPersonal)
-      ?.workspace;
+    const personalWorkspace = box.user.workspaceMembers.find(m => m.workspace.isPersonal)?.workspace;
     const targetWorkspace = personalWorkspace || box.user.workspaceMembers[0]?.workspace;
 
     if (targetWorkspace) {
@@ -97,9 +94,7 @@ export async function triggerBoxProvisioning(boxId: string): Promise<void> {
             userId: box.userId,
             tier: box.tier,
           });
-          console.log(
-            `[BoxProvisioning] Triggered workflow "${workflow.name}" (${workflow.id}) for box ${boxId}`,
-          );
+          console.log(`[BoxProvisioning] Triggered workflow "${workflow.name}" (${workflow.id}) for box ${boxId}`);
           return;
         } catch (error) {
           await failBox(`Workflow trigger error: ${error}`);

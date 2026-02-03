@@ -120,11 +120,13 @@ export function SitemapPreviewClient({
     const pathsToStart = pathsToLoad.slice(0, availableSlots);
 
     // Throttle the start of new loads
+    // Increased delay to 1500ms to prevent server overload (ECONNRESET) in CI environments
+    // where compiling multiple pages rapidly can crash the dev server.
     const timer = setTimeout(() => {
       pathsToStart.forEach((path) => {
         startLoadingPath(path);
       });
-    }, 250); // Add a small delay to prevent rapid-fire requests
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [allPaths, pathStates, startLoadingPath]);
