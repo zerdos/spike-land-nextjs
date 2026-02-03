@@ -476,7 +476,7 @@ describe("SitemapPreviewClient", () => {
     expect(queuedElements.length).toBeGreaterThan(0);
   });
 
-  it("should load iframes with correct src based on origin", () => {
+  it("should load iframes with correct src based on origin", async () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
@@ -485,7 +485,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    const iframes = screen.getAllByTitle(/Preview of/);
+    const iframes = await screen.findAllByTitle(/Preview of/);
     expect(iframes.length).toBeGreaterThan(0);
 
     // Check that iframe src includes origin
@@ -502,7 +502,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    const iframe = screen.getByTitle("Preview of /");
+    const iframe = await screen.findByTitle("Preview of /");
     fireEvent.load(iframe);
 
     await waitFor(() => {
@@ -584,7 +584,7 @@ describe("SitemapPreviewClient", () => {
     });
   });
 
-  it("should show loading spinner for loading paths", () => {
+  it("should show loading spinner for loading paths", async () => {
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
@@ -593,7 +593,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    const loadingElements = screen.getAllByText("Loading...");
+    const loadingElements = await screen.findAllByText("Loading...");
     expect(loadingElements.length).toBeLessThanOrEqual(MAX_CONCURRENT_LOADS);
   });
 
@@ -609,7 +609,7 @@ describe("SitemapPreviewClient", () => {
     expect(screen.getByText("/some/nested/path")).toBeInTheDocument();
   });
 
-  it("should use origin from props for iframe URLs", () => {
+  it("should use origin from props for iframe URLs", async () => {
     const customOrigin = "https://spike.land";
 
     render(
@@ -620,7 +620,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    const iframe = screen.getByTitle("Preview of /test") as HTMLIFrameElement;
+    const iframe = await screen.findByTitle("Preview of /test") as HTMLIFrameElement;
     expect(iframe.src).toBe("https://spike.land/test");
   });
 
@@ -737,7 +737,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    const iframe = screen.getByTitle("Preview of /");
+    const iframe = await screen.findByTitle("Preview of /");
     fireEvent.load(iframe);
 
     await waitFor(() => {
@@ -829,7 +829,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    const iframe = screen.getByTitle("Preview of /");
+    const iframe = await screen.findByTitle("Preview of /");
     fireEvent.load(iframe);
 
     await waitFor(() => {
@@ -907,7 +907,7 @@ describe("SitemapPreviewClient", () => {
     // Initially 0 loaded
     expect(screen.getByText(/0 Healthy/)).toBeInTheDocument();
 
-    const iframe = screen.getByTitle("Preview of /");
+    const iframe = await screen.findByTitle("Preview of /");
     fireEvent.load(iframe);
 
     await waitFor(() => {
@@ -924,7 +924,7 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    const iframe = screen.getByTitle("Preview of /") as HTMLIFrameElement;
+    const iframe = await screen.findByTitle("Preview of /") as HTMLIFrameElement;
 
     // Trigger the onError handler directly
     fireEvent.error(iframe);
