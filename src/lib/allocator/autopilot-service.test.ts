@@ -92,7 +92,7 @@ vi.mock("./autopilot-anomaly-integration", () => ({
 }));
 
 vi.mock("@/lib/crypto/token-encryption", () => ({
-  decryptToken: vi.fn((token: string) => token.replace("encrypted_", "")),
+  safeDecryptToken: vi.fn((token: string) => token.replace("encrypted_", "")),
 }));
 
 vi.mock("./facebook-ads/client", () => ({

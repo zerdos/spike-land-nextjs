@@ -18,7 +18,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 vi.mock("@/lib/crypto/token-encryption", () => ({
-  decryptToken: (token: string) => `decrypted_${token}`,
+  safeDecryptToken: (token: string) => `decrypted_${token}`,
 }));
 
 describe("syncFacebookCampaigns", () => {
