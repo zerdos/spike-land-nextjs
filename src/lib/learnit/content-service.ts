@@ -1,5 +1,5 @@
+import type { LearnItContent } from "@/generated/prisma";
 import prisma from "@/lib/prisma";
-import type { LearnItContent } from "@prisma/client";
 
 import { parseWikiLinks } from "./wiki-links";
 

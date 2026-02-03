@@ -1,7 +1,7 @@
 import { LearnItSearch } from "@/components/learnit/search";
 import { TopicCard } from "@/components/learnit/topic-card";
+import type { LearnItContent as LearnItContentType } from "@/generated/prisma";
 import { getPopularContent, getRecentContent } from "@/lib/learnit/content-service";
-import type { LearnItContent as LearnItContentType } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
