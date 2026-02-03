@@ -1,6 +1,7 @@
 import type { LearnItContent } from "@/generated/prisma";
 import prisma from "@/lib/prisma";
 
+import { createParentChildRelation, createRelationsFromWikiLinks } from "./relation-service";
 import { parseWikiLinks } from "./wiki-links";
 
 export type CreateContentInput = {
@@ -55,7 +56,7 @@ export async function searchLearnItContent(query: string, limit = 10) {
 export async function createOrUpdateContent(input: CreateContentInput) {
   const { links } = parseWikiLinks(input.content);
 
-  return prisma.learnItContent.upsert({
+  const content = await prisma.learnItContent.upsert({
     where: { slug: input.slug },
     create: {
       ...input,
@@ -69,6 +70,18 @@ export async function createOrUpdateContent(input: CreateContentInput) {
       updatedAt: new Date(),
     },
   });
+
+  // Create graph relationships asynchronously (don't block the response)
+  void Promise.all([
+    // Create parent-child relationship if this topic has a parent
+    createParentChildRelation(content.id, input.parentSlug),
+    // Create relationships from wiki links in content
+    createRelationsFromWikiLinks(content.id, links),
+  ]).catch((error) => {
+    console.error("Failed to create relations for content:", error);
+  });
+
+  return content;
 }
 
 export async function markAsGenerating(slug: string, path: string[], userId?: string) {

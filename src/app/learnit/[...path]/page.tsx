@@ -1,5 +1,9 @@
+import { auth } from "@/auth";
 import { LearnItContent } from "@/components/learnit/content";
 import { GenerateButton } from "@/components/learnit/generate-button";
+import { Prerequisites } from "@/components/learnit/prerequisites";
+import { RelatedTopics } from "@/components/learnit/related-topics";
+import { StreamingContent } from "@/components/learnit/streaming-content";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,6 +16,7 @@ import { getLearnItContent } from "@/lib/learnit/content-service";
 import { Loader2 } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { cache } from "react";
 
 interface PageProps {
@@ -39,7 +44,7 @@ export default async function LearnItTopicPage({ params }: PageProps) {
   const { path } = await params;
   const slug = path.join("/").toLowerCase();
   const content = await getLearnItContentCached(slug);
-  // const session = await auth(); // Not currently used directly in render, passed to client if needed? GenerateButton checks auth via API.
+  const session = await auth();
 
   // Normalize path if needed (e.g. if user typed UPPERCASE)
   const normalizedPath = path.map(p => p.toLowerCase());
@@ -55,6 +60,25 @@ export default async function LearnItTopicPage({ params }: PageProps) {
   });
 
   if (!content) {
+    // If user is logged in, start streaming immediately
+    // Otherwise, show the generate button which will prompt login
+    if (session?.user?.id) {
+      return (
+        <div className="max-w-3xl mx-auto py-8 space-y-8">
+          <Breadcrumbs items={breadcrumbs} />
+          <header className="mb-6">
+            <h1 className="text-3xl font-bold capitalize">
+              {path[path.length - 1]?.replace(/-/g, " ") ?? "Topic"}
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Generating content...
+            </p>
+          </header>
+          <StreamingContent path={normalizedPath} />
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-3xl mx-auto py-8 space-y-8">
         <Breadcrumbs items={breadcrumbs} />
@@ -115,7 +139,17 @@ export default async function LearnItTopicPage({ params }: PageProps) {
         </div>
       </header>
 
+      {/* Prerequisites banner */}
+      <Suspense fallback={null}>
+        <Prerequisites topicId={content.id} className="mb-8" />
+      </Suspense>
+
       <LearnItContent content={content.content} />
+
+      {/* Related topics sidebar/section */}
+      <Suspense fallback={null}>
+        <RelatedTopics topicId={content.id} className="mt-12" />
+      </Suspense>
 
       <div className="mt-12 pt-8 border-t text-sm text-center text-muted-foreground">
         <p>Content is AI-generated and may contain inaccuracies.</p>
