@@ -173,8 +173,7 @@ export async function getAsset(assetId: string): Promise<Asset> {
     throw new Error(error.error || "Failed to fetch asset");
   }
 
-  const result = await response.json();
-  return result.asset;
+  return response.json();
 }
 
 /**

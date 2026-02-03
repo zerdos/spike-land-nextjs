@@ -5,8 +5,8 @@
  * Uses Node.js crypto module for secure encryption.
  */
 
-import { tryCatchSync } from "@/lib/try-catch";
 import crypto from "crypto";
+import { tryCatchSync } from "@/lib/try-catch";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;

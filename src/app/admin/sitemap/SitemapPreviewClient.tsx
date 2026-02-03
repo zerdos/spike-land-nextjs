@@ -134,7 +134,6 @@ export function SitemapPreviewClient({
 
       return () => clearTimeout(timeoutId);
     }
-    return undefined;
   }, [allPaths, pathStates, startLoadingPath]);
 
   const handleAddPath = async () => {
