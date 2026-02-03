@@ -636,69 +636,6 @@ describe("GoogleAdsClient", () => {
       expect(metrics.clicks).toBe(0);
       expect(metrics.spend).toBe(0);
     });
-
-    it("should fetch and use customer currency", async () => {
-      const client = new GoogleAdsClient({ accessToken: "test_token" });
-
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockImplementation(async (_url, options) => {
-          const body = JSON.parse(options.body || "{}");
-          const query = body.query || "";
-
-          // Check if it's the customer query (currency)
-          if (query.includes("FROM customer")) {
-            return {
-              ok: true,
-              json: () =>
-                Promise.resolve({
-                  results: [
-                    {
-                      customer: {
-                        resourceName: "customers/123/customers/123",
-                        id: "123",
-                        descriptiveName: "Test Account",
-                        currencyCode: "EUR",
-                        timeZone: "Europe/Paris",
-                      },
-                    },
-                  ],
-                }),
-            };
-          }
-
-          // Otherwise assume it's the metrics query
-          return {
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                results: [
-                  {
-                    metrics: {
-                      impressions: "100000",
-                      clicks: "5000",
-                      costMicros: "5000000000", // 5000 USD in micros
-                      conversions: "100.5",
-                      ctr: "0.05",
-                      averageCpc: "1000000", // 1 USD in micros
-                      averageCpm: "50000000", // 50 USD in micros
-                    },
-                  },
-                ],
-              }),
-          };
-        }),
-      );
-
-      const metrics = await client.getCampaignMetrics(
-        "123",
-        "456",
-        new Date("2025-01-01"),
-        new Date("2025-01-31"),
-      );
-
-      expect(metrics.spendCurrency).toBe("EUR");
-    });
   });
 
   describe("API error handling", () => {

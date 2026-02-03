@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
 // Mock fetch for workspace API
 global.fetch = vi.fn().mockResolvedValue({
   ok: true,
-  json: async () => ({ id: "test-workspace-id", slug: "test-workspace", name: "Test Workspace" }),
+  json: async () => ({ workspace: { id: "test-workspace-id" } }),
 } as Response);
 
 // Mock hooks

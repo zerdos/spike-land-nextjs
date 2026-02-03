@@ -1,4 +1,4 @@
-import { decryptToken } from "@/lib/crypto/token-encryption";
+import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
 import type { MarketingAccount } from "@prisma/client";
 import { GoogleAdsAllocatorClient } from "./client";
@@ -31,7 +31,7 @@ async function syncCampaignsForAccount(
   account: MarketingAccount,
   workspaceId: string,
 ) {
-  const accessToken = decryptToken(account.accessToken);
+  const accessToken = safeDecryptToken(account.accessToken);
   const client = new GoogleAdsAllocatorClient(accessToken, account.accountId);
 
   try {

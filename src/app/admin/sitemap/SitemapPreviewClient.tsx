@@ -60,6 +60,7 @@ export function SitemapPreviewClient({
 
   // Ref to track loading state without triggering re-renders
   const loadingRef = useRef<Set<string>>(new Set());
+  const lastLoadTimeRef = useRef<number>(0);
 
   // Combine sitemap paths with tracked paths (deduped) and build initial state
   const allPaths = useMemo(() => {
@@ -119,16 +120,21 @@ export function SitemapPreviewClient({
     const availableSlots = MAX_CONCURRENT_LOADS - loadingRef.current.size;
     const pathsToStart = pathsToLoad.slice(0, availableSlots);
 
-    // Throttle the start of new loads
-    // Increased delay to 1500ms to prevent server overload (ECONNRESET) in CI environments
-    // where compiling multiple pages rapidly can crash the dev server.
-    const timer = setTimeout(() => {
-      pathsToStart.forEach((path) => {
-        startLoadingPath(path);
-      });
-    }, 1500);
+    if (pathsToStart.length > 0) {
+      const now = Date.now();
+      const timeSinceLastLoad = now - lastLoadTimeRef.current;
+      const delay = Math.max(0, 1000 - timeSinceLastLoad);
 
-    return () => clearTimeout(timer);
+      const timeoutId = setTimeout(() => {
+        pathsToStart.forEach((path) => {
+          lastLoadTimeRef.current = Date.now();
+          startLoadingPath(path);
+        });
+      }, delay);
+
+      return () => clearTimeout(timeoutId);
+    }
+    return;
   }, [allPaths, pathStates, startLoadingPath]);
 
   const handleAddPath = async () => {

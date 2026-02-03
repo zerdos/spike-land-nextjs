@@ -5,6 +5,7 @@
  * Uses Node.js crypto module for secure encryption.
  */
 
+import { tryCatchSync } from "@/lib/try-catch";
 import crypto from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
@@ -61,8 +62,6 @@ export function encryptToken(plaintext: string): string {
 
   return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
 }
-
-import { tryCatchSync } from "@/lib/try-catch";
 
 /**
  * Decrypt an encrypted token

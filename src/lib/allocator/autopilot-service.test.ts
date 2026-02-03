@@ -91,9 +91,13 @@ vi.mock("./autopilot-anomaly-integration", () => ({
   },
 }));
 
-vi.mock("@/lib/crypto/token-encryption", () => ({
-  decryptToken: vi.fn((token: string) => token.replace("encrypted_", "")),
-}));
+vi.mock("@/lib/crypto/token-encryption", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/crypto/token-encryption")>();
+  return {
+    ...actual,
+    safeDecryptToken: vi.fn((token: string) => token.replace("encrypted_", "")),
+  };
+});
 
 vi.mock("./facebook-ads/client", () => ({
   FacebookMarketingApiClient: class {

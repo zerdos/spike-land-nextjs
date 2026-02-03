@@ -20,17 +20,10 @@ export const metadata: Metadata = {
 export default async function PixelPage() {
   // Check for E2E bypass (middleware already validated the header)
   const headersList = await headers();
-  const host = headersList.get("host") || "";
-  const isStagingDomain = host === "next.spike.land" || host.includes("localhost");
-  const isProduction = process.env.NODE_ENV === "production" &&
-    process.env.VERCEL_ENV === "production" &&
-    !isStagingDomain;
-
   const e2eBypassHeader = headersList.get("x-e2e-auth-bypass");
-  const isE2EBypass = !isProduction &&
-    e2eBypassHeader &&
-    process.env.E2E_BYPASS_SECRET &&
-    e2eBypassHeader === process.env.E2E_BYPASS_SECRET;
+  const isE2EBypass = e2eBypassHeader && process.env.E2E_BYPASS_SECRET &&
+    e2eBypassHeader === process.env.E2E_BYPASS_SECRET &&
+    process.env.NODE_ENV !== "production";
 
   console.log("[PixelPage] E2E bypass check:", {
     isE2EBypass,

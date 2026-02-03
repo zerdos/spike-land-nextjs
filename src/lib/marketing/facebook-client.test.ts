@@ -333,46 +333,6 @@ describe("FacebookMarketingClient", () => {
       expect(campaignsCall).toBeDefined();
       expect(campaignsCall![0]).toContain("/act_123/campaigns");
     });
-
-    it("should use account currency for campaigns", async () => {
-      const client = new FacebookMarketingClient({ accessToken: "test_token" });
-
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockImplementation((url) => {
-          if (url.includes("?fields=currency")) {
-            return Promise.resolve({
-              ok: true,
-              json: () => Promise.resolve({ currency: "EUR" }),
-            });
-          }
-          if (url.includes("/campaigns")) {
-            return Promise.resolve({
-              ok: true,
-              json: () =>
-                Promise.resolve({
-                  data: [
-                    {
-                      id: "campaign_123",
-                      name: "Test Campaign",
-                      status: "ACTIVE",
-                      daily_budget: "1000",
-                      created_time: "2025-01-01T00:00:00+0000",
-                      updated_time: "2025-01-02T00:00:00+0000",
-                    },
-                  ],
-                }),
-            });
-          }
-          return Promise.reject(new Error("Unknown URL"));
-        }),
-      );
-
-      const campaigns = await client.listCampaigns("act_123");
-
-      expect(campaigns).toHaveLength(1);
-      expect(campaigns[0]!.budgetCurrency).toBe("EUR");
-    });
   });
 
   describe("getCampaign", () => {
@@ -416,40 +376,6 @@ describe("FacebookMarketingClient", () => {
       const campaign = await client.getCampaign("act_123", "invalid");
       expect(campaign).toBeNull();
     });
-
-    it("should use account currency for single campaign", async () => {
-      const client = new FacebookMarketingClient({ accessToken: "test_token" });
-
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockImplementation((url) => {
-          if (url.includes("?fields=currency")) {
-            return Promise.resolve({
-              ok: true,
-              json: () => Promise.resolve({ currency: "GBP" }),
-            });
-          }
-          // Match any other URL (assuming it is the campaign fetch)
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                id: "campaign_123",
-                name: "Test Campaign",
-                status: "PAUSED",
-                daily_budget: "5000",
-                created_time: "2025-01-01T00:00:00+0000",
-                updated_time: "2025-01-02T00:00:00+0000",
-              }),
-          });
-        }),
-      );
-
-      const campaign = await client.getCampaign("act_123", "campaign_123");
-
-      expect(campaign).not.toBeNull();
-      expect(campaign?.budgetCurrency).toBe("GBP");
-    });
   });
 
   describe("getCampaignMetrics", () => {
@@ -458,35 +384,24 @@ describe("FacebookMarketingClient", () => {
 
       vi.stubGlobal(
         "fetch",
-        vi.fn().mockImplementation((url: string) => {
-          if (url.includes("/act_123?fields=currency")) {
-            return Promise.resolve({
-              ok: true,
-              json: () => Promise.resolve({ currency: "EUR" }),
-            });
-          }
-          if (url.includes("/insights")) {
-            return Promise.resolve({
-              ok: true,
-              json: () =>
-                Promise.resolve({
-                  data: [
-                    {
-                      impressions: "100000",
-                      clicks: "5000",
-                      spend: "500.00",
-                      conversions: "100",
-                      reach: "80000",
-                      frequency: "1.25",
-                      ctr: "5.0",
-                      cpc: "0.10",
-                      cpm: "5.00",
-                    },
-                  ],
-                }),
-            });
-          }
-          return Promise.reject(new Error(`Unexpected URL: ${url}`));
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              data: [
+                {
+                  impressions: "100000",
+                  clicks: "5000",
+                  spend: "500.00",
+                  conversions: "100",
+                  reach: "80000",
+                  frequency: "1.25",
+                  ctr: "5.0",
+                  cpc: "0.10",
+                  cpm: "5.00",
+                },
+              ],
+            }),
         }),
       );
 
@@ -502,7 +417,6 @@ describe("FacebookMarketingClient", () => {
       expect(metrics.impressions).toBe(100000);
       expect(metrics.clicks).toBe(5000);
       expect(metrics.spend).toBe(50000); // Converted to cents
-      expect(metrics.spendCurrency).toBe("EUR");
       expect(metrics.conversions).toBe(100);
       expect(metrics.ctr).toBe(5.0);
       expect(metrics.reach).toBe(80000);

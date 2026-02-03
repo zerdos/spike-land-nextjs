@@ -90,15 +90,6 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "placehold.co",
       },
-      // Meta (Facebook/Instagram) CDN patterns for social media posts
-      {
-        protocol: "https",
-        hostname: "*.fbcdn.net",
-      },
-      {
-        protocol: "https",
-        hostname: "scontent.cdninstagram.com",
-      },
     ],
   },
   async headers() {

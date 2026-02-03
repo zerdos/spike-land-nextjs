@@ -444,7 +444,6 @@ export class FacebookMarketingClient implements IMarketingClient {
       impressions: parseInt(data.impressions, 10),
       clicks: parseInt(data.clicks, 10),
       spend: Math.round(parseFloat(data.spend) * 100), // Convert to cents
-      // Currency is fetched from account settings via getAccountCurrency
       spendCurrency: currency,
       conversions: parseInt(data.conversions ?? "0", 10),
       ctr: parseFloat(data.ctr),

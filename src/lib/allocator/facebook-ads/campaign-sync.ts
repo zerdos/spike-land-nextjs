@@ -1,4 +1,4 @@
-import { decryptToken } from "@/lib/crypto/token-encryption";
+import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
 import type { SocialAccount } from "@prisma/client";
 import { FacebookMarketingApiClient } from "./client";
@@ -17,7 +17,7 @@ export async function syncFacebookCampaigns(workspaceId: string) {
 }
 
 async function syncCampaignsForAccount(account: SocialAccount) {
-  const accessToken = decryptToken(account.accessTokenEncrypted);
+  const accessToken = safeDecryptToken(account.accessTokenEncrypted);
   const client = new FacebookMarketingApiClient(accessToken);
 
   try {

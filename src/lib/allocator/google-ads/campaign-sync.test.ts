@@ -20,9 +20,13 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-vi.mock("@/lib/crypto/token-encryption", () => ({
-  decryptToken: (token: string) => `decrypted_${token}`,
-}));
+vi.mock("@/lib/crypto/token-encryption", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/crypto/token-encryption")>();
+  return {
+    ...actual,
+    safeDecryptToken: (token: string) => `decrypted_${token}`,
+  };
+});
 
 vi.mock("./client", () => {
   return {

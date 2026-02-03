@@ -30,26 +30,13 @@ export default function ContentLibraryPage() {
   const [detailsPanelOpen, setDetailsPanelOpen] = useState(false);
 
   // Fetch workspace ID from slug
-  // Fetch workspace ID from slug
-  const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     async function fetchWorkspaceId() {
-      const { data, error } = await tryCatch(
-        fetch(`/api/workspaces/by-slug/${workspaceSlug}`).then(async (r) => {
-          if (!r.ok) throw new Error("Failed to fetch workspace");
-          return r.json();
-        }),
+      const { data } = await tryCatch(
+        fetch(`/api/workspaces/by-slug/${workspaceSlug}`).then((r) => r.json()),
       );
-
-      if (error) {
-        console.error("Failed to fetch workspace:", error);
-        setError("Failed to load workspace. Please try again later.");
-        return;
-      }
-
-      if (data?.id) {
-        setWorkspaceId(data.id);
+      if (data?.workspace?.id) {
+        setWorkspaceId(data.workspace.id);
       }
     }
     fetchWorkspaceId();
@@ -101,14 +88,6 @@ export default function ContentLibraryPage() {
     setSearchQuery("");
     setPage(1);
   };
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-destructive">{error}</p>
-      </div>
-    );
-  }
 
   if (!workspaceId) {
     return (

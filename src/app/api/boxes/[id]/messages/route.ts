@@ -106,7 +106,6 @@ export async function POST(
     // Add the current message
     chatHistory.push({ role: "user", content: body.content });
 
-    // Call the actual agent service to generate a response
     const { data: aiResponse, error: aiError } = await tryCatch(
       generateAgentResponse({ messages: chatHistory }),
     );
