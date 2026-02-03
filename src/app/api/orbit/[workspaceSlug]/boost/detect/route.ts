@@ -34,10 +34,10 @@ export async function POST(
 
     // Default configuration
     const config: BoostDetectorConfig = {
-      engagementThreshold: 0.05, // 5% engagement rate
-      velocityThreshold: 10, // 10 engagements per hour
-      minImpressions: 100,
-      lookbackPeriod: 7, // 7 days
+      engagementThreshold: 0.05, // 5%
+      velocityThreshold: 5, // 5 engagements per hour
+      minImpressions: 500,
+      lookbackPeriod: 30,
     };
 
     // Detect opportunities

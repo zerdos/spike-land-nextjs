@@ -133,10 +133,19 @@ export function EnhancedImagesList({
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                   <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1 flex-wrap">
                       <Badge variant={statusBadge.variant} className="text-xs">
                         {statusBadge.text}
                       </Badge>
+                      {image.enhancementJobs[0]?.enhancementType &&
+                        image.enhancementJobs[0].enhancementType !== "STANDARD" && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-black/50 text-white border-white/20"
+                        >
+                          {image.enhancementJobs[0].enhancementType}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>

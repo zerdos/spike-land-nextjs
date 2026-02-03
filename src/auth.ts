@@ -173,7 +173,12 @@ export async function handleSignIn(user: {
 
 import { cookies, headers } from "next/headers";
 
-const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
+const {
+  handlers,
+  signIn,
+  signOut,
+  auth: originalAuth,
+} = NextAuth({
   ...authConfig,
   // ... existing config ...
 
@@ -335,7 +340,11 @@ const { handlers, signIn, signOut, auth: originalAuth } = NextAuth({
       const baseCallbacks = authConfig.callbacks;
       if (baseCallbacks?.jwt) {
         const result = await baseCallbacks.jwt(
-          { token, user, trigger } as Parameters<typeof baseCallbacks.jwt>[0],
+          {
+            token,
+            user,
+            trigger,
+          } as Parameters<typeof baseCallbacks.jwt>[0],
         );
         if (result) {
           token = result;
@@ -408,7 +417,8 @@ async function getMockE2ESession() {
     id = "admin-user-id";
     role = UserRole.ADMIN;
   } else if (
-    email === "newuser@example.com" || email === "no-orders@example.com"
+    email === "newuser@example.com" ||
+    email === "no-orders@example.com"
   ) {
     // User ID that has no orders in E2E seed data - for testing empty states
     id = "new-user-id";
@@ -453,7 +463,9 @@ export const auth = async () => {
     if (cookieStore) {
       const sessionToken = cookieStore.get("authjs.session-token")?.value;
       if (sessionToken === "mock-session-token") {
-        console.log("[Auth] E2E bypass: Mock session token found, returning mock session");
+        console.log(
+          "[Auth] E2E bypass: Mock session token found, returning mock session",
+        );
         return getMockE2ESession();
       }
     }
@@ -475,41 +487,32 @@ export const auth = async () => {
     !isStagingDomain;
   const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
 
-  console.log("[Auth] Environment check:", {
-    isProduction,
-    hasE2ESecret: !!e2eBypassSecret,
-    nodeEnv: process.env.NODE_ENV,
-    vercelEnv: process.env.VERCEL_ENV,
-    host,
-    isStagingDomain,
-  });
-
   if (!isProduction && e2eBypassSecret) {
     const bypassHeader = headersList?.get("x-e2e-auth-bypass");
 
-    console.log("[Auth] E2E bypass header check:", {
-      hasHeader: !!bypassHeader,
-      headerValue: bypassHeader ? `${bypassHeader.substring(0, 8)}...` : undefined,
-      expectedValue: e2eBypassSecret ? `${e2eBypassSecret.substring(0, 8)}...` : undefined,
-    });
-
     if (bypassHeader && constantTimeCompare(bypassHeader, e2eBypassSecret)) {
-      console.log("[Auth] ✓ E2E bypass successful: Header matched secret, returning mock session");
+      // console.log(
+      //   "[Auth] ✓ E2E bypass successful: Header matched secret, returning mock session",
+      // );
       return getMockE2ESession();
     } else if (bypassHeader) {
-      console.error("[Auth] ✗ E2E bypass FAILED: Header present but does not match secret");
+      console.error(
+        "[Auth] ✗ E2E bypass FAILED: Header present but does not match secret",
+      );
     } else {
-      console.log("[Auth] E2E bypass not attempted: No bypass header present");
+      // console.log("[Auth] E2E bypass not attempted: No bypass header present");
     }
   } else {
     if (isProduction) {
       console.log("[Auth] E2E bypass disabled: Production environment");
     } else if (!e2eBypassSecret) {
-      console.warn("[Auth] E2E bypass disabled: E2E_BYPASS_SECRET not configured");
+      console.warn(
+        "[Auth] E2E bypass disabled: E2E_BYPASS_SECRET not configured",
+      );
     }
   }
 
-  console.log("[Auth] Proceeding with standard authentication");
+  // console.log("[Auth] Proceeding with standard authentication");
   return originalAuth();
 };
 export { handlers, signIn, signOut };

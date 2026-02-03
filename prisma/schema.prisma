@@ -534,6 +534,7 @@ model EnhancedImage {
   originalFormat       String
   isPublic             Boolean               @default(false)
   viewCount            Int                   @default(0)
+  tags                 String[]              @default([])
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   shareToken           String?               @unique
@@ -547,6 +548,7 @@ model EnhancedImage {
   @@index([userId, createdAt])
   @@index([isPublic, createdAt])
   @@index([shareToken])
+  @@index([tags])
   @@map("enhanced_images")
 }
 
@@ -555,6 +557,7 @@ model ImageEnhancementJob {
   imageId               String
   userId                String
   tier                  EnhancementTier
+  enhancementType       EnhancementType @default(STANDARD)
   tokensCost            Int
   status                JobStatus
   currentStage          PipelineStage? // Current pipeline stage for progress tracking
@@ -1073,6 +1076,13 @@ enum EnhancementTier {
   TIER_1K
   TIER_2K
   TIER_4K
+}
+
+enum EnhancementType {
+  STANDARD
+  BLEND
+  PIPELINE
+  AUTO_CROP
 }
 
 enum JobStatus {

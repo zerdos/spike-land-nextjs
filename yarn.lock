@@ -7656,7 +7656,7 @@ __metadata:
     "@typescript/ata": "npm:0.9.8"
     "@uidotdev/usehooks": "npm:2.4.1"
     "@vitejs/plugin-react-swc": "npm:4.2.3"
-    ai: "npm:6.0.67"
+    ai: "npm:6.0.68"
     assert: "npm:2.1.0"
     async-mutex: "npm:0.5.0"
     autoprefixer: "npm:10.4.24"
@@ -7681,7 +7681,7 @@ __metadata:
     eslint-plugin-react-refresh: "npm:0.5.0"
     events: "npm:3.3.0"
     fetch-retry: "npm:6.0.0"
-    framer-motion: "npm:12.29.3"
+    framer-motion: "npm:12.30.0"
     globals: "npm:17.3.0"
     happy-dom: "npm:20.4.0"
     html2canvas-pro: "npm:1.6.6"
@@ -7797,7 +7797,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:8.54.0"
     "@vitest/runner": "npm:4.0.18"
     "@vitest/snapshot": "npm:4.0.18"
-    ai: "npm:6.0.67"
+    ai: "npm:6.0.68"
     async-mutex: "npm:0.5.0"
     avl: "npm:2.0.0"
     cross-env: "npm:10.1.0"
@@ -10504,9 +10504,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ai@npm:6.0.67":
-  version: 6.0.67
-  resolution: "ai@npm:6.0.67"
+"ai@npm:6.0.68":
+  version: 6.0.68
+  resolution: "ai@npm:6.0.68"
   dependencies:
     "@ai-sdk/gateway": "npm:3.0.32"
     "@ai-sdk/provider": "npm:3.0.7"
@@ -10514,7 +10514,7 @@ __metadata:
     "@opentelemetry/api": "npm:1.9.0"
   peerDependencies:
     zod: ^3.25.76 || ^4.1.8
-  checksum: 10c9/4c0ae750fe2d4f57e127dc873eeedb114d0ccc7e46efc1ce6cf457cb49f85010758dead0c02011a8cc766cde61147c8e40e3c6f7913ecd72e91888c886bf3ac8
+  checksum: 10c9/5e0cc4d2b6dd0ff174e8b4c43abdf238f38fee8253cc8d23c8d986af585160f70586e69fb8c56bbe7f674f03bf474292fafbe56b5f7240cf356a1ed308a704ed
   languageName: node
   linkType: hard
 
@@ -14633,11 +14633,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"framer-motion@npm:12.29.3":
-  version: 12.29.3
-  resolution: "framer-motion@npm:12.29.3"
+"framer-motion@npm:12.30.0":
+  version: 12.30.0
+  resolution: "framer-motion@npm:12.30.0"
   dependencies:
-    motion-dom: "npm:^12.29.2"
+    motion-dom: "npm:^12.30.0"
     motion-utils: "npm:^12.29.2"
     tslib: "npm:^2.4.0"
   peerDependencies:
@@ -14651,7 +14651,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 10c9/0e3d4c87e29b7ae5dbac91c0b90e8e0a92b7b8e2bec720c145b45c76ca9a1b0b0e14c484824fff54f3f9f331a0311a9858ea83a908fa93a5eeef776a97b48289
+  checksum: 10c9/faaf339468f14ebbe8de8a0efdff0c89175606fd6fcc733ef539ba7d9cb32d278174dc06d666c27814932b41193067f69ff14fce202ce35925e99aa9d6aa9830
   languageName: node
   linkType: hard
 
@@ -16641,9 +16641,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knip@npm:5.82.1":
-  version: 5.82.1
-  resolution: "knip@npm:5.82.1"
+"knip@npm:5.83.0":
+  version: 5.83.0
+  resolution: "knip@npm:5.83.0"
   dependencies:
     "@nodelib/fs.walk": "npm:^1.2.3"
     fast-glob: "npm:^3.3.3"
@@ -16663,7 +16663,7 @@ __metadata:
   bin:
     knip: bin/knip.js
     knip-bun: bin/knip-bun.js
-  checksum: 10c9/0245312c03dd1750baeecdc0a7e7a35c6c81382b7929c4bec20cbd19502f54d96dffd420f7b70af4571036695bc127a4b3c89af30b324c37bcef09bbb23c8e62
+  checksum: 10c9/71e7a2abcd33c24544f6c880ac5783b51a6adf881ce2376370c3834927cce0fe7a2875b3734f17fc4dde93563869fa1d3e937c15ec6145cc6d7c2e5d01f8d233
   languageName: node
   linkType: hard
 
@@ -18254,12 +18254,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"motion-dom@npm:^12.29.2":
-  version: 12.29.2
-  resolution: "motion-dom@npm:12.29.2"
+"motion-dom@npm:^12.30.0":
+  version: 12.30.0
+  resolution: "motion-dom@npm:12.30.0"
   dependencies:
     motion-utils: "npm:^12.29.2"
-  checksum: 10c9/d1eeb6840363cc2b4d1e1c2d9a91becc117bb64747482b1a99f7f2d4da709f049c9544c3a566c641cada368037019c0fafd3e7cf56f0477e88d65e9886bcdc40
+  checksum: 10c9/2d32bb8b5ee859707c3e1ec5ed98dababeed36fbd6de819dce4613bdac9d49093e5cc3b09d3a92f2884a8308ffc0a9bf5de68a0da88d162ffea841ec65c778ed
   languageName: node
   linkType: hard
 
@@ -24468,7 +24468,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:7.0.1"
     expr-eval-fork: "npm:3.0.3"
     fast-xml-parser: "npm:5.3.4"
-    framer-motion: "npm:12.29.3"
+    framer-motion: "npm:12.30.0"
     gray-matter: "npm:4.0.3"
     happy-dom: "npm:20.4.0"
     husky: "npm:9.1.7"
@@ -24476,7 +24476,7 @@ __metadata:
     jsdom: "npm:28.0.0"
     jspdf: "npm:4.1.0"
     jstat: "npm:1.9.6"
-    knip: "npm:5.82.1"
+    knip: "npm:5.83.0"
     lucide-react: "npm:0.563.0"
     ms: "npm:2.1.3"
     nanoid: "npm:5.1.6"

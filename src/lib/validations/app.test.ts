@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  appCodespaceLinkSchema,
   appCreationSchema,
+  appSettingsUpdateSchema,
   MONETIZATION_MODELS,
   step1Schema,
   step2Schema,
@@ -413,6 +415,125 @@ describe("App Validation Schemas", () => {
       expect(() => {
         (MONETIZATION_MODELS as unknown as string[]).push("new-model");
       }).not.toThrow();
+    });
+  });
+
+  describe("codespaceId validation", () => {
+    describe("appCreationSchema codespaceId", () => {
+      const validBase = {
+        name: "My App",
+        description: "This is a test app description",
+        requirements: "The app needs to have authentication and user profiles",
+        monetizationModel: "free" as const,
+      };
+
+      it("should accept valid IDs with dots", () => {
+        const result = appCreationSchema.safeParse({
+          ...validBase,
+          codespaceId: "vibrant.wave.snap.kqii",
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should accept valid IDs with hyphens", () => {
+        const result = appCreationSchema.safeParse({
+          ...validBase,
+          codespaceId: "my-cool-codespace",
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should accept valid IDs with underscores", () => {
+        const result = appCreationSchema.safeParse({
+          ...validBase,
+          codespaceId: "my_codespace",
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should accept mixed separators", () => {
+        const result = appCreationSchema.safeParse({
+          ...validBase,
+          codespaceId: "my-app.v2_beta",
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should reject invalid characters", () => {
+        const invalidIds = ["test@id", "test#id", "test/id", "test\\id"];
+
+        invalidIds.forEach((codespaceId) => {
+          const result = appCreationSchema.safeParse({
+            ...validBase,
+            codespaceId,
+          });
+          expect(result.success).toBe(false);
+          if (!result.success) {
+            expect(result.error.issues[0]!.message).toBe(
+              "Codespace ID can only contain letters, numbers, hyphens, underscores, and dots",
+            );
+          }
+        });
+      });
+
+      it("should reject IDs over 100 characters", () => {
+        const result = appCreationSchema.safeParse({
+          ...validBase,
+          codespaceId: "a".repeat(101),
+        });
+        expect(result.success).toBe(false);
+      });
+    });
+
+    describe("appSettingsUpdateSchema codespaceId", () => {
+      it("should accept valid IDs with dots", () => {
+        const result = appSettingsUpdateSchema.safeParse({
+          codespaceId: "vibrant.wave.snap.kqii",
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should reject invalid characters", () => {
+        const result = appSettingsUpdateSchema.safeParse({
+          codespaceId: "test@invalid",
+        });
+        expect(result.success).toBe(false);
+      });
+    });
+
+    describe("appCodespaceLinkSchema codespaceId", () => {
+      it("should accept valid IDs with dots", () => {
+        const result = appCodespaceLinkSchema.safeParse({
+          codespaceId: "vibrant.wave.snap.kqii",
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should accept mixed separators", () => {
+        const result = appCodespaceLinkSchema.safeParse({
+          codespaceId: "my-app.v2_beta",
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should reject invalid characters", () => {
+        const result = appCodespaceLinkSchema.safeParse({
+          codespaceId: "test@invalid",
+        });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error.issues[0]!.message).toBe(
+            "Codespace ID can only contain letters, numbers, hyphens, underscores, and dots",
+          );
+        }
+      });
+
+      it("should reject IDs over 100 characters", () => {
+        const result = appCodespaceLinkSchema.safeParse({
+          codespaceId: "a".repeat(101),
+        });
+        expect(result.success).toBe(false);
+      });
     });
   });
 });

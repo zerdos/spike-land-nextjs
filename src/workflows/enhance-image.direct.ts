@@ -28,6 +28,7 @@ import {
   type ReferenceImageData,
 } from "@/lib/ai/gemini-client";
 import { retryWithBackoff } from "@/lib/errors/retry-logic";
+import { applyAutoTags } from "@/lib/images/auto-tagger";
 import {
   detectMimeType,
   getDefaultDimensions,
@@ -463,6 +464,10 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
       geminiTemp: DEFAULT_TEMPERATURE,
     },
   });
+
+  // Step 11: Auto-tag the image
+  console.log(`[Direct Enhancement] Auto-tagging image ${input.imageId}`);
+  await applyAutoTags(input.imageId);
 
   return uploadResult.url;
 }
