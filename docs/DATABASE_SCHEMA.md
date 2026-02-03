@@ -2151,6 +2151,24 @@ erDiagram
   String resolvedById FK "nullable"
   DateTime createdAt
 }
+"learnit_content" {
+  String id PK
+  String path
+  String slug UK
+  String parentSlug "nullable"
+  String title
+  String description
+  String content
+  String wikiLinks
+  LearnItStatus status
+  DateTime generatedAt
+  String aiModel
+  String generatedById FK "nullable"
+  Int viewCount
+  DateTime createdAt
+  DateTime updatedAt
+  DateTime deletedAt "nullable"
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
@@ -2379,6 +2397,7 @@ erDiagram
 "creative_performance" }o--|| "creative_variants" : variant
 "creative_fatigue_alerts" }o--|| "creative_variants" : variant
 "creative_fatigue_alerts" }o--o| "users" : resolvedBy
+"learnit_content" }o--o| "users" : generatedBy
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
 "_ConnectionToConnectionTag" }o--|| "connection_tags" : ConnectionTag
 ```
@@ -5082,6 +5101,27 @@ Properties as follows:
 - `resolvedAt`:
 - `resolvedById`:
 - `createdAt`:
+
+### `learnit_content`
+
+Properties as follows:
+
+- `id`:
+- `path`:
+- `slug`:
+- `parentSlug`:
+- `title`:
+- `description`:
+- `content`:
+- `wikiLinks`:
+- `status`:
+- `generatedAt`:
+- `aiModel`:
+- `generatedById`:
+- `viewCount`:
+- `createdAt`:
+- `updatedAt`:
+- `deletedAt`:
 
 ### `_ConnectionToConnectionTag`
 

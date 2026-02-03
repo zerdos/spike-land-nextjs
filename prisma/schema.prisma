@@ -115,6 +115,9 @@ model User {
   // Claude Code agents
   agents ClaudeCodeAgent[]
 
+  // LearnIt Content relation
+  learnItContent    LearnItContent[]
+
   @@map("users")
 }
 
@@ -5211,4 +5214,52 @@ enum FatigueSeverity {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+// LearnIt - Interactive Learning Wiki
+model LearnItContent {
+  id            String   @id @default(cuid())
+
+  // Path hierarchy (e.g., ["programming", "javascript", "react"])
+  path          String[]
+  slug          String   @unique  // Full path as slug: "programming/javascript/react"
+  parentSlug    String?  // Parent topic for breadcrumbs: "programming/javascript"
+
+  // Content
+  title         String
+  description   String   @db.Text
+  content       String   @db.Text  // MDX content
+
+  // Wiki links extracted from content
+  wikiLinks     String[]  // Links to other topics mentioned in [[...]]
+
+  // Status for moderation/generation state
+  status        LearnItStatus @default(PUBLISHED)
+
+  // Metadata
+  generatedAt   DateTime  @default(now())
+  aiModel       String    @default("gemini-3-flash-preview")
+  generatedById String?
+  generatedBy   User?     @relation(fields: [generatedById], references: [id])
+
+  // Analytics
+  viewCount     Int       @default(0)
+
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // Soft delete
+
+  @@index([slug])
+  @@index([path])
+  @@index([viewCount])
+  @@index([status])
+  @@map("learnit_content")
+}
+
+enum LearnItStatus {
+  GENERATING  // Currently being generated
+  PUBLISHED   // Visible to all
+  HIDDEN      // Admin hidden
+  FAILED      // Generation failed
 }
