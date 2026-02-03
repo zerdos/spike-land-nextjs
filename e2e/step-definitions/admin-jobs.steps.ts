@@ -534,22 +534,16 @@ When("I click on a job in the list", async function(this: CustomWorld) {
 When("I click on the completed job", async function(this: CustomWorld) {
   // Wait for network to settle and completed job items to appear
   await this.page.waitForLoadState("networkidle").catch(() => {});
-
-  // Try multiple selectors for completed jobs
-  const completedJobByStatus = this.page.locator(
+  const jobItem = await waitForElementWithRetry(
+    this.page,
     '[data-testid="job-list-item"][data-job-status="COMPLETED"]',
+    { timeout: TIMEOUTS.LONG },
   );
-  const completedJobByText = this.page.locator('[data-testid="job-list-item"]').filter({
-    has: this.page.getByText(/COMPLETED/i),
-  });
-
-  const jobItem = completedJobByStatus.or(completedJobByText).first();
-  await expect(jobItem).toBeVisible({ timeout: TIMEOUTS.LONG });
 
   // Retry logic for selection
   await expect(async () => {
     // Click using regular click method
-    await jobItem.click();
+    await jobItem.first().click();
 
     // Check if details panel appeared
     const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
