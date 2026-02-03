@@ -5,7 +5,7 @@ import { GalleryGrid } from "@/components/gallery/GalleryGrid";
 import { Button } from "@/components/ui/button";
 import type { EnhancedImage, ImageEnhancementJob, User } from "@prisma/client";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface PublicImage extends EnhancedImage {
   enhancementJobs: ImageEnhancementJob[];
@@ -30,7 +30,7 @@ export function GalleryClient() {
   // Derived from loaded images for now
   const allTags = Array.from(new Set(images.flatMap(img => img.tags))).slice(0, 20);
 
-  const fetchImages = async (pageNum: number, tags: string[] = []) => {
+  const fetchImages = useCallback(async (pageNum: number, tags: string[] = []) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -52,12 +52,12 @@ export function GalleryClient() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchImages(1, activeTags);
     setPage(1);
-  }, [activeTags]); // Re-fetch when filter changes
+  }, [activeTags, fetchImages]); // Re-fetch when filter changes
 
   const loadMore = () => {
     const nextPage = page + 1;
