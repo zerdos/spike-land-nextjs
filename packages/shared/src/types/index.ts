@@ -419,16 +419,3 @@ export type {
   RecommendBudgetResponse,
   TargetingSuggestion,
 } from "./organic-to-ad";
-<<<<<<< HEAD
-=======
-
-// Boost Analytics Types
-export type {
-  BoostCampaignData,
-  BoostEffectivenessAnalysis,
-  BoostPerformanceMetrics,
-  BoostStatus,
-  OrganicMetricsSnapshot,
-  TargetingCriteria,
-} from "./boost-analytics";
->>>>>>> c39bb716 (fix: ups)
