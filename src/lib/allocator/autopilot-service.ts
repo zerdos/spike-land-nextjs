@@ -1,4 +1,4 @@
-import { decryptToken } from "@/lib/crypto/token-encryption";
+import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
 import { type AllocatorPlatform, Prisma } from "@prisma/client";
 import { FeatureFlagService } from "../feature-flags/feature-flag-service";
@@ -800,7 +800,7 @@ async function updatePlatformBudget(
       throw new Error("Facebook account not connected for workspace");
     }
 
-    const accessToken = decryptToken(socialAccount.accessTokenEncrypted);
+    const accessToken = safeDecryptToken(socialAccount.accessTokenEncrypted);
     const client = new FacebookMarketingApiClient(accessToken);
     await client.updateCampaignBudget(platformCampaignId, newBudgetCents);
   } else if (platform === "GOOGLE_ADS") {
@@ -816,7 +816,7 @@ async function updatePlatformBudget(
       throw new Error("Google Ads account not connected for workspace");
     }
 
-    const accessToken = decryptToken(marketingAccount.accessToken);
+    const accessToken = safeDecryptToken(marketingAccount.accessToken);
     const client = new GoogleAdsAllocatorClient(
       accessToken,
       marketingAccount.accountId,
