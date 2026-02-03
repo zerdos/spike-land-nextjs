@@ -6,6 +6,7 @@
  */
 
 import crypto from "crypto";
+import { tryCatchSync } from "@/lib/try-catch";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
@@ -61,8 +62,6 @@ export function encryptToken(plaintext: string): string {
 
   return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
 }
-
-import { tryCatchSync } from "@/lib/try-catch";
 
 /**
  * Decrypt an encrypted token

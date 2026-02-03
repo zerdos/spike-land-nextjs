@@ -60,6 +60,7 @@ export function SitemapPreviewClient({
 
   // Ref to track loading state without triggering re-renders
   const loadingRef = useRef<Set<string>>(new Set());
+  const lastLoadTimeRef = useRef<number>(0);
 
   // Combine sitemap paths with tracked paths (deduped) and build initial state
   const allPaths = useMemo(() => {
@@ -119,9 +120,20 @@ export function SitemapPreviewClient({
     const availableSlots = MAX_CONCURRENT_LOADS - loadingRef.current.size;
     const pathsToStart = pathsToLoad.slice(0, availableSlots);
 
-    pathsToStart.forEach((path) => {
-      startLoadingPath(path);
-    });
+    if (pathsToStart.length > 0) {
+      const now = Date.now();
+      const timeSinceLastLoad = now - lastLoadTimeRef.current;
+      const delay = Math.max(0, 1000 - timeSinceLastLoad);
+
+      const timeoutId = setTimeout(() => {
+        pathsToStart.forEach((path) => {
+          lastLoadTimeRef.current = Date.now();
+          startLoadingPath(path);
+        });
+      }, delay);
+
+      return () => clearTimeout(timeoutId);
+    }
   }, [allPaths, pathStates, startLoadingPath]);
 
   const handleAddPath = async () => {
