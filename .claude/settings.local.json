@@ -39,14 +39,17 @@
       "Bash(yarn test:run:*)",
       "Bash(yarn build:*)",
       "Bash(xargs:*)",
-      "Bash(gh issue list:*)"
+      "Bash(gh issue list:*)",
+      "Bash(npm install:*)",
+      "Bash(neonctl auth:*)",
+      "Bash(neonctl branches create:*)"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "playwright",
     "spike-land"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }
