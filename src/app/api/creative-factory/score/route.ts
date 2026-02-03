@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
-import { type NextRequest, NextResponse } from "next/server";
 import { scoreVariant } from "@/lib/creative-factory/scorers/variant-scorer";
+import logger from "@/lib/logger";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const scoreSchema = z.object({
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
     if (error instanceof z.ZodError) {
       return new NextResponse(JSON.stringify(error.issues), { status: 400 });
     }
-    console.error("Variant scoring error:", error);
+    logger.error("Variant scoring error:", { error });
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }

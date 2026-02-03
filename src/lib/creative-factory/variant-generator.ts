@@ -1,7 +1,7 @@
+import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { generateCopyVariants } from "./generators/copy-generator";
 import { suggestImagesForCopy } from "./generators/image-suggester";
-import logger from "@/lib/logger";
 
 export interface GenerationJobParams {
   userId: string;
@@ -19,8 +19,8 @@ export interface GenerationJobParams {
  * Creates the CreativeSet record for a generation job.
  */
 export async function createGenerationJob(
-  params: GenerationJobParams
-): Promise<{ id: string; name: string; contentToUse: string; audienceToUse: string }> {
+  params: GenerationJobParams,
+): Promise<{ id: string; name: string; contentToUse: string; audienceToUse: string; }> {
   const { briefId, seedContent, userId, count, tone, targetLength, targetAudience } = params;
 
   if (!briefId && !seedContent) {
@@ -73,7 +73,7 @@ export async function createGenerationJob(
     id: set.id,
     name: setName,
     contentToUse,
-    audienceToUse
+    audienceToUse,
   };
 }
 
@@ -85,7 +85,7 @@ export async function processGenerationJob(
   setId: string,
   params: GenerationJobParams,
   seedContent: string,
-  audience: string
+  audience: string,
 ) {
   try {
     await prisma.creativeSet.update({
@@ -141,13 +141,13 @@ export async function processGenerationJob(
           if (suggestions.length > 0) {
             const suggestion = suggestions[0];
             if (suggestion) { // TS check for noUncheckedIndexedAccess
-                await prisma.creativeVariant.update({
+              await prisma.creativeVariant.update({
                 where: { id: variant.id },
                 data: {
-                    aiPrompt: suggestion.imagePrompt,
-                    // We could also store style/reasoning in a JSON field if we added one
+                  aiPrompt: suggestion.imagePrompt,
+                  // We could also store style/reasoning in a JSON field if we added one
                 },
-                });
+              });
             }
           }
         } catch (error) {
@@ -165,7 +165,6 @@ export async function processGenerationJob(
         progress: 100,
       },
     });
-
   } catch (error) {
     logger.error("Generation job failed", { setId, error });
     await prisma.creativeSet.update({
@@ -183,7 +182,7 @@ export async function processGenerationJob(
  * Warning: Uses unawaited background promise. Use createGenerationJob + processGenerationJob with queue/after() instead.
  */
 export async function startVariantGeneration(
-  params: GenerationJobParams
+  params: GenerationJobParams,
 ): Promise<string> {
   const { id, contentToUse, audienceToUse } = await createGenerationJob(params);
 

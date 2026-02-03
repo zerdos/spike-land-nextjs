@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { startVariantGeneration } from "../variant-generator";
 import prisma from "@/lib/prisma";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as copyGenerator from "../generators/copy-generator";
+import { startVariantGeneration } from "../variant-generator";
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -49,7 +49,7 @@ describe("startVariantGeneration", () => {
           seedContent: "Test content",
           jobStatus: "PENDING",
         }),
-      })
+      }),
     );
   });
 
@@ -77,7 +77,7 @@ describe("startVariantGeneration", () => {
         data: expect.objectContaining({
           name: "Variants for My Brief",
         }),
-      })
+      }),
     );
   });
 });

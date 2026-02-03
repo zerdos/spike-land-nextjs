@@ -16,15 +16,27 @@ export interface SignificanceResult {
  */
 export function calculateSignificance(
   control: VariantStats,
-  variant: VariantStats
+  variant: VariantStats,
 ): SignificanceResult {
-  const p1 = control.conversions / control.visitors;
-  const p2 = variant.conversions / variant.visitors;
   const n1 = control.visitors;
   const n2 = variant.visitors;
 
+  // Handle edge cases (divide by zero)
+  if (n1 === 0 || n2 === 0) {
+    return {
+      isSignificant: false,
+      confidenceLevel: 0,
+      winner: null,
+      lift: 0,
+      pValue: 1,
+    };
+  }
+
+  const p1 = control.conversions / control.visitors;
+  const p2 = variant.conversions / variant.visitors;
+
   // Lift
-  const lift = (p2 - p1) / p1;
+  const lift = p1 === 0 ? 0 : (p2 - p1) / p1;
 
   // Pooled probability
   const pPool = (control.conversions + variant.conversions) / (n1 + n2);
@@ -37,7 +49,12 @@ export function calculateSignificance(
 
   // P-value (two-tailed)
   // Approx for normal distribution
-  const pValue = 2 * (1 - cdf(Math.abs(z)));
+  let pValue = 1;
+  const absZ = Math.abs(z);
+
+  if (!isNaN(absZ)) {
+    pValue = 2 * (1 - cdf(absZ));
+  }
 
   const confidenceLevel = 1 - pValue;
   const isSignificant = confidenceLevel >= 0.95;
@@ -45,17 +62,6 @@ export function calculateSignificance(
   let winner: "control" | "variant" | null = null;
   if (isSignificant) {
     winner = lift > 0 ? "variant" : "control";
-  }
-
-  // Handle edge cases (divide by zero)
-  if (n1 === 0 || n2 === 0 || isNaN(z)) {
-    return {
-      isSignificant: false,
-      confidenceLevel: 0,
-      winner: null,
-      lift: 0,
-      pValue: 1,
-    };
   }
 
   return {
@@ -71,8 +77,7 @@ export function calculateSignificance(
 function cdf(x: number): number {
   const t = 1 / (1 + 0.2316419 * Math.abs(x));
   const d = 0.3989423 * Math.exp((-x * x) / 2);
-  const prob =
-    d *
+  const prob = d *
     t *
     (0.3193815 +
       t *

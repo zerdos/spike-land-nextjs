@@ -24,7 +24,7 @@ export interface VariantScore {
 }
 
 export async function scoreVariant(
-  params: ScoreVariantParams
+  params: ScoreVariantParams,
 ): Promise<VariantScore> {
   logger.info("Scoring variant");
 

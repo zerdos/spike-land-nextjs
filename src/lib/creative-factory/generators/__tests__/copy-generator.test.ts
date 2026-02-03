@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { generateCopyVariants } from "../copy-generator";
 import * as geminiClient from "@/lib/ai/gemini-client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { generateCopyVariants } from "../copy-generator";
 
 // Mock the gemini client
 vi.mock("@/lib/ai/gemini-client", () => ({
@@ -49,7 +49,7 @@ describe("generateCopyVariants", () => {
       expect.objectContaining({
         prompt: expect.stringContaining("Test seed content"),
         systemPrompt: expect.stringContaining("marketing copywriter"),
-      })
+      }),
     );
   });
 
@@ -64,11 +64,11 @@ describe("generateCopyVariants", () => {
 
     const calls = (geminiClient.generateStructuredResponse as any).mock.calls;
     if (!calls || !calls[0]) {
-        throw new Error("Expected geminiClient.generateStructuredResponse to be called");
+      throw new Error("Expected geminiClient.generateStructuredResponse to be called");
     }
     const firstCall = calls[0];
     if (!firstCall || !firstCall[0]) {
-         throw new Error("Expected call arguments to be present");
+      throw new Error("Expected call arguments to be present");
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -79,11 +79,11 @@ describe("generateCopyVariants", () => {
 
   it("should throw error on failure", async () => {
     (geminiClient.generateStructuredResponse as any).mockRejectedValue(
-      new Error("API Error")
+      new Error("API Error"),
     );
 
     await expect(
-      generateCopyVariants({ seedContent: "Test" })
+      generateCopyVariants({ seedContent: "Test" }),
     ).rejects.toThrow("Failed to generate copy variants");
   });
 });

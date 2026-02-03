@@ -1,10 +1,12 @@
 import { auth } from "@/auth";
-import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { type NextRequest, NextResponse } from "next/server";
+
+import logger from "@/lib/logger";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ setId: string }> }
+  { params }: { params: Promise<{ setId: string; }>; },
 ) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -28,14 +30,14 @@ export async function GET(
     }
 
     if (set.generatedById !== session.user.id) {
-        // Optional: Check workspace access instead if shared
-        // For now, strict user ownership check
-        return new NextResponse("Forbidden", { status: 403 });
+      // Optional: Check workspace access instead if shared
+      // For now, strict user ownership check
+      return new NextResponse("Forbidden", { status: 403 });
     }
 
     return NextResponse.json(set);
   } catch (error) {
-    console.error("Job status error:", error);
+    logger.error("Job status error:", { error });
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }

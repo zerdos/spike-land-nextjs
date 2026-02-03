@@ -19,7 +19,7 @@ interface ImageSuggestionResponse {
 }
 
 export async function suggestImagesForCopy(
-  params: ImageSuggestionParams
+  params: ImageSuggestionParams,
 ): Promise<ImageSuggestion[]> {
   const count = params.count || 3;
 
@@ -52,6 +52,10 @@ The output must be a JSON object with a "suggestions" array.
       systemPrompt,
       temperature: 0.7,
     });
+
+    if (!response?.suggestions) {
+      throw new Error("Invalid response: missing suggestions array");
+    }
 
     return response.suggestions;
   } catch (error) {

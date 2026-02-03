@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { suggestImagesForCopy } from "../image-suggester";
 import * as geminiClient from "@/lib/ai/gemini-client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { suggestImagesForCopy } from "../image-suggester";
 
 vi.mock("@/lib/ai/gemini-client", () => ({
   generateStructuredResponse: vi.fn(),
@@ -35,11 +35,11 @@ describe("suggestImagesForCopy", () => {
 
     const calls = (geminiClient.generateStructuredResponse as any).mock.calls;
     if (!calls || !calls[0]) {
-        throw new Error("Expected geminiClient.generateStructuredResponse to be called");
+      throw new Error("Expected geminiClient.generateStructuredResponse to be called");
     }
     const firstCall = calls[0];
-     if (!firstCall || !firstCall[0]) {
-         throw new Error("Expected call arguments to be present");
+    if (!firstCall || !firstCall[0]) {
+      throw new Error("Expected call arguments to be present");
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -50,11 +50,11 @@ describe("suggestImagesForCopy", () => {
 
   it("should handle error", async () => {
     (geminiClient.generateStructuredResponse as any).mockRejectedValue(
-      new Error("API Error")
+      new Error("API Error"),
     );
 
     await expect(
-      suggestImagesForCopy({ copyText: "Test" })
+      suggestImagesForCopy({ copyText: "Test" }),
     ).rejects.toThrow("Failed to generate image suggestions");
   });
 });

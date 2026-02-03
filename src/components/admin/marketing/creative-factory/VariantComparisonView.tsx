@@ -1,7 +1,7 @@
 "use client";
 
-import { type CreativeVariant } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { type CreativeVariant } from "@prisma/client";
 
 interface VariantComparisonViewProps {
   variants: CreativeVariant[];

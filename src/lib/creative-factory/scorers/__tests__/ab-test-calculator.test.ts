@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { calculateSignificance } from "../ab-test-calculator";
 
 describe("calculateSignificance", () => {
@@ -7,7 +7,7 @@ describe("calculateSignificance", () => {
     // Variant: 15% conversion (150/1000)
     const result = calculateSignificance(
       { visitors: 1000, conversions: 100 },
-      { visitors: 1000, conversions: 150 }
+      { visitors: 1000, conversions: 150 },
     );
 
     expect(result.isSignificant).toBe(true);
@@ -21,7 +21,7 @@ describe("calculateSignificance", () => {
     // Variant: 10.5%
     const result = calculateSignificance(
       { visitors: 1000, conversions: 100 },
-      { visitors: 1000, conversions: 105 }
+      { visitors: 1000, conversions: 105 },
     );
 
     expect(result.isSignificant).toBe(false);
@@ -31,7 +31,7 @@ describe("calculateSignificance", () => {
   it("should handle edge cases", () => {
     const result = calculateSignificance(
       { visitors: 0, conversions: 0 },
-      { visitors: 1000, conversions: 100 }
+      { visitors: 1000, conversions: 100 },
     );
     expect(result.isSignificant).toBe(false);
   });

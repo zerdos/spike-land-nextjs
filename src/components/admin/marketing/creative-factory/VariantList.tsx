@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { type CreativeSet, type CreativeVariant } from "@prisma/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { type CreativeSet, type CreativeVariant } from "@prisma/client";
 import { Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface VariantListProps {
   jobId: string;
@@ -18,9 +18,21 @@ export function VariantList({ jobId }: VariantListProps) {
   const [data, setData] = useState<JobData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollCountRef = useRef(0);
+  const MAX_POLLS = 150;
 
   useEffect(() => {
     const fetchData = async () => {
+      pollCountRef.current++;
+      if (pollCountRef.current >= MAX_POLLS) {
+        setError("Job timed out - please refresh to check status");
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        return;
+      }
+
       try {
         const response = await fetch(`/api/creative-factory/jobs/${jobId}`);
         if (!response.ok) throw new Error("Failed to fetch job");
@@ -37,8 +49,8 @@ export function VariantList({ jobId }: VariantListProps) {
         console.error(err);
         setError("Failed to load variants");
         if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
       }
     };
@@ -47,9 +59,9 @@ export function VariantList({ jobId }: VariantListProps) {
     intervalRef.current = setInterval(fetchData, 2000); // Poll every 2s
 
     return () => {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
   }, [jobId]);
 
@@ -75,13 +87,15 @@ export function VariantList({ jobId }: VariantListProps) {
                 Variant {variant.variantNumber}
               </CardTitle>
               <div className="flex gap-2">
-                <Badge variant="outline">{variant.tone}</Badge>
-                <Badge variant="secondary">{variant.length}</Badge>
+                {variant.tone && <Badge variant="outline">{variant.tone}</Badge>}
+                {variant.length && <Badge variant="secondary">{variant.length}</Badge>}
               </div>
             </CardHeader>
             <CardContent className="space-y-4 flex-1">
               <div>
-                <span className="text-xs font-semibold text-muted-foreground uppercase">Headline</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase">
+                  Headline
+                </span>
                 <p className="font-medium">{variant.headline}</p>
               </div>
               <div>
@@ -96,7 +110,9 @@ export function VariantList({ jobId }: VariantListProps) {
               )}
               {variant.aiPrompt && (
                 <div className="mt-4 pt-4 border-t">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase">Image Prompt</span>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">
+                    Image Prompt
+                  </span>
                   <p className="text-xs text-muted-foreground italic">{variant.aiPrompt}</p>
                 </div>
               )}

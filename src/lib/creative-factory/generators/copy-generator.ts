@@ -24,7 +24,7 @@ interface CopyGenerationResponse {
 }
 
 export async function generateCopyVariants(
-  params: CopyGenerationParams
+  params: CopyGenerationParams,
 ): Promise<GeneratedCopyVariant[]> {
   const count = params.count || 3;
   const tone = params.tone || "balanced";
@@ -67,6 +67,10 @@ The output must be a JSON object with a "variants" array.
       systemPrompt,
       temperature: 0.7, // Slightly higher for creativity
     });
+
+    if (!response?.variants) {
+      throw new Error("Invalid response: missing variants array");
+    }
 
     return response.variants;
   } catch (error) {

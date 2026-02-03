@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { scoreVariant } from "../variant-scorer";
 import * as geminiClient from "@/lib/ai/gemini-client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { scoreVariant } from "../variant-scorer";
 
 vi.mock("@/lib/ai/gemini-client", () => ({
   generateStructuredResponse: vi.fn(),
@@ -38,7 +38,7 @@ describe("scoreVariant", () => {
 
   it("should handle error by returning zero score", async () => {
     (geminiClient.generateStructuredResponse as any).mockRejectedValue(
-      new Error("API Error")
+      new Error("API Error"),
     );
 
     const result = await scoreVariant({
