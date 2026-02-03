@@ -115,6 +115,9 @@ model User {
   // Claude Code agents
   agents ClaudeCodeAgent[]
 
+  // LearnIt Content relation
+  learnItContent    LearnItContent[]
+
   @@map("users")
 }
 
@@ -5211,4 +5214,170 @@ enum FatigueSeverity {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+// LearnIt - Interactive Learning Wiki
+model LearnItContent {
+  id            String   @id @default(cuid())
+
+  // Path hierarchy (e.g., ["programming", "javascript", "react"])
+  path          String[]
+  slug          String   @unique  // Full path as slug: "programming/javascript/react"
+  parentSlug    String?  // Parent topic for breadcrumbs: "programming/javascript"
+
+  // Content
+  title         String
+  description   String   @db.Text
+  content       String   @db.Text  // MDX content
+
+  // Wiki links extracted from content
+  wikiLinks     String[]  // Links to other topics mentioned in [[...]]
+
+  // Status for moderation/generation state
+  status        LearnItStatus @default(PUBLISHED)
+
+  // Metadata
+  generatedAt   DateTime  @default(now())
+  aiModel       String    @default("gemini-2.5-flash-preview-05-20")
+  generatedById String?
+  generatedBy   User?     @relation(fields: [generatedById], references: [id])
+
+  // Analytics
+  viewCount     Int       @default(0)
+
+  // Graph database relationships
+  outgoingRelations LearnItRelation[] @relation("FromTopic")
+  incomingRelations LearnItRelation[] @relation("ToTopic")
+
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // Soft delete
+
+  @@index([slug])
+  @@index([path])
+  @@index([viewCount])
+  @@index([status])
+  @@map("learnit_content")
+}
+
+// LearnIt Graph Database - Topic Relationships
+model LearnItRelation {
+  id           String              @id @default(cuid())
+  fromTopicId  String
+  toTopicId    String
+  type         LearnItRelationType
+  strength     Float               @default(1.0)  // relationship weight/relevance
+  createdAt    DateTime            @default(now())
+
+  fromTopic    LearnItContent      @relation("FromTopic", fields: [fromTopicId], references: [id], onDelete: Cascade)
+  toTopic      LearnItContent      @relation("ToTopic", fields: [toTopicId], references: [id], onDelete: Cascade)
+
+  @@unique([fromTopicId, toTopicId, type])
+  @@index([fromTopicId])
+  @@index([toTopicId])
+  @@index([type])
+  @@map("learnit_relations")
+}
+
+enum LearnItRelationType {
+  PARENT_CHILD  // Hierarchical parent-child relationship
+  RELATED       // Topically related content
+  PREREQUISITE  // Must understand X before Y
+}
+
+enum LearnItStatus {
+  GENERATING  // Currently being generated
+  PUBLISHED   // Visible to all
+  HIDDEN      // Admin hidden
+  FAILED      // Generation failed
+}
+
+// AI Agency - Portfolio Items
+model AgencyPortfolioItem {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  description  String   @db.Text
+  url          String?  // Live demo URL
+  githubUrl    String?  // Source code URL
+  screenshots  String[] // Array of image URLs
+  technologies String[] // e.g., ["React", "TypeScript", "Tailwind"]
+  category     AgencyPortfolioCategory
+  featured     Boolean  @default(false)
+  sortOrder    Int      @default(0)
+
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([category])
+  @@index([featured])
+  @@map("agency_portfolio_items")
+}
+
+enum AgencyPortfolioCategory {
+  AI_INTEGRATION    // AI-powered features
+  WEB_APP           // Full-stack web applications
+  MOBILE_APP        // Mobile applications
+  PROTOTYPE         // Rapid prototypes / vibe-coded
+  OPEN_SOURCE       // Open source projects
+}
+
+// AI Agency - Customer Personas for Targeted Advertising
+model AgencyPersona {
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  name              String   // e.g., "Frustrated CTO Frank"
+  tagline           String   // Short memorable description
+  demographics      Json     // { age, gender, income, location, platform, jobTitle }
+  psychographics    String[] // Values, attitudes, interests
+  painPoints        String[] // What problems they face
+  triggers          String[] // What makes them seek help
+  primaryHook       String   // Main hook for ad copy
+  adCopyVariations  String[] // Different ad copy options
+  predictedProfit   Float    // Expected LTV for ranking
+  stressLevel       Float    // Urgency/pain level (0-10)
+  rank              Int      // Overall ranking (1 = best target)
+  landingPageSlug   String?  // Links to personalized landing page
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([rank])
+  @@index([predictedProfit])
+  @@map("agency_personas")
+}
+
+// AI Agency - Contact Form Inquiries
+model AgencyInquiry {
+  id              String   @id @default(cuid())
+  name            String
+  email           String
+  company         String?
+  projectType     String?  // e.g., "MVP", "AI Integration", "Legacy Modernization"
+  budget          String?  // e.g., "5k-10k", "10k-25k", "25k+"
+  timeline        String?  // e.g., "ASAP", "1-2 months", "3+ months"
+  description     String   @db.Text
+  source          String?  // UTM source or referrer
+  personaSlug     String?  // If from a persona-targeted landing page
+  status          AgencyInquiryStatus @default(NEW)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("agency_inquiries")
+}
+
+enum AgencyInquiryStatus {
+  NEW           // Just received
+  CONTACTED     // Initial outreach sent
+  QUALIFIED     // Good fit, moving forward
+  PROPOSAL_SENT // Proposal delivered
+  WON           // Converted to client
+  LOST          // Did not convert
 }
