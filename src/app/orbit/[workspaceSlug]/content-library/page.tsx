@@ -30,6 +30,9 @@ export default function ContentLibraryPage() {
   const [detailsPanelOpen, setDetailsPanelOpen] = useState(false);
 
   // Fetch workspace ID from slug
+  // Fetch workspace ID from slug
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     async function fetchWorkspaceId() {
       const { data, error } = await tryCatch(
@@ -41,6 +44,7 @@ export default function ContentLibraryPage() {
 
       if (error) {
         console.error("Failed to fetch workspace:", error);
+        setError("Failed to load workspace. Please try again later.");
         return;
       }
 
@@ -97,6 +101,14 @@ export default function ContentLibraryPage() {
     setSearchQuery("");
     setPage(1);
   };
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-destructive">{error}</p>
+      </div>
+    );
+  }
 
   if (!workspaceId) {
     return (

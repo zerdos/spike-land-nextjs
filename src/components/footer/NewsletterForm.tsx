@@ -16,7 +16,7 @@ const formSchema = z.object({
   }),
 });
 
-function NewsletterFormInner() {
+export function NewsletterFormInner() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
