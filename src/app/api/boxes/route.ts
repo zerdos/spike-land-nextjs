@@ -1,5 +1,4 @@
 import { auth } from "@/auth";
-import { triggerBoxProvisioning } from "@/lib/boxes/provisioning";
 import prisma from "@/lib/prisma";
 import { BoxStatus } from "@prisma/client";
 import { after, NextResponse } from "next/server";
@@ -165,7 +164,12 @@ export async function POST(req: Request) {
   }
 
   // Trigger provisioning asynchronously
-  after(() => triggerBoxProvisioning(box.id));
+  after(async () => {
+    // Dynamic import to avoid loading heavy dependencies (workflow engine) during route initialization
+    // and to isolate the provisioning logic from the main response path.
+    const { triggerBoxProvisioning } = await import("@/lib/boxes/provisioning");
+    await triggerBoxProvisioning(box.id);
+  });
 
   return NextResponse.json(box);
 }

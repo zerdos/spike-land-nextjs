@@ -162,4 +162,19 @@ describe('triggerBoxProvisioning', () => {
       data: { status: BoxStatus.ERROR },
     });
   });
+
+  it('should catch and log unexpected errors', async () => {
+    vi.mocked(prisma.box.findUnique).mockRejectedValue(new Error("DB Connection Error"));
+    const consoleSpy = vi.spyOn(console, 'error');
+
+    await triggerBoxProvisioning('box-123');
+
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Unhandled error'), expect.any(Error));
+
+    // It should try to update status to error, even if findUnique failed (though unlikely to work if DB is down, but the logic is there)
+    expect(prisma.box.update).toHaveBeenCalledWith({
+      where: { id: 'box-123' },
+      data: { status: BoxStatus.ERROR },
+    });
+  });
 });
