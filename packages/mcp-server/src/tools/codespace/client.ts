@@ -9,9 +9,9 @@ const DEFAULT_BASE_URL = "https://testing.spike.land";
 const SPIKE_LAND_BASE_URL = "https://spike.land";
 
 /**
- * Pattern for validating codespace IDs (alphanumeric with hyphens and underscores)
+ * Pattern for validating codespace IDs (alphanumeric with hyphens, underscores, and dots)
  */
-const CODESPACE_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
+const CODESPACE_ID_PATTERN = /^[a-zA-Z0-9_.-]+$/;
 
 /**
  * Validate codespace ID format to prevent path traversal attacks

@@ -491,16 +491,16 @@ export const auth = async () => {
     const bypassHeader = headersList?.get("x-e2e-auth-bypass");
 
     if (bypassHeader && constantTimeCompare(bypassHeader, e2eBypassSecret)) {
-      console.log(
-        "[Auth] ✓ E2E bypass successful: Header matched secret, returning mock session",
-      );
+      // console.log(
+      //   "[Auth] ✓ E2E bypass successful: Header matched secret, returning mock session",
+      // );
       return getMockE2ESession();
     } else if (bypassHeader) {
       console.error(
         "[Auth] ✗ E2E bypass FAILED: Header present but does not match secret",
       );
     } else {
-      console.log("[Auth] E2E bypass not attempted: No bypass header present");
+      // console.log("[Auth] E2E bypass not attempted: No bypass header present");
     }
   } else {
     if (isProduction) {
@@ -512,7 +512,7 @@ export const auth = async () => {
     }
   }
 
-  console.log("[Auth] Proceeding with standard authentication");
+  // console.log("[Auth] Proceeding with standard authentication");
   return originalAuth();
 };
 export { handlers, signIn, signOut };
