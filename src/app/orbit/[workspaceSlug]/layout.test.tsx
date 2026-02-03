@@ -17,13 +17,6 @@ vi.mock("next/navigation", () => ({
   useParams: () => ({ workspaceSlug: "test-workspace" }),
 }));
 
-// Mock QueryProvider
-vi.mock("@/components/providers/QueryProvider", () => ({
-  QueryProvider: ({ children }: { children: React.ReactNode; }) => (
-    <div data-testid="query-provider">{children}</div>
-  ),
-}));
-
 // Mock WorkspaceProvider
 vi.mock("@/components/orbit/WorkspaceContext", () => ({
   WorkspaceProvider: ({ children }: { children: React.ReactNode; }) => (
@@ -45,9 +38,9 @@ vi.mock("@/components/orbit/WorkspaceContext", () => ({
   }),
 }));
 
-// Mock OrbitSidebar
-vi.mock("./OrbitSidebar", () => ({
-  OrbitSidebar: (
+// Mock OrbitSidebarClient (client-side wrapper for OrbitSidebar)
+vi.mock("./OrbitSidebarClient", () => ({
+  OrbitSidebarClient: (
     { userEmail, userName, workspaceSlug }: {
       userEmail?: string | null;
       userName?: string | null;
@@ -109,7 +102,7 @@ describe("OrbitWorkspaceLayout", () => {
 
     render(layout);
 
-    expect(screen.getByTestId("query-provider")).toBeInTheDocument();
+    // QueryProvider is inherited from root layout, not duplicated here
     expect(screen.getByTestId("workspace-provider")).toBeInTheDocument();
     expect(screen.getByTestId("orbit-sidebar")).toBeInTheDocument();
     expect(screen.getByTestId("content")).toBeInTheDocument();

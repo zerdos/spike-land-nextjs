@@ -1,39 +1,15 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
-const formSchema = z.object({
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-});
+import { NewsletterForm } from "./NewsletterForm";
 
 export function Footer() {
   const pathname = usePathname();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
 
   // Hide footer on my-apps routes
   if (pathname?.startsWith("/my-apps")) {
     return null;
-  }
-
-  function onSubmit(_values: z.infer<typeof formSchema>) {
-    // TODO: Wire up to newsletter API endpoint
-    toast.success("Thanks for subscribing!");
-    form.reset();
   }
 
   return (
@@ -57,30 +33,7 @@ export function Footer() {
             <p className="text-sm text-muted-foreground">
               Get the latest updates on new features and AI advancements.
             </p>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="flex w-full max-w-sm items-start gap-2"
-              >
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your email"
-                          {...field}
-                          className="bg-white/5 border-white/10 text-white placeholder:text-muted-foreground/60"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit">Subscribe</Button>
-              </form>
-            </Form>
+            <NewsletterForm />
           </div>
 
           <div className="space-y-4">

@@ -32,11 +32,20 @@ export default function ContentLibraryPage() {
   // Fetch workspace ID from slug
   useEffect(() => {
     async function fetchWorkspaceId() {
-      const { data } = await tryCatch(
-        fetch(`/api/workspaces/by-slug/${workspaceSlug}`).then((r) => r.json()),
+      const { data, error } = await tryCatch(
+        fetch(`/api/workspaces/by-slug/${workspaceSlug}`).then(async (r) => {
+          if (!r.ok) throw new Error("Failed to fetch workspace");
+          return r.json();
+        }),
       );
-      if (data?.workspace?.id) {
-        setWorkspaceId(data.workspace.id);
+
+      if (error) {
+        console.error("Failed to fetch workspace:", error);
+        return;
+      }
+
+      if (data?.id) {
+        setWorkspaceId(data.id);
       }
     }
     fetchWorkspaceId();
