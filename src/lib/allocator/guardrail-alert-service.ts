@@ -1,5 +1,6 @@
 import { sendEmail } from "@/lib/email/client";
 import GuardrailAlertEmail from "@/lib/email/templates/guardrail-alert";
+import { getWorkspacePreferences } from "@/lib/notifications/channel-manager";
 import { postToSlack } from "@/lib/notifications/slack-channel";
 import prisma from "@/lib/prisma";
 import type {
@@ -116,11 +117,9 @@ export class GuardrailAlertService {
       }
 
       // 3. Send Slack Notification (if configured)
-      // TODO(#803): Fetch Slack webhook from workspace notification settings
-      // Currently falls back to global SLACK_WEBHOOK_URL environment variable
-      const slackWebhook = process.env.SLACK_WEBHOOK_URL;
-      if (slackWebhook) {
-        await postToSlack(slackWebhook, {
+      const preferences = await getWorkspacePreferences(alert.workspaceId);
+      if (preferences.channels.slack && preferences.slackWebhookUrl) {
+        await postToSlack(preferences.slackWebhookUrl, {
           text: `*${alert.severity}*: ${alert.message} (${workspace.name})`,
         });
       }
