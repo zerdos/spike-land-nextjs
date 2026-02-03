@@ -119,9 +119,14 @@ export function SitemapPreviewClient({
     const availableSlots = MAX_CONCURRENT_LOADS - loadingRef.current.size;
     const pathsToStart = pathsToLoad.slice(0, availableSlots);
 
-    pathsToStart.forEach((path) => {
-      startLoadingPath(path);
-    });
+    // Throttle the start of new loads
+    const timer = setTimeout(() => {
+      pathsToStart.forEach((path) => {
+        startLoadingPath(path);
+      });
+    }, 250); // Add a small delay to prevent rapid-fire requests
+
+    return () => clearTimeout(timer);
   }, [allPaths, pathStates, startLoadingPath]);
 
   const handleAddPath = async () => {
