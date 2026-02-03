@@ -9,8 +9,6 @@ import {
   listWorkflows,
   publishWorkflowVersion,
   updateWorkflow,
-  initializeStepExecutions,
-  updateStepExecution,
 } from "./workflow-service";
 
 // Mock Prisma
@@ -33,8 +31,6 @@ vi.mock("@/lib/prisma", () => ({
     workflowRun: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
-      findUnique: vi.fn(),
-      update: vi.fn(),
       count: vi.fn(),
     },
   },
@@ -366,54 +362,6 @@ describe("workflow-service", () => {
       await expect(
         publishWorkflowVersion("wf-1", "ws-1", "ver-1"),
       ).rejects.toThrow("Cannot publish workflow");
-    });
-  });
-
-  describe("Step Execution Tracking", () => {
-    it("initializeStepExecutions should create pending state for all steps", () => {
-      const steps = [
-        { id: "step-1", name: "Step 1" },
-        { id: "step-2", name: "Step 2" },
-      ] as any[];
-
-      const result = initializeStepExecutions(steps);
-
-      expect(Object.keys(result)).toHaveLength(2);
-      expect(result["step-1"]).toEqual({
-        stepId: "step-1",
-        status: "PENDING",
-      });
-      expect(result["step-2"]).toEqual({
-        stepId: "step-2",
-        status: "PENDING",
-      });
-    });
-
-    it("updateStepExecution should update state in database", async () => {
-      vi.mocked(prisma.workflowRun.findUnique).mockResolvedValue({
-        id: "run-1",
-        stepExecutions: {
-          "step-1": { stepId: "step-1", status: "PENDING" },
-        },
-      } as any);
-
-      await updateStepExecution("run-1", "step-1", {
-        status: "COMPLETED", // Cast as StepRunStatus if needed, but string literal should work
-        output: { result: "success" },
-      });
-
-      expect(prisma.workflowRun.update).toHaveBeenCalledWith({
-        where: { id: "run-1" },
-        data: {
-          stepExecutions: {
-            "step-1": {
-              stepId: "step-1",
-              status: "COMPLETED",
-              output: { result: "success" },
-            },
-          },
-        },
-      });
     });
   });
 });

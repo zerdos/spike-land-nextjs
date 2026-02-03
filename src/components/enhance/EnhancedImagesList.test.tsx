@@ -135,6 +135,7 @@ const createMockJob = (
   isAnonymous: false,
   altText: null,
   qualityScore: null,
+  enhancementType: "STANDARD",
   ...overrides,
 });
 
@@ -155,6 +156,7 @@ const mockImage: MockEnhancedImage = {
   createdAt: new Date("2024-01-15T10:00:00Z"),
   updatedAt: new Date("2024-01-15T10:00:00Z"),
   enhancementJobs: [],
+  tags: [],
 };
 
 describe("EnhancedImagesList Component", () => {

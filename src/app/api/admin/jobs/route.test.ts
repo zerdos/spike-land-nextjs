@@ -108,6 +108,7 @@ function createMockEnhancementJob(
     isAnonymous: false,
     altText: null,
     qualityScore: null,
+    enhancementType: "STANDARD",
     image: {
       id: "img_12345678901234567890123",
       name: "vacation.jpg",

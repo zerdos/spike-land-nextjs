@@ -11,7 +11,7 @@ import { tryCatch } from "@/lib/try-catch";
 import { validateBase64Size, validateEnhanceRequest } from "@/lib/validations/enhance-image";
 import { handleEnhancementFailure, startEnhancement } from "@/lib/workflows/enhancement-executor";
 import type { EnhanceImageInput } from "@/workflows/enhance-image.shared";
-import { JobStatus } from "@prisma/client";
+import { EnhancementType, JobStatus } from "@prisma/client";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -236,12 +236,17 @@ export async function POST(request: NextRequest) {
   }
 
   // 8. Job Creation
+  const enhancementType: EnhancementType = resolvedBlendSource
+    ? EnhancementType.BLEND
+    : EnhancementType.STANDARD;
+
   const { data: job, error: jobError } = await tryCatch(
     prisma.imageEnhancementJob.create({
       data: {
         imageId,
         userId: session.user.id,
         tier,
+        enhancementType,
         tokensCost: tokenCost,
         status: JobStatus.PROCESSING,
         processingStartedAt: new Date(),

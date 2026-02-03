@@ -255,6 +255,7 @@ erDiagram
   String originalFormat
   Boolean isPublic
   Int viewCount
+  String tags
   DateTime createdAt
   DateTime updatedAt
   String shareToken UK "nullable"
@@ -264,6 +265,7 @@ erDiagram
   String imageId FK
   String userId FK
   EnhancementTier tier
+  EnhancementType enhancementType
   Int tokensCost
   JobStatus status
   PipelineStage currentStage "nullable"
@@ -492,74 +494,6 @@ erDiagram
   String reason "nullable"
   EscalationTrigger triggeredBy
   Json metadata "nullable"
-  DateTime createdAt
-}
-"approval_workflows" {
-  String id PK
-  String workspaceId FK
-  String name
-  String description "nullable"
-  Boolean isActive
-  DateTime createdAt
-  DateTime updatedAt
-}
-"approval_stages" {
-  String id PK
-  String workflowId FK
-  String name
-  Int sequence
-  Json approvers
-  Boolean requireAllApprovers
-  Boolean isOptional
-  DateTime createdAt
-}
-"approval_items" {
-  String id PK
-  String workflowId FK
-  String contentType
-  String contentId
-  ApprovalStatus status
-  Int currentStage "nullable"
-  String submittedById FK
-  DateTime submittedAt
-  DateTime completedAt "nullable"
-}
-"stage_approvals" {
-  String id PK
-  String itemId FK
-  String stageId FK
-  String approverId FK
-  ApprovalDecision decision
-  String note "nullable"
-  DateTime decidedAt
-}
-"content_comments" {
-  String id PK
-  String contentType
-  String contentId
-  String parentId FK "nullable"
-  String authorId FK
-  String content
-  Json mentions "nullable"
-  Boolean isEdited
-  DateTime editedAt "nullable"
-  Boolean isDeleted
-  DateTime deletedAt "nullable"
-  String approvalItemId FK "nullable"
-  DateTime createdAt
-  DateTime updatedAt
-}
-"client_activities" {
-  String id PK
-  String workspaceId FK
-  ClientActivityType type
-  String actorId FK "nullable"
-  String targetType
-  String targetId
-  String title
-  String description "nullable"
-  Json metadata "nullable"
-  Boolean isVisibleToClients
   DateTime createdAt
 }
 "featured_gallery_items" {
@@ -1790,9 +1724,6 @@ erDiagram
   WorkflowRunStatus status
   DateTime startedAt
   DateTime endedAt "nullable"
-  Json stepExecutions "nullable"
-  String triggerType "nullable"
-  Json triggerData "nullable"
 }
 "workflow_run_logs" {
   String id PK
@@ -2198,114 +2129,6 @@ erDiagram
   String resolvedById FK "nullable"
   DateTime createdAt
 }
-"boost_campaigns" {
-  String id PK
-  String workspaceId FK
-  String originalPostId FK "nullable"
-  String campaignId FK
-  DateTime boostedAt
-  String boostedBy
-  String boostReason
-  String boostStrategy
-  Json organicMetrics
-  Json targetingCriteria "nullable"
-  Int initialBudget
-  Int duration
-  BoostStatus status
-  DateTime createdAt
-  DateTime updatedAt
-}
-"boost_performance_snapshots" {
-  String id PK
-  String boostCampaignId FK
-  DateTime snapshotAt
-  Int daysSinceBoosted
-  Int organicImpressions
-  Int organicEngagements
-  Int organicReach
-  Int paidImpressions
-  Int paidClicks
-  Int paidConversions
-  Int paidSpend
-  Float paidCtr
-  Float paidCpa
-  Float paidRoas
-  Int attributedOrganic
-  Int attributedPaid
-  Int attributedOverlap
-  Int incrementalReach
-  Float costPerResult
-  Float totalRoi
-  DateTime createdAt
-}
-"boost_attribution_events" {
-  String id PK
-  String boostCampaignId FK
-  String sessionId "nullable"
-  String userId "nullable"
-  AttributionEventType eventType
-  TouchpointType touchpointType
-  String platform
-  Int eventValue "nullable"
-  Json eventMetadata "nullable"
-  DateTime occurredAt
-  DateTime createdAt
-}
-"boost_ml_training_data" {
-  String id PK
-  String workspaceId FK
-  String boostCampaignId FK,UK
-  Json features
-  Json labels
-  Float dataQualityScore
-  Boolean isTrainingReady
-  DateTime aggregatedAt
-  DateTime createdAt
-  DateTime updatedAt
-}
-"boost_recommendations" {
-  String id PK
-  String workspaceId FK
-  String suggestedPostId FK "nullable"
-  RecommendationType recommendationType
-  Float confidence
-  Int priority
-  Int suggestedBudget
-  Int suggestedDuration
-  DateTime suggestedTiming
-  Json suggestedTargeting
-  Int projectedReach
-  Int projectedConversions
-  Float projectedRoi
-  Json confidenceInterval
-  String reason
-  Json supportingData
-  RecommendationStatus status
-  DateTime appliedAt "nullable"
-  String resultingBoostId "nullable"
-  DateTime createdAt
-  DateTime expiresAt
-}
-"boost_insights" {
-  String id PK
-  String workspaceId FK
-  InsightType insightType
-  InsightCategory category
-  InsightSeverity severity
-  String title
-  String description
-  Json visualization "nullable"
-  Json dataPoints
-  Json comparisonMetrics "nullable"
-  Boolean actionable
-  Json suggestedActions "nullable"
-  DateTime periodStart
-  DateTime periodEnd
-  Boolean acknowledged
-  String acknowledgedBy "nullable"
-  DateTime acknowledgedAt "nullable"
-  DateTime createdAt
-}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
@@ -2357,18 +2180,6 @@ erDiagram
 "audit_retention_policies" }o--o| "workspaces" : workspace
 "inbox_suggested_responses" }o--|| "inbox_items" : inboxItem
 "escalation_events" }o--|| "inbox_items" : inboxItem
-"approval_workflows" }o--|| "workspaces" : workspace
-"approval_stages" }o--|| "approval_workflows" : workflow
-"approval_items" }o--|| "approval_workflows" : workflow
-"approval_items" }o--|| "users" : submittedBy
-"stage_approvals" }o--|| "approval_items" : item
-"stage_approvals" }o--|| "approval_stages" : stage
-"stage_approvals" }o--|| "users" : approver
-"content_comments" }o--o| "content_comments" : parent
-"content_comments" }o--|| "users" : author
-"content_comments" }o--o| "approval_items" : approvalItem
-"client_activities" }o--|| "workspaces" : workspace
-"client_activities" }o--o| "users" : actor
 "featured_gallery_items" }o--o| "enhanced_images" : sourceImage
 "featured_gallery_items" }o--o| "image_enhancement_jobs" : sourceJob
 "featured_gallery_items" }o--|| "users" : creator
@@ -2545,16 +2356,6 @@ erDiagram
 "creative_performance" }o--|| "creative_variants" : variant
 "creative_fatigue_alerts" }o--|| "creative_variants" : variant
 "creative_fatigue_alerts" }o--o| "users" : resolvedBy
-"boost_campaigns" }o--|| "workspaces" : workspace
-"boost_campaigns" }o--o| "social_posts" : originalPost
-"boost_campaigns" }o--|| "allocator_campaigns" : campaign
-"boost_performance_snapshots" }o--|| "boost_campaigns" : boostCampaign
-"boost_attribution_events" }o--|| "boost_campaigns" : boostCampaign
-"boost_ml_training_data" }o--|| "workspaces" : workspace
-"boost_ml_training_data" |o--|| "boost_campaigns" : boostCampaign
-"boost_recommendations" }o--|| "workspaces" : workspace
-"boost_recommendations" }o--o| "social_posts" : suggestedPost
-"boost_insights" }o--|| "workspaces" : workspace
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
 "_ConnectionToConnectionTag" }o--|| "connection_tags" : ConnectionTag
 ```
@@ -2872,6 +2673,7 @@ Properties as follows:
 - `originalFormat`:
 - `isPublic`:
 - `viewCount`:
+- `tags`:
 - `createdAt`:
 - `updatedAt`:
 - `shareToken`:
@@ -2884,6 +2686,7 @@ Properties as follows:
 - `imageId`:
 - `userId`:
 - `tier`:
+- `enhancementType`:
 - `tokensCost`:
 - `status`:
 - `currentStage`:
@@ -3157,104 +2960,6 @@ Properties as follows:
 - `reason`:
 - `triggeredBy`:
 - `metadata`:
-- `createdAt`:
-
-### `approval_workflows`
-
-Multi-stage approval workflow configuration
-
-Properties as follows:
-
-- `id`:
-- `workspaceId`:
-- `name`:
-- `description`:
-- `isActive`:
-- `createdAt`:
-- `updatedAt`:
-
-### `approval_stages`
-
-Individual stages within an approval workflow
-
-Properties as follows:
-
-- `id`:
-- `workflowId`:
-- `name`:
-- `sequence`:
-- `approvers`:
-- `requireAllApprovers`:
-- `isOptional`:
-- `createdAt`:
-
-### `approval_items`
-
-Content items submitted for approval
-
-Properties as follows:
-
-- `id`:
-- `workflowId`:
-- `contentType`:
-- `contentId`:
-- `status`:
-- `currentStage`:
-- `submittedById`:
-- `submittedAt`:
-- `completedAt`:
-
-### `stage_approvals`
-
-Individual approval decisions for a stage
-
-Properties as follows:
-
-- `id`:
-- `itemId`:
-- `stageId`:
-- `approverId`:
-- `decision`:
-- `note`:
-- `decidedAt`:
-
-### `content_comments`
-
-Comments on content items (drafts, posts, assets)
-
-Properties as follows:
-
-- `id`:
-- `contentType`:
-- `contentId`:
-- `parentId`:
-- `authorId`:
-- `content`:
-- `mentions`:
-- `isEdited`:
-- `editedAt`:
-- `isDeleted`:
-- `deletedAt`:
-- `approvalItemId`:
-- `createdAt`:
-- `updatedAt`:
-
-### `client_activities`
-
-Activity feed for client-visible events
-
-Properties as follows:
-
-- `id`:
-- `workspaceId`:
-- `type`:
-- `actorId`:
-- `targetType`:
-- `targetId`:
-- `title`:
-- `description`:
-- `metadata`:
-- `isVisibleToClients`:
 - `createdAt`:
 
 ### `featured_gallery_items`
@@ -4823,9 +4528,6 @@ Properties as follows:
 - `status`:
 - `startedAt`:
 - `endedAt`:
-- `stepExecutions`:
-- `triggerType`:
-- `triggerData`:
 
 ### `workflow_run_logs`
 
@@ -5331,132 +5033,6 @@ Properties as follows:
 - `isResolved`:
 - `resolvedAt`:
 - `resolvedById`:
-- `createdAt`:
-
-### `boost_campaigns`
-
-Properties as follows:
-
-- `id`:
-- `workspaceId`:
-- `originalPostId`:
-- `campaignId`:
-- `boostedAt`:
-- `boostedBy`:
-- `boostReason`:
-- `boostStrategy`:
-- `organicMetrics`:
-- `targetingCriteria`:
-- `initialBudget`:
-- `duration`:
-- `status`:
-- `createdAt`:
-- `updatedAt`:
-
-### `boost_performance_snapshots`
-
-Properties as follows:
-
-- `id`:
-- `boostCampaignId`:
-- `snapshotAt`:
-- `daysSinceBoosted`:
-- `organicImpressions`:
-- `organicEngagements`:
-- `organicReach`:
-- `paidImpressions`:
-- `paidClicks`:
-- `paidConversions`:
-- `paidSpend`:
-- `paidCtr`:
-- `paidCpa`:
-- `paidRoas`:
-- `attributedOrganic`:
-- `attributedPaid`:
-- `attributedOverlap`:
-- `incrementalReach`:
-- `costPerResult`:
-- `totalRoi`:
-- `createdAt`:
-
-### `boost_attribution_events`
-
-Properties as follows:
-
-- `id`:
-- `boostCampaignId`:
-- `sessionId`:
-- `userId`:
-- `eventType`:
-- `touchpointType`:
-- `platform`:
-- `eventValue`:
-- `eventMetadata`:
-- `occurredAt`:
-- `createdAt`:
-
-### `boost_ml_training_data`
-
-Properties as follows:
-
-- `id`:
-- `workspaceId`:
-- `boostCampaignId`:
-- `features`:
-- `labels`:
-- `dataQualityScore`:
-- `isTrainingReady`:
-- `aggregatedAt`:
-- `createdAt`:
-- `updatedAt`:
-
-### `boost_recommendations`
-
-Properties as follows:
-
-- `id`:
-- `workspaceId`:
-- `suggestedPostId`:
-- `recommendationType`:
-- `confidence`:
-- `priority`:
-- `suggestedBudget`:
-- `suggestedDuration`:
-- `suggestedTiming`:
-- `suggestedTargeting`:
-- `projectedReach`:
-- `projectedConversions`:
-- `projectedRoi`:
-- `confidenceInterval`:
-- `reason`:
-- `supportingData`:
-- `status`:
-- `appliedAt`:
-- `resultingBoostId`:
-- `createdAt`:
-- `expiresAt`:
-
-### `boost_insights`
-
-Properties as follows:
-
-- `id`:
-- `workspaceId`:
-- `insightType`:
-- `category`:
-- `severity`:
-- `title`:
-- `description`:
-- `visualization`:
-- `dataPoints`:
-- `comparisonMetrics`:
-- `actionable`:
-- `suggestedActions`:
-- `periodStart`:
-- `periodEnd`:
-- `acknowledged`:
-- `acknowledgedBy`:
-- `acknowledgedAt`:
 - `createdAt`:
 
 ### `_ConnectionToConnectionTag`

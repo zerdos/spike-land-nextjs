@@ -5,7 +5,7 @@
  */
 
 import type { SocialAccount, Workspace } from "@prisma/client";
-import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Hoist mock instance so it's available in vi.mock
 const { mockCollectorInstance } = vi.hoisted(() => {
@@ -39,7 +39,6 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("./inbox-manager", () => ({
   upsertInboxItem: vi.fn(),
 }));
-
 
 // Use standard functions for mock implementations to support 'new' keyword
 vi.mock("./collectors/twitter-collector", () => ({
@@ -214,96 +213,96 @@ describe("Collection Job", () => {
     });
 
     it("should return failed status when canCollect returns false", async () => {
-        mockCollectorInstance.canCollect.mockResolvedValue(false);
+      mockCollectorInstance.canCollect.mockResolvedValue(false);
 
-        const result = await collectFromAccount(mockAccount);
+      const result = await collectFromAccount(mockAccount);
 
-        expect(result.status).toBe("FAILED");
-        expect(result.error).toContain("invalid or expired token");
-        expect(mockCollectorInstance.canCollect).toHaveBeenCalledWith(mockAccount.accessToken);
+      expect(result.status).toBe("FAILED");
+      expect(result.error).toContain("invalid or expired token");
+      expect(mockCollectorInstance.canCollect).toHaveBeenCalledWith(mockAccount.accessToken);
     });
 
     it("should successfully collect messages and upsert them", async () => {
-        const mockMessages = [{
-            platformItemId: "msg-1",
-            type: "MENTION",
-            content: "Hello",
-            senderName: "User",
-            receivedAt: new Date(),
-            rawData: {}
-        }];
+      const mockMessages = [{
+        platformItemId: "msg-1",
+        type: "MENTION",
+        content: "Hello",
+        senderName: "User",
+        receivedAt: new Date(),
+        rawData: {},
+      }];
 
-        mockCollectorInstance.collectMentions.mockResolvedValue({
-            platform: "TWITTER",
-            messages: mockMessages
-        });
+      mockCollectorInstance.collectMentions.mockResolvedValue({
+        platform: "TWITTER",
+        messages: mockMessages,
+      });
 
-        // Mock that the item does NOT exist yet
-        vi.mocked(prisma.inboxItem.findUnique).mockResolvedValue(null);
+      // Mock that the item does NOT exist yet
+      vi.mocked(prisma.inboxItem.findUnique).mockResolvedValue(null);
 
-        const result = await collectFromAccount(mockAccount);
+      const result = await collectFromAccount(mockAccount);
 
-        expect(result.status).toBe("COMPLETED");
-        expect(result.messagesCollected).toBe(1);
-        expect(result.newMessages).toBe(1);
-        expect(upsertInboxItem).toHaveBeenCalled();
-        expect(mockCollectorInstance.collectMentions).toHaveBeenCalled();
-        expect(mockCollectorInstance.collectDirectMessages).toHaveBeenCalled();
-        expect(mockCollectorInstance.collectComments).toHaveBeenCalled();
+      expect(result.status).toBe("COMPLETED");
+      expect(result.messagesCollected).toBe(1);
+      expect(result.newMessages).toBe(1);
+      expect(upsertInboxItem).toHaveBeenCalled();
+      expect(mockCollectorInstance.collectMentions).toHaveBeenCalled();
+      expect(mockCollectorInstance.collectDirectMessages).toHaveBeenCalled();
+      expect(mockCollectorInstance.collectComments).toHaveBeenCalled();
     });
 
     it("should handle duplicates properly", async () => {
-        const mockMessages = [{
-            platformItemId: "msg-1",
-            type: "MENTION",
-            content: "Hello",
-            senderName: "User",
-            receivedAt: new Date(),
-            rawData: {}
-        }];
+      const mockMessages = [{
+        platformItemId: "msg-1",
+        type: "MENTION",
+        content: "Hello",
+        senderName: "User",
+        receivedAt: new Date(),
+        rawData: {},
+      }];
 
-        mockCollectorInstance.collectMentions.mockResolvedValue({
-            platform: "TWITTER",
-            messages: mockMessages
-        });
+      mockCollectorInstance.collectMentions.mockResolvedValue({
+        platform: "TWITTER",
+        messages: mockMessages,
+      });
 
-        // Mock that the item DOES exist
-        vi.mocked(prisma.inboxItem.findUnique).mockResolvedValue({ id: "existing" } as any);
+      // Mock that the item DOES exist
+      vi.mocked(prisma.inboxItem.findUnique).mockResolvedValue({ id: "existing" } as any);
 
-        const result = await collectFromAccount(mockAccount);
+      const result = await collectFromAccount(mockAccount);
 
-        expect(result.status).toBe("COMPLETED");
-        expect(result.messagesCollected).toBe(1);
-        expect(result.newMessages).toBe(0); // Should be 0 new messages
-        expect(result.duplicatesSkipped).toBe(1);
-        expect(upsertInboxItem).not.toHaveBeenCalled();
+      expect(result.status).toBe("COMPLETED");
+      expect(result.messagesCollected).toBe(1);
+      expect(result.newMessages).toBe(0); // Should be 0 new messages
+      expect(result.duplicatesSkipped).toBe(1);
+      expect(upsertInboxItem).not.toHaveBeenCalled();
     });
 
     it("should handle rate limits", async () => {
-        const error = new Error("Rate limit exceeded");
-        mockCollectorInstance.collectMentions.mockRejectedValue(error);
+      const error = new Error("Rate limit exceeded");
+      mockCollectorInstance.collectMentions.mockRejectedValue(error);
 
-        const resetDate = new Date(Date.now() + 60000);
-        mockCollectorInstance.getRateLimitStatus.mockReturnValue({
-            resetAt: resetDate,
-            isLimited: true,
-            remaining: 0,
-            limit: 100
-        });
+      const resetDate = new Date(Date.now() + 60000);
+      mockCollectorInstance.getRateLimitStatus.mockReturnValue({
+        resetAt: resetDate,
+        isLimited: true,
+        remaining: 0,
+        limit: 100,
+      });
 
-        const result = await collectFromAccount(mockAccount);
+      const result = await collectFromAccount(mockAccount);
 
-        expect(result.status).toBe("RATE_LIMITED");
-        expect(result.rateLimitStatus).toBeDefined();
+      expect(result.status).toBe("RATE_LIMITED");
+      expect(result.rateLimitStatus).toBeDefined();
     });
 
     it("should handle generic errors", async () => {
-        mockCollectorInstance.collectMentions.mockRejectedValue(new Error("API Error"));
+      mockCollectorInstance.collectMentions.mockRejectedValue(new Error("API Error"));
 
-        const result = await collectFromAccount(mockAccount);
+      const result = await collectFromAccount(mockAccount);
 
-        expect(result.status).toBe("FAILED");
-        expect(result.error).toBe("API Error");
+      expect(result.status).toBe("FAILED");
+      expect(result.error).toBe("API Error");
     });
   });
 
@@ -375,56 +374,56 @@ describe("Collection Job", () => {
     });
 
     it("should pause when rate limited", async () => {
-        vi.useFakeTimers();
+      vi.useFakeTimers();
 
-        // Mock two accounts
-        const mockAccounts = [
-            {
-              id: "acc-1",
-              workspaceId: "ws-1",
-              platform: "TWITTER" as const,
-              accountId: "twitter-123",
-              accessTokenEncrypted: "encrypted-token-1",
-              refreshTokenEncrypted: "encrypted-refresh-1",
-            },
-            {
-              id: "acc-2",
-              workspaceId: "ws-1",
-              platform: "FACEBOOK" as const,
-              accountId: "fb-456",
-              accessTokenEncrypted: "encrypted-token-2",
-            }
-        ] as unknown as SocialAccount[];
+      // Mock two accounts
+      const mockAccounts = [
+        {
+          id: "acc-1",
+          workspaceId: "ws-1",
+          platform: "TWITTER" as const,
+          accountId: "twitter-123",
+          accessTokenEncrypted: "encrypted-token-1",
+          refreshTokenEncrypted: "encrypted-refresh-1",
+        },
+        {
+          id: "acc-2",
+          workspaceId: "ws-1",
+          platform: "FACEBOOK" as const,
+          accountId: "fb-456",
+          accessTokenEncrypted: "encrypted-token-2",
+        },
+      ] as unknown as SocialAccount[];
 
-        vi.mocked(prisma.socialAccount.findMany).mockResolvedValue(mockAccounts);
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue(mockAccounts);
 
-        // First account triggers rate limit
-        const resetTime = new Date(Date.now() + 5000); // 5 seconds wait
+      // First account triggers rate limit
+      const resetTime = new Date(Date.now() + 5000); // 5 seconds wait
 
-        mockCollectorInstance.collectMentions
-            .mockRejectedValueOnce(new Error("Rate limit")) // For Twitter
-            .mockResolvedValue({ messages: [] });   // For Facebook
+      mockCollectorInstance.collectMentions
+        .mockRejectedValueOnce(new Error("Rate limit")) // For Twitter
+        .mockResolvedValue({ messages: [] }); // For Facebook
 
-        mockCollectorInstance.getRateLimitStatus
-            .mockReturnValueOnce({ // For Twitter failure
-                resetAt: resetTime,
-                isLimited: true,
-                remaining: 0,
-                limit: 100
-            })
-            .mockReturnValue(null); // For others
+      mockCollectorInstance.getRateLimitStatus
+        .mockReturnValueOnce({ // For Twitter failure
+          resetAt: resetTime,
+          isLimited: true,
+          remaining: 0,
+          limit: 100,
+        })
+        .mockReturnValue(null); // For others
 
-        // Start the job
-        const jobPromise = runWorkspaceCollectionJob("ws-1");
+      // Start the job
+      const jobPromise = runWorkspaceCollectionJob("ws-1");
 
-        // We expect a delay of 5000 + 1000 = 6000ms.
-        await vi.advanceTimersByTimeAsync(6000);
+      // We expect a delay of 5000 + 1000 = 6000ms.
+      await vi.advanceTimersByTimeAsync(6000);
 
-        const results = await jobPromise;
+      const results = await jobPromise;
 
-        expect(results).toHaveLength(2);
-        expect(results[0]?.status).toBe("RATE_LIMITED");
-        expect(results[1]?.status).toBe("COMPLETED");
+      expect(results).toHaveLength(2);
+      expect(results[0]?.status).toBe("RATE_LIMITED");
+      expect(results[1]?.status).toBe("COMPLETED");
     });
   });
 

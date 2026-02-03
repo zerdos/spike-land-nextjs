@@ -2,7 +2,7 @@
  * Workspace Permission System
  *
  * Defines the permission matrix for Orbit workspace roles.
- * Four-tier role hierarchy: OWNER > ADMIN > MEMBER > VIEWER > CLIENT
+ * Four-tier role hierarchy: OWNER > ADMIN > MEMBER > VIEWER
  */
 
 import type { WorkspaceRole } from "@prisma/client";
@@ -61,25 +61,16 @@ export type WorkspaceAction =
   | "social:read"
   // Notifications
   | "notifications:view"
-  | "notifications:manage"
-  // Client Collaboration
-  | "client:dashboard:view"
-  | "client:content:view"
-  | "client:content:comment"
-  | "client:approval:view"
-  | "client:approval:approve"
-  | "client:approval:reject"
-  | "client:activity:view";
+  | "notifications:manage";
 
 /**
  * Role hierarchy - higher index = more permissions
  */
 const ROLE_HIERARCHY: Record<WorkspaceRole, number> = {
-  CLIENT: 0,
-  VIEWER: 1,
-  MEMBER: 2,
-  ADMIN: 3,
-  OWNER: 4,
+  VIEWER: 0,
+  MEMBER: 1,
+  ADMIN: 2,
+  OWNER: 3,
 };
 
 /**
@@ -147,15 +138,6 @@ const PERMISSION_MATRIX: Record<WorkspaceAction, WorkspaceRole> = {
   // Notifications
   "notifications:view": "MEMBER",
   "notifications:manage": "ADMIN",
-
-  // Client Collaboration
-  "client:dashboard:view": "CLIENT",
-  "client:content:view": "CLIENT",
-  "client:content:comment": "CLIENT",
-  "client:approval:view": "CLIENT",
-  "client:approval:approve": "CLIENT",
-  "client:approval:reject": "CLIENT",
-  "client:activity:view": "CLIENT",
 };
 
 /**
@@ -222,7 +204,7 @@ export function getAllActions(): WorkspaceAction[] {
  * - Must have members:role:change permission
  * - Only OWNER can promote to OWNER (transfer)
  * - ADMIN cannot modify OWNER or other ADMIN roles
- * - ADMIN can only change between MEMBER and VIEWER (and CLIENT)
+ * - ADMIN can only change between MEMBER and VIEWER
  *
  * @param actorRole - The role of the user making the change
  * @param targetCurrentRole - The current role of the user being changed
@@ -300,26 +282,4 @@ export function isAtLeast(
   minimumRole: WorkspaceRole,
 ): boolean {
   return ROLE_HIERARCHY[role] >= ROLE_HIERARCHY[minimumRole];
-}
-
-/**
- * Check if a user can approve specific content
- *
- * @param role - The user's role
- * @param userId - The user's ID
- * @param approvers - List of IDs allowed to approve
- * @returns true if allowed
- */
-export function canApproveContent(
-  role: WorkspaceRole,
-  userId: string,
-  approvers: string[],
-): boolean {
-  // Must have permission to approve in general
-  if (!hasPermission(role, "client:approval:approve")) {
-    return false;
-  }
-
-  // Must be in the list of approvers
-  return approvers.includes(userId);
 }

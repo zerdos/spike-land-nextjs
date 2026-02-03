@@ -100,12 +100,6 @@ model User {
   // Workflow relations
   workflows Workflow[]
 
-  // Client Collaboration relations
-  submittedApprovals ApprovalItem[]   @relation("SubmittedApprovals")
-  stageApprovals     StageApproval[]  @relation("StageApprovals")
-  comments           ContentComment[]
-  clientActivities   ClientActivity[]
-
   // Content Library
   assetFolders        AssetFolder[]
   assets              Asset[]
@@ -540,6 +534,7 @@ model EnhancedImage {
   originalFormat       String
   isPublic             Boolean               @default(false)
   viewCount            Int                   @default(0)
+  tags                 String[]              @default([])
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   shareToken           String?               @unique
@@ -553,6 +548,7 @@ model EnhancedImage {
   @@index([userId, createdAt])
   @@index([isPublic, createdAt])
   @@index([shareToken])
+  @@index([tags])
   @@map("enhanced_images")
 }
 
@@ -561,6 +557,7 @@ model ImageEnhancementJob {
   imageId               String
   userId                String
   tier                  EnhancementTier
+  enhancementType       EnhancementType @default(STANDARD)
   tokensCost            Int
   status                JobStatus
   currentStage          PipelineStage? // Current pipeline stage for progress tracking
@@ -1016,198 +1013,6 @@ enum RequirementPriority {
   CRITICAL
 }
 
-// =============================================================================
-// Client Collaboration Portal Models (Epic #519)
-// =============================================================================
-
-/// Multi-stage approval workflow configuration
-model ApprovalWorkflow {
-  id          String   @id @default(cuid())
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  name        String   // e.g., "Client Campaign Review"
-  description String?
-  isActive    Boolean  @default(true)
-
-  stages      ApprovalStage[]  // Ordered stages
-  items       ApprovalItem[]   // Content items in this workflow
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([workspaceId, isActive])
-  @@map("approval_workflows")
-}
-
-/// Individual stages within an approval workflow
-model ApprovalStage {
-  id         String   @id @default(cuid())
-  workflowId String
-  workflow   ApprovalWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-
-  name       String   // e.g., "Legal Review", "Client Approval"
-  sequence   Int      // Order in workflow (1, 2, 3...)
-  approvers  Json     // Array of userId strings who can approve this stage
-
-  // Settings
-  requireAllApprovers Boolean @default(false)  // True = unanimous, False = any one
-  isOptional          Boolean @default(false)  // Can skip this stage
-
-  approvals  StageApproval[]  // Approval records for this stage
-
-  createdAt  DateTime @default(now())
-
-  @@unique([workflowId, sequence])
-  @@index([workflowId])
-  @@map("approval_stages")
-}
-
-/// Content items submitted for approval
-model ApprovalItem {
-  id          String   @id @default(cuid())
-  workflowId  String
-  workflow    ApprovalWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-
-  // Link to content
-  contentType String   // "draft", "scheduled_post", "asset"
-  contentId   String   // ID of the draft/post/asset
-
-  // Status
-  status         ApprovalStatus @default(PENDING)
-  currentStage   Int?           // Current stage sequence number
-  submittedById  String
-  submittedBy    User           @relation("SubmittedApprovals", fields: [submittedById], references: [id])
-
-  submittedAt DateTime @default(now())
-  completedAt DateTime?
-
-  stageApprovals StageApproval[]
-  comments       ContentComment[] @relation("ApprovalComments")
-
-  @@index([workflowId, status])
-  @@index([contentType, contentId])
-  @@map("approval_items")
-}
-
-/// Individual approval decisions for a stage
-model StageApproval {
-  id        String   @id @default(cuid())
-  itemId    String
-  item      ApprovalItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  stageId   String
-  stage     ApprovalStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
-
-  approverId String
-  approver   User   @relation("StageApprovals", fields: [approverId], references: [id])
-
-  decision   ApprovalDecision
-  note       String?  @db.Text
-  decidedAt  DateTime @default(now())
-
-  @@unique([itemId, stageId, approverId])
-  @@index([itemId])
-  @@index([stageId])
-  @@map("stage_approvals")
-}
-
-/// Comments on content items (drafts, posts, assets)
-model ContentComment {
-  id        String   @id @default(cuid())
-
-  // Content linkage
-  contentType String  // "draft", "post", "asset", "approval_item"
-  contentId   String  // ID of the content
-
-  // Thread structure
-  parentId    String?
-  parent      ContentComment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
-  replies     ContentComment[] @relation("CommentThread")
-
-  // Comment data
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  content     String   @db.Text
-
-  // Mentions
-  mentions    Json?    // Array of userId strings mentioned with @
-
-  // Status
-  isEdited    Boolean  @default(false)
-  editedAt    DateTime?
-  isDeleted   Boolean  @default(false)
-  deletedAt   DateTime?
-
-  // Approval workflow link (optional)
-  approvalItemId String?
-  approvalItem   ApprovalItem? @relation("ApprovalComments", fields: [approvalItemId], references: [id], onDelete: Cascade)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([contentType, contentId])
-  @@index([authorId])
-  @@index([parentId])
-  @@index([approvalItemId])
-  @@map("content_comments")
-}
-
-/// Activity feed for client-visible events
-model ClientActivity {
-  id          String   @id @default(cuid())
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  // Activity details
-  type        ClientActivityType
-  actorId     String?  // User who triggered the activity
-  actor       User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
-
-  // Target entity
-  targetType  String   // "draft", "post", "comment", "approval"
-  targetId    String
-
-  // Activity data
-  title       String
-  description String?  @db.Text
-  metadata    Json?    // Additional activity context
-
-  // Visibility
-  isVisibleToClients Boolean @default(true)
-
-  createdAt   DateTime @default(now())
-
-  @@index([workspaceId, createdAt(sort: Desc)])
-  @@index([workspaceId, isVisibleToClients, createdAt(sort: Desc)])
-  @@index([targetType, targetId])
-  @@map("client_activities")
-}
-
-enum ApprovalStatus {
-  PENDING       // Awaiting approval
-  IN_REVIEW     // Currently being reviewed
-  APPROVED      // All stages approved
-  REJECTED      // Rejected at some stage
-  CHANGES_REQUESTED  // Feedback provided, needs revision
-}
-
-enum ApprovalDecision {
-  APPROVE
-  REJECT
-  REQUEST_CHANGES
-}
-
-enum ClientActivityType {
-  CONTENT_SUBMITTED      // Content submitted for review
-  CONTENT_APPROVED       // Content approved
-  CONTENT_REJECTED       // Content rejected
-  COMMENT_ADDED          // New comment added
-  COMMENT_MENTION        // User mentioned in comment
-  STAGE_COMPLETED        // Approval stage completed
-  WORKFLOW_COMPLETED     // Full workflow completed
-  STATUS_CHANGED         // Content status changed
-}
-
 enum RequirementStatus {
   PENDING
   IN_PROGRESS
@@ -1271,6 +1076,13 @@ enum EnhancementTier {
   TIER_1K
   TIER_2K
   TIER_4K
+}
+
+enum EnhancementType {
+  STANDARD
+  BLEND
+  PIPELINE
+  AUTO_CROP
 }
 
 enum JobStatus {
@@ -1375,12 +1187,6 @@ enum AuditAction {
   RELAY_DRAFT_REJECT
   RELAY_DRAFT_EDIT
   RELAY_DRAFT_SEND
-
-  // Client Collaboration actions
-  APPROVAL_WORKFLOW_CREATE
-  APPROVAL_ITEM_SUBMIT
-  APPROVAL_DECISION
-  COMMENT_CREATE
 }
 
 enum ErrorEnvironment {
@@ -2444,10 +2250,6 @@ model SocialPost {
   // Content Library
   assets PostAsset[]
 
-  // Boost Analytics (Issue #570)
-  boostCampaigns       BoostCampaign[]
-  boostRecommendations BoostRecommendation[]
-
   @@index([createdById])
   @@index([createdById, createdAt])
   @@index([status])
@@ -2730,7 +2532,6 @@ enum WorkspaceRole {
   ADMIN
   MEMBER
   VIEWER
-  CLIENT
 }
 
 // Brand Brain Enums
@@ -2870,10 +2671,6 @@ model Workspace {
   // Workflow relations
   workflows Workflow[]
 
-  // Client Collaboration relations
-  approvalWorkflows ApprovalWorkflow[]
-  clientActivities  ClientActivity[]
-
   // Notification system
   notifications Notification[]
 
@@ -2898,12 +2695,6 @@ model Workspace {
 
   // White-label configuration (Issue #924)
   whiteLabelConfig WorkspaceWhiteLabelConfig?
-
-  // Boost Analytics (Issue #570)
-  boostCampaigns       BoostCampaign[]
-  analyticsBoostRecommendations BoostRecommendation[]
-  boostInsights        BoostInsight[]
-  boostMlTrainingData  BoostMlTrainingData[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -4150,9 +3941,6 @@ model AllocatorCampaign {
   dailyBudgetMoves    AllocatorDailyBudgetMove[]
   guardrailAlerts     AllocatorGuardrailAlert[]
 
-  // Boost Analytics (Issue #570)
-  boostCampaigns      BoostCampaign[]
-
   @@unique([workspaceId, platform, platformCampaignId])
   @@index([workspaceId])
   @@index([platform])
@@ -4356,14 +4144,6 @@ model WorkflowRun {
   status     WorkflowRunStatus
   startedAt  DateTime          @default(now())
   endedAt    DateTime?
-
-  // NEW: Track individual step execution states
-  stepExecutions Json? // Map<stepId, { status, startedAt, endedAt, output, error }>
-
-  // NEW: Context data from trigger
-  triggerType String? // "schedule" | "webhook" | "event" | "manual"
-  triggerData Json?   // Payload/context from trigger
-
   logs       WorkflowRunLog[]
 
   @@index([workflowId])
@@ -5395,295 +5175,6 @@ enum VariantStatus {
 }
 
 enum FatigueSeverity {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
-
-// =============================================================================
-// Boost Analytics Models (Issue #570)
-// =============================================================================
-
-model BoostCampaign {
-  id                    String   @id @default(cuid())
-  workspaceId           String
-  workspace             Workspace @relation(fields: [workspaceId], references: [id])
-
-  // Source organic content
-  originalPostId        String?
-  originalPost          SocialPost? @relation(fields: [originalPostId], references: [id])
-
-  // Linked campaign
-  campaignId            String
-  campaign              AllocatorCampaign @relation(fields: [campaignId], references: [id])
-
-  // Boost decision metadata
-  boostedAt             DateTime
-  boostedBy             String   // userId or "AI_AGENT"
-  boostReason           String   // Why was this boosted?
-  boostStrategy         String   // e.g., "HIGH_ENGAGEMENT", "VIRAL_POTENTIAL"
-
-  // Pre-boost organic metrics (snapshot)
-  organicMetrics        Json     // { impressions, engagement, reach, likes, comments, shares }
-
-  // Boost configuration
-  targetingCriteria     Json?    // { demographics, interests, locations }
-  initialBudget         Int      // in cents
-  duration              Int      // in days
-
-  // Status
-  status                BoostStatus @default(ACTIVE)
-
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  performanceSnapshots  BoostPerformanceSnapshot[]
-  attributionEvents     BoostAttributionEvent[]
-  trainingData          BoostMlTrainingData?
-
-  @@map("boost_campaigns")
-  @@index([workspaceId])
-  @@index([originalPostId])
-  @@index([campaignId])
-  @@index([boostedAt])
-}
-
-enum BoostStatus {
-  ACTIVE
-  PAUSED
-  COMPLETED
-  CANCELLED
-}
-
-model BoostPerformanceSnapshot {
-  id                    String   @id @default(cuid())
-  boostCampaignId       String
-  boostCampaign         BoostCampaign @relation(fields: [boostCampaignId], references: [id], onDelete: Cascade)
-
-  // Snapshot timestamp
-  snapshotAt            DateTime
-  daysSinceBoosted      Int      // Days elapsed since boost started
-
-  // Organic metrics (continued organic performance)
-  organicImpressions    Int
-  organicEngagements    Int
-  organicReach          Int
-
-  // Paid metrics (from campaign)
-  paidImpressions       Int
-  paidClicks            Int
-  paidConversions       Int
-  paidSpend             Int      // in cents
-  paidCtr               Float    // click-through rate
-  paidCpa               Float    // cost per acquisition
-  paidRoas              Float    // return on ad spend
-
-  // Attribution metrics
-  attributedOrganic     Int      // Conversions attributed to organic
-  attributedPaid        Int      // Conversions attributed to paid
-  attributedOverlap     Int      // Conversions with both touchpoints
-
-  // Computed metrics
-  incrementalReach      Int      // Paid reach - organic reach overlap
-  costPerResult         Float    // paidSpend / (paidConversions + attributedOverlap)
-  totalRoi              Float    // (total value - cost) / cost
-
-  createdAt             DateTime @default(now())
-
-  @@map("boost_performance_snapshots")
-  @@index([boostCampaignId, snapshotAt])
-  @@index([snapshotAt])
-}
-
-model BoostAttributionEvent {
-  id                    String   @id @default(cuid())
-  boostCampaignId       String
-  boostCampaign         BoostCampaign @relation(fields: [boostCampaignId], references: [id], onDelete: Cascade)
-
-  // User/session tracking
-  sessionId             String?
-  userId                String?
-
-  // Interaction details
-  eventType             AttributionEventType
-  touchpointType        TouchpointType  // ORGANIC or PAID
-  platform              String          // e.g., "FACEBOOK", "INSTAGRAM"
-
-  // Event metadata
-  eventValue            Int?            // in cents, for conversion events
-  eventMetadata         Json?           // platform-specific data
-
-  // Timestamp
-  occurredAt            DateTime
-
-  createdAt             DateTime @default(now())
-
-  @@map("boost_attribution_events")
-  @@index([boostCampaignId, occurredAt])
-  @@index([sessionId])
-  @@index([userId])
-}
-
-enum AttributionEventType {
-  VIEW
-  CLICK
-  ENGAGEMENT
-  CONVERSION
-  SHARE
-}
-
-enum TouchpointType {
-  ORGANIC
-  PAID
-  UNKNOWN
-}
-
-model BoostMlTrainingData {
-  id                    String   @id @default(cuid())
-  workspaceId           String
-  workspace             Workspace @relation(fields: [workspaceId], references: [id])
-
-  boostCampaignId       String   @unique
-  boostCampaign         BoostCampaign @relation(fields: [boostCampaignId], references: [id], onDelete: Cascade)
-
-  // Features (inputs)
-  features              Json     // All input features for ML model
-
-  // Labels (outcomes)
-  labels                Json     // Target variables (success metrics)
-
-  // Training metadata
-  dataQualityScore      Float    // 0-1 score for data completeness
-  isTrainingReady       Boolean  @default(false)
-
-  aggregatedAt          DateTime
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  @@map("boost_ml_training_data")
-  @@index([workspaceId, isTrainingReady])
-  @@index([aggregatedAt])
-}
-
-model BoostRecommendation {
-  id                    String   @id @default(cuid())
-  workspaceId           String
-  workspace             Workspace @relation(fields: [workspaceId], references: [id])
-
-  // Recommendation target
-  suggestedPostId       String?
-  suggestedPost         SocialPost? @relation(fields: [suggestedPostId], references: [id])
-
-  // Recommendation details
-  recommendationType    RecommendationType
-  confidence            Float    // 0-1 confidence score
-  priority              Int      // 1-5 priority ranking
-
-  // Boost parameters
-  suggestedBudget       Int      // in cents
-  suggestedDuration     Int      // in days
-  suggestedTiming       DateTime // Best time to boost
-  suggestedTargeting    Json     // Targeting recommendations
-
-  // Projected impact
-  projectedReach        Int
-  projectedConversions  Int
-  projectedRoi          Float
-  confidenceInterval    Json     // { low, high } bounds
-
-  // Reasoning
-  reason                String   @db.Text
-  supportingData        Json     // Supporting metrics and insights
-
-  // Status
-  status                RecommendationStatus @default(PENDING)
-  appliedAt             DateTime?
-  resultingBoostId      String?  // Link to boost if recommendation was applied
-
-  createdAt             DateTime @default(now())
-  expiresAt             DateTime
-
-  @@map("boost_recommendations")
-  @@index([workspaceId, status])
-  @@index([confidence])
-  @@index([createdAt])
-}
-
-enum RecommendationType {
-  BOOST_HIGH_PERFORMER
-  BOOST_TRENDING
-  OPTIMIZE_TARGETING
-  INCREASE_BUDGET
-  ADJUST_TIMING
-  REPLICATE_SUCCESS
-}
-
-enum RecommendationStatus {
-  PENDING
-  APPLIED
-  DISMISSED
-  EXPIRED
-}
-
-model BoostInsight {
-  id                    String   @id @default(cuid())
-  workspaceId           String
-  workspace             Workspace @relation(fields: [workspaceId], references: [id])
-
-  // Insight metadata
-  insightType           InsightType
-  category              InsightCategory
-  severity              InsightSeverity // How important is this insight?
-
-  // Insight content
-  title                 String
-  description           String   @db.Text
-  visualization         Json?    // Chart/graph data for dashboard
-
-  // Supporting data
-  dataPoints            Json     // Raw data supporting the insight
-  comparisonMetrics     Json?    // Before/after or benchmark comparisons
-
-  // Actionability
-  actionable            Boolean  @default(true)
-  suggestedActions      Json?    // Array of recommended actions
-
-  // Time period
-  periodStart           DateTime
-  periodEnd             DateTime
-
-  // Status
-  acknowledged          Boolean  @default(false)
-  acknowledgedBy        String?
-  acknowledgedAt        DateTime?
-
-  createdAt             DateTime @default(now())
-
-  @@map("boost_insights")
-  @@index([workspaceId, acknowledged])
-  @@index([severity, acknowledged])
-  @@index([createdAt])
-}
-
-enum InsightType {
-  PATTERN
-  ANOMALY
-  BEST_PRACTICE
-  WARNING
-  OPPORTUNITY
-}
-
-enum InsightCategory {
-  TIMING
-  TARGETING
-  BUDGET
-  CONTENT_TYPE
-  PLATFORM
-  AUDIENCE
-}
-
-enum InsightSeverity {
   LOW
   MEDIUM
   HIGH

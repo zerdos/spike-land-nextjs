@@ -1,11 +1,11 @@
 /**
  * POST /api/orbit/[workspaceSlug]/boost/detect
- * Manually trigger boost detection for a workspace
+ * Manually trigger boost detection for specific posts
  * Issue #565 - Content-to-Ads Loop
  */
 
 import { detectBoostOpportunities } from "@/lib/boost-detector/detector";
-import { syncPostPerformance } from "@/lib/boost-detector/metrics-tracker";
+import type { BoostDetectorConfig } from "@/lib/boost-detector/types";
 import prisma from "@/lib/prisma";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -29,28 +29,40 @@ export async function POST(
       );
     }
 
-    // 1. Sync recent post performance
-    await syncPostPerformance(workspace.id);
+    // Note: postIds and force params could be used for filtering in the future
+    // Currently we detect all eligible posts in the workspace
 
-    // 2. Run detection algorithm
-    const config = {
+    // Default configuration
+    const config: BoostDetectorConfig = {
       engagementThreshold: 0.05, // 5%
       velocityThreshold: 5, // 5 engagements per hour
       minImpressions: 500,
       lookbackPeriod: 30,
     };
 
-    const recommendations = await detectBoostOpportunities(workspace.id, config);
+    // Detect opportunities
+    const recommendations = await detectBoostOpportunities(
+      workspace.id,
+      config,
+    );
 
     return NextResponse.json({
       success: true,
       count: recommendations.length,
-      recommendations,
+      recommendations: recommendations.map((r) => ({
+        id: r.id,
+        postId: r.postId,
+        postType: r.postType,
+        status: r.status,
+        suggestedBudget: r.suggestedBudget,
+        estimatedROI: r.confidenceScore,
+        reasoning: r.reasoning,
+      })),
     });
   } catch (error) {
     console.error("Error detecting boost opportunities:", error);
     return NextResponse.json(
-      { error: "Failed to run boost detection" },
+      { error: "Failed to detect boost opportunities" },
       { status: 500 },
     );
   }

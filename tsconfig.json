@@ -49,9 +49,6 @@
       ],
       "@prisma/client/*": [
         "./src/generated/prisma/*"
-      ],
-      "@spike-npm-land/shared/*": [
-        "./packages/shared/dist/*"
       ]
     },
     "types": [
