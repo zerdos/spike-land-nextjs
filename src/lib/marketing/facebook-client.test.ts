@@ -384,24 +384,35 @@ describe("FacebookMarketingClient", () => {
 
       vi.stubGlobal(
         "fetch",
-        vi.fn().mockResolvedValue({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              data: [
-                {
-                  impressions: "100000",
-                  clicks: "5000",
-                  spend: "500.00",
-                  conversions: "100",
-                  reach: "80000",
-                  frequency: "1.25",
-                  ctr: "5.0",
-                  cpc: "0.10",
-                  cpm: "5.00",
-                },
-              ],
-            }),
+        vi.fn().mockImplementation((url: string) => {
+          if (url.includes("/act_123?fields=currency")) {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve({ currency: "EUR" }),
+            });
+          }
+          if (url.includes("/insights")) {
+            return Promise.resolve({
+              ok: true,
+              json: () =>
+                Promise.resolve({
+                  data: [
+                    {
+                      impressions: "100000",
+                      clicks: "5000",
+                      spend: "500.00",
+                      conversions: "100",
+                      reach: "80000",
+                      frequency: "1.25",
+                      ctr: "5.0",
+                      cpc: "0.10",
+                      cpm: "5.00",
+                    },
+                  ],
+                }),
+            });
+          }
+          return Promise.reject(new Error(`Unexpected URL: ${url}`));
         }),
       );
 
@@ -417,6 +428,7 @@ describe("FacebookMarketingClient", () => {
       expect(metrics.impressions).toBe(100000);
       expect(metrics.clicks).toBe(5000);
       expect(metrics.spend).toBe(50000); // Converted to cents
+      expect(metrics.spendCurrency).toBe("EUR");
       expect(metrics.conversions).toBe(100);
       expect(metrics.ctr).toBe(5.0);
       expect(metrics.reach).toBe(80000);
