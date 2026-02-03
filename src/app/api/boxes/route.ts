@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
+import { triggerBoxProvisioning } from "@/lib/boxes/provisioning";
 import prisma from "@/lib/prisma";
 import { BoxStatus } from "@prisma/client";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { z } from "zod";
 
 const createBoxSchema = z.object({
@@ -98,14 +99,9 @@ export async function POST(req: Request) {
     return new NextResponse("Insufficient Tokens", { status: 402 });
   }
 
-  // Phase 1 Implementation Note:
   // Container provisioning is handled asynchronously. The box is created with status CREATING,
-  // and a background worker (or cloud function) would provision the actual container.
-  // For Phase 1, the database record serves as the source of truth while container
-  // orchestration infrastructure is being developed.
-
-  // We should ideally wrap this in a transaction, but for Phase 1 separate calls are okay
-  // or we can consume AFTER successful creation, but easier to consume first
+  // and a background worker (or cloud function) triggers the actual provisioning.
+  // We use `after` to ensure the response is sent immediately while provisioning starts.
 
   const { data: tokenResult, error: tokenError } = await tryCatch(
     TokenBalanceManager.consumeTokens({
@@ -168,8 +164,8 @@ export async function POST(req: Request) {
     // Non-fatal error
   }
 
-  // Simulate async provisioning (optional, logic would be in a separate worker)
-  // For Phase 1, we might just assume it "starts" quickly or stays in CREATING
+  // Trigger provisioning asynchronously
+  after(() => triggerBoxProvisioning(box.id));
 
   return NextResponse.json(box);
 }
