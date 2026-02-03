@@ -40,7 +40,8 @@ export async function triggerBoxProvisioning(boxId: string): Promise<void> {
     };
 
     // 1. Prioritize Cloud Function / Webhook via Environment Variable
-    // This allows for external infrastructure (like a serverless function) to handle provisioning
+  // This allows for external infrastructure (like a serverless function) to handle provisioning.
+  // We strictly use bracket notation for process.env to satisfy noPropertyAccessFromIndexSignature.
     const provisioningUrl = process.env["BOX_PROVISIONING_WEBHOOK_URL"];
     if (provisioningUrl) {
       try {
