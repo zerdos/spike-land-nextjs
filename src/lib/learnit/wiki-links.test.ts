@@ -6,7 +6,7 @@ describe("Wiki Links Parser", () => {
     const input = "Check out [[React Hooks]] for more info.";
     const { content, links } = parseWikiLinks(input);
 
-    expect(links).toEqual(["React Hooks"]);
+    expect(links).toEqual(["react-hooks"]);
     expect(content).toContain("[React Hooks](/learnit/react-hooks)");
   });
 
@@ -14,7 +14,7 @@ describe("Wiki Links Parser", () => {
     const input = "Read about [[React Hooks|Hooks]].";
     const { content, links } = parseWikiLinks(input);
 
-    expect(links).toEqual(["React Hooks"]);
+    expect(links).toEqual(["react-hooks"]);
     expect(content).toContain("[Hooks](/learnit/react-hooks)");
   });
 
@@ -22,7 +22,7 @@ describe("Wiki Links Parser", () => {
     const input = "Compare [[React]] vs [[Vue]].";
     const { content, links } = parseWikiLinks(input);
 
-    expect(links).toEqual(["React", "Vue"]);
+    expect(links).toEqual(["react", "vue"]);
     expect(content).toContain("[React](/learnit/react)");
     expect(content).toContain("[Vue](/learnit/vue)");
   });

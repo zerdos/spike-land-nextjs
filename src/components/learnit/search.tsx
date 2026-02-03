@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
+import { slugify } from "@/lib/learnit/utils";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -43,7 +44,7 @@ export function LearnItSearch() {
     if (query.trim()) {
       // Direct navigation to topic if it looks like a path or just search
       // For now, let's just go to the first result or generate path
-      const slug = query.toLowerCase().replace(/\s+/g, "-");
+      const slug = slugify(query);
       router.push(`/learnit/${slug}`);
     }
   };

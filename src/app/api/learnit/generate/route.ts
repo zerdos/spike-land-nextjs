@@ -5,6 +5,7 @@ import { generateLearnItTopic } from "@/lib/learnit/content-generator";
 import {
   createOrUpdateContent,
   getLearnItContent,
+  markAsFailed,
   markAsGenerating,
 } from "@/lib/learnit/content-service";
 import { generateTopicSchema } from "@/lib/learnit/validations";
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
 
     if (!generated) {
       // Handle failure
+      await markAsFailed(slug);
       return new NextResponse("Generation failed", { status: 500 });
     }
 

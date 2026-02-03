@@ -1,5 +1,6 @@
 "use client";
 
+import { slugify } from "@/lib/learnit/utils";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -10,7 +11,7 @@ interface WikiLinkProps {
 }
 
 export function WikiLink({ topic, alias, className }: WikiLinkProps) {
-  const slug = topic.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  const slug = slugify(topic);
   const href = `/learnit/${slug}`;
   const displayText = alias || topic;
 

@@ -21,7 +21,7 @@ export async function getLearnItContent(slug: string): Promise<LearnItContent | 
 
   if (content) {
     // Async increment view count
-    prisma.learnItContent.update({
+    void prisma.learnItContent.update({
       where: { id: content.id },
       data: { viewCount: { increment: 1 } },
     }).catch(console.error);
@@ -88,6 +88,16 @@ export async function markAsGenerating(slug: string, path: string[], userId?: st
       // If it exists but failed or is old, we can reset it?
       // For now, assume if it exists we might be regenerating
       status: "GENERATING",
+    },
+  });
+}
+
+export async function markAsFailed(slug: string) {
+  return prisma.learnItContent.update({
+    where: { slug },
+    data: {
+      status: "FAILED",
+      content: "Generation failed. Please try again.",
     },
   });
 }

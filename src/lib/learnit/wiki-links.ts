@@ -1,3 +1,5 @@
+import { slugify } from "./utils";
+
 /**
  * Parses content for wiki-style links [[topic]] or [[topic|alias]]
  * Returns transformed content with markdown links and a list of extracted link slugs.
@@ -16,9 +18,7 @@ export function parseWikiLinks(content: string): {
     const alias = parts.length > 1 ? parts[1].trim() : topic;
 
     // Convert topic to slug: "Advanced React" -> "advanced-react"
-    // We assume top-level search for now, or relative navigation?
-    // Let's stick to simple slugification for search/navigation
-    const slug = topic.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    const slug = slugify(topic);
 
     links.push(slug);
 

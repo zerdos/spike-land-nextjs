@@ -12,15 +12,18 @@ import { getLearnItContent } from "@/lib/learnit/content-service";
 import { Loader2 } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 interface PageProps {
   params: Promise<{ path: string[]; }>;
 }
 
+const getLearnItContentCached = cache(getLearnItContent);
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { path } = await params;
   const slug = path.join("/").toLowerCase();
-  const content = await getLearnItContent(slug);
+  const content = await getLearnItContentCached(slug);
 
   if (!content) {
     return { title: `Generate ${path.join(" ")} | LearnIt` };
@@ -35,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function LearnItTopicPage({ params }: PageProps) {
   const { path } = await params;
   const slug = path.join("/").toLowerCase();
-  const content = await getLearnItContent(slug);
+  const content = await getLearnItContentCached(slug);
   // const session = await auth(); // Not currently used directly in render, passed to client if needed? GenerateButton checks auth via API.
 
   // Normalize path if needed (e.g. if user typed UPPERCASE)
