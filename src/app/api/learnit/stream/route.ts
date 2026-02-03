@@ -103,7 +103,7 @@ Begin with the title on the first line (just the title text, no heading markup),
     const ai = getGeminiClient();
 
     const response = await ai.models.generateContentStream({
-      model: "gemini-2.5-flash-preview-05-20",
+      model: "gemini-3-flash",
       contents: [
         {
           role: "user",
@@ -181,7 +181,7 @@ Begin with the title on the first line (just the title text, no heading markup),
       description,
       content: finalContent,
       generatedById: userId,
-      aiModel: "gemini-2.5-flash-preview-05-20",
+      aiModel: "gemini-3-flash-preview",
     });
 
     yield { type: "complete", content: finalContent, title, description };
