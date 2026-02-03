@@ -2,9 +2,9 @@
  * Tests for Sitemap Preview Client Component
  */
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SitemapPreviewClient } from "./SitemapPreviewClient";
 
 // Mock fetch
@@ -19,6 +19,10 @@ describe("SitemapPreviewClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetch.mockReset();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("should render all sitemap paths", () => {
@@ -477,6 +481,7 @@ describe("SitemapPreviewClient", () => {
   });
 
   it("should load iframes with correct src based on origin", () => {
+    vi.useFakeTimers();
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
@@ -484,6 +489,10 @@ describe("SitemapPreviewClient", () => {
         origin={defaultOrigin}
       />,
     );
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
 
     const iframes = screen.getAllByTitle(/Preview of/);
     expect(iframes.length).toBeGreaterThan(0);
@@ -502,7 +511,10 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    const iframe = screen.getByTitle("Preview of /");
+    const iframe = await waitFor(
+      () => screen.getByTitle("Preview of /"),
+      { timeout: 2000 }
+    );
     fireEvent.load(iframe);
 
     await waitFor(() => {
@@ -585,6 +597,7 @@ describe("SitemapPreviewClient", () => {
   });
 
   it("should show loading spinner for loading paths", () => {
+    vi.useFakeTimers();
     render(
       <SitemapPreviewClient
         sitemapPaths={defaultSitemapPaths}
@@ -592,6 +605,15 @@ describe("SitemapPreviewClient", () => {
         origin={defaultOrigin}
       />,
     );
+
+    // Initial render triggers timeout.
+    // Advance slightly to ensure effect runs but maybe not fully timeout?
+    // Wait, we want to see "Loading...".
+    // "Loading..." appears when startLoadingPath is called.
+    // startLoadingPath is called after timeout.
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
 
     const loadingElements = screen.getAllByText("Loading...");
     expect(loadingElements.length).toBeLessThanOrEqual(MAX_CONCURRENT_LOADS);
@@ -610,6 +632,7 @@ describe("SitemapPreviewClient", () => {
   });
 
   it("should use origin from props for iframe URLs", () => {
+    vi.useFakeTimers();
     const customOrigin = "https://spike.land";
 
     render(
@@ -619,6 +642,10 @@ describe("SitemapPreviewClient", () => {
         origin={customOrigin}
       />,
     );
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
 
     const iframe = screen.getByTitle("Preview of /test") as HTMLIFrameElement;
     expect(iframe.src).toBe("https://spike.land/test");
@@ -727,6 +754,8 @@ describe("SitemapPreviewClient", () => {
   });
 
   it("should reset all path statuses when Refresh All is clicked", async () => {
+    // This test mixes loading (timeout) and user interaction.
+    // Using real timers is safer, but we must wait for loading.
     const user = userEvent.setup();
 
     render(
@@ -736,6 +765,11 @@ describe("SitemapPreviewClient", () => {
         origin={defaultOrigin}
       />,
     );
+
+    // Wait for iframe to appear (real time > 1s)
+    await waitFor(() => {
+        expect(screen.queryByTitle("Preview of /")).toBeInTheDocument();
+    }, { timeout: 2000 });
 
     const iframe = screen.getByTitle("Preview of /");
     fireEvent.load(iframe);
@@ -829,6 +863,10 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
+    await waitFor(() => {
+        expect(screen.queryByTitle("Preview of /")).toBeInTheDocument();
+    }, { timeout: 2000 });
+
     const iframe = screen.getByTitle("Preview of /");
     fireEvent.load(iframe);
 
@@ -907,7 +945,10 @@ describe("SitemapPreviewClient", () => {
     // Initially 0 loaded
     expect(screen.getByText(/0 Healthy/)).toBeInTheDocument();
 
-    const iframe = screen.getByTitle("Preview of /");
+    const iframe = await waitFor(
+      () => screen.getByTitle("Preview of /"),
+      { timeout: 2000 }
+    );
     fireEvent.load(iframe);
 
     await waitFor(() => {
@@ -924,7 +965,10 @@ describe("SitemapPreviewClient", () => {
       />,
     );
 
-    const iframe = screen.getByTitle("Preview of /") as HTMLIFrameElement;
+    const iframe = (await waitFor(
+      () => screen.getByTitle("Preview of /"),
+      { timeout: 2000 }
+    )) as HTMLIFrameElement;
 
     // Trigger the onError handler directly
     fireEvent.error(iframe);

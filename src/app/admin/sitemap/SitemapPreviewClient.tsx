@@ -119,9 +119,16 @@ export function SitemapPreviewClient({
     const availableSlots = MAX_CONCURRENT_LOADS - loadingRef.current.size;
     const pathsToStart = pathsToLoad.slice(0, availableSlots);
 
-    pathsToStart.forEach((path) => {
-      startLoadingPath(path);
-    });
+    if (pathsToStart.length > 0) {
+      // Add delay to prevent server overload (ECONNRESET) in CI
+      const timeoutId = setTimeout(() => {
+        pathsToStart.forEach((path) => {
+          startLoadingPath(path);
+        });
+      }, 1000);
+
+      return () => clearTimeout(timeoutId);
+    }
   }, [allPaths, pathStates, startLoadingPath]);
 
   const handleAddPath = async () => {
