@@ -41,7 +41,8 @@
       "Bash(xargs:*)",
       "Bash(gh issue list:*)",
       "Bash(npm install:*)",
-      "Bash(neonctl auth:*)"
+      "Bash(neonctl auth:*)",
+      "Bash(neonctl branches create:*)"
     ],
     "deny": [],
     "ask": []
