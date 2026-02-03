@@ -45,8 +45,8 @@ export const appCreationSchema = z.object({
   codespaceId: z
     .string()
     .regex(
-      /^[a-zA-Z0-9_-]+$/,
-      "Codespace ID can only contain letters, numbers, hyphens, and underscores",
+      /^[a-zA-Z0-9_.-]+$/,
+      "Codespace ID can only contain letters, numbers, hyphens, underscores, and dots",
     )
     .max(100)
     .optional(),
@@ -105,8 +105,8 @@ export const appSettingsUpdateSchema = z.object({
   codespaceId: z
     .string()
     .regex(
-      /^[a-zA-Z0-9_-]+$/,
-      "Codespace ID can only contain letters, numbers, hyphens, and underscores",
+      /^[a-zA-Z0-9_.-]+$/,
+      "Codespace ID can only contain letters, numbers, hyphens, underscores, and dots",
     )
     .max(100)
     .optional(),
@@ -117,8 +117,8 @@ export const appCodespaceLinkSchema = z.object({
   codespaceId: z
     .string()
     .regex(
-      /^[a-zA-Z0-9_-]+$/,
-      "Codespace ID can only contain letters, numbers, hyphens, and underscores",
+      /^[a-zA-Z0-9_.-]+$/,
+      "Codespace ID can only contain letters, numbers, hyphens, underscores, and dots",
     )
     .max(100),
 });
@@ -139,8 +139,8 @@ export const agentAppUpdateSchema = z.object({
   codespaceId: z
     .string()
     .regex(
-      /^[a-zA-Z0-9_-]+$/,
-      "Codespace ID can only contain letters, numbers, hyphens, and underscores",
+      /^[a-zA-Z0-9_.-]+$/,
+      "Codespace ID can only contain letters, numbers, hyphens, underscores, and dots",
     )
     .max(100)
     .optional(),

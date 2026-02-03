@@ -22,8 +22,8 @@ const UpdateCodeSchema = z.object({
     .min(1)
     .max(100)
     .regex(
-      /^[a-zA-Z0-9_-]+$/,
-      "Codespace ID must be alphanumeric with hyphens and underscores",
+      /^[a-zA-Z0-9_.-]+$/,
+      "Codespace ID can only contain letters, numbers, hyphens, underscores, and dots",
     )
     .describe(
       "Unique identifier for the codespace (creates if doesn't exist)",
@@ -45,8 +45,8 @@ const CodeSpaceIdSchema = z.object({
     .min(1)
     .max(100)
     .regex(
-      /^[a-zA-Z0-9_-]+$/,
-      "Codespace ID must be alphanumeric with hyphens and underscores",
+      /^[a-zA-Z0-9_.-]+$/,
+      "Codespace ID can only contain letters, numbers, hyphens, underscores, and dots",
     )
     .describe("Unique identifier for the codespace"),
 });
@@ -56,7 +56,7 @@ const LinkAppSchema = z.object({
     .string()
     .min(1)
     .max(100)
-    .regex(/^[a-zA-Z0-9_-]+$/)
+    .regex(/^[a-zA-Z0-9_.-]+$/)
     .describe("Codespace ID to link"),
   app_id: z
     .string()
