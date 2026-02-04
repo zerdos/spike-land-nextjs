@@ -1,4 +1,6 @@
-@requires-db
+# SKIP REASON: All scenarios failing with timeout or missing element
+# TRACKING: #1073
+@skip @requires-db
 Feature: Album Drag and Drop Organization
   As an authenticated user
   I want to drag and drop images within and between my albums

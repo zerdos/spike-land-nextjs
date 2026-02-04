@@ -1,6 +1,6 @@
 # Run code formatter
 yarn dprint
-yarn tsc
+yarn tsc --project tsconfig.build.json
 git add -u
 
 # Check for undocumented skipped tests

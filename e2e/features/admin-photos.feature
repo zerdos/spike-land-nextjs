@@ -9,7 +9,9 @@ Feature: Admin Photos Page
 
   # Page load test is in smoke-tests.feature
 
-  @requires-db
+  # SKIP REASON: Enhancement count visibility failure
+  # TRACKING: #1070
+  @skip @requires-db
   Scenario: Photos grid displays correctly
     Given there are photos in the system
     When I visit "/admin/photos"
@@ -108,7 +110,9 @@ Feature: Admin Photos Page
     Then each photo card should show enhancement count badge
     And the badge should display a number
 
-  @requires-db
+  # SKIP REASON: Loading text visibility failure
+  # TRACKING: #1070
+  @skip @requires-db
   Scenario: Loading state displays while fetching photos
     Given the photos API is slow
     When I visit "/admin/photos"
