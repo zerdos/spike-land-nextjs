@@ -62,7 +62,9 @@ export default function PixelError({
             Try again
           </Button>
           <Button variant="outline" asChild>
-            <a href="/">Go home</a>
+          <Button variant="outline" asChild>
+            <Link href="/">Go home</Link>
+          </Button>
           </Button>
         </div>
       </div>
