@@ -1,0 +1,431 @@
+---
+title: "How to Automate Your Dev Team: AI Agents That Ship Production Code"
+slug: "automate-dev-team-ai-agents"
+description: "The practical guide to replacing human bottlenecks with autonomous AI workflows. Learn how to use Claude Code, Jules, and CI/CD to ship features without writing code."
+date: "2026-02-04"
+author: "Zoltan Erdos"
+category: "Developer Experience"
+tags: ["ai", "developer-tools", "claude", "jules", "automation", "ci-cd", "agents", "productivity"]
+featured: true
+---
+
+Last week, I ran an experiment.
+
+I asked Claude Code to plan a fintech application—but not to code it. Just plan it. And I told it to use 16 agents in parallel.
+
+The agents explored design patterns, researched KYC requirements, debated UI approaches, and produced a specification: glassmorphic UI, full identity verification flow with document scanning, biometric selfie capture, multi-language support (English, Spanish, Polish, Chinese), animated verification progress, PIN creation.
+
+The kind of document that would take a product team days to align on.
+
+Then I handed that plan to Gemini Flash—*not even a frontier model*—and said: implement this.
+
+**70 minutes later**: [GlassBank](https://glassbank-app.vercel.app/) was live.
+
+A complete fintech onboarding experience. The design was polished. The flows worked. The animations were smooth.
+
+The realization hit me: **If the plan is good, even a mediocre executor can ship something impressive.**
+
+![Traditional development approach vs AI agent approach - comparing days of planning and high costs to 70-minute AI-powered delivery](/blog/automate-dev-team/traditional-vs-ai-approach.jpg)
+
+This isn't about AI writing code. We've known AI can write code for years. This is about what happens when you stop thinking of AI as a "copilot" and start treating it as your development team.
+
+---
+
+## The New Division of Labor
+
+Here's how software development actually works now:
+
+| Phase | Who Does It | Why |
+|-------|------------|-----|
+| **Planning** | Claude Code (multiple agents) | Explores codebase, interviews you, considers edge cases |
+| **Implementation** | Jules | Follows the plan exactly, adds the tests the plan specifies |
+| **CI/CD** | Your pipeline | Fast feedback, sharded tests, cached builds |
+| **Code Review** | Claude Code (Opus) | Strict. Catches real issues 50%+ of the time |
+| **Fixes** | Jules | Iterates until CI and review both pass |
+| **Merge** | Automated | When all checks are green |
+
+Your job? Define what you want. Verify it works. That's it.
+
+![AI development pipeline showing Planning with Claude Code, Implementation, CI/CD, Code Review with Opus, Fixes, and Merge to Production](/blog/automate-dev-team/ai-development-pipeline.jpg)
+
+But here's the thing nobody tells you: **this only works if your codebase is ready for it.**
+
+---
+
+## Prerequisites: Why Most Teams Can't Do This (Yet)
+
+You cannot automate chaos.
+
+If your CI takes 45 minutes, agents waste their time waiting. If your tests flake randomly, agents chase phantom bugs. If your codebase lacks structure, every change introduces regressions.
+
+The foundation is **Continuous Delivery**—the practice of keeping your software deployable at all times:
+
+> *"The goal is to make deployments—whether of a large-scale distributed system, a complex production environment, an embedded system, or an app—boring, low-risk events that can be performed on demand."*
+> — Jez Humble & David Farley, *Continuous Delivery*
+
+This isn't optional. Without it, you're just paying for agents to spin their wheels.
+
+### The Automation-Ready Checklist
+
+![The Automation-Ready Pyramid showing prerequisites for AI-automated development: Fast CI/CD at the base, Test Pyramid, Zero Flaky Tests, and 100% Coverage at the top](/blog/automate-dev-team/automation-ready-pyramid.jpg)
+
+#### 1. Fast Feedback Loops (5-10 Minutes Max)
+
+Agents iterate. Fast feedback = more iterations = better results.
+
+Here's how we get our CI under 10 minutes:
+
+**Cache aggressively:**
+
+```dockerfile
+# Dockerfile - cache yarn packages by architecture
+RUN --mount=type=cache,id=${CACHE_NS}-yarn-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
+    yarn install --immutable
+
+# Cache Next.js build artifacts
+RUN --mount=type=cache,id=${CACHE_NS}-next-cache-${TARGETARCH},target=/app/.next/cache,sharing=locked \
+    yarn build
+```
+
+**Test only what changed:**
+
+```yaml
+# ci-cd.yml - smart test selection for PRs
+- name: Run tests (shard ${{ matrix.shard }}/4)
+  run: |
+    if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+      # Main branch: full coverage
+      yarn vitest run --coverage --shard=${{ matrix.shard }}/4
+    else
+      # PR: only affected tests
+      yarn test:run --changed main --shard=${{ matrix.shard }}/4
+    fi
+```
+
+**Shard everything:**
+
+```yaml
+# Unit tests: 4 parallel shards
+unit-tests:
+  strategy:
+    matrix:
+      shard: [1, 2, 3, 4]
+    fail-fast: false
+
+# E2E tests: 8 parallel shards
+e2e:
+  strategy:
+    matrix:
+      shard: [1, 2, 3, 4, 5, 6, 7, 8]
+    fail-fast: false
+```
+
+**Run E2E against dev server, not production build:**
+
+```yaml
+# Don't wait for production build - use Turbopack dev server
+run: yarn start:server:and:test:turbo
+```
+
+E2E tests start running seconds after the job begins, not minutes.
+
+#### 2. The Test Pyramid for AI Agents
+
+Each test layer serves a specific purpose in automated workflows:
+
+**Level 0: TypeScript (Strict Mode)**
+
+Not technically a test, but arguably the most important check.
+
+```bash
+yarn tsc --noEmit
+```
+
+Why this matters for agents:
+- Claude Code integrates with the TypeScript Language Server
+- It sees type errors in real-time as it writes code
+- Strict mode means high-confidence refactoring
+
+If you're not on strict mode, that's your first task. Ask Claude Code:
+
+> "Check our TypeScript configuration. Are we using strict mode? If not, plan a migration."
+
+**Level 1: Unit Tests**
+
+Unit tests document *intent*. When agents refactor code, these tests ensure requirements aren't accidentally removed.
+
+```typescript
+// src/services/transfer.test.ts
+describe('TransferService', () => {
+  it('rejects transfers exceeding daily limit', async () => {
+    const result = await service.transfer({
+      amount: 100000,
+      from: 'ACC-001',
+      to: 'ACC-002'
+    });
+    expect(result.error).toBe('DAILY_LIMIT_EXCEEDED');
+  });
+
+  it('applies correct exchange rate for cross-currency transfers', async () => {
+    mockExchangeRate('USD', 'EUR', 0.92);
+    const result = await service.transfer({
+      amount: 100,
+      currency: 'USD',
+      to: 'EUR-ACCOUNT'
+    });
+    expect(result.convertedAmount).toBe(92);
+  });
+});
+```
+
+Agents are systematic testers. They'll mock external dependencies, cover edge cases, and maintain tests as they refactor.
+
+**Level 2: E2E Tests (Human-Readable)**
+
+E2E tests prove the system works when everything is wired together. Write them so anyone can understand what's being tested:
+
+```gherkin
+# e2e/features/admin-agents.feature
+@requires-db
+Feature: Admin Agents Dashboard
+  As an admin user
+  I want to access the agents dashboard
+  So that I can monitor and manage external AI agents like Jules
+
+  Background:
+    Given I am logged in as "Admin User" with email "admin@example.com"
+
+  Scenario: Dashboard shows status overview cards
+    Given the user is an admin
+    When I visit "/admin/agents"
+    Then I should see status overview section
+    And I should see "Total" status card
+    And I should see "Active" status card
+    And I should see "Completed" status card
+    And I should see "Failed" status card
+
+  Scenario: Admin can view session with AWAITING_PLAN_APPROVAL status
+    Given the user is an admin
+    And there is a Jules session awaiting plan approval
+    When I visit "/admin/agents"
+    Then I should see "Approve Plan" button on the session card
+```
+
+This is living documentation. When a test fails, you know exactly which user capability broke.
+
+**Managing Flaky or Broken Tests:**
+
+Sometimes a test breaks for reasons unrelated to your current work. Skip it, but track it:
+
+```typescript
+// SKIPPED: Flaky on CI, investigating race condition - see issue #234
+it.skip('handles concurrent transfers', async () => { ... });
+```
+
+Create a daily task to review skipped tests. Don't let them accumulate.
+
+**Level 3: Smoke Tests (Production Health)**
+
+Run these against production daily:
+
+```bash
+#!/bin/bash
+# scripts/smoke-test.sh
+
+test_endpoint "Homepage" "GET" "/" "200"
+test_endpoint "API health" "GET" "/api/health" "200"
+test_endpoint_contains "Homepage loads" "/" "html"
+
+if [ $TESTS_FAILED -gt 0 ]; then
+  # Auto-create issue on failure
+  gh issue create --title "Smoke test failure $(date)" \
+    --body "Production health check failed. Investigate immediately."
+  exit 1
+fi
+
+echo "All smoke tests passed!"
+```
+
+When production breaks, you want to know immediately—not when a user reports it.
+
+#### 3. Trust Your CI
+
+The ultimate goal:
+
+> **Green CI = Safe to Deploy**
+
+If you can't trust your CI, you'll always need manual verification. If you trust it completely, you can automate merging.
+
+Building that trust requires:
+- Zero flaky tests (fix or delete them)
+- High coverage on business logic (100% is the target)
+- Fast execution (so it runs on every commit)
+- Clear failure messages (so agents can self-correct)
+
+---
+
+## The Workflow: From Issue to Shipped Code
+
+With prerequisites in place, here's the automated flow:
+
+### Step 1: Plan with Claude Code
+
+```bash
+claude --model opus
+```
+
+Tell it to use multiple agents for planning:
+
+> "Plan this feature using 16 agents. Have them explore the codebase, research approaches, and identify edge cases. Interview me to clarify requirements."
+
+Claude Code will:
+1. Launch parallel agents to explore different aspects
+2. Search for existing patterns to reuse
+3. Map out which files need changes
+4. Ask you clarifying questions
+5. Produce a detailed implementation plan with testing strategy
+
+The plan becomes your ticket.
+
+### Step 2: Hand to Jules
+
+Jules is Google's async coding agent. At £20/month for 100 tickets/day, the economics are absurd.
+
+Post your plan as a Jules task:
+1. Jules analyzes the plan
+2. Proposes an implementation approach
+3. Waits for your approval
+4. Writes the code
+5. Opens a PR
+
+### Step 3: CI Runs
+
+Your PR triggers the pipeline:
+- Lint + TypeScript
+- Unit tests (sharded across 4 runners)
+- E2E tests (sharded across 8 runners)
+- Build verification
+
+Jules watches the CI. When something fails, it reads the logs and fixes the issue.
+
+### Step 4: Claude Code Reviews
+
+```yaml
+# .github/workflows/claude-code-review.yml
+- name: Run Claude Code Review
+  uses: anthropics/claude-code-action@v1
+  with:
+    prompt: |
+      Do a line-by-line code review of this PR:
+      - Code quality and best practices
+      - Potential bugs or issues
+      - Performance considerations
+      - Security concerns
+      - Test coverage
+
+      If you find issues, ask @Jules to fix them via PR review comment.
+    claude_args: |
+      --model opus
+      --allowed-tools "Bash(gh:*),Bash(yarn:*),Read,Glob,Grep,mcp__playwright__*"
+```
+
+Claude Code with Opus is thorough. In my experience, it catches real issues more than half the time—bugs that would otherwise surface in production.
+
+The review should evolve based on what slips through. Track patterns in escaped bugs and add specific checks to your review prompt.
+
+### Step 5: Iterate Until Green
+
+Jules gets review feedback and makes changes. The loop continues until:
+- All CI checks pass
+- Claude Code approves
+- (Optional) Human spot-check
+
+### Step 6: Merge
+
+When everything is green, ship it.
+
+---
+
+## The Skills Multiplier
+
+Here's what 10x's this entire workflow: **Skills**.
+
+[Skills.sh](https://skills.sh) is an open ecosystem of reusable capabilities for AI agents—procedural knowledge they can apply instantly.
+
+Install the essential meta-skill:
+
+```bash
+npx skills add https://github.com/vercel-labs/skills --skill find-skills
+```
+
+Then in any project, ask Claude Code:
+
+```
+/find-skills
+```
+
+It discovers and installs relevant skills for your stack: React patterns, testing strategies, security checklists, deployment procedures.
+
+Skills are stored in `.claude/` and persist across sessions. Your agents get smarter project by project.
+
+---
+
+## The Prerequisite to All Prerequisites
+
+The most important insight from automating development:
+
+> **You can only automate what you understand.**
+
+When an agent makes a mistake, you need to understand *why* your workflow didn't catch it. When the system produces unexpected results, you debug the process, not just the code.
+
+I don't read code anymore. But I understand every system I automate. That's what makes this work.
+
+If you try to automate something you don't understand:
+- You won't recognize when the agent is wrong
+- You can't improve the workflow
+- You'll ship bugs to production
+
+The goal isn't to remove humans. It's to move humans to where they add the most value: understanding problems, defining requirements, verifying solutions.
+
+Agents handle the rest.
+
+---
+
+## Getting Started
+
+**CTOs and Tech Leads:** Audit your CI first. Measure how long it takes. Count your flaky tests. Map the path from green CI to production deployment. Fix these before adding agents.
+
+**Senior Engineers:** Pick one well-tested module. Set up Claude Code review. Measure what it catches. Iterate on your review prompt until it's catching the issues that matter to your codebase.
+
+**Startup Founders:** This is leverage. While competitors hire engineers and wait for them to ramp up, you're shipping features with AI agents. The prerequisites are an investment—they compound over time.
+
+---
+
+## Resources
+
+**Tools:**
+- [spike.land/features/ai-tools](/features/ai-tools) — Claude Code and OpenClaw
+- [skills.sh](https://skills.sh) — Agent skills directory
+- [jules.google](https://jules.google) — Async coding agent
+
+**Get started now:**
+```bash
+# Install the skill that finds other skills
+npx skills add https://github.com/vercel-labs/skills --skill find-skills
+
+# In your project, discover relevant skills
+claude
+> /find-skills
+```
+
+**Fix your prerequisites first:**
+1. Get CI under 10 minutes
+2. Eliminate flaky tests
+3. Add TypeScript strict mode
+4. Reach 100% coverage on business logic
+
+Then automate everything.
+
+---
+
+*This article was planned by AI agents and written based on an interview with someone who hasn't looked at code in months—but ships features every day.*
