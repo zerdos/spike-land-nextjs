@@ -364,6 +364,26 @@ Claude Code will:
 
 The plan becomes your ticket.
 
+**Customize Claude Code's behavior:**
+
+Create a `CLAUDE.md` file in your project root to give Claude permanent context:
+
+```markdown
+# CLAUDE.md
+
+## Project Context
+- Next.js 15 with App Router
+- Prisma + PostgreSQL
+- shadcn/ui components
+
+## Conventions
+- All API routes need auth middleware
+- Tests go in __tests__/ directories
+- Use Zod for validation schemas
+```
+
+This file persists across sessions. Claude reads it automatically and follows your team's patterns.
+
 **Why planning mode is safe:**
 
 Claude Code in planning mode operates read-only. It explores your codebase, asks questions, and produces documentation—but it doesn't modify files. You control exactly which tools are available:
@@ -534,6 +554,29 @@ jobs:
             --model opus
             --allowed-tools "Bash(gh:*),Bash(yarn:*),Read,Glob,Grep,mcp__playwright__*"
 ```
+
+**Advanced review capabilities:**
+
+The `mcp__playwright__*` tools let Claude Code spin up real browsers to test the app:
+
+```yaml
+# Claude can verify UI changes visually
+claude_args: |
+  --allowed-tools "mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot,mcp__playwright__browser_click"
+```
+
+**Parallel specialized reviewers:**
+
+Claude can spawn subagents for focused checks:
+
+```
+Review this PR using specialized subagents:
+- Security subagent: Check for OWASP top 10 vulnerabilities
+- Performance subagent: Identify N+1 queries and missing indexes
+- Accessibility subagent: Verify ARIA labels and keyboard navigation
+```
+
+Each subagent focuses on one concern, then results are synthesized. This catches issues that a single reviewer would miss.
 
 Claude Code with Opus is thorough. In my experience, it catches real issues more than half the time—bugs that would otherwise surface in production.
 
@@ -778,6 +821,41 @@ The goal isn't to remove humans. It's to move humans to where they add the most 
 
 Agents handle the rest.
 
+### The New Developer Role: Pipeline Optimizer
+
+The developer's job is shifting:
+
+| Before | After |
+|--------|-------|
+| Write features | Define requirements |
+| Debug code | Tune review prompts |
+| Run tests manually | Configure CI sharding |
+| Code review PRs | Approve AI-generated plans |
+
+You're not replacing yourself—you're becoming the **architect of the automation**. Every escaped bug is an opportunity to improve your review prompt. Every slow CI run is a chance to optimize parallelization.
+
+**The throughput difference:**
+
+| Traditional | With AI Agents |
+|-------------|----------------|
+| Months for major features | Days |
+| Days for bug fixes | Hours |
+| Hours for small changes | Minutes |
+
+This isn't incremental improvement. It's a fundamentally different velocity.
+
+### Try It Now: Vibe Code a Prototype
+
+Want to see this in action without setting up a full pipeline?
+
+[spike.land/my-apps](https://spike.land/my-apps) lets you prototype React apps instantly:
+- Write code, see it render in real-time
+- AI assistance built in
+- No build step, no configuration
+- Share prototypes with a URL
+
+It's the fastest path from idea to working UI.
+
 ---
 
 ## Getting Started
@@ -826,11 +904,14 @@ The same way you handle human mistakes: with tests, code review, and CI. The que
 
 **Get started now:**
 ```bash
-# Install the skill that finds other skills
+# Start a new project with Claude Code
+claude
+> /init  # Creates CLAUDE.md with project context
+
+# Install the skill discovery meta-skill
 npx skills add https://github.com/vercel-labs/skills --skill find-skills
 
-# In your project, discover relevant skills
-claude
+# Discover and install relevant skills
 > /find-skills
 ```
 
