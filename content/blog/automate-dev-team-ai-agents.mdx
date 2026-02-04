@@ -364,6 +364,16 @@ Claude Code will:
 
 The plan becomes your ticket.
 
+**Why planning mode is safe:**
+
+Claude Code in planning mode operates read-only. It explores your codebase, asks questions, and produces documentation—but it doesn't modify files. You control exactly which tools are available:
+
+```bash
+claude --model opus --allowedTools "Read,Glob,Grep,Task"
+```
+
+No `--dangerously-skip-permissions` needed. The agent can research extensively without any risk to your codebase.
+
 ### Step 2: Hand to Jules
 
 Jules is Google's async coding agent. At £20/month for 100 tickets/day, the economics are absurd.
@@ -380,9 +390,11 @@ QUEUED → PLANNING → AWAITING_PLAN_APPROVAL → IN_PROGRESS → COMPLETED
 | Multi-file implementation | ✅ | |
 | Async background work | ✅ | |
 | Follow detailed plan | ✅ | |
+| Sandboxed execution (security) | ✅ | |
 | Interactive exploration | | ✅ |
 | Real-time pair programming | | ✅ |
 | Planning & research | | ✅ |
+| Safe read-only exploration | | ✅ |
 
 **Task prompt template:**
 
@@ -427,6 +439,30 @@ Post your plan as a Jules task:
 3. Waits for your approval
 4. Writes the code
 5. Opens a PR
+
+#### Why Jules for Implementation (Not Just Speed)
+
+**Security through isolation:**
+
+Jules runs on remote servers in a controlled environment. You configure exactly which MCP tools it has access to. It can't touch your local machine, your secrets, or resources you haven't explicitly granted.
+
+This isolation is a feature:
+- No access to your `.env` files or credentials
+- No ability to run arbitrary commands on your machine
+- No risk of accidental `rm -rf` or destructive operations
+- Audit trail of exactly what the agent did
+
+**Plan to Done:**
+
+When you hand a plan to Jules, you're not just delegating implementation—you're delegating the entire completion loop:
+
+1. Jules implements the plan
+2. CI fails? Jules reads the logs and fixes the issue
+3. Reviewer requests changes? Jules addresses the feedback
+4. Tests break? Jules updates them
+5. Repeat until everything is green
+
+You approve a plan. Jules delivers a merged PR. That's "Plan to Done."
 
 ### Step 3: CI Runs
 
