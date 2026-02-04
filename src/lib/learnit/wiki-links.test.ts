@@ -32,4 +32,12 @@ describe("Wiki Links Parser", () => {
     const { content } = parseWikiLinks(input);
     expect(content).toBe("[React](/learnit/react).");
   });
+
+  it("should handle hierarchical links", () => {
+    const input = "See [[Frontend/React]].";
+    const { content, links } = parseWikiLinks(input);
+
+    expect(links).toEqual(["frontend/react"]);
+    expect(content).toContain("[Frontend/React](/learnit/frontend/react)");
+  });
 });
