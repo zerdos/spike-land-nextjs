@@ -23,7 +23,7 @@
   "devDependencies": {
     "@remotion/eslint-config": "4.0.417",
     "@remotion/tailwind": "4.0.417",
-    "@types/react": "19.2.10",
+    "@types/react": "19.2.11",
     "@types/react-dom": "19.2.3",
     "autoprefixer": "10.4.24",
     "eslint": "9.39.2",
