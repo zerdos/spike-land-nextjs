@@ -43,41 +43,35 @@ The realization hit me: **If the plan is good, even a mediocre executor can ship
 
 ![Traditional development approach vs AI agent approach - comparing days of planning and high costs to 70-minute AI-powered delivery](/blog/automate-dev-team/traditional-vs-ai-approach.jpg)
 
-This wasn't my first experiment. I've been building with AI agents for months:
-
-- **[Pixel](https://spike.land/pixel)** — A revenue-generating platform with token economy and Stripe integration, built almost entirely by agents
-- **[Orbit](https://spike.land/orbit)** — A social media management suite with 6 AI features (Pulse analytics, Smart Inbox, Allocator, Scout, Brand Brain, Relay), launching soon
-- **[My-Apps](https://spike.land/features/my-apps)** — An AI-native IDE with streaming code execution, where you edit React components and see them render in real-time
-
-The pattern is consistent: good planning multiplies agent effectiveness.
+This isn't an isolated result. Microsoft reports that 20-30% of their code is now AI-generated. Google's Sundar Pichai confirmed 25-30% of their code is AI-assisted. The pattern is industry-wide: **good planning multiplies agent effectiveness.**
 
 ---
 
-## Real Results: AI Coding Adoption in 2025
+## Real Results: AI Coding Adoption in 2026
 
-Before we dive into the how, let's look at the numbers:
+Before diving into the how, let's look at verified numbers:
 
 | Metric | Value | Source |
 |--------|-------|--------|
-| Claude Code annualized revenue | $1B in 6 months | Anthropic |
-| Developer adoption rate | 42.8% using AI tools daily | Stack Overflow 2025 |
-| Fortune 100 using GitHub Copilot | 90% | GitHub |
-| Productivity gain (measured) | 26-55% faster task completion | Multiple studies |
+| Developer adoption rate | 84% using AI tools | Second Talent 2025 |
+| Organizational adoption | 91% of companies | DX Q4 2025 |
+| Task completion speed | 55% faster | GitHub-Accenture RCT |
+| AI-generated code (Microsoft) | 20-30% | Satya Nadella |
+| AI-assisted code (Google) | 25-30% | Sundar Pichai |
 
-The testimonials are even more striking:
+**The balanced perspective:**
 
-> "100% of my code for 2+ months. 22 PRs yesterday."
-> — Boris Cherny, Software Engineer
-
-> "Claude Code generated what we built in a year, in an hour."
-> — Google Engineer (viral tweet, 5.4M views)
-
-And here's the productivity data that explains why:
+| Concern | Data Point | Source |
+|---------|-----------|--------|
+| Complex task performance | 19% slower in familiar codebases | METR Study |
+| Code security vulnerabilities | 48% of AI-generated code | Veracode 2025 |
+| Favorable views of AI tools | Dropped from 70%+ to ~60% | 2023-2025 surveys |
+| AI project failure rate | 80% | Accenture |
 
 > "Developers spend only 16% of their time actually coding. The other 84% goes to operational tasks, debugging, and code reviews."
 > — IDC Report
 
-That 84% is exactly what AI agents excel at automating.
+That 84% is where AI agents add the most value—but the 48% security vulnerability rate means **your CI pipeline is non-negotiable**.
 
 ---
 
@@ -100,6 +94,65 @@ Your job? Define what you want. Verify it works. That's it.
 
 ![AI development pipeline showing Planning with Claude Code, Implementation, CI/CD, Code Review with Opus, Fixes, and Merge to Production](/blog/automate-dev-team/ai-development-pipeline.jpg)
 
+---
+
+## Workflows vs Agents: When to Use Each
+
+Not every task needs an autonomous agent. Anthropic's own guidance states: *"Many teams find traditional workflows perform well even where agents could be applied."*
+
+**Decision Framework:**
+
+| Scenario | Use Workflows | Use Agents |
+|----------|--------------|------------|
+| Well-defined, repeatable tasks | ✅ | |
+| Static code generation (templates) | ✅ | |
+| Linting, formatting, type-checking | ✅ | |
+| Exploratory research | | ✅ |
+| Multi-step reasoning with unknowns | | ✅ |
+| Codebase exploration | | ✅ |
+| Dynamic problem-solving | | ✅ |
+
+**The hybrid reality:** Prototype with agents, then delegate to workflows.
+
+When Claude Code explores your codebase and produces a plan, that's agentic. When Jules follows that plan step-by-step through your CI pipeline, that's a workflow. The combination is more powerful than either alone.
+
+**Warning: Agent failure modes exist.**
+
+- **Gartner predicts** 30% of agentic AI projects will be abandoned after proof-of-concept by end of 2025
+- **Infinite loops**: Agents can get stuck retrying failed approaches
+- **Context drift**: Long-running agents may lose track of the original goal
+- **"Code slop"**: Over-engineering, unnecessary abstractions, verbose solutions
+
+Mitigation: Clear acceptance criteria, iteration limits, and human checkpoints.
+
+---
+
+## The New Developer Skillset
+
+The job isn't "prompt engineering" anymore. Anthropic now calls it **context engineering**:
+
+> *"Building with LLMs is less about finding the right words and more about what configuration of context is most likely to generate desired behavior."*
+
+**Skills that matter now:**
+
+| Skill | What It Means | Impact |
+|-------|--------------|--------|
+| Context window optimization | Selecting what information to include/exclude | 40% performance improvement, 65% cost reduction |
+| Success criteria definition | Writing testable acceptance criteria | Agents know when they're done |
+| Guardrail architecture | Designing constraints that prevent failures | Catch 85%+ of security issues |
+| Agent observability | Understanding what agents are doing and why | Debug agent behavior, not just code |
+
+**Debugging agents vs traditional code:**
+
+| Traditional Debugging | Agent Debugging |
+|----------------------|-----------------|
+| Read stack trace | Read agent logs and reasoning |
+| Check variable state | Check context window contents |
+| Step through code | Review tool call sequence |
+| Fix the bug | Improve the prompt or guardrails |
+
+The skill shift: From "write correct code" to "design systems that produce correct code."
+
 ### Human-on-the-Loop, Not Human-in-the-Loop
 
 A common fear: "What if the AI breaks production?"
@@ -116,7 +169,7 @@ But here's the thing nobody tells you: **this only works if your codebase is rea
 
 ## The Foundation: Why Your Codebase Must Be Agent-Ready
 
-You cannot automate chaos.
+**Key insight: You cannot automate chaos.**
 
 If your CI takes 45 minutes, agents waste their time waiting. If your tests flake randomly, agents chase phantom bugs. If your codebase lacks structure, every change introduces regressions.
 
@@ -288,31 +341,11 @@ Create a daily task to review skipped tests. Don't let them accumulate.
 
 **Level 3: Smoke Tests (Production Health)**
 
-Run these against production daily:
-
-```bash
-#!/bin/bash
-# scripts/smoke-test.sh
-
-test_endpoint "Homepage" "GET" "/" "200"
-test_endpoint "API health" "GET" "/api/health" "200"
-test_endpoint_contains "Homepage loads" "/" "html"
-
-if [ $TESTS_FAILED -gt 0 ]; then
-  # Auto-create issue on failure
-  gh issue create --title "Smoke test failure $(date)" \
-    --body "Production health check failed. Investigate immediately."
-  exit 1
-fi
-
-echo "All smoke tests passed!"
-```
-
-When production breaks, you want to know immediately—not when a user reports it.
+Run simple health checks against production daily. Auto-create issues when they fail. When production breaks, you want to know immediately—not when a user reports it.
 
 #### 3. Trust Your CI
 
-The ultimate goal:
+**The ultimate goal:**
 
 > **Green CI = Safe to Deploy**
 
@@ -324,18 +357,54 @@ Building that trust requires:
 - Fast execution (so it runs on every commit)
 - Clear failure messages (so agents can self-correct)
 
-### Addressing Hallucination Concerns
+### Real Risks and How to Mitigate Them
 
 "But AI hallucinates! What about bugs?"
 
-Here's the insight: **tests catch AI errors the same way they catch human errors**. If your test suite is comprehensive, it doesn't matter who wrote the code.
+The honest answer: **Yes, AI makes mistakes—and some are worse than human errors.** Here's what you're actually facing:
 
-- TypeScript catches type mismatches at compile time
-- Unit tests verify business logic
-- E2E tests confirm user flows work
-- Coverage requirements block untested paths
+#### Security Risks
 
-The question isn't "can AI make mistakes?" (yes, obviously). The question is "does your CI catch mistakes before they reach production?" If yes, you're ready for agent automation.
+**Prompt injection is OWASP #1 for LLM applications**, affecting 73% of deployments.
+
+Real vulnerabilities discovered in 2025:
+- **CVE-2025-59944** (Cursor IDE): Remote code execution via malicious codebase files
+- **CamoLeak** (Copilot): Silent exfiltration of secrets through AI suggestions (CVSS 9.6)
+- **Secret leakage**: 6.4% of Copilot-active repos leak secrets—40% higher than baseline
+
+Simon Willison's "lethal trifecta" for prompt injection vulnerability:
+1. Untrusted input enters the context
+2. The agent has access to powerful tools
+3. No verification layer between agent and action
+
+#### Non-Determinism
+
+Even `temperature=0` isn't deterministic. Floating-point operations, batching, and mixture-of-experts routing all introduce variation. Claude has no deterministic seed parameter.
+
+**Strategy**: Design for robustness to minor variations. Tests should verify behavior, not exact output.
+
+#### Multi-Agent Coordination
+
+- **36.94% of multi-agent failures** are coordination issues (agents working at cross-purposes)
+- Complexity scales **quadratically** with agent count
+- Accuracy gains **saturate beyond 4 agents**
+
+#### Real Failure Stories
+
+- **Replit database deletion (July 2025)**: AI agent wiped 1000+ customer records during "cleanup"
+- **Air Canada chatbot lawsuit**: Company held legally liable for AI's incorrect refund policy
+- **Abandonment rate**: 42% of companies abandoning AI initiatives (up from 17%)
+
+#### Mitigation Checklist
+
+- [ ] **Sandboxed execution** (gVisor, Docker) — agents can't escape their container
+- [ ] **Network egress controls** — whitelist allowed external calls
+- [ ] **Human-in-the-loop for destructive ops** — require approval for delete/drop/reset
+- [ ] **Cost caps with hard limits** — prevent runaway API bills
+- [ ] **Verification layer** — separate model validates agent actions before execution
+- [ ] **Audit logging** — every tool call recorded with context
+
+The question isn't "can AI make mistakes?" (yes, obviously). The question is **"does your workflow catch mistakes before they reach production?"** If your CI is trustworthy and your guardrails are solid, you're ready for agent automation.
 
 ---
 
@@ -441,18 +510,6 @@ QUEUED → PLANNING → AWAITING_PLAN_APPROVAL → IN_PROGRESS → COMPLETED
 - See src/lib/validations/auth.ts for Zod schemas
 ```
 
-**CLI commands for monitoring:**
-
-```bash
-# List all sessions
-gh api /repos/owner/repo/codespaces --jq '.codespaces[]'
-
-# Or via Jules MCP:
-jules_list_sessions --status IN_PROGRESS
-jules_get_session --session_id "abc123"
-jules_approve_plan --session_id "abc123"
-```
-
 Post your plan as a Jules task:
 1. Jules analyzes the plan
 2. Proposes an implementation approach
@@ -555,30 +612,11 @@ jobs:
             --allowed-tools "Bash(gh:*),Bash(yarn:*),Read,Glob,Grep,mcp__playwright__*"
 ```
 
-**Advanced review capabilities:**
+**Advanced capabilities:**
 
-The `mcp__playwright__*` tools let Claude Code spin up real browsers to test the app:
+Claude Code can spawn specialized subagents for security audits, performance checks, and accessibility verification. The `mcp__playwright__*` tools even allow visual verification of UI changes.
 
-```yaml
-# Claude can verify UI changes visually
-claude_args: |
-  --allowed-tools "mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot,mcp__playwright__browser_click"
-```
-
-**Parallel specialized reviewers:**
-
-Claude can spawn subagents for focused checks:
-
-```
-Review this PR using specialized subagents:
-- Security subagent: Check for OWASP top 10 vulnerabilities
-- Performance subagent: Identify N+1 queries and missing indexes
-- Accessibility subagent: Verify ARIA labels and keyboard navigation
-```
-
-Each subagent focuses on one concern, then results are synthesized. This catches issues that a single reviewer would miss.
-
-Claude Code with Opus is thorough. In my experience, it catches real issues more than half the time—bugs that would otherwise surface in production.
+In my experience, Claude Code with Opus catches real issues more than half the time—bugs that would otherwise surface in production.
 
 The review should evolve based on what slips through. Track patterns in escaped bugs and add specific checks to your review prompt.
 
@@ -592,6 +630,88 @@ Jules gets review feedback and makes changes. The loop continues until:
 ### Step 6: Merge
 
 When everything is green, ship it.
+
+---
+
+## A Concrete Example: From Ticket to Merged PR
+
+Let's trace a realistic multi-step scenario showing where agents excel—and where humans intervene.
+
+**Ticket**: "Add password reset functionality with email verification"
+
+**Day 1, 9:00 AM — Planning (Claude Code)**
+
+```
+> Plan password reset feature using 8 agents. Explore existing auth patterns,
+> email infrastructure, and security requirements.
+```
+
+Agents explore:
+- 2 agents: Existing auth flows in `src/lib/auth.ts` and `src/middleware.ts`
+- 2 agents: Email service configuration, template patterns
+- 2 agents: Security requirements (token expiry, rate limiting, OWASP guidelines)
+- 2 agents: Database schema for reset tokens, existing user model
+
+Output: 12-file implementation plan with acceptance criteria.
+
+**Day 1, 9:45 AM — Human Review**
+
+You review the plan. Notice agents missed: "What if user requests reset for non-existent email?" Add to acceptance criteria: "Return same response for existing/non-existing emails (prevent enumeration)."
+
+**Day 1, 10:00 AM — Implementation (Jules)**
+
+Hand plan to Jules. It creates:
+- `src/app/api/auth/reset-request/route.ts`
+- `src/app/api/auth/reset-confirm/route.ts`
+- `src/lib/email/templates/password-reset.tsx`
+- `src/lib/validations/reset.ts`
+- Unit tests for each module
+- E2E test for happy path
+
+**Day 1, 10:30 AM — CI Fails**
+
+```
+FAIL src/app/api/auth/reset-confirm/route.test.ts
+  ✕ rejects expired tokens (4ms)
+    Expected: TOKEN_EXPIRED
+    Received: INVALID_TOKEN
+```
+
+Jules reads CI logs, identifies the issue (wrong error code), fixes it.
+
+**Day 1, 10:45 AM — Code Review (Claude Code Opus)**
+
+Review catches:
+- Missing rate limiting on reset-request endpoint
+- Token stored in plain text (should be hashed)
+- No audit log for password changes
+
+Jules addresses first two. Third requires architectural decision.
+
+**Day 1, 11:00 AM — Human Intervention Required**
+
+```
+Jules: "Audit logging requires choosing between:
+1. Add to existing logging table (fast, limited schema)
+2. Create dedicated audit_events table (flexible, more work)
+3. Use external service (PostHog/Segment)
+
+Please advise which approach to take."
+```
+
+You choose option 2. Jules continues.
+
+**Day 1, 11:45 AM — Final Review**
+
+All CI checks pass. Claude Code approves. You do a 5-minute spot check of the critical paths.
+
+**Day 1, 12:00 PM — Merge**
+
+Total human time: ~45 minutes of review and decisions
+Total elapsed time: 3 hours
+Traditional estimate: 2-3 days
+
+**Key insight**: The agent got stuck exactly once—on an architectural decision that required business context. Everything else was automated.
 
 ---
 
@@ -612,23 +732,7 @@ When everything is green, ship it.
 | Back-and-forth rounds | 4-8 | 1-2 |
 | Security issues caught | ~40% | ~85% |
 
-### QA/Testing: Self-Healing Test Suites
-
-**The concept:** Tests that update themselves when UI changes.
-
-```typescript
-// Before: Brittle selector
-await page.click('[data-testid="submit-btn"]');
-
-// After: Self-healing with AI
-async function clickButton(page: Page, intent: string) {
-  const snapshot = await page.accessibility.snapshot();
-  const selector = await findBestSelector(snapshot, intent);
-  await page.click(selector);
-}
-
-await clickButton(page, 'submit the form');
-```
+### QA/Testing: AI-Assisted Test Generation
 
 **Edge case detection from PR diffs:**
 
@@ -645,136 +749,20 @@ await clickButton(page, 'submit the form');
     "
 ```
 
-**CI parallelization impact:**
-
-| Configuration | Duration |
-|--------------|----------|
-| Sequential tests | 38 minutes |
-| 4 shards | 12 minutes |
-| 8 shards + caching | 9 minutes |
-
 ### Onboarding: AI as Codebase Guide
 
-New developer questions with AI answers:
+New developers can ask Claude Code questions like:
+- "Where is authentication handled?"
+- "How do I add a new API endpoint?"
+- "E2E test failing locally, where do I start?"
 
-**Q: "Where is authentication handled?"**
-```
-Authentication flows through these layers:
-1. Middleware: src/middleware.ts (lines 12-45) - validates JWT
-2. Auth library: src/lib/auth.ts - NextAuth configuration
-3. Session provider: src/providers/SessionProvider.tsx
-4. Protected routes: src/app/(dashboard)/layout.tsx
-
-Related docs: docs/AUTH_FLOW.md
-```
-
-**Q: "How do I add a new API endpoint?"**
-```
-Follow the pattern in src/app/api/users/route.ts:
-1. Create route.ts in src/app/api/[resource]/
-2. Export GET/POST/PUT/DELETE handlers
-3. Add Zod validation schema in src/lib/validations/
-4. Add tests in __tests__/api/
-5. Update API_REFERENCE.md
-
-Required: All endpoints need auth check and error handling.
-```
-
-**Q: "E2E test failing locally, where do I start?"**
-```
-Debug checklist:
-1. Is the dev server running? (yarn dev)
-2. Is the database seeded? (yarn db:seed)
-3. Check browser console for errors
-4. Run single test: yarn test:e2e --grep "test name"
-5. Check e2e/screenshots/ for failure captures
-
-Common causes:
-- Stale database state → yarn db:reset
-- Port conflict → kill process on 3000
-- Missing env vars → check .env.example
-```
-
-**Q: "Explain the monorepo structure"**
-```
-spike-land-nextjs/
-├── src/                    # Next.js web app
-│   ├── app/               # App Router pages
-│   ├── components/        # React components
-│   └── lib/               # Utilities
-├── packages/
-│   ├── code/              # Monaco editor (Vite)
-│   ├── testing.spike.land/# Backend worker (CF)
-│   ├── js.spike.land/     # Transpiler (CF)
-│   └── shared/            # Shared types/utils
-└── e2e/                   # Playwright tests
-```
+Claude Code explores your codebase, finds the relevant files and patterns, and explains them with specific line references. This turns a multi-hour onboarding task into a 5-minute conversation.
 
 ### Documentation: CI-Enforced Freshness
 
 **The problem:** Docs drift from code. Nobody trusts them.
 
-**The solution:** Docs verification as merge blocker.
-
-```yaml
-# .github/workflows/docs-check.yml
-name: Documentation Freshness
-
-on:
-  pull_request:
-    paths:
-      - 'src/**'
-      - 'packages/**'
-
-jobs:
-  verify-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Check API docs match implementation
-        run: |
-          # Generate OpenAPI from route handlers
-          yarn generate:openapi
-
-          # Compare with committed docs
-          if ! diff -q openapi.generated.json docs/openapi.json; then
-            echo "::error::API documentation is out of date"
-            echo "Run 'yarn generate:openapi' and commit the changes"
-            exit 1
-          fi
-
-      - name: Verify README code examples
-        run: |
-          # Extract code blocks from README
-          # Run them to verify they still work
-          yarn verify:readme-examples
-
-      - name: Check for undocumented exports
-        run: |
-          # Find public exports without JSDoc
-          yarn lint:missing-docs
-```
-
-**Auto-generated documentation:**
-
-```typescript
-// src/lib/api-client.ts
-
-/**
- * @description Fetches user profile data
- * @param userId - The user's unique identifier
- * @returns User profile object or null if not found
- * @example
- * const profile = await getProfile('user_123');
- * console.log(profile.displayName);
- */
-export async function getProfile(userId: string): Promise<Profile | null> {
-  // Implementation...
-}
-```
-
-Run `yarn generate:docs` to produce markdown documentation from JSDoc comments.
+**The solution:** Add docs verification as a merge blocker. Generate OpenAPI from route handlers and fail CI if committed docs don't match. This ensures documentation stays accurate.
 
 ---
 
@@ -804,7 +792,7 @@ Skills are stored in `.claude/` and persist across sessions. Your agents get sma
 
 ## The Foundation: Why Understanding Beats Automation
 
-The most important insight from automating development:
+**The most important insight from automating development:**
 
 > **You can only automate what you understand.**
 
@@ -843,18 +831,6 @@ You're not replacing yourself—you're becoming the **architect of the automatio
 | Hours for small changes | Minutes |
 
 This isn't incremental improvement. It's a fundamentally different velocity.
-
-### Try It Now: Vibe Code a Prototype
-
-Want to see this in action without setting up a full pipeline?
-
-[spike.land/my-apps](https://spike.land/my-apps) lets you prototype React apps instantly:
-- Write code, see it render in real-time
-- AI assistance built in
-- No build step, no configuration
-- Share prototypes with a URL
-
-It's the fastest path from idea to working UI.
 
 ---
 

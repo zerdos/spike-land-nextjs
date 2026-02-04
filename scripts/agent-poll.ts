@@ -662,6 +662,24 @@ async function dequeueMessage(appId: string): Promise<string | null> {
 }
 
 /**
+ * Clean up Redis queue for a deleted/orphan app
+ */
+async function cleanupAppQueue(appId: string): Promise<void> {
+  const redisClient = getRedis();
+
+  // Remove from pending apps set
+  await redisClient.srem(KEYS.APPS_WITH_PENDING, appId);
+
+  // Delete the app's pending messages list
+  await redisClient.del(KEYS.APP_PENDING_MESSAGES(appId));
+
+  // Delete any agent working flag
+  await redisClient.del(KEYS.AGENT_WORKING(appId));
+
+  console.log(`  Cleaned up queue for deleted app ${appId}`);
+}
+
+/**
  * Mark agent as working on an app
  */
 async function setAgentWorking(appId: string, isWorking: boolean): Promise<void> {
@@ -672,8 +690,8 @@ async function setAgentWorking(appId: string, isWorking: boolean): Promise<void>
     await redisClient.del(KEYS.AGENT_WORKING(appId));
   }
 
-  // Also update in database
-  await getPrisma().app.update({
+  // Use updateMany to avoid P2025 error when app doesn't exist
+  await getPrisma().app.updateMany({
     where: { id: appId },
     data: {
       lastAgentActivity: isWorking ? new Date() : undefined,
@@ -1506,6 +1524,18 @@ async function processMessage(
 async function processApp(appId: string): Promise<void> {
   console.log(`\nProcessing app: ${appId}`);
 
+  // Check if app exists first to handle orphan messages
+  const app = await getPrisma().app.findUnique({
+    where: { id: appId },
+    select: { id: true },
+  });
+
+  if (!app) {
+    console.warn(`  App ${appId} not found - cleaning up orphan queue`);
+    await cleanupAppQueue(appId);
+    return;
+  }
+
   try {
     // Mark agent as working
     await setAgentWorking(appId, true);
@@ -1560,12 +1590,18 @@ async function processApp(appId: string): Promise<void> {
     console.log(`  Processed ${processedCount} messages`);
   } catch (error) {
     console.error(`  Error processing app ${appId}:`, error);
-    await addSystemMessage(
-      appId,
-      `Agent error: ${error instanceof Error ? error.message : "Unknown error"}`,
-    );
+    // Try to add error message, but don't fail if app was deleted mid-processing
+    try {
+      await addSystemMessage(
+        appId,
+        `Agent error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    } catch {
+      // App may have been deleted, just log and continue
+      console.warn(`  Could not add error message - app may have been deleted`);
+    }
   } finally {
-    // Mark agent as done
+    // Mark agent as done (uses updateMany so won't fail if app doesn't exist)
     await setAgentWorking(appId, false);
   }
 }
