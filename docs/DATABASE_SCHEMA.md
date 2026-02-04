@@ -2151,6 +2151,80 @@ erDiagram
   String resolvedById FK "nullable"
   DateTime createdAt
 }
+"learnit_content" {
+  String id PK
+  String path
+  String slug UK
+  String parentSlug "nullable"
+  String title
+  String description
+  String content
+  String wikiLinks
+  LearnItStatus status
+  DateTime generatedAt
+  String aiModel
+  String generatedById FK "nullable"
+  Int viewCount
+  DateTime createdAt
+  DateTime updatedAt
+  DateTime deletedAt "nullable"
+}
+"learnit_relations" {
+  String id PK
+  String fromTopicId FK
+  String toTopicId FK
+  LearnItRelationType type
+  Float strength
+  DateTime createdAt
+}
+"agency_portfolio_items" {
+  String id PK
+  String slug UK
+  String name
+  String description
+  String url "nullable"
+  String githubUrl "nullable"
+  String screenshots
+  String technologies
+  AgencyPortfolioCategory category
+  Boolean featured
+  Int sortOrder
+  DateTime createdAt
+  DateTime updatedAt
+}
+"agency_personas" {
+  String id PK
+  String slug UK
+  String name
+  String tagline
+  Json demographics
+  String psychographics
+  String painPoints
+  String triggers
+  String primaryHook
+  String adCopyVariations
+  Float predictedProfit
+  Float stressLevel
+  Int rank
+  String landingPageSlug "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"agency_inquiries" {
+  String id PK
+  String name
+  String email
+  String company "nullable"
+  String projectType "nullable"
+  String budget "nullable"
+  String timeline "nullable"
+  String description
+  String source "nullable"
+  String personaSlug "nullable"
+  AgencyInquiryStatus status
+  DateTime createdAt
+  DateTime updatedAt
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
@@ -2379,6 +2453,9 @@ erDiagram
 "creative_performance" }o--|| "creative_variants" : variant
 "creative_fatigue_alerts" }o--|| "creative_variants" : variant
 "creative_fatigue_alerts" }o--o| "users" : resolvedBy
+"learnit_content" }o--o| "users" : generatedBy
+"learnit_relations" }o--|| "learnit_content" : fromTopic
+"learnit_relations" }o--|| "learnit_content" : toTopic
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
 "_ConnectionToConnectionTag" }o--|| "connection_tags" : ConnectionTag
 ```
@@ -5082,6 +5159,95 @@ Properties as follows:
 - `resolvedAt`:
 - `resolvedById`:
 - `createdAt`:
+
+### `learnit_content`
+
+Properties as follows:
+
+- `id`:
+- `path`:
+- `slug`:
+- `parentSlug`:
+- `title`:
+- `description`:
+- `content`:
+- `wikiLinks`:
+- `status`:
+- `generatedAt`:
+- `aiModel`:
+- `generatedById`:
+- `viewCount`:
+- `createdAt`:
+- `updatedAt`:
+- `deletedAt`:
+
+### `learnit_relations`
+
+Properties as follows:
+
+- `id`:
+- `fromTopicId`:
+- `toTopicId`:
+- `type`:
+- `strength`:
+- `createdAt`:
+
+### `agency_portfolio_items`
+
+Properties as follows:
+
+- `id`:
+- `slug`:
+- `name`:
+- `description`:
+- `url`:
+- `githubUrl`:
+- `screenshots`:
+- `technologies`:
+- `category`:
+- `featured`:
+- `sortOrder`:
+- `createdAt`:
+- `updatedAt`:
+
+### `agency_personas`
+
+Properties as follows:
+
+- `id`:
+- `slug`:
+- `name`:
+- `tagline`:
+- `demographics`:
+- `psychographics`:
+- `painPoints`:
+- `triggers`:
+- `primaryHook`:
+- `adCopyVariations`:
+- `predictedProfit`:
+- `stressLevel`:
+- `rank`:
+- `landingPageSlug`:
+- `createdAt`:
+- `updatedAt`:
+
+### `agency_inquiries`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `email`:
+- `company`:
+- `projectType`:
+- `budget`:
+- `timeline`:
+- `description`:
+- `source`:
+- `personaSlug`:
+- `status`:
+- `createdAt`:
+- `updatedAt`:
 
 ### `_ConnectionToConnectionTag`
 
