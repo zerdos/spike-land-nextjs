@@ -837,6 +837,11 @@
     background: hsl(var(--muted) / 0.3);
   }
 
+  /* Remove bottom margin from paragraphs inside blockquotes */
+  .prose-blog blockquote > div > p {
+    margin-bottom: 0;
+  }
+
   /* Syntax highlighting - rehype-pretty-code */
   .prose-blog pre {
     position: relative;
