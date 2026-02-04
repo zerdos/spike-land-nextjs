@@ -25,8 +25,11 @@ export function Footer() {
     },
   });
 
-  // Hide footer on my-apps routes
-  if (pathname?.startsWith("/my-apps")) {
+  // Hide footer on my-apps and live routes
+  if (
+    pathname?.startsWith("/my-apps") || pathname?.startsWith("/live") ||
+    pathname?.startsWith("/orbit")
+  ) {
     return null;
   }
 
