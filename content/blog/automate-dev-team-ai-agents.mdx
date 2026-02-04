@@ -96,27 +96,23 @@ Your job? Define what you want. Verify it works. That's it.
 
 ---
 
-## Workflows vs Agents: When to Use Each
+## The CI/CD Pipeline as Agent Guardrails
 
-Not every task needs an autonomous agent. Anthropic's own guidance states: *"Many teams find traditional workflows perform well even where agents could be applied."*
+The distinction isn't "workflows vs agents" — it's about how agents operate within structured pipelines.
 
-**Decision Framework:**
+**Your CI/CD pipeline is deterministic:**
+- Lint → TypeScript → Unit tests → E2E → Build → Review → Merge
+- This sequence never changes. It's your safety net.
 
-| Scenario | Use Workflows | Use Agents |
-|----------|--------------|------------|
-| Well-defined, repeatable tasks | ✅ | |
-| Static code generation (templates) | ✅ | |
-| Linting, formatting, type-checking | ✅ | |
-| Exploratory research | | ✅ |
-| Multi-step reasoning with unknowns | | ✅ |
-| Codebase exploration | | ✅ |
-| Dynamic problem-solving | | ✅ |
+**Agents bring adaptability within that structure:**
+- Jules reads CI failure logs and decides how to fix them
+- Claude Code explores code to understand what review comments mean
+- Both make dynamic decisions — that's what makes them agents
 
-**The hybrid reality:** Prototype with agents, then delegate to workflows.
+**Why this matters:**
+The pipeline constrains what agents can do. They can't merge without passing tests. They can't bypass review. They can't deploy without CI green. The deterministic workflow is what makes autonomous agents safe.
 
-When Claude Code explores your codebase and produces a plan, that's agentic. When Jules follows that plan step-by-step through your CI pipeline, that's a workflow. The combination is more powerful than either alone.
-
-**Warning: Agent failure modes exist.**
+**Warning: Agent failure modes still exist.**
 
 - **Gartner predicts** 30% of agentic AI projects will be abandoned after proof-of-concept by end of 2025
 - **Infinite loops**: Agents can get stuck retrying failed approaches
