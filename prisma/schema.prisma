@@ -117,6 +117,7 @@ model User {
 
   // LearnIt Content relation
   learnItContent    LearnItContent[]
+  createdApps       CreatedApp[]
 
   @@map("users")
 }
@@ -5380,4 +5381,30 @@ enum AgencyInquiryStatus {
   PROPOSAL_SENT // Proposal delivered
   WON           // Converted to client
   LOST          // Did not convert
+}
+
+model CreatedApp {
+  id            String           @id @default(cuid())
+  path          String[]
+  slug          String           @unique
+  title         String
+  description   String           @db.Text
+  codespaceId   String           @unique
+  codespaceUrl  String
+  status        CreatedAppStatus @default(GENERATING)
+  promptUsed    String           @db.Text
+  viewCount     Int              @default(0)
+  outgoingLinks String[]
+  generatedById String?
+  generatedBy   User?            @relation(fields: [generatedById], references: [id])
+  generatedAt   DateTime         @default(now())
+
+  @@index([slug])
+  @@map("created_apps")
+}
+
+enum CreatedAppStatus {
+  GENERATING
+  PUBLISHED
+  FAILED
 }

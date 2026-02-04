@@ -2225,6 +2225,21 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
+"created_apps" {
+  String id PK
+  String path
+  String slug UK
+  String title
+  String description
+  String codespaceId UK
+  String codespaceUrl
+  CreatedAppStatus status
+  String promptUsed
+  Int viewCount
+  String outgoingLinks
+  String generatedById FK "nullable"
+  DateTime generatedAt
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
@@ -2456,6 +2471,7 @@ erDiagram
 "learnit_content" }o--o| "users" : generatedBy
 "learnit_relations" }o--|| "learnit_content" : fromTopic
 "learnit_relations" }o--|| "learnit_content" : toTopic
+"created_apps" }o--o| "users" : generatedBy
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
 "_ConnectionToConnectionTag" }o--|| "connection_tags" : ConnectionTag
 ```
@@ -5248,6 +5264,24 @@ Properties as follows:
 - `status`:
 - `createdAt`:
 - `updatedAt`:
+
+### `created_apps`
+
+Properties as follows:
+
+- `id`:
+- `path`:
+- `slug`:
+- `title`:
+- `description`:
+- `codespaceId`:
+- `codespaceUrl`:
+- `status`:
+- `promptUsed`:
+- `viewCount`:
+- `outgoingLinks`:
+- `generatedById`:
+- `generatedAt`:
 
 ### `_ConnectionToConnectionTag`
 
