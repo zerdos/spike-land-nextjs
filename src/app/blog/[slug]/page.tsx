@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { serialize } from "next-mdx-remote/serialize";
 import { notFound } from "next/navigation";
+import rehypePrettyCode from "rehype-pretty-code";
+import remarkGfm from "remark-gfm";
 
 import { BlogHeader, Prose } from "@/components/blog";
 import { MDXContent } from "@/components/blog/MDXContent";
@@ -77,7 +79,17 @@ export default async function BlogPostPage({ params }: PageProps) {
   const { frontmatter, content, readingTime } = post;
 
   // Serialize MDX content for client-side rendering with interactive components
-  const mdxSource = await serialize(content);
+  const mdxSource = await serialize(content, {
+    mdxOptions: {
+      remarkPlugins: [remarkGfm],
+      rehypePlugins: [
+        [rehypePrettyCode, {
+          theme: "github-dark",
+          keepBackground: true,
+        }],
+      ],
+    },
+  });
 
   const allPosts = getAllPosts();
   const currentIndex = allPosts.findIndex((p) => p.slug === slug);
