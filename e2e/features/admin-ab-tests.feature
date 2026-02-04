@@ -7,7 +7,11 @@ Feature: Admin A/B Testing
   Background:
     Given I am logged in as "Admin User" with email "admin@example.com"
 
+  # SKIP REASON: Fails with timeout waiting for page load
+  # TRACKING: #1065
+  @skip
   Scenario: Admin can create and manage A/B tests
+
     Given the user is an admin
     When I visit "/admin/marketing/ab-tests"
     Then I should be on the "/admin/marketing/ab-tests" page

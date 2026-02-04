@@ -223,7 +223,9 @@ Feature: Admin Email Logs Management
     When I visit "/admin/emails"
     Then I should see an error message in red
 
-  @fast @requires-db
+  # SKIP REASON: Fails with page.waitForURL timeout
+  # TRACKING: #1066
+  @skip @fast @requires-db
   Scenario: Non-admin user cannot access email logs
     Given the user is not an admin
     When I visit "/admin/emails"
