@@ -73,7 +73,9 @@ describe("MDXComponents", () => {
     const Blockquote = mdxComponents["blockquote"] as any;
     render(<Blockquote>Quote</Blockquote>);
     expect(screen.getByText("Quote")).toBeInTheDocument();
-    expect(screen.getByText("Quote").tagName).toBe("BLOCKQUOTE");
+    const blockquote = screen.getByText("Quote").closest("blockquote");
+    expect(blockquote).toBeInTheDocument();
+    expect(blockquote).toHaveClass("flex", "items-center");
   });
 
   it("renders custom code block", () => {
@@ -93,5 +95,47 @@ describe("MDXComponents", () => {
     const components = getMDXComponents({ CustomComp });
     expect(components["CustomComp"]).toBeDefined();
     expect(components["h1"]).toBeDefined();
+  });
+
+  describe("Table components", () => {
+    it("renders table with overflow wrapper", () => {
+      const Table = mdxComponents["table"] as any;
+      render(<Table data-testid="table">Table content</Table>);
+      const table = screen.getByTestId("table");
+      expect(table).toHaveClass("w-full", "border-collapse");
+      expect(table.parentElement).toHaveClass("overflow-x-auto");
+    });
+
+    it("renders thead with muted background", () => {
+      const Thead = mdxComponents["thead"] as any;
+      render(<Thead>Header content</Thead>);
+      expect(screen.getByText("Header content")).toHaveClass("bg-muted/50");
+    });
+
+    it("renders tbody with dividers", () => {
+      const Tbody = mdxComponents["tbody"] as any;
+      render(<Tbody>Body content</Tbody>);
+      expect(screen.getByText("Body content")).toHaveClass("divide-y", "divide-border");
+    });
+
+    it("renders tr with hover state", () => {
+      const Tr = mdxComponents["tr"] as any;
+      render(<Tr>Row content</Tr>);
+      expect(screen.getByText("Row content")).toHaveClass("hover:bg-muted/30");
+    });
+
+    it("renders th with proper styling", () => {
+      const Th = mdxComponents["th"] as any;
+      render(<Th>Header cell</Th>);
+      const th = screen.getByText("Header cell");
+      expect(th).toHaveClass("px-4", "py-3", "font-semibold");
+    });
+
+    it("renders td with proper styling", () => {
+      const Td = mdxComponents["td"] as any;
+      render(<Td>Data cell</Td>);
+      const td = screen.getByText("Data cell");
+      expect(td).toHaveClass("px-4", "py-3");
+    });
   });
 });

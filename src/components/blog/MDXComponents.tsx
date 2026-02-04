@@ -267,10 +267,10 @@ export const mdxComponents: MDXComponents = {
     ...props
   }: ComponentPropsWithoutRef<"blockquote">) => (
     <blockquote
-      className="border-l-4 border-primary pl-4 py-2 my-6 text-muted-foreground italic"
+      className="border-l-4 border-primary pl-4 py-2 my-6 text-muted-foreground italic flex items-center min-h-[3rem]"
       {...props}
     >
-      {children}
+      <div>{children}</div>
     </blockquote>
   ),
 
@@ -300,6 +300,46 @@ export const mdxComponents: MDXComponents = {
     <em className="italic" {...props}>
       {children}
     </em>
+  ),
+
+  // Tables
+  table: ({ children, ...props }: ComponentPropsWithoutRef<"table">) => (
+    <div className="my-6 w-full overflow-x-auto">
+      <table
+        className="w-full border-collapse text-sm"
+        {...props}
+      >
+        {children}
+      </table>
+    </div>
+  ),
+  thead: ({ children, ...props }: ComponentPropsWithoutRef<"thead">) => (
+    <thead className="bg-muted/50" {...props}>
+      {children}
+    </thead>
+  ),
+  tbody: ({ children, ...props }: ComponentPropsWithoutRef<"tbody">) => (
+    <tbody className="divide-y divide-border" {...props}>
+      {children}
+    </tbody>
+  ),
+  tr: ({ children, ...props }: ComponentPropsWithoutRef<"tr">) => (
+    <tr className="border-b border-border transition-colors hover:bg-muted/30" {...props}>
+      {children}
+    </tr>
+  ),
+  th: ({ children, ...props }: ComponentPropsWithoutRef<"th">) => (
+    <th
+      className="px-4 py-3 text-left font-semibold text-foreground border-b border-border"
+      {...props}
+    >
+      {children}
+    </th>
+  ),
+  td: ({ children, ...props }: ComponentPropsWithoutRef<"td">) => (
+    <td className="px-4 py-3 text-foreground" {...props}>
+      {children}
+    </td>
   ),
 
   // Images with Next.js Image component
