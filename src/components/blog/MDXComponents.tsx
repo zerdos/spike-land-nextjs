@@ -32,6 +32,77 @@ const SplitPreview = dynamic(
 );
 
 /**
+ * AudioPlayer component for embedding audio files with HTML5 audio player.
+ * Provides a styled container with title and audio controls.
+ *
+ * @param src - The path to the audio file (relative to public directory)
+ * @param title - Optional title to display above the player
+ *
+ * @example
+ * ```mdx
+ * <AudioPlayer src="/audio/podcast.m4a" title="Listen to this episode" />
+ * ```
+ */
+function AudioPlayer({
+  src,
+  title,
+}: {
+  src: string;
+  title?: string;
+}) {
+  return (
+    <div className="my-8 p-6 bg-card rounded-xl border border-border">
+      {title && (
+        <h4 className="font-heading text-lg font-semibold mb-4 text-foreground">
+          {title}
+        </h4>
+      )}
+      <audio
+        controls
+        className="w-full"
+        preload="metadata"
+      >
+        <source src={src} type="audio/mp4" />
+        <source src={src} type="audio/x-m4a" />
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+  );
+}
+
+/**
+ * YouTubeEmbed component for embedding YouTube videos responsively.
+ * Uses privacy-enhanced mode (youtube-nocookie.com) for better user privacy.
+ *
+ * @param videoId - The YouTube video ID (the part after ?v= in the URL)
+ * @param title - Optional title for accessibility
+ *
+ * @example
+ * ```mdx
+ * <YouTubeEmbed videoId="dQw4w9WgXcQ" title="Example video" />
+ * ```
+ */
+function YouTubeEmbed({
+  videoId,
+  title = "YouTube video",
+}: {
+  videoId: string;
+  title?: string;
+}) {
+  return (
+    <div className="my-8 relative w-full aspect-video rounded-xl overflow-hidden border border-border">
+      <iframe
+        src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+        title={title}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+        className="absolute top-0 left-0 w-full h-full"
+      />
+    </div>
+  );
+}
+
+/**
  * Callout component for displaying info, warning, or success messages in blog posts.
  * Renders a styled box with a colored left border based on the message type.
  *
@@ -353,6 +424,8 @@ export const mdxComponents: MDXComponents = {
   Gallery,
   CTAButton,
   ImagePlaceholder,
+  AudioPlayer,
+  YouTubeEmbed,
 };
 
 /**
