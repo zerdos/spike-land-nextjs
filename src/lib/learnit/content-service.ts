@@ -98,9 +98,8 @@ export async function markAsGenerating(slug: string, path: string[], userId?: st
       generatedById: userId,
     },
     update: {
-      // If it exists but failed or is old, we can reset it?
-      // For now, assume if it exists we might be regenerating
       status: "GENERATING",
+      generatedAt: new Date(),
     },
   });
 }

@@ -74,6 +74,7 @@ function createMockApp(overrides: Partial<{
     createdAt: new Date("2025-01-01"),
     updatedAt: new Date("2025-01-01"),
     _count: { messages: 0, images: 0 },
+    codeVersions: [],
     ...overrides,
   };
 }
@@ -167,6 +168,11 @@ describe("MyAppsPage", () => {
               messages: true,
               images: true,
             },
+          },
+          codeVersions: {
+            take: 1,
+            orderBy: { createdAt: "asc" },
+            select: { createdAt: true },
           },
         },
         orderBy: {

@@ -77,7 +77,10 @@ export default async function MyAppsPage(props: {
   const appsWithDevTime = apps.map((app) => {
     const firstCodeVersion = app.codeVersions[0];
     const developmentTimeSeconds = firstCodeVersion
-      ? Math.round((firstCodeVersion.createdAt.getTime() - app.createdAt.getTime()) / 1000)
+      ? Math.max(
+        0,
+        Math.round((firstCodeVersion.createdAt.getTime() - app.createdAt.getTime()) / 1000),
+      )
       : null;
     // Remove codeVersions from the passed data
     const { codeVersions: _, ...appData } = app;

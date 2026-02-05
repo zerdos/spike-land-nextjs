@@ -1,7 +1,6 @@
 import { parseWikiLinks } from "@/lib/learnit/wiki-links";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import React from "react";
-import rehypePrettyCode from "rehype-pretty-code";
 import remarkGfm from "remark-gfm";
 import { WikiLink } from "./wiki-link";
 
@@ -23,7 +22,8 @@ interface LearnItContentProps {
   content: string; // MDX content
 }
 
-export function LearnItContent({ content }: LearnItContentProps) {
+export async function LearnItContent({ content }: LearnItContentProps) {
+  const { default: rehypePrettyCode } = await import("rehype-pretty-code");
   // Parse wiki-links [[topic]] to markdown links before rendering
   const { content: parsedContent } = parseWikiLinks(content);
 
