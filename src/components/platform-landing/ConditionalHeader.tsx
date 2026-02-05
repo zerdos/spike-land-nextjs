@@ -9,7 +9,7 @@ const EXCLUDED_PATHS = [
   "/storybook",
   "/admin",
   "/orbit",
-  "/learit",
+  "/learnit",
   "/personas",
   "/auth",
   "/live",

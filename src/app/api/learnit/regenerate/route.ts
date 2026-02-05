@@ -1,0 +1,93 @@
+export const maxDuration = 60;
+
+import { auth } from "@/auth";
+import { generateLearnItTopic } from "@/lib/learnit/content-generator";
+import {
+  createOrUpdateContent,
+  getLearnItContent,
+  markAsFailed,
+  markAsGenerating,
+} from "@/lib/learnit/content-service";
+import { NextResponse } from "next/server";
+import { z } from "zod";
+
+const regenerateSchema = z.object({
+  slug: z.string().min(1),
+});
+
+export async function POST(req: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const json = await req.json();
+    const { slug } = regenerateSchema.parse(json);
+
+    // Verify content exists
+    const existing = await getLearnItContent(slug);
+    if (!existing) {
+      return new NextResponse("Content not found", { status: 404 });
+    }
+
+    // Check if already generating
+    if (existing.status === "GENERATING") {
+      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+      if (existing.generatedAt > twoMinutesAgo) {
+        return NextResponse.json({ status: "GENERATING" }, { status: 202 });
+      }
+    }
+
+    // Get path from existing content
+    const path = existing.path;
+
+    // Mark as generating
+    await markAsGenerating(slug, path, session.user.id);
+
+    // Trigger fresh AI generation
+    const generated = await generateLearnItTopic(path);
+
+    if (!generated) {
+      await markAsFailed(slug);
+      return new NextResponse("Regeneration failed", { status: 500 });
+    }
+
+    // Save regenerated content
+    const saved = await createOrUpdateContent({
+      slug,
+      path,
+      parentSlug: path.length > 1 ? path.slice(0, -1).join("/") : null,
+      title: generated.title,
+      description: generated.description,
+      content: generateMdxFromResponse(generated),
+      generatedById: session.user.id,
+      aiModel: "gemini-2.0-flash",
+    });
+
+    return NextResponse.json(saved);
+  } catch (error) {
+    console.error("LearnIt Regenerate Error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
+}
+
+function generateMdxFromResponse(
+  generated: import("@/lib/learnit/content-generator").GeneratedLearnItContent,
+): string {
+  let mdx = "";
+
+  generated.sections.forEach(section => {
+    mdx += `\n\n## ${section.heading}\n\n${section.content}`;
+  });
+
+  if (generated.relatedTopics?.length > 0) {
+    mdx +=
+      `\n\n---\n\n### Detailed Related Topics\n\nThe following topics are typically studied next:\n`;
+    generated.relatedTopics.forEach(topic => {
+      mdx += `- [[${topic}]]\n`;
+    });
+  }
+
+  return mdx;
+}
