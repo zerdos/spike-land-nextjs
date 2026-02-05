@@ -11,6 +11,10 @@ vi.mock("next/navigation", () => ({
 
 const fetchMock = vi.fn();
 
+// SKIP REASON: Fix tests for StreamingApp component
+// CATEGORY: unfinished
+// TRACKING: #1083
+// ACTION: fix
 describe.skip("StreamingApp", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", fetchMock);
@@ -21,6 +25,10 @@ describe.skip("StreamingApp", () => {
     vi.unstubAllGlobals();
   });
 
+  // SKIP REASON: Fix tests for StreamingApp component
+  // CATEGORY: unfinished
+  // TRACKING: #1083
+  // ACTION: fix
   it.skip("renders building state initially", async () => {
     let resolveProm: (value: any) => void;
     const promise = new Promise((resolve) => {

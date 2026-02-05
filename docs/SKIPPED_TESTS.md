@@ -86,6 +86,7 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 | File                                                              | Test                                 | Reason                                      | Status        |
 | ----------------------------------------------------------------- | ------------------------------------ | ------------------------------------------- | ------------- |
 | `packages/code/src/__tests__/components/AutoSaveHistory.spec.tsx` | "CodeHistoryCarousel" (entire suite) | Monaco editor mocking or incomplete feature | Investigation |
+| `src/components/create/streaming-app.test.tsx`                    | "StreamingApp" (entire suite)        | Incomplete implementation                   | Fix           |
 
 ### Category G: E2E Tests - Missing Step Definitions - 13 scenarios
 
@@ -161,9 +162,9 @@ yarn test:coverage
 ## Target Metrics
 
 - **Goal:** ≤5 documented skips (integration/manual tests only)
-- **Current:** 17 skips
+- **Current:** 19 skips
 - **Progress:** 10 tests fixed (scout tests removed)
-- **Remaining:** 17 skips to investigate/fix
+- **Remaining:** 19 skips to investigate/fix
 
 ### Category H: Flaky E2E Tests (Skipped to Unblock CI)
 
