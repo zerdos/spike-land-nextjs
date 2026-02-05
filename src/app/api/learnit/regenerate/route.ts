@@ -24,7 +24,11 @@ export async function POST(req: Request) {
     }
 
     const json = await req.json();
-    const { slug } = regenerateSchema.parse(json);
+    const result = regenerateSchema.safeParse(json);
+    if (!result.success) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+    const { slug } = result.data;
 
     // Verify content exists
     const existing = await getLearnItContent(slug);

@@ -48,6 +48,21 @@ describe("LearnIt Regenerate API", () => {
     expect(response.status).toBe(401);
   });
 
+  it("returns 400 when body is invalid", async () => {
+    (auth as Mock).mockResolvedValue({ user: { id: "user_1" } });
+
+    const request = new Request("http://localhost:3000/api/learnit/regenerate", {
+      method: "POST",
+      body: JSON.stringify({ slug: "" }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(400);
+    const data = await response.json();
+    expect(data.error).toBe("Invalid request");
+  });
+
   it("returns 404 when content not found", async () => {
     (auth as Mock).mockResolvedValue({ user: { id: "user_1" } });
     (getLearnItContent as Mock).mockResolvedValue(null);

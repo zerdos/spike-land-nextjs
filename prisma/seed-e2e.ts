@@ -371,7 +371,7 @@ async function main() {
           : 10,
         status: jobConfig.status,
         geminiPrompt: `E2E test enhancement job in ${jobConfig.status} state`,
-        geminiModel: "gemini-3-flash-preview-preview-image-generation",
+        geminiModel: "gemini-3-flash-preview-image-generation",
         processingStartedAt: jobConfig.status !== JobStatus.PENDING ? new Date() : null,
         processingCompletedAt: jobConfig.status === JobStatus.COMPLETED ? new Date() : null,
         enhancedUrl: jobConfig.status === JobStatus.COMPLETED
