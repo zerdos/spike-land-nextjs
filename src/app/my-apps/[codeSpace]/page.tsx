@@ -204,7 +204,7 @@ export default function CodeSpacePage() {
   // Ref to track current messages for stale closure prevention in polling
   const messagesRef = useRef<AppMessage[]>(messages);
 
-  const codespaceUrl = `https://testing.spike.land/live/${codeSpace}/`;
+  const codespaceUrl = `https://testing.spike.land/live/${codeSpace}/embed`;
 
   // Memoize version number calculation to avoid O(n²) complexity in render loop
   // Maps messageId -> versionNumber for messages with code versions
@@ -1263,6 +1263,12 @@ export default function CodeSpacePage() {
                                     )}
                                   isSyncing={isLatest && isSyncing}
                                   syncFlashKey={syncFlashKey}
+                                  versionId={message.codeVersion?.id}
+                                  appId={app?.id}
+                                  onRestore={() => {
+                                    setIframeKey((prev) => prev + 1);
+                                    fetchMessages();
+                                  }}
                                 />
                               );
                             })()}

@@ -8,18 +8,21 @@ interface SignInButtonProps {
   provider?: string;
   children?: React.ReactNode;
   className?: string;
+  callbackUrl?: string;
 }
 
 export function SignInButton({
   provider,
   children,
   className,
+  callbackUrl,
 }: SignInButtonProps) {
   const handleSignIn = () => {
+    const options = callbackUrl ? { callbackUrl } : undefined;
     if (provider) {
-      signIn(provider);
+      signIn(provider, options);
     } else {
-      signIn();
+      signIn(undefined, options);
     }
   };
 

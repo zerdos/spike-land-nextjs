@@ -106,6 +106,7 @@ export async function POST(
       });
 
       // If code was updated and app has a codespace, create a code version
+      let codeVersion: { id: string; createdAt: Date; } | null = null;
       if (codeUpdated && app.codespaceId) {
         try {
           const sessionUrl = `https://testing.spike.land/live/${app.codespaceId}/session.json`;
@@ -120,7 +121,7 @@ export async function POST(
 
             if (code) {
               const hash = createHash("sha256").update(code).digest("hex");
-              await tx.appCodeVersion.create({
+              const version = await tx.appCodeVersion.create({
                 data: {
                   appId,
                   messageId: message.id,
@@ -128,6 +129,7 @@ export async function POST(
                   hash,
                 },
               });
+              codeVersion = { id: version.id, createdAt: version.createdAt };
               console.log("[respond] Created code version for message:", message.id);
             }
           }
@@ -140,7 +142,7 @@ export async function POST(
         }
       }
 
-      return message;
+      return { message, codeVersion };
     }),
   );
 
@@ -152,6 +154,8 @@ export async function POST(
     );
   }
 
+  const { message, codeVersion } = result;
+
   // Dequeue processed messages from Redis
   if (processedMessageIds && processedMessageIds.length > 0) {
     for (const _msgId of processedMessageIds) {
@@ -159,12 +163,13 @@ export async function POST(
     }
   }
 
-  // Broadcast the new message to connected clients
+  // Broadcast the new message to connected clients (with codeVersion if present)
   broadcastMessage(appId, {
-    id: result.id,
-    role: result.role,
-    content: result.content,
-    createdAt: result.createdAt,
+    id: message.id,
+    role: message.role,
+    content: message.content,
+    createdAt: message.createdAt,
+    ...(codeVersion && { codeVersion }),
   });
 
   // If code was updated, broadcast code update event (triggers iframe reload)
@@ -172,5 +177,5 @@ export async function POST(
     broadcastCodeUpdated(appId);
   }
 
-  return NextResponse.json(result, { status: 201 });
+  return NextResponse.json(message, { status: 201 });
 }

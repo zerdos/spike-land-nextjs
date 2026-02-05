@@ -1,7 +1,9 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { SyncingOverlay } from "./SyncingOverlay";
 
 // Constants for iframe scaling - full browser dimensions for rendering
@@ -20,6 +22,9 @@ interface MiniPreviewProps {
   onClick: () => void;
   isSyncing?: boolean;
   syncFlashKey?: number;
+  versionId?: string;
+  appId?: string;
+  onRestore?: () => void;
 }
 
 /**
@@ -33,12 +38,16 @@ export function MiniPreview({
   onClick,
   isSyncing,
   syncFlashKey,
+  versionId,
+  appId,
+  onRestore,
 }: MiniPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   // In E2E mode, skip lazy loading and render immediately
   const [isVisible, setIsVisible] = useState(isE2EMode);
   const [isLoaded, setIsLoaded] = useState(false);
   const [containerSize, setContainerSize] = useState({ width: 300, height: 200 });
+  const [isRestoring, setIsRestoring] = useState(false);
 
   // Calculate scale to fit browser content into container
   const scale = Math.min(
@@ -103,6 +112,36 @@ export function MiniPreview({
     [onClick],
   );
 
+  const handleRestore = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation(); // Don't trigger the preview click
+      if (!versionId || !appId || isRestoring) return;
+
+      setIsRestoring(true);
+      try {
+        const response = await fetch(
+          `/api/apps/${appId}/versions/${versionId}/restore`,
+          { method: "POST" },
+        );
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to restore version");
+        }
+
+        toast.success(`Restored to version ${versionNumber}`);
+        onRestore?.();
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to restore version",
+        );
+      } finally {
+        setIsRestoring(false);
+      }
+    },
+    [versionId, appId, versionNumber, isRestoring, onRestore],
+  );
+
   return (
     <div
       ref={containerRef}
@@ -141,6 +180,18 @@ export function MiniPreview({
             v{versionNumber}
             {isLatest && " (latest)"}
           </Badge>
+        )}
+        {/* Restore button for non-latest versions */}
+        {!isLatest && versionId && appId && (
+          <button
+            onClick={handleRestore}
+            disabled={isRestoring}
+            className="flex items-center gap-1 px-2 py-0.5 h-4 text-[9px] font-medium rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={`Restore to version ${versionNumber}`}
+          >
+            <RotateCcw className={`h-2.5 w-2.5 ${isRestoring ? "animate-spin" : ""}`} />
+            {isRestoring ? "..." : "Restore"}
+          </button>
         )}
       </div>
 

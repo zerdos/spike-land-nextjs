@@ -52,7 +52,7 @@ describe("SignInButton Component", () => {
     render(<SignInButton />);
 
     await user.click(screen.getByRole("button"));
-    expect(signIn).toHaveBeenCalledWith();
+    expect(signIn).toHaveBeenCalledWith(undefined, undefined);
     expect(signIn).toHaveBeenCalledTimes(1);
   });
 
@@ -61,7 +61,7 @@ describe("SignInButton Component", () => {
     render(<SignInButton provider="github" />);
 
     await user.click(screen.getByRole("button"));
-    expect(signIn).toHaveBeenCalledWith("github");
+    expect(signIn).toHaveBeenCalledWith("github", undefined);
     expect(signIn).toHaveBeenCalledTimes(1);
   });
 
@@ -70,7 +70,7 @@ describe("SignInButton Component", () => {
     render(<SignInButton provider="google" />);
 
     await user.click(screen.getByRole("button"));
-    expect(signIn).toHaveBeenCalledWith("google");
+    expect(signIn).toHaveBeenCalledWith("google", undefined);
   });
 
   it("should handle multiple provider types", async () => {
@@ -78,11 +78,29 @@ describe("SignInButton Component", () => {
     const { rerender } = render(<SignInButton provider="github" />);
 
     await user.click(screen.getByRole("button"));
-    expect(signIn).toHaveBeenCalledWith("github");
+    expect(signIn).toHaveBeenCalledWith("github", undefined);
 
     rerender(<SignInButton provider="credentials" />);
     await user.click(screen.getByRole("button"));
-    expect(signIn).toHaveBeenCalledWith("credentials");
+    expect(signIn).toHaveBeenCalledWith("credentials", undefined);
+  });
+
+  it("should call signIn with callbackUrl when provided", async () => {
+    const user = userEvent.setup();
+    render(<SignInButton callbackUrl="/dashboard" />);
+
+    await user.click(screen.getByRole("button"));
+    expect(signIn).toHaveBeenCalledWith(undefined, { callbackUrl: "/dashboard" });
+    expect(signIn).toHaveBeenCalledTimes(1);
+  });
+
+  it("should call signIn with provider and callbackUrl", async () => {
+    const user = userEvent.setup();
+    render(<SignInButton provider="github" callbackUrl="/create/my-app" />);
+
+    await user.click(screen.getByRole("button"));
+    expect(signIn).toHaveBeenCalledWith("github", { callbackUrl: "/create/my-app" });
+    expect(signIn).toHaveBeenCalledTimes(1);
   });
 
   it("should render children and custom className together", () => {

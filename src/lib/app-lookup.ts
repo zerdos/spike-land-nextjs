@@ -152,3 +152,58 @@ export async function checkCodespaceHasContent(
     return false;
   }
 }
+
+/**
+ * Find a CreatedApp by codespace ID that belongs to a user
+ */
+export async function findCreatedAppByCodespace(
+  codespaceId: string,
+  userId: string,
+) {
+  return prisma.createdApp.findFirst({
+    where: {
+      codespaceId,
+      generatedById: userId,
+      status: "PUBLISHED",
+    },
+  });
+}
+
+/**
+ * Create an App record from a CreatedApp (claiming it for my-apps)
+ * This allows users to edit apps they generated via /create
+ */
+export async function claimCreatedApp(
+  createdApp: {
+    id: string;
+    title: string;
+    slug: string;
+    description: string;
+    codespaceId: string;
+    codespaceUrl: string;
+    promptUsed: string;
+  },
+  userId: string,
+) {
+  // Create the App record with initial USER message containing the original prompt
+  const app = await prisma.app.create({
+    data: {
+      name: createdApp.title,
+      slug: createdApp.codespaceId, // Use codespaceId as slug for consistency
+      description: createdApp.description,
+      codespaceId: createdApp.codespaceId,
+      codespaceUrl: createdApp.codespaceUrl,
+      userId,
+      status: "LIVE", // Already working on testing.spike.land
+      messages: {
+        create: {
+          role: "USER",
+          content: createdApp.promptUsed,
+        },
+      },
+    },
+    include: appIncludeOptions,
+  });
+
+  return app;
+}

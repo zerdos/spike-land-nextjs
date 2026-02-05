@@ -1,5 +1,10 @@
 import { auth } from "@/auth";
-import { checkCodespaceHasContent, findAppByIdentifier } from "@/lib/app-lookup";
+import {
+  checkCodespaceHasContent,
+  claimCreatedApp,
+  findAppByIdentifier,
+  findCreatedAppByCodespace,
+} from "@/lib/app-lookup";
 import { tryCatch } from "@/lib/try-catch";
 import { isAgentWorking } from "@/lib/upstash";
 import { ensureLocalFile } from "@/lib/vibe-watcher";
@@ -65,6 +70,36 @@ export async function GET(
   }
 
   if (!app) {
+    // Check if user has a CreatedApp with this codespace (from /create flow)
+    const { data: createdApp } = await tryCatch(
+      findCreatedAppByCodespace(codeSpace, session.user.id),
+    );
+
+    if (createdApp) {
+      // Auto-claim the CreatedApp by creating an App record
+      const { data: claimedApp, error: claimError } = await tryCatch(
+        claimCreatedApp(createdApp, session.user.id),
+      );
+
+      if (claimError) {
+        console.error("Error claiming CreatedApp:", claimError);
+        // Fall through to return null - user can still create manually
+      } else if (claimedApp) {
+        // Successfully claimed - return the new app
+        const { data: agentWorking } = await tryCatch(isAgentWorking(claimedApp.id));
+
+        return NextResponse.json({
+          app: {
+            ...claimedApp,
+            agentWorking: agentWorking || false,
+          },
+          codeSpace,
+          hasContent: hasContent || false,
+          claimed: true, // Indicate this was auto-claimed from CreatedApp
+        });
+      }
+    }
+
     // App doesn't exist yet - return info needed to create it
     return NextResponse.json({
       app: null,

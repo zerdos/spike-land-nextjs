@@ -292,6 +292,7 @@ export function broadcastMessage(
     content: string;
     createdAt: Date;
     attachments?: Array<{ imageId: string; url: string; }>;
+    codeVersion?: { id: string; createdAt: Date; };
   },
 ) {
   broadcastToApp(appId, {
