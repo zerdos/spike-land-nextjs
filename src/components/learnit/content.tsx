@@ -1,3 +1,4 @@
+import { parseWikiLinks } from "@/lib/learnit/wiki-links";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import React from "react";
 import rehypePrettyCode from "rehype-pretty-code";
@@ -23,10 +24,13 @@ interface LearnItContentProps {
 }
 
 export function LearnItContent({ content }: LearnItContentProps) {
+  // Parse wiki-links [[topic]] to markdown links before rendering
+  const { content: parsedContent } = parseWikiLinks(content);
+
   return (
     <div className="prose-blog max-w-none">
       <MDXRemote
-        source={content}
+        source={parsedContent}
         components={components}
         options={{
           mdxOptions: {
