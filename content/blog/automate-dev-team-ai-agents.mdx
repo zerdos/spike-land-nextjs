@@ -874,6 +874,19 @@ The same way you handle human mistakes: with tests, code review, and CI. The que
 - [skills.sh](https://skills.sh) — Agent skills directory
 - [jules.google](https://jules.google) — Async coding agent
 
+**Get started now:**
+```bash
+# Start a new project with Claude Code
+claude
+> /init  # Creates CLAUDE.md with project context
+
+# Install the skill discovery meta-skill
+npx skills add https://github.com/vercel-labs/skills --skill find-skills
+
+# Discover and install relevant skills
+> /find-skills
+```
+
 **Fix your prerequisites first:**
 1. Get CI under 10 minutes
 2. Eliminate flaky tests
