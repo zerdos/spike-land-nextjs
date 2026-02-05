@@ -6,6 +6,9 @@ import { CreatedAppStatus } from "@prisma/client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+// Force dynamic rendering to avoid static analysis issues with catch-all params
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{
     slug: string[];
