@@ -1,3 +1,4 @@
+import { StreamingApp } from "@/components/create/streaming-app";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -33,12 +34,10 @@ export default async function CreatePage({ params }: PageProps) {
     notFound();
   }
 
-  const slug = pathSegments.join("/");
-
+  // Show streaming UI for new apps
   return (
-    <div className="min-h-screen bg-background p-8">
-      <h1 className="text-2xl font-bold">Creating: {slug}</h1>
-      <p>This is a placeholder page.</p>
+    <div className="min-h-screen bg-background">
+      <StreamingApp path={pathSegments} />
     </div>
   );
 }
