@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { generateCodespaceId, updateCodespace } from "@/lib/create/codespace-service";
 import { generateAppContent } from "@/lib/create/content-generator";
 import { getCreatedApp, markAsGenerating, updateAppStatus } from "@/lib/create/content-service";
-// import { extractOutgoingLinks } from "@/lib/create/link-parser";
+import { type StreamEvent } from "@/lib/create/types";
 import logger from "@/lib/logger";
 import { CreatedAppStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
@@ -154,18 +154,6 @@ async function* generateStream(
     };
   }
 }
-
-type StreamEvent =
-  | { type: "status"; message: string; }
-  | {
-    type: "complete";
-    slug: string;
-    url: string;
-    title: string;
-    description: string;
-    relatedApps: string[];
-  }
-  | { type: "error"; message: string; };
 
 function createSSEResponse(generator: AsyncGenerator<StreamEvent>): Response {
   const encoder = new TextEncoder();

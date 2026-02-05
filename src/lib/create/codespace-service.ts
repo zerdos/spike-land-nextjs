@@ -1,6 +1,6 @@
 import logger from "@/lib/logger";
 
-const TESTING_SPIKE_LAND = "https://testing.spike.land";
+const TESTING_SPIKE_LAND = process.env["TESTING_SPIKE_LAND_URL"] || "https://testing.spike.land";
 
 export interface CodespaceResponse {
   success: boolean;
@@ -75,7 +75,8 @@ export function getCodespaceUrl(codespaceId: string): string {
  */
 export function generateCodespaceId(slug: string): string {
   // Replace slashes and other non-alphanumeric chars with hyphens
-  const sanitized = slug.toLowerCase().replace(/[^a-z0-9]/g, "-");
+  // Slug is already lowercase from the route handler
+  const sanitized = slug.replace(/[^a-z0-9]/g, "-");
   // Ensure it doesn't start or end with hyphen
   const trimmed = sanitized.replace(/^-+|-+$/g, "");
   return `create-${trimmed}`;

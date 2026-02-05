@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { type CreatedApp, CreatedAppStatus } from "@prisma/client";
 
@@ -85,7 +86,7 @@ export async function incrementViewCount(slug: string): Promise<void> {
     });
   } catch (error) {
     // Ignore error if app doesn't exist or other race condition
-    console.error(`Failed to increment view count for ${slug}:`, error);
+    logger.error(`Failed to increment view count for ${slug}:`, { error });
   }
 }
 

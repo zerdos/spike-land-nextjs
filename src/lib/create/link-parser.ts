@@ -25,9 +25,12 @@ export function parseInternalLinks(content: string): {
       if (slug) links.push(slug);
     }
 
+    // Safe encoder for HTML attributes
+    const safePath = cleanPath.replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
     // Create anchor tag
     // We add a specific class for styling if needed
-    return `<a href="${cleanPath}" class="text-blue-500 hover:underline internal-link">${cleanPath}</a>`;
+    return `<a href="${safePath}" class="text-blue-500 hover:underline internal-link">${safePath}</a>`;
   });
 
   return { html, links };

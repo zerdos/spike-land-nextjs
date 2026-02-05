@@ -64,6 +64,7 @@ function AudioPlayer({
       >
         <source src={src} type="audio/mp4" />
         <source src={src} type="audio/x-m4a" />
+        <track kind="captions" />
         Your browser does not support the audio element.
       </audio>
     </div>
@@ -89,10 +90,13 @@ function YouTubeEmbed({
   videoId: string;
   title?: string;
 }) {
+  // Basic validation to prevent XSS injection into the iframe src
+  const safeVideoId = videoId.replace(/[^a-zA-Z0-9_-]/g, "");
+
   return (
     <div className="my-8 relative w-full aspect-video rounded-xl overflow-hidden border border-border">
       <iframe
-        src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+        src={`https://www.youtube-nocookie.com/embed/${safeVideoId}`}
         title={title}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen

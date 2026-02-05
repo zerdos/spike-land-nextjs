@@ -138,4 +138,41 @@ describe("MDXComponents", () => {
       expect(td).toHaveClass("px-4", "py-3");
     });
   });
+  describe("AudioPlayer", () => {
+    it("renders with correct sources", () => {
+      const AudioPlayer = mdxComponents["AudioPlayer"] as any;
+      render(<AudioPlayer src="/test.m4a" title="Test Audio" />);
+
+      const audio = screen.getByText("Your browser does not support the audio element.").closest(
+        "audio",
+      );
+      expect(audio).toBeInTheDocument();
+      expect(screen.getByText("Test Audio")).toBeInTheDocument();
+
+      const sources = audio?.querySelectorAll("source");
+      expect(sources).toHaveLength(2);
+      expect(sources?.[0]).toHaveAttribute("src", "/test.m4a");
+    });
+  });
+
+  describe("YouTubeEmbed", () => {
+    it("renders iframe with validated src", () => {
+      const YouTubeEmbed = mdxComponents["YouTubeEmbed"] as any;
+      render(<YouTubeEmbed videoId="test-id" title="Test Video" />);
+
+      const iframe = screen.getByTitle("Test Video");
+      expect(iframe).toBeInTheDocument();
+      expect(iframe).toHaveAttribute("src", "https://www.youtube-nocookie.com/embed/test-id");
+    });
+
+    it("sanitizes malicious videoId", () => {
+      const YouTubeEmbed = mdxComponents["YouTubeEmbed"] as any;
+      // Provide videoId with disallowed characters
+      render(<YouTubeEmbed videoId="test<script>" title="Test Video" />);
+
+      const iframe = screen.getByTitle("Test Video");
+      // < and > should be removed
+      expect(iframe).toHaveAttribute("src", "https://www.youtube-nocookie.com/embed/testscript");
+    });
+  });
 });

@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface StreamingAppProps {
@@ -11,17 +11,7 @@ interface StreamingAppProps {
   className?: string;
 }
 
-type StreamEvent =
-  | { type: "status"; message: string; }
-  | {
-    type: "complete";
-    slug: string;
-    url: string;
-    title: string;
-    description: string;
-    relatedApps: string[];
-  }
-  | { type: "error"; message: string; };
+import type { StreamEvent } from "@/lib/create/types";
 
 export function StreamingApp({ path, className }: StreamingAppProps) {
   const [messages, setMessages] = useState<string[]>([]);
@@ -30,6 +20,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
   );
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const startStreaming = useCallback(async () => {
     setStatus("connecting");
@@ -56,10 +47,17 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
           setStatus("generating");
           setMessages(["Resuming generation monitoring..."]);
           // Poll every 3 seconds
-          const pollInterval = setInterval(() => {
+          // Poll every 3 seconds
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = setInterval(() => {
             router.refresh();
           }, 3000);
-          setTimeout(() => clearInterval(pollInterval), 60000);
+
+          // Clear interval after 60s
+          setTimeout(() => {
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          }, 60000);
+
           return;
         }
         throw new Error(`HTTP error: ${response.status}`);
@@ -117,6 +115,12 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
   useEffect(() => {
     // Only start if we are mounted
     startStreaming();
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
   }, [startStreaming]);
 
   if (status === "error") {

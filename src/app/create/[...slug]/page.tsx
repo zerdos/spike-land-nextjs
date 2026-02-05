@@ -1,4 +1,3 @@
-// import { auth } from "@/auth";
 import { AppDisplay } from "@/components/create/app-display";
 import { RelatedApps } from "@/components/create/related-apps";
 import { StreamingApp } from "@/components/create/streaming-app";

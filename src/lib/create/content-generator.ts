@@ -1,4 +1,5 @@
 import { generateStructuredResponse } from "@/lib/ai/gemini-client";
+import logger from "@/lib/logger";
 import { z } from "zod";
 
 const GeneratedAppSchema = z.object({
@@ -64,13 +65,14 @@ export async function generateAppContent(
     // Gemini sometimes returns markdown code blocks in the 'code' string even if asked not to.
     // Clean it up just in case.
     if (result && result.code) {
-      result.code = result.code.replace(/^```tsx?/, "").replace(/^```/, "").replace(/```$/, "");
+      result.code = result.code.replace(/^```tsx?/, "").replace(/^```/, "").replace(/```$/, "")
+        .trim();
     }
 
     const parsedResult = GeneratedAppSchema.parse(result);
     return parsedResult;
   } catch (error) {
-    console.error("Failed to generate app content:", error);
+    logger.error("Failed to generate app content:", { error });
     return null;
   }
 }
