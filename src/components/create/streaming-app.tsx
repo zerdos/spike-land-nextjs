@@ -51,7 +51,6 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
           setStatus("generating");
           setMessages(["Resuming generation monitoring..."]);
           // Poll every 3 seconds
-          // Poll every 3 seconds
           if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
           pollIntervalRef.current = setInterval(() => {
             router.refresh();

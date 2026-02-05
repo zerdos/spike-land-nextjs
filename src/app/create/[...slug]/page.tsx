@@ -14,6 +14,12 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+
+  // Defensive check for static analysis
+  if (!slug || slug.length === 0) {
+    return { title: "Create | Spike Land AI" };
+  }
+
   const path = slug.join("/");
 
   // Fetch app if exists to get real title
