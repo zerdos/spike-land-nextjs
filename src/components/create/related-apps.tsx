@@ -22,12 +22,12 @@ export function RelatedApps({ links, className }: RelatedAppsProps) {
         </h3>
         <nav className="space-y-2">
           {links.map((link, i) => {
-            // Ensure link starts does not have /create prefix in data if purely slug
+            // Ensure link does not have /create prefix in data if purely slug
             // But our generator might return 'cooking/pizza'.
             // Link href should be /create/{link}
 
-            // Handle if AI returns absolute path or relative
-            const cleanLink = link.startsWith("/create/") ? link.replace("/create/", "") : link;
+            // Handle if AI returns absolute path or relative (with or without leading slash)
+            const cleanLink = link.replace(/^(\/)?create\//, "");
             const href = `/create/${cleanLink}`;
 
             return (
