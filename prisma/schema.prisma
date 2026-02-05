@@ -5048,7 +5048,7 @@ model CreativeSet {
   generatedBy     User     @relation(fields: [generatedById], references: [id], onDelete: Cascade)
 
   // AI model used
-  modelVersion    String // e.g., "gemini-2.0-flash"
+  modelVersion    String // e.g., "gemini-3-flash-preview"
   generationPrompt String @db.Text
 
   // Performance tracking

@@ -157,7 +157,7 @@ async function main() {
 
   const modelsToTest = [
     "gemini-3-pro-image-preview", // Current (likely broken)
-    "gemini-2.5-flash-preview-05-20", // Old model from error message
+    ".5-flash-preview-05-20", // Old model from error message
     "gemini-2.5-flash-image", // Documented working model
     "nano-banana-pro-preview", // High quality alternative
   ];

@@ -371,13 +371,9 @@ async function main() {
           : 10,
         status: jobConfig.status,
         geminiPrompt: `E2E test enhancement job in ${jobConfig.status} state`,
-        geminiModel: "gemini-2.0-flash-preview-image-generation",
-        processingStartedAt: jobConfig.status !== JobStatus.PENDING
-          ? new Date()
-          : null,
-        processingCompletedAt: jobConfig.status === JobStatus.COMPLETED
-          ? new Date()
-          : null,
+        geminiModel: "gemini-3-flash-preview-preview-image-generation",
+        processingStartedAt: jobConfig.status !== JobStatus.PENDING ? new Date() : null,
+        processingCompletedAt: jobConfig.status === JobStatus.COMPLETED ? new Date() : null,
         enhancedUrl: jobConfig.status === JobStatus.COMPLETED
           ? "https://placehold.co/2048x1536/333/white.png?text=Enhanced"
           : null,
@@ -641,7 +637,9 @@ async function main() {
     }),
   ]);
 
-  console.log("Created 2 merch categories, 2 products, 5 variants for E2E tests");
+  console.log(
+    "Created 2 merch categories, 2 products, 5 variants for E2E tests",
+  );
 
   // 12. Create external agent sessions for admin agents dashboard tests
   // Create session with AWAITING_PLAN_APPROVAL status (for approve button test)

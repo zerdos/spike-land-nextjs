@@ -20,8 +20,21 @@ export interface GenerationJobParams {
  */
 export async function createGenerationJob(
   params: GenerationJobParams,
-): Promise<{ id: string; name: string; contentToUse: string; audienceToUse: string; }> {
-  const { briefId, seedContent, userId, count, tone, targetLength, targetAudience } = params;
+): Promise<{
+  id: string;
+  name: string;
+  contentToUse: string;
+  audienceToUse: string;
+}> {
+  const {
+    briefId,
+    seedContent,
+    userId,
+    count,
+    tone,
+    targetLength,
+    targetAudience,
+  } = params;
 
   if (!briefId && !seedContent) {
     throw new Error("Either briefId or seedContent is required");
@@ -55,7 +68,7 @@ export async function createGenerationJob(
       name: setName,
       briefId: briefId || null, // Allow null if using seed content
       generatedById: userId,
-      modelVersion: "gemini-2.0-flash",
+      modelVersion: "gemini-3-flash-preview",
       generationPrompt: `Generate ${count} variants with tone: ${tone || "auto"}`,
       status: "DRAFT",
       jobStatus: "PENDING",
@@ -124,7 +137,7 @@ export async function processGenerationJob(
           // Metadata
           tone: copy.tone,
           length: copy.length,
-          aiModel: "gemini-2.0-flash",
+          aiModel: "gemini-3-flash-preview",
           format: params.platform || "generic",
         },
       });
@@ -140,7 +153,8 @@ export async function processGenerationJob(
 
           if (suggestions.length > 0) {
             const suggestion = suggestions[0];
-            if (suggestion) { // TS check for noUncheckedIndexedAccess
+            if (suggestion) {
+              // TS check for noUncheckedIndexedAccess
               await prisma.creativeVariant.update({
                 where: { id: variant.id },
                 data: {
@@ -151,7 +165,10 @@ export async function processGenerationJob(
             }
           }
         } catch (error) {
-          logger.warn("Failed to suggest image for variant", { variantId: variant.id, error });
+          logger.warn("Failed to suggest image for variant", {
+            variantId: variant.id,
+            error,
+          });
         }
       }
     }
@@ -186,9 +203,11 @@ export async function startVariantGeneration(
 ): Promise<string> {
   const { id, contentToUse, audienceToUse } = await createGenerationJob(params);
 
-  void processGenerationJob(id, params, contentToUse, audienceToUse).catch((err) => {
-    logger.error("Background generation failed", { error: err, setId: id });
-  });
+  void processGenerationJob(id, params, contentToUse, audienceToUse).catch(
+    (err) => {
+      logger.error("Background generation failed", { error: err, setId: id });
+    },
+  );
 
   return id;
 }

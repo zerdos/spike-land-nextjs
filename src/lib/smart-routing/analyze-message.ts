@@ -2,7 +2,7 @@ import type { z } from "zod";
 import { getGeminiClient } from "../ai/gemini-client";
 import { AnalyzeMessageResponseSchema } from "../validations/smart-routing";
 
-const ANALYSIS_MODEL = "gemini-2.0-flash-exp";
+const ANALYSIS_MODEL = "gemini-3-flash-preview-exp";
 
 export interface AnalysisInput {
   content: string;

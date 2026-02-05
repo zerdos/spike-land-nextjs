@@ -54,7 +54,7 @@ const mockUserPipeline: Pipeline = {
   analysisConfig: { enabled: true },
   autoCropConfig: { enabled: false },
   promptConfig: { template: "Enhance this image" },
-  generationConfig: { model: "gemini-2.0-flash-exp" },
+  generationConfig: { model: "gemini-3-flash-preview-exp" },
 };
 
 const mockPublicPipeline: Pipeline = {
@@ -76,10 +76,7 @@ const mockPublicPipeline: Pipeline = {
 };
 
 // Helper to mock pipelines API
-async function mockPipelinesApi(
-  world: CustomWorld,
-  pipelines: Pipeline[],
-) {
+async function mockPipelinesApi(world: CustomWorld, pipelines: Pipeline[]) {
   await world.page.route("**/api/pipelines", async (route) => {
     const method = route.request().method();
     if (method === "GET") {
@@ -264,9 +261,12 @@ When(
 When(
   "I click the fork button on a system default pipeline",
   async function(this: CustomWorld) {
-    const systemPipelineCard = this.page.locator("[data-pipeline-id]").filter({
-      has: this.page.getByText(/default|system/i),
-    }).first();
+    const systemPipelineCard = this.page
+      .locator("[data-pipeline-id]")
+      .filter({
+        has: this.page.getByText(/default|system/i),
+      })
+      .first();
     const forkButton = systemPipelineCard.getByRole("button", {
       name: /fork|copy/i,
     });
@@ -278,9 +278,12 @@ When(
 When(
   "I click the fork button on the public pipeline",
   async function(this: CustomWorld) {
-    const publicPipelineCard = this.page.locator("[data-pipeline-id]").filter({
-      has: this.page.getByText(/community|public/i),
-    }).first();
+    const publicPipelineCard = this.page
+      .locator("[data-pipeline-id]")
+      .filter({
+        has: this.page.getByText(/community|public/i),
+      })
+      .first();
     const forkButton = publicPipelineCard.getByRole("button", {
       name: /fork|copy/i,
     });
@@ -304,12 +307,11 @@ When(
 When(
   "I click {string} in the confirmation dialog",
   async function(this: CustomWorld, buttonText: string) {
-    const dialogButton = this.page.locator('[role="alertdialog"]').getByRole(
-      "button",
-      {
+    const dialogButton = this.page
+      .locator('[role="alertdialog"]')
+      .getByRole("button", {
         name: new RegExp(buttonText, "i"),
-      },
-    );
+      });
     await dialogButton.click();
     await this.page.waitForTimeout(300);
   },
@@ -338,7 +340,8 @@ When(
   "I select tier {string}",
   async function(this: CustomWorld, tier: string) {
     // Use multiple fallback selectors for tier selection
-    const tierSelector = this.page.locator('[data-testid="tier-selector"]')
+    const tierSelector = this.page
+      .locator('[data-testid="tier-selector"]')
       .or(this.page.locator('[data-testid="tier-select"]'))
       .or(this.page.locator('[name="tier"]'))
       .or(this.page.getByLabel(/tier/i))
@@ -356,7 +359,9 @@ When(
     await expect(tierSelector.first()).toBeVisible({ timeout: 15000 });
     await tierSelector.first().click();
     // Wait for dropdown options to appear
-    const option = this.page.getByRole("option", { name: new RegExp(tier, "i") });
+    const option = this.page.getByRole("option", {
+      name: new RegExp(tier, "i"),
+    });
     await expect(option).toBeVisible({ timeout: 5000 });
     await option.click();
   },
@@ -365,15 +370,16 @@ When(
 When(
   "I select visibility {string}",
   async function(this: CustomWorld, visibility: string) {
-    const visibilitySelector = this.page.locator(
-      '[data-testid="visibility-selector"]',
-    ).or(
-      this.page.getByRole("combobox").filter({
-        has: this.page.getByText(/visibility|private|public/i),
-      }),
-    );
+    const visibilitySelector = this.page
+      .locator('[data-testid="visibility-selector"]')
+      .or(
+        this.page.getByRole("combobox").filter({
+          has: this.page.getByText(/visibility|private|public/i),
+        }),
+      );
     await visibilitySelector.click();
-    await this.page.getByRole("option", { name: new RegExp(visibility, "i") })
+    await this.page
+      .getByRole("option", { name: new RegExp(visibility, "i") })
       .click();
   },
 );
@@ -459,7 +465,8 @@ When("I configure generation settings", async function(this: CustomWorld) {
 
 When("I click on the tier selector", async function(this: CustomWorld) {
   // Use multiple fallback selectors for tier selection
-  const tierSelector = this.page.locator('[data-testid="tier-selector"]')
+  const tierSelector = this.page
+    .locator('[data-testid="tier-selector"]')
     .or(this.page.locator('[data-testid="tier-select"]'))
     .or(this.page.locator('[name="tier"]'))
     .or(this.page.getByLabel(/tier/i))
@@ -473,11 +480,9 @@ When("I click on the tier selector", async function(this: CustomWorld) {
 });
 
 When("I click on the visibility selector", async function(this: CustomWorld) {
-  const visibilitySelector = this.page.locator(
-    '[data-testid="visibility-selector"]',
-  ).or(
-    this.page.getByRole("combobox").nth(1),
-  );
+  const visibilitySelector = this.page
+    .locator('[data-testid="visibility-selector"]')
+    .or(this.page.getByRole("combobox").nth(1));
   await visibilitySelector.click();
 });
 
@@ -611,9 +616,12 @@ Then(
 Then(
   "the system default pipelines should not have edit buttons",
   async function(this: CustomWorld) {
-    const systemPipelineCard = this.page.locator("[data-pipeline-id]").filter({
-      has: this.page.getByText(/default|system/i),
-    }).first();
+    const systemPipelineCard = this.page
+      .locator("[data-pipeline-id]")
+      .filter({
+        has: this.page.getByText(/default|system/i),
+      })
+      .first();
 
     const editButton = systemPipelineCard.getByRole("button", {
       name: /edit/i,
@@ -625,9 +633,12 @@ Then(
 Then(
   "the system default pipelines should not have delete buttons",
   async function(this: CustomWorld) {
-    const systemPipelineCard = this.page.locator("[data-pipeline-id]").filter({
-      has: this.page.getByText(/default|system/i),
-    }).first();
+    const systemPipelineCard = this.page
+      .locator("[data-pipeline-id]")
+      .filter({
+        has: this.page.getByText(/default|system/i),
+      })
+      .first();
 
     const deleteButton = systemPipelineCard.getByRole("button", {
       name: /delete/i,
@@ -722,9 +733,10 @@ Then(
 Then(
   "the pipeline card should display {string} badge",
   async function(this: CustomWorld, badgeText: string) {
-    const badge = this.page.locator("[data-pipeline-id]").first().getByText(
-      badgeText,
-    );
+    const badge = this.page
+      .locator("[data-pipeline-id]")
+      .first()
+      .getByText(badgeText);
     await expect(badge).toBeVisible();
   },
 );
@@ -732,9 +744,10 @@ Then(
 Then(
   "the pipeline card should display {string} visibility badge",
   async function(this: CustomWorld, visibility: string) {
-    const badge = this.page.locator("[data-pipeline-id]").first().getByText(
-      new RegExp(visibility, "i"),
-    );
+    const badge = this.page
+      .locator("[data-pipeline-id]")
+      .first()
+      .getByText(new RegExp(visibility, "i"));
     await expect(badge).toBeVisible();
   },
 );
@@ -742,9 +755,10 @@ Then(
 Then(
   "the pipeline card should display {string}",
   async function(this: CustomWorld, text: string) {
-    const element = this.page.locator("[data-pipeline-id]").first().getByText(
-      text,
-    );
+    const element = this.page
+      .locator("[data-pipeline-id]")
+      .first()
+      .getByText(text);
     await expect(element).toBeVisible();
   },
 );
@@ -841,9 +855,8 @@ When("I visit my image detail page", async function(this: CustomWorld) {
 When(
   "I select the {string} pipeline",
   async function(this: CustomWorld, pipelineName: string) {
-    const pipelineSelector = this.page.locator(
-      '[data-testid="pipeline-selector"]',
-    )
+    const pipelineSelector = this.page
+      .locator('[data-testid="pipeline-selector"]')
       .or(this.page.getByRole("combobox").filter({ hasText: /pipeline/i }));
     await pipelineSelector.click();
     await this.page.waitForTimeout(200);

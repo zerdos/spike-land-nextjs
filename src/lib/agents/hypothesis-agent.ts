@@ -62,10 +62,12 @@ interface ParsedVariant {
 
 export class HypothesisAgent {
   private ai = getGeminiClient();
-  private model = "gemini-2.0-flash"; // Using a fast/capable model (adjust if needed)
+  private model = "gemini-3-flash-preview"; // Using a fast/capable model (adjust if needed)
 
   private getBrandVoice(brandProfile: unknown): string {
-    if (!brandProfile || typeof brandProfile !== "object") return "Professional";
+    if (!brandProfile || typeof brandProfile !== "object") {
+      return "Professional";
+    }
 
     const profile = brandProfile as { toneDescriptors?: unknown; };
 
@@ -107,11 +109,7 @@ export class HypothesisAgent {
         },
         publishedAt: { not: null },
       },
-      orderBy: [
-        { likes: "desc" },
-        { comments: "desc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: [{ likes: "desc" }, { comments: "desc" }, { createdAt: "desc" }],
       take: 10,
     });
 
@@ -123,7 +121,7 @@ export class HypothesisAgent {
       Goal: Optimize for ${focus}
 
       Recent Content Observations:
-      ${topPosts.map(p => `- "${p.content.substring(0, 50)}..."`).join("\n")}
+      ${topPosts.map((p) => `- "${p.content.substring(0, 50)}..."`).join("\n")}
 
       Generate ${count} testable hypotheses for improving content performance.
       For each hypothesis, provide:
@@ -158,20 +156,22 @@ export class HypothesisAgent {
         if (!Array.isArray(hypotheses)) return [];
 
         // Save to database
-        const saved = await Promise.all(hypotheses.map(async (h: ParsedHypothesis) => {
-          return prisma.hypothesis.create({
-            data: {
-              workspaceId: workspace.id,
-              title: h.title,
-              description: h.description,
-              theoreticalBasis: h.theoreticalBasis,
-              expectedOutcome: h.expectedOutcome,
-              confidence: h.confidence,
-              status: "PROPOSED",
-              priority: h.priority || 1,
-            },
-          });
-        }));
+        const saved = await Promise.all(
+          hypotheses.map(async (h: ParsedHypothesis) => {
+            return prisma.hypothesis.create({
+              data: {
+                workspaceId: workspace.id,
+                title: h.title,
+                description: h.description,
+                theoreticalBasis: h.theoreticalBasis,
+                expectedOutcome: h.expectedOutcome,
+                confidence: h.confidence,
+                status: "PROPOSED",
+                priority: h.priority || 1,
+              },
+            });
+          }),
+        );
 
         return saved;
       } catch (e) {
@@ -202,7 +202,10 @@ export class HypothesisAgent {
     const BASELINE_RATE = params.baselineRate ?? 0.05; // Default 5% engagement rate
     const MINIMUM_DETECTABLE_EFFECT = params.minimumDetectableEffect ?? 0.2; // Default 20% relative improvement
 
-    const sampleSize = calculateRequiredSampleSize(BASELINE_RATE, MINIMUM_DETECTABLE_EFFECT);
+    const sampleSize = calculateRequiredSampleSize(
+      BASELINE_RATE,
+      MINIMUM_DETECTABLE_EFFECT,
+    );
 
     return {
       hypothesisId,
@@ -265,11 +268,15 @@ export class HypothesisAgent {
 
       try {
         const variants = JSON.parse(jsonStr || "[]");
-        if (!Array.isArray(variants)) throw new Error("AI did not return an array");
-        return variants.map((v: ParsedVariant | string): VariantContent => ({
-          content: typeof v === "string" ? v : v.content,
-          variationType: typeof v === "string" ? "unknown" : v.variationType,
-        }));
+        if (!Array.isArray(variants)) {
+          throw new Error("AI did not return an array");
+        }
+        return variants.map(
+          (v: ParsedVariant | string): VariantContent => ({
+            content: typeof v === "string" ? v : v.content,
+            variationType: typeof v === "string" ? "unknown" : v.variationType,
+          }),
+        );
       } catch (e) {
         logger.error("Failed to parse AI variants", { error: e });
         return [];
@@ -301,7 +308,7 @@ export class HypothesisAgent {
     // For now, let's just pick the best performing one first.
     const alpha = 1 - experiment.significanceLevel; // e.g., 0.05
 
-    const results = experiment.variants.map(v => {
+    const results = experiment.variants.map((v) => {
       const visitors = v.impressions;
       const conversions = v.engagements; // or clicks, based on metric
       const rate = visitors > 0 ? conversions / visitors : 0;
@@ -328,14 +335,17 @@ export class HypothesisAgent {
     // Check statistical significance (simplified pairwise against best)
     // Note: This is a simplified check.
     const isSignificant = isStatisticallySignificant(
-      results.map(r => ({ visitors: r.visitors, conversions: r.conversions })),
+      results.map((r) => ({
+        visitors: r.visitors,
+        conversions: r.conversions,
+      })),
       alpha,
     );
 
     const control = results[0]!;
 
     // Determine winner
-    const variantsForWinner = results.map(r => ({
+    const variantsForWinner = results.map((r) => ({
       id: r.id,
       name: r.id,
       visitors: r.visitors,
@@ -345,7 +355,7 @@ export class HypothesisAgent {
 
     // Save results to DB (ExperimentResult)
     await prisma.experimentResult.createMany({
-      data: results.map(r => ({
+      data: results.map((r) => ({
         experimentId: experiment.id,
         variantId: r.id,
         metricName: "engagement_rate", // Placeholder
@@ -365,9 +375,12 @@ export class HypothesisAgent {
     const insightsPrompt = `
       Analyze these A/B test results:
       ${
-      results.map(r =>
-        `Variant ${r.id}: ${(r.metricValue * 100).toFixed(2)}% conversion (N=${r.visitors})`
-      ).join("\n")
+      results
+        .map(
+          (r) =>
+            `Variant ${r.id}: ${(r.metricValue * 100).toFixed(2)}% conversion (N=${r.visitors})`,
+        )
+        .join("\n")
     }
       
       Is the result statistically significant? ${isSignificant}
@@ -400,7 +413,7 @@ export class HypothesisAgent {
       isSignificant,
       winnerVariantId: winner?.id || null,
       confidenceLevel: experiment.significanceLevel,
-      variants: results.map(r => ({
+      variants: results.map((r) => ({
         id: r.id,
         metricValue: r.metricValue,
         confidenceInterval: r.confidenceInterval,
@@ -417,7 +430,9 @@ export class HypothesisAgent {
     experimentId: string;
     autoPromote?: boolean;
   }): Promise<WinnerSelection> {
-    const analysis = await this.analyzeResults({ experimentId: params.experimentId });
+    const analysis = await this.analyzeResults({
+      experimentId: params.experimentId,
+    });
 
     if (analysis.winnerVariantId) {
       // Logic to promote (e.g. create a new post from winner content)

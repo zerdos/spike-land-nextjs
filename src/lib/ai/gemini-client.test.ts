@@ -19,24 +19,23 @@ import {
 } from "./gemini-client";
 
 // Mock the @google/genai module - Vitest 4: Use vi.hoisted for configurable mock
-const { MockGoogleGenAI, mockGenerateContentStream, mockGenerateContent } = vi
-  .hoisted(() => {
-    const mockGenerateContentStream = vi.fn();
-    const mockGenerateContent = vi.fn();
+const { MockGoogleGenAI, mockGenerateContentStream, mockGenerateContent } = vi.hoisted(() => {
+  const mockGenerateContentStream = vi.fn();
+  const mockGenerateContent = vi.fn();
 
-    class MockGoogleGenAI {
-      static mock = { instances: [] as MockGoogleGenAI[] };
-      models = {
-        generateContentStream: mockGenerateContentStream,
-        generateContent: mockGenerateContent,
-      };
-      constructor() {
-        MockGoogleGenAI.mock.instances.push(this);
-      }
+  class MockGoogleGenAI {
+    static mock = { instances: [] as MockGoogleGenAI[] };
+    models = {
+      generateContentStream: mockGenerateContentStream,
+      generateContent: mockGenerateContent,
+    };
+    constructor() {
+      MockGoogleGenAI.mock.instances.push(this);
     }
+  }
 
-    return { MockGoogleGenAI, mockGenerateContentStream, mockGenerateContent };
-  });
+  return { MockGoogleGenAI, mockGenerateContentStream, mockGenerateContent };
+});
 
 vi.mock("@google/genai", () => ({
   GoogleGenAI: MockGoogleGenAI,
@@ -70,27 +69,31 @@ describe("gemini-client", () => {
       resetGeminiClient();
       // Mock the generateContent response for analysis
       mockGenerateContent.mockResolvedValue({
-        candidates: [{
-          content: {
-            parts: [{
-              text: JSON.stringify({
-                mainSubject: "A person in a garden",
-                imageStyle: "photograph",
-                defects: {
-                  isDark: false,
-                  isBlurry: false,
-                  hasNoise: true,
-                  hasVHSArtifacts: false,
-                  isLowResolution: true,
-                  isOverexposed: false,
-                  hasColorCast: false,
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    mainSubject: "A person in a garden",
+                    imageStyle: "photograph",
+                    defects: {
+                      isDark: false,
+                      isBlurry: false,
+                      hasNoise: true,
+                      hasVHSArtifacts: false,
+                      isLowResolution: true,
+                      isOverexposed: false,
+                      hasColorCast: false,
+                    },
+                    lightingCondition: "natural daylight",
+                    cropping: { isCroppingNeeded: false },
+                  }),
                 },
-                lightingCondition: "natural daylight",
-                cropping: { isCroppingNeeded: false },
-              }),
-            }],
+              ],
+            },
           },
-        }],
+        ],
       });
     });
 
@@ -1448,10 +1451,9 @@ describe("gemini-client", () => {
 
       mockGenerateContentStream.mockResolvedValueOnce(mockStream());
 
-      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" }))
-        .rejects.toThrow(
-          "Stream processing failed: Unknown error",
-        );
+      await expect(
+        generateImageWithGemini({ prompt: "test", tier: "1K" }),
+      ).rejects.toThrow("Stream processing failed: Unknown error");
     });
 
     it("should log skipped chunks without valid candidates", async () => {
@@ -1535,12 +1537,14 @@ describe("gemini-client", () => {
 
       mockGenerateContentStream.mockResolvedValueOnce(mockStream());
 
-      await expect(modifyImageWithGemini({
-        prompt: "test",
-        imageData: "data",
-        mimeType: "image/png",
-        tier: "1K",
-      })).rejects.toThrow();
+      await expect(
+        modifyImageWithGemini({
+          prompt: "test",
+          imageData: "data",
+          mimeType: "image/png",
+          tier: "1K",
+        }),
+      ).rejects.toThrow();
 
       // Logger outputs JSON with structured fields
       const logEntry = findJsonLogCall(
@@ -1560,8 +1564,9 @@ describe("gemini-client", () => {
         new Error("Network error"),
       );
 
-      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" }))
-        .rejects.toThrow();
+      await expect(
+        generateImageWithGemini({ prompt: "test", tier: "1K" }),
+      ).rejects.toThrow();
 
       // Logger outputs JSON with structured fields (error object is serialized)
       const logEntry = findJsonLogCall(
@@ -1578,10 +1583,9 @@ describe("gemini-client", () => {
     it("should handle non-Error exceptions during API initialization", async () => {
       mockGenerateContentStream.mockRejectedValueOnce("String rejection");
 
-      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" }))
-        .rejects.toThrow(
-          "Failed to start image generation: Unknown error",
-        );
+      await expect(
+        generateImageWithGemini({ prompt: "test", tier: "1K" }),
+      ).rejects.toThrow("Failed to start image generation: Unknown error");
     });
   });
 
@@ -1641,8 +1645,9 @@ describe("gemini-client", () => {
 
       mockGenerateContentStream.mockResolvedValueOnce(errorStream());
 
-      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" }))
-        .rejects.toThrow();
+      await expect(
+        generateImageWithGemini({ prompt: "test", tier: "1K" }),
+      ).rejects.toThrow();
 
       // clearTimeout should have been called even on error
       expect(clearTimeoutSpy).toHaveBeenCalled();
@@ -1804,10 +1809,11 @@ describe("gemini-client", () => {
 
       mockGenerateContentStream.mockResolvedValueOnce(errorAfterChunkStream());
 
-      await expect(generateImageWithGemini({ prompt: "test", tier: "1K" }))
-        .rejects.toThrow(
-          "Stream processing failed: Chunk processing failed midway",
-        );
+      await expect(
+        generateImageWithGemini({ prompt: "test", tier: "1K" }),
+      ).rejects.toThrow(
+        "Stream processing failed: Chunk processing failed midway",
+      );
 
       // Logger outputs JSON with structured fields
       const logEntry = findJsonLogCall(
@@ -1913,7 +1919,7 @@ describe("gemini-client", () => {
       // This test ensures the invalid model that caused the production error
       // is NOT in the allowlist. If this test fails, someone added a broken model.
       expect(VALID_GEMINI_MODELS).not.toContain(
-        "gemini-2.0-flash-preview-image-generation",
+        "gemini-3-flash-preview-preview-image-generation",
       );
     });
   });
