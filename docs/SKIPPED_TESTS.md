@@ -35,8 +35,8 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 
 ## Current Inventory
 
-**Total Skipped Tests:** 17 unit tests + 21 E2E scenarios
-**Files with Skips:** 7 (unit) + 8 (E2E feature files)
+**Total Skipped Tests:** 18 unit tests + 21 E2E scenarios
+**Files with Skips:** 8 (unit) + 8 (E2E feature files)
 
 **Status Summary:**
 
@@ -81,7 +81,7 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 | ----------------------------------------------------- | ----------------------------------------- | --------------------------- | ------ |
 | `packages/code/src/@/lib/__tests__/lru-cache.spec.ts` | "should return false for expired entries" | TTL expiry with fake timers | Fixing |
 
-### Category F: Feature Under Review - 1 test
+### Category F: Feature Under Review - 2 tests
 
 | File                                                              | Test                                 | Reason                                      | Status        |
 | ----------------------------------------------------------------- | ------------------------------------ | ------------------------------------------- | ------------- |
@@ -162,9 +162,9 @@ yarn test:coverage
 ## Target Metrics
 
 - **Goal:** ≤5 documented skips (integration/manual tests only)
-- **Current:** 19 skips
+- **Current:** 18 skips
 - **Progress:** 10 tests fixed (scout tests removed)
-- **Remaining:** 19 skips to investigate/fix
+- **Remaining:** 18 skips to investigate/fix
 
 ### Category H: Flaky E2E Tests (Skipped to Unblock CI)
 

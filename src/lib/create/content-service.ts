@@ -60,6 +60,20 @@ export async function markAsGenerating(
   });
 }
 
+export async function updateAppContent(
+  slug: string,
+  title: string,
+  description: string,
+): Promise<CreatedApp> {
+  return prisma.createdApp.update({
+    where: { slug },
+    data: {
+      title,
+      description,
+    },
+  });
+}
+
 export async function updateAppStatus(
   slug: string,
   status: CreatedAppStatus,

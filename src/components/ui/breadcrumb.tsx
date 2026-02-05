@@ -41,14 +41,15 @@ BreadcrumbItem.displayName = "BreadcrumbItem";
 const BreadcrumbLink = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentPropsWithoutRef<"a">
->(({ className, ...props }, ref) => {
+>(({ className, children, ...props }, ref) => {
   return (
-    // eslint-disable-next-line jsx-a11y/anchor-has-content
     <a
       ref={ref}
       className={cn("transition-colors hover:text-foreground", className)}
       {...props}
-    />
+    >
+      {children}
+    </a>
   );
 });
 BreadcrumbLink.displayName = "BreadcrumbLink";

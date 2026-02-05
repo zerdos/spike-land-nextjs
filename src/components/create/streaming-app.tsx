@@ -27,11 +27,15 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
     setMessages([]);
     setError(null);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+
     try {
       const response = await fetch("/api/create/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ path }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -106,9 +110,14 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
       }
     } catch (err) {
       setStatus("error");
-      const message = err instanceof Error ? err.message : "Failed to generate app";
+      let message = "Failed to generate app";
+      if (err instanceof Error) {
+        message = err.name === "AbortError" ? "Request timed out" : err.message;
+      }
       setError(message);
       toast.error(message);
+    } finally {
+      clearTimeout(timeoutId);
     }
   }, [path, router]);
 

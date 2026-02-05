@@ -30,7 +30,7 @@ describe("suggestImagesForCopy", () => {
     });
 
     expect(result).toHaveLength(1);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     expect(result[0]!.imagePrompt).toContain("happy dog");
 
     const calls = (geminiClient.generateStructuredResponse as any).mock.calls;
@@ -42,7 +42,6 @@ describe("suggestImagesForCopy", () => {
       throw new Error("Expected call arguments to be present");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const params = firstCall[0]!;
     expect(params.prompt).toContain("Best dog food ever!");
     expect(params.prompt).toContain("Dog owners");

@@ -43,7 +43,7 @@ describe("generateCopyVariants", () => {
     });
 
     expect(result).toHaveLength(2);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     expect(result[0]!.headline).toBe("Variant 1");
     expect(geminiClient.generateStructuredResponse).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -71,7 +71,6 @@ describe("generateCopyVariants", () => {
       throw new Error("Expected call arguments to be present");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const params = firstCall[0]!;
     expect(params.prompt).toContain("Tone: balanced");
     expect(params.prompt).toContain("Length: medium");

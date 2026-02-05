@@ -18,7 +18,7 @@ vi.mock("@prisma/adapter-pg", () => ({
 describe("Prisma Client Singleton", () => {
   beforeEach(() => {
     vi.resetModules();
-    delete (globalThis as { prismaGlobal?: unknown; }).prismaGlobal;
+    delete (globalThis as { prismaGlobal_LearnIt?: unknown; }).prismaGlobal_LearnIt;
     process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/testdb";
   });
 
@@ -50,7 +50,7 @@ describe("Prisma Client Singleton", () => {
 
     await import("./prisma");
 
-    expect((globalThis as { prismaGlobal?: unknown; }).prismaGlobal)
+    expect((globalThis as { prismaGlobal_LearnIt?: unknown; }).prismaGlobal_LearnIt)
       .toBeDefined();
 
     (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
@@ -60,11 +60,11 @@ describe("Prisma Client Singleton", () => {
     const originalEnv = process.env.NODE_ENV;
     (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
 
-    delete (globalThis as { prismaGlobal?: unknown; }).prismaGlobal;
+    delete (globalThis as { prismaGlobal_LearnIt?: unknown; }).prismaGlobal_LearnIt;
 
     await import("./prisma");
 
-    expect((globalThis as { prismaGlobal?: unknown; }).prismaGlobal)
+    expect((globalThis as { prismaGlobal_LearnIt?: unknown; }).prismaGlobal_LearnIt)
       .toBeUndefined();
 
     (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
@@ -75,7 +75,7 @@ describe("Prisma Client Singleton", () => {
     process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/testdb";
 
     vi.resetModules();
-    delete (globalThis as { prismaGlobal?: unknown; }).prismaGlobal;
+    delete (globalThis as { prismaGlobal_LearnIt?: unknown; }).prismaGlobal_LearnIt;
 
     const prisma = await import("./prisma");
     expect(prisma.default).toBeDefined();
@@ -90,7 +90,7 @@ describe("Prisma Client Singleton", () => {
     (process.env as { NODE_ENV?: string; }).NODE_ENV = "development";
 
     vi.resetModules();
-    delete (globalThis as { prismaGlobal?: unknown; }).prismaGlobal;
+    delete (globalThis as { prismaGlobal_LearnIt?: unknown; }).prismaGlobal_LearnIt;
 
     const prisma = await import("./prisma");
     expect(prisma.default).toBeDefined();

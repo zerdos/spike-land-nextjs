@@ -52,12 +52,14 @@ describe("Metrics Cache", () => {
         computedAt: new Date(Date.now() - 60000),
       };
       mockFindUnique.mockResolvedValueOnce(expiredCache);
-      mockDelete.mockResolvedValueOnce({});
+      mockDeleteMany.mockResolvedValueOnce({ count: 1 });
 
       const result = await getCachedMetrics("test-key");
 
       expect(result).toBeNull();
-      expect(mockDelete).toHaveBeenCalledWith({
+      // The delete is fire-and-forget using deleteMany, so we need to wait for it
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(mockDeleteMany).toHaveBeenCalledWith({
         where: { cacheKey: "test-key" },
       });
     });

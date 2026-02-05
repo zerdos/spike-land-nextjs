@@ -7,6 +7,7 @@ import {
   getTopApps,
   incrementViewCount,
   markAsGenerating,
+  updateAppContent,
   updateAppStatus,
 } from "./content-service";
 
@@ -63,6 +64,21 @@ describe("content-service", () => {
         update: expect.objectContaining({ status: CreatedAppStatus.GENERATING }),
         create: expect.objectContaining({ status: CreatedAppStatus.GENERATING }),
       }));
+    });
+  });
+
+  describe("updateAppContent", () => {
+    it("should update title and description", async () => {
+      const mockApp = { slug: "test", title: "New Title", description: "New Description" };
+      (prisma.createdApp.update as any).mockResolvedValue(mockApp);
+
+      const result = await updateAppContent("test", "New Title", "New Description");
+
+      expect(result).toEqual(mockApp);
+      expect(prisma.createdApp.update).toHaveBeenCalledWith({
+        where: { slug: "test" },
+        data: { title: "New Title", description: "New Description" },
+      });
     });
   });
 

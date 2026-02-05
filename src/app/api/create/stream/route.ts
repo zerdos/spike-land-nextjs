@@ -1,7 +1,12 @@
 import { auth } from "@/auth";
 import { generateCodespaceId, updateCodespace } from "@/lib/create/codespace-service";
 import { generateAppContent } from "@/lib/create/content-generator";
-import { getCreatedApp, markAsGenerating, updateAppStatus } from "@/lib/create/content-service";
+import {
+  getCreatedApp,
+  markAsGenerating,
+  updateAppContent,
+  updateAppStatus,
+} from "@/lib/create/content-service";
 import { type StreamEvent } from "@/lib/create/types";
 import logger from "@/lib/logger";
 import { CreatedAppStatus } from "@prisma/client";
@@ -119,19 +124,9 @@ async function* generateStream(
     // Extract outgoing links if any found in code or use the suggestions
     // We prefer the explicit relatedApps from AI
     const relatedLinks = generatedContent.relatedApps || [];
-    // Or parse them from method: const parsedLinks = extractOutgoingLinks(generatedContent.code);
 
-    // We need to update the title/description with the generated ones
-    await markAsGenerating(
-      slug,
-      path,
-      generatedContent.title,
-      generatedContent.description,
-      codespaceId,
-      codespaceUrl,
-      `Create app from path: ${slug}`,
-      userId,
-    );
+    // Update the title/description with the generated ones
+    await updateAppContent(slug, generatedContent.title, generatedContent.description);
 
     await updateAppStatus(slug, CreatedAppStatus.PUBLISHED, relatedLinks);
 
