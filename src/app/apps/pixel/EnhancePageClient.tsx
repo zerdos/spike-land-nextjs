@@ -10,7 +10,7 @@ import { Link } from "@/components/ui/link";
 import { useUserAlbums } from "@/hooks/useUserAlbums";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import { Images, Settings2 } from "lucide-react";
-import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { useRouter } from "next/navigation";
 
 interface EnhancePageClientProps {
   images: (EnhancedImage & {
