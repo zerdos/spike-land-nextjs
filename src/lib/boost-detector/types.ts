@@ -5,6 +5,8 @@
 
 import type { MarketingPlatform, PostType } from "@/generated/prisma";
 
+export const DEFAULT_CONVERSION_VALUE_USD = 50;
+
 export interface BoostDetectorConfig {
   engagementThreshold: number;
   velocityThreshold: number;

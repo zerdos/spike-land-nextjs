@@ -6,7 +6,7 @@
 
 import type { MarketingPlatform, PostPerformance, PostType } from "@/generated/prisma";
 import prisma from "@/lib/prisma";
-import type { BoostScore, ROIPrediction } from "./types";
+import { type BoostScore, DEFAULT_CONVERSION_VALUE_USD, type ROIPrediction } from "./types";
 
 /**
  * Calculate boost score for a post based on performance metrics
@@ -127,7 +127,7 @@ export async function predictROI(
   const estimatedCost = suggestedBudget;
 
   // Calculate ROI
-  const estimatedRevenue = estimatedConversions * 50; // Assume $50 per conversion
+  const estimatedRevenue = estimatedConversions * DEFAULT_CONVERSION_VALUE_USD; // Assume default value per conversion
   const estimatedROI = (estimatedRevenue - estimatedCost) / estimatedCost;
 
   // Confidence score based on historical data availability
