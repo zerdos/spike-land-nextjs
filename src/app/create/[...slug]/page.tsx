@@ -13,10 +13,12 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  // Await params first, then extract slug with defensive check
+  const resolvedParams = await params;
+  const slug = resolvedParams?.slug;
 
-  // Defensive check for static analysis
-  if (!slug || slug.length === 0) {
+  // Defensive check for static analysis - slug may be undefined during build
+  if (!slug || !Array.isArray(slug) || slug.length === 0) {
     return { title: "Create | Spike Land AI" };
   }
 
@@ -32,9 +34,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CreatePage({ params }: PageProps) {
-  const { slug: pathSegments } = await params;
+  // Await params first, then extract slug with defensive check
+  const resolvedParams = await params;
+  const pathSegments = resolvedParams?.slug;
 
-  if (!pathSegments || pathSegments.length === 0) {
+  if (!pathSegments || !Array.isArray(pathSegments) || pathSegments.length === 0) {
     notFound();
   }
 
