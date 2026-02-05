@@ -71,13 +71,19 @@ export function getCodespaceUrl(codespaceId: string): string {
 
 /**
  * Generate a consistent codespace ID from a slug.
- * e.g. "cooking/pasta" -> "create-cooking-pasta"
+ * The backend only allows IDs with at most 2 hyphen-separated parts (e.g., "x-abc123").
+ * We use a hash of the slug to ensure uniqueness while staying within constraints.
+ * e.g. "cooking/pasta" -> "c-a1b2c3d4"
  */
 export function generateCodespaceId(slug: string): string {
-  // Replace slashes and other non-alphanumeric chars with hyphens
-  // Slug is already lowercase from the route handler
-  const sanitized = slug.replace(/[^a-z0-9]/g, "-");
-  // Ensure it doesn't start or end with hyphen
-  const trimmed = sanitized.replace(/^-+|-+$/g, "");
-  return `create-${trimmed}`;
+  // Create a simple hash from the slug for uniqueness
+  // Using a basic hash that produces 8 hex chars
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) {
+    const char = slug.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  const hashHex = Math.abs(hash).toString(16).padStart(8, "0").slice(0, 8);
+  return `c-${hashHex}`;
 }

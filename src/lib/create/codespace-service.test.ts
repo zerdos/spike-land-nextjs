@@ -15,16 +15,29 @@ describe("codespace-service", () => {
   });
 
   describe("generateCodespaceId", () => {
-    it("should generate consistent IDs", () => {
-      expect(generateCodespaceId("cooking/pasta")).toBe("create-cooking-pasta");
+    it("should generate consistent IDs for same input", () => {
+      const id1 = generateCodespaceId("cooking/pasta");
+      const id2 = generateCodespaceId("cooking/pasta");
+      expect(id1).toBe(id2);
     });
 
-    it("should handle special characters", () => {
-      expect(generateCodespaceId("my application!")).toBe("create-my-application");
+    it("should generate IDs with at most 2 hyphen-separated parts", () => {
+      // Backend requires codeSpace.split("-").length <= 2
+      const id = generateCodespaceId("framer-motion-example");
+      const parts = id.split("-");
+      expect(parts.length).toBeLessThanOrEqual(2);
+      expect(id).toMatch(/^c-[a-f0-9]{8}$/);
     });
 
-    it("should handle multi-part slugs", () => {
-      expect(generateCodespaceId("cooking/pasta")).toBe("create-cooking-pasta");
+    it("should generate different IDs for different inputs", () => {
+      const id1 = generateCodespaceId("cooking/pasta");
+      const id2 = generateCodespaceId("weather-app");
+      expect(id1).not.toBe(id2);
+    });
+
+    it("should handle special characters consistently", () => {
+      const id = generateCodespaceId("my application!");
+      expect(id).toMatch(/^c-[a-f0-9]{8}$/);
     });
   });
 
