@@ -242,7 +242,13 @@ export async function getSSEEvents(
   const events = await redis.lrange<string>(key, 0, -1);
 
   return events
-    .map((e) => JSON.parse(e) as SSEEventWithSource)
+    .map((e) => {
+      // Handle both stringified JSON and already-parsed objects
+      if (typeof e === "string") {
+        return JSON.parse(e) as SSEEventWithSource;
+      }
+      return e as unknown as SSEEventWithSource;
+    })
     .filter(
       (e) => e.timestamp > afterTimestamp && e.sourceInstanceId !== INSTANCE_ID,
     )
