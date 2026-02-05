@@ -388,4 +388,9 @@ export const rateLimitConfigs = {
     maxRequests: 15,
     windowMs: 60 * 1000, // 1 minute
   },
+  /** App creation: 20 apps per day per user */
+  appCreation: {
+    maxRequests: 20,
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+  },
 } as const;

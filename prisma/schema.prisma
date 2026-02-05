@@ -5239,7 +5239,7 @@ model LearnItContent {
 
   // Metadata
   generatedAt   DateTime  @default(now())
-  aiModel       String    @default("gemini-2.5-flash-preview-05-20")
+  aiModel       String    @default("gemini-3-flash-preview")
   generatedById String?
   generatedBy   User?     @relation(fields: [generatedById], references: [id])
 

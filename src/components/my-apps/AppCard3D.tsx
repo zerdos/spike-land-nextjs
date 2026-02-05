@@ -2,6 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import type { APP_BUILD_STATUSES } from "@/lib/validations/app";
+import { formatDuration, intervalToDuration } from "date-fns";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -19,10 +20,17 @@ interface AppData {
     images: number;
   };
   updatedAt: Date;
+  developmentTimeSeconds: number | null;
 }
 
 interface AppCard3DProps {
   app: AppData;
+}
+
+function formatDevTime(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const duration = intervalToDuration({ start: 0, end: seconds * 1000 });
+  return formatDuration(duration, { format: ["hours", "minutes", "seconds"], delimiter: " " });
 }
 
 export function AppCard3D({ app }: AppCard3DProps) {
@@ -190,6 +198,9 @@ export function AppCard3D({ app }: AppCard3DProps) {
             </p>
           )}
           <div className="mt-3 flex items-center gap-4 text-xs text-zinc-500">
+            {app.developmentTimeSeconds != null && (
+              <span>{formatDevTime(app.developmentTimeSeconds)}</span>
+            )}
             <span>{app._count.messages} messages</span>
             <span>{app._count.images} images</span>
           </div>

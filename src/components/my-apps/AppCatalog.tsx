@@ -17,6 +17,7 @@ interface AppData {
     images: number;
   };
   updatedAt: Date;
+  developmentTimeSeconds: number | null;
 }
 
 interface AppCatalogProps {

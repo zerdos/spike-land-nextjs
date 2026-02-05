@@ -59,6 +59,11 @@ export default async function MyAppsPage(props: {
             images: true,
           },
         },
+        codeVersions: {
+          take: 1,
+          orderBy: { createdAt: "asc" as const },
+          select: { createdAt: true },
+        },
       },
       orderBy: {
         updatedAt: "desc",
@@ -67,6 +72,17 @@ export default async function MyAppsPage(props: {
   ]);
 
   const totalPages = Math.ceil(totalApps / pageSize);
+
+  // Compute development time for each app
+  const appsWithDevTime = apps.map((app) => {
+    const firstCodeVersion = app.codeVersions[0];
+    const developmentTimeSeconds = firstCodeVersion
+      ? Math.round((firstCodeVersion.createdAt.getTime() - app.createdAt.getTime()) / 1000)
+      : null;
+    // Remove codeVersions from the passed data
+    const { codeVersions: _, ...appData } = app;
+    return { ...appData, developmentTimeSeconds };
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -224,7 +240,7 @@ export default async function MyAppsPage(props: {
               </div>
 
               {/* 3D Card Grid with Live Previews */}
-              <AppCatalog apps={apps} />
+              <AppCatalog apps={appsWithDevTime} />
 
               {/* Pagination Controls */}
               {totalPages > 1 && (

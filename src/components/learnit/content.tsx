@@ -39,6 +39,11 @@ export function LearnItContent({ content }: LearnItContentProps) {
               [rehypePrettyCode, {
                 theme: "github-dark",
                 keepBackground: true,
+                onVisitLine(node: { children: unknown[]; }) {
+                  if (node.children?.length === 0) {
+                    node.children = [{ type: "text", value: " " }];
+                  }
+                },
               }],
             ],
           },

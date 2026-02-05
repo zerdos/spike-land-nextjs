@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
 import { enqueueMessage } from "@/lib/upstash";
 import { appCreationSchema, appPromptCreationSchema } from "@/lib/validations/app";
@@ -158,6 +159,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "User account not properly initialized. Please sign out and sign in again." },
       { status: 500 },
+    );
+  }
+
+  // Rate limit app creation: 20 apps per day per user
+  const { data: rateLimit, error: rateLimitError } = await tryCatch(
+    checkRateLimit(`app_creation:${userId}`, rateLimitConfigs.appCreation),
+  );
+
+  if (rateLimitError) {
+    console.error("Rate limit check failed:", rateLimitError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  if (rateLimit.isLimited) {
+    const retryAfterSeconds = Math.ceil((rateLimit.resetAt - Date.now()) / 1000);
+    const retryAfterHours = Math.ceil(retryAfterSeconds / 3600);
+    return NextResponse.json(
+      {
+        error:
+          `Daily app creation limit reached (20 apps per day). Try again in ${retryAfterHours} hours.`,
+      },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfterSeconds) },
+      },
     );
   }
 

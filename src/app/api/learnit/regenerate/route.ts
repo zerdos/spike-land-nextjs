@@ -8,6 +8,7 @@ import {
   markAsFailed,
   markAsGenerating,
 } from "@/lib/learnit/content-service";
+import { generateMdxFromResponse } from "@/lib/learnit/mdx-generator";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -62,7 +63,7 @@ export async function POST(req: Request) {
       description: generated.description,
       content: generateMdxFromResponse(generated),
       generatedById: session.user.id,
-      aiModel: "gemini-2.0-flash",
+      aiModel: "gemini-3-flash-preview",
     });
 
     return NextResponse.json(saved);
@@ -70,24 +71,4 @@ export async function POST(req: Request) {
     console.error("LearnIt Regenerate Error:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
-}
-
-function generateMdxFromResponse(
-  generated: import("@/lib/learnit/content-generator").GeneratedLearnItContent,
-): string {
-  let mdx = "";
-
-  generated.sections.forEach(section => {
-    mdx += `\n\n## ${section.heading}\n\n${section.content}`;
-  });
-
-  if (generated.relatedTopics?.length > 0) {
-    mdx +=
-      `\n\n---\n\n### Detailed Related Topics\n\nThe following topics are typically studied next:\n`;
-    generated.relatedTopics.forEach(topic => {
-      mdx += `- [[${topic}]]\n`;
-    });
-  }
-
-  return mdx;
 }

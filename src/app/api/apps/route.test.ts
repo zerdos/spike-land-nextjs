@@ -23,12 +23,24 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+vi.mock("@/lib/rate-limiter", () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({
+    isLimited: false,
+    remaining: 19,
+    resetAt: Date.now() + 86400000,
+  }),
+  rateLimitConfigs: {
+    appCreation: { maxRequests: 20, windowMs: 24 * 60 * 60 * 1000 },
+  },
+}));
+
 vi.mock("@/lib/upstash", () => ({
   enqueueMessage: vi.fn().mockResolvedValue(undefined),
 }));
 
 const { auth } = await import("@/auth");
 const prisma = (await import("@/lib/prisma")).default;
+const { checkRateLimit } = await import("@/lib/rate-limiter");
 
 describe("POST /api/apps", () => {
   beforeEach(() => {
@@ -37,6 +49,12 @@ describe("POST /api/apps", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never);
     // Default: no existing app with same codespaceId/slug
     vi.mocked(prisma.app.findFirst).mockResolvedValue(null);
+    // Default: not rate limited
+    vi.mocked(checkRateLimit).mockResolvedValue({
+      isLimited: false,
+      remaining: 19,
+      resetAt: Date.now() + 86400000,
+    });
   });
 
   it("should return 401 if user is not authenticated", async () => {
@@ -360,6 +378,105 @@ describe("POST /api/apps", () => {
       expect(response.status).toBe(201);
       // User.create should NOT have been called
       expect(prisma.user.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("rate limiting", () => {
+    it("should return 429 when rate limited", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "user-1", email: "test@example.com" },
+        expires: "2025-12-31",
+      } as Session);
+
+      const resetAt = Date.now() + 3600000; // 1 hour from now
+      vi.mocked(checkRateLimit).mockResolvedValue({
+        isLimited: true,
+        remaining: 0,
+        resetAt,
+      });
+
+      const request = new NextRequest("http://localhost/api/apps", {
+        method: "POST",
+        body: JSON.stringify({
+          prompt: "Build me a todo app",
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(429);
+      expect(data.error).toContain("Daily app creation limit reached");
+      expect(response.headers.get("Retry-After")).toBeTruthy();
+      expect(checkRateLimit).toHaveBeenCalledWith(
+        "app_creation:user-1",
+        expect.objectContaining({ maxRequests: 20 }),
+      );
+    });
+
+    it("should allow creation when not rate limited", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "user-1", email: "test@example.com" },
+        expires: "2025-12-31",
+      } as Session);
+
+      vi.mocked(checkRateLimit).mockResolvedValue({
+        isLimited: false,
+        remaining: 19,
+        resetAt: Date.now() + 86400000,
+      });
+
+      const mockApp = {
+        id: "app-1",
+        name: "Test App",
+        description: "Test Description for the app",
+        userId: "user-1",
+        status: "PROMPTING",
+        requirements: [],
+        monetizationModels: [],
+      };
+
+      vi.mocked(prisma.app.create).mockResolvedValue(mockApp as never);
+
+      const request = new NextRequest("http://localhost/api/apps", {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Test App",
+          description: "Test Description for the app",
+          requirements: "Test Requirements with enough length to pass validation",
+          monetizationModel: "free",
+        }),
+      });
+
+      const response = await POST(request);
+
+      expect(response.status).toBe(201);
+      expect(checkRateLimit).toHaveBeenCalledWith(
+        "app_creation:user-1",
+        expect.objectContaining({ maxRequests: 20 }),
+      );
+    });
+
+    it("should return 500 when rate limit check fails", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "user-1", email: "test@example.com" },
+        expires: "2025-12-31",
+      } as Session);
+
+      vi.mocked(checkRateLimit).mockRejectedValue(new Error("Redis connection failed"));
+
+      const request = new NextRequest("http://localhost/api/apps", {
+        method: "POST",
+        body: JSON.stringify({
+          prompt: "Build me a todo app",
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
     });
   });
 

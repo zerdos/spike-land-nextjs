@@ -31,7 +31,7 @@ export function RegenerateButton({ slug }: RegenerateButtonProps) {
         throw new Error("Regeneration failed");
       }
 
-      toast.success("Regenerating content...");
+      toast.success("Content regenerated successfully!");
       router.refresh();
     } catch (error) {
       toast.error("Failed to regenerate content. Please try again.");
