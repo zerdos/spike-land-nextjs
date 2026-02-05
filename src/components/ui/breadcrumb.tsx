@@ -43,6 +43,7 @@ const BreadcrumbLink = React.forwardRef<
   React.ComponentPropsWithoutRef<"a">
 >(({ className, ...props }, ref) => {
   return (
+    // eslint-disable-next-line jsx-a11y/anchor-has-content
     <a
       ref={ref}
       className={cn("transition-colors hover:text-foreground", className)}

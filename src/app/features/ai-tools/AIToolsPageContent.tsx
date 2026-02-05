@@ -72,9 +72,14 @@ export function AIToolsPageContent() {
         <div className="container mx-auto px-6">
           <p>© {new Date().getFullYear()} Spike Land Ltd. All rights reserved.</p>
           <div className="flex justify-center gap-6 mt-4">
-            <a href="#" className="hover:text-white transition-colors">Documentation</a>
-            <a href="#" className="hover:text-white transition-colors">GitHub</a>
-            <a href="#" className="hover:text-white transition-colors">Discord</a>
+            <a href="/docs" className="hover:text-white transition-colors">Documentation</a>
+            <a
+              href="https://github.com/zerdos/spike-land-nextjs"
+              className="hover:text-white transition-colors"
+            >
+              GitHub
+            </a>
+            <a href="https://discord.com" className="hover:text-white transition-colors">Discord</a>
           </div>
         </div>
       </footer>
