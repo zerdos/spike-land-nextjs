@@ -254,6 +254,18 @@ async function main() {
   });
   console.log("Created UNLISTED album:", unlistedAlbum.id);
 
+  // Verify album exists and log details (Debug for CI failures)
+  const albumVerification = await prisma.album.findUnique({
+    where: { id: unlistedAlbum.id }
+  });
+
+  if (!albumVerification) {
+    console.error("CRITICAL: Album returned by upsert does not exist in DB immediately after!");
+    // Attempt to recover or inspect
+    const byToken = await prisma.album.findUnique({ where: { shareToken: "e2e-album-share-token-456" } });
+    console.log("Album by shareToken:", byToken);
+  }
+
   // 5. Create PRIVATE album (for private album tests)
   const privateAlbum = await prisma.album.upsert({
     where: { id: "e2e-private-album" },
@@ -273,20 +285,40 @@ async function main() {
   for (let i = 0; i < testImages.length; i++) {
     const image = testImages[i];
     if (!image) continue;
-    await prisma.albumImage.upsert({
-      where: {
-        albumId_imageId: {
-          albumId: unlistedAlbum.id,
-          imageId: image.id,
-        },
-      },
-      update: { sortOrder: i },
-      create: {
-        albumId: unlistedAlbum.id,
-        imageId: image.id,
-        sortOrder: i,
-      },
-    });
+
+    // Retry logic for robustness
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        await prisma.albumImage.upsert({
+          where: {
+            albumId_imageId: {
+              albumId: unlistedAlbum.id,
+              imageId: image.id,
+            },
+          },
+          update: { sortOrder: i },
+          create: {
+            albumId: unlistedAlbum.id,
+            imageId: image.id,
+            sortOrder: i,
+          },
+        });
+        break; // Success
+      } catch (e) {
+        retries--;
+        console.warn(`Failed to link image ${image.id} to album ${unlistedAlbum.id}. Retries left: ${retries}`);
+        if (retries === 0) {
+          console.error("CRITICAL: Failed to link image after retries:", e);
+          // Verify existence to debug
+          const albumExists = await prisma.album.findUnique({ where: { id: unlistedAlbum.id } });
+          const imageExists = await prisma.enhancedImage.findUnique({ where: { id: image.id } });
+          console.error(`Debug: Album exists? ${!!albumExists}, Image exists? ${!!imageExists}`);
+          throw e;
+        }
+        await new Promise(r => setTimeout(r, 500)); // Wait 500ms
+      }
+    }
   }
   console.log(`Added ${testImages.length} images to unlisted album`);
 
