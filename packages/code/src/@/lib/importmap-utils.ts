@@ -43,10 +43,8 @@ const WORKER_PATTERNS = ["/workers/", ".worker"];
 const COMPONENT_PATTERNS = [
   "@/components/",
   "@/services/",
-  "@/config/",
   "@/utils/",
   "@/tools/",
-  "@/workflows/",
   "/live/",
   "@/lib",
   "@/external",

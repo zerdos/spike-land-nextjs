@@ -304,10 +304,7 @@ const appEntryPoints = await createEntryPoints("components/app");
 const libEntryPoints = await createEntryPoints("lib");
 const externalEntryPoints = await createEntryPoints("external");
 const hooksEntryPoints = await createEntryPoints("hooks");
-// const configEntryPoints = await createEntryPoints("config");
 const servicesEntryPoints = await createEntryPoints("services");
-// const workflows = await createEntryPoints("workflows");
-// const tools   = await createEntryPoints("tools");
 
 const standaloneEntryPoints = [
   ...uiEntryPoints,
@@ -315,10 +312,7 @@ const standaloneEntryPoints = [
   ...externalEntryPoints,
   ...appEntryPoints,
   ...hooksEntryPoints,
-  // ...configEntryPoints,
   ...servicesEntryPoints,
-  // ...workflows,
-  // ...tools,
 ];
 
 const extraAliases = {
@@ -328,9 +322,6 @@ const extraAliases = {
   ...await createAliases("external"),
   ...await createAliases("hooks"),
   ...await createAliases("services"),
-  // ...await createAliases("workflows"),
-  // ...await createAliases("tools"),
-  // ...await createAliases("config"),
 };
 
 // This function is responsible for building the main application bundles.

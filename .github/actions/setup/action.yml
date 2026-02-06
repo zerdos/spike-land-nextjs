@@ -1,0 +1,85 @@
+name: "Setup Project"
+description: "Install Node.js, cache node_modules/yarn/Prisma/shared/Playwright, and install dependencies. Checkout must happen BEFORE this action."
+
+inputs:
+  generate-prisma:
+    description: "Generate Prisma client (cached by schema hash)"
+    default: "false"
+  build-shared:
+    description: "Build shared package (cached by source hash)"
+    default: "false"
+  install-playwright:
+    description: "Install Playwright Chromium browser (cached by version)"
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v6
+      with:
+        node-version-file: ".nvmrc"
+        # No cache input — we manage caching ourselves to avoid
+        # duplicate Linux-node-*/node-cache-* entries
+
+    - run: corepack enable
+      shell: bash
+
+    # PRIMARY: node_modules cache (saves ~46s per job on hit)
+    - uses: actions/cache@v5
+      id: nm-cache
+      with:
+        path: |
+          node_modules
+          packages/*/node_modules
+        key: ${{ runner.os }}-nm-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+        restore-keys: ${{ runner.os }}-nm-
+
+    # SECONDARY: yarn archive cache (fallback for cold install)
+    - uses: actions/cache@v5
+      with:
+        path: .yarn/cache
+        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+        restore-keys: ${{ runner.os }}-yarn-
+
+    - run: yarn install --immutable
+      shell: bash
+
+    # Prisma client cache (~29MB, keyed on schema)
+    - if: inputs.generate-prisma == 'true'
+      uses: actions/cache@v5
+      id: prisma-cache
+      with:
+        path: src/generated/prisma
+        key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma') }}
+
+    - if: inputs.generate-prisma == 'true' && steps.prisma-cache.outputs.cache-hit != 'true'
+      run: yarn db:generate
+      shell: bash
+
+    # Shared package dist cache (~228K, keyed on source)
+    - if: inputs.build-shared == 'true'
+      uses: actions/cache@v5
+      id: shared-cache
+      with:
+        path: packages/shared/dist
+        key: ${{ runner.os }}-shared-${{ hashFiles('packages/shared/src/**', 'packages/shared/tsup.config.ts', 'packages/shared/package.json') }}
+
+    - if: inputs.build-shared == 'true' && steps.shared-cache.outputs.cache-hit != 'true'
+      run: yarn workspace @spike-npm-land/shared build
+      shell: bash
+
+    # Playwright browser cache (~400MB, keyed on version)
+    - if: inputs.install-playwright == 'true'
+      uses: actions/cache@v5
+      id: pw-cache
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-pw-1.58.1
+
+    - if: inputs.install-playwright == 'true' && steps.pw-cache.outputs.cache-hit != 'true'
+      run: yarn playwright install chromium --with-deps
+      shell: bash
+
+    - if: inputs.install-playwright == 'true' && steps.pw-cache.outputs.cache-hit == 'true'
+      run: yarn playwright install-deps chromium
+      shell: bash
