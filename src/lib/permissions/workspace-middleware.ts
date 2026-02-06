@@ -140,10 +140,16 @@ export async function requireWorkspacePermission(
   const membership = await getWorkspaceMembership(session.user.id, workspaceId);
 
   if (!membership) {
+    console.warn(
+      `[WorkspaceMiddleware] Access denied: User ${session.user.id} is not a member of workspace ${workspaceId}`,
+    );
     throw new Error("Forbidden: Not a workspace member");
   }
 
   if (!hasPermission(membership.role, action)) {
+    console.warn(
+      `[WorkspaceMiddleware] Access denied: User ${session.user.id} (role: ${membership.role}) lacks ${action} permission for workspace ${workspaceId}`,
+    );
     throw new Error(`Forbidden: Requires ${action} permission`);
   }
 
@@ -169,6 +175,9 @@ export async function requireWorkspaceMembership(
   const membership = await getWorkspaceMembership(session.user.id, workspaceId);
 
   if (!membership) {
+    console.warn(
+      `[WorkspaceMiddleware] Access denied: User ${session.user.id} is not a member of workspace ${workspaceId}`,
+    );
     throw new Error("Forbidden: Not a workspace member");
   }
 
