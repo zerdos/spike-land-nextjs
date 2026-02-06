@@ -76,7 +76,7 @@ describe("LibraryGrid", () => {
     );
 
     const checkboxes = screen.getAllByRole("checkbox");
-    fireEvent.click(checkboxes[0]);
+    fireEvent.click(checkboxes[0]!);
 
     expect(onToggleSelect).toHaveBeenCalledWith("img1");
   });
