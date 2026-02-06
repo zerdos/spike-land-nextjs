@@ -1,5 +1,30 @@
 import React from "react";
 
+// Patch: Ensure all React dispatchers have getOwner().
+// React 19.2+ dev jsx-runtime calls dispatcher.getOwner(), but custom
+// reconcilers (e.g., @react-three/fiber's react-reconciler) may set a
+// dispatcher that lacks this method, causing "getOwner is not a function".
+// This intercepts dispatcher assignments and adds a no-op getOwner fallback.
+const _internals = (React as Record<string, unknown>)[
+  "__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE"
+] as
+  | Record<string, unknown>
+  | undefined;
+if (_internals) {
+  let _H = _internals["H"];
+  Object.defineProperty(_internals, "H", {
+    get: () => _H,
+    set: (dispatcher: Record<string, unknown> | null) => {
+      if (dispatcher != null && typeof dispatcher["getOwner"] !== "function") {
+        dispatcher["getOwner"] = () => null;
+      }
+      _H = dispatcher;
+    },
+    configurable: true,
+    enumerable: true,
+  });
+}
+
 export const {
   Children,
   Component,
