@@ -385,6 +385,8 @@ Then(
   "each photo card should show enhancement count badge",
   async function(this: CustomWorld) {
     const badges = this.page.getByText(/\d+ enhancement/);
+    // Wait for at least one badge to be visible to avoid flaky failures when hydration/loading is slow
+    await expect(badges.first()).toBeVisible();
     const count = await badges.count();
     expect(count).toBeGreaterThan(0);
   },
