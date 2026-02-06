@@ -36,6 +36,25 @@ describe("content-generator", () => {
       expect(SYSTEM_PROMPT).toContain("framer-motion");
       expect(SYSTEM_PROMPT).toContain("lucide-react");
     });
+
+    it("should warn against stale closures with setTimeout", () => {
+      expect(SYSTEM_PROMPT).toContain("setTimeout");
+      expect(SYSTEM_PROMPT).toContain("stale");
+    });
+
+    it("should contain dark mode guidance with semantic classes", () => {
+      expect(SYSTEM_PROMPT).toContain("DARK MODE IS MANDATORY");
+      expect(SYSTEM_PROMPT).toContain("text-foreground");
+      expect(SYSTEM_PROMPT).toContain("bg-background");
+      expect(SYSTEM_PROMPT).toContain("dark:");
+    });
+
+    it("should contain curated lucide-react icon list with hallucination guard", () => {
+      expect(SYSTEM_PROMPT).toContain("ChevronDown");
+      expect(SYSTEM_PROMPT).toContain("AlertCircle");
+      expect(SYSTEM_PROMPT).toContain("BarChart3");
+      expect(SYSTEM_PROMPT).toContain("Do NOT invent icon names");
+    });
   });
 
   describe("buildUserPrompt", () => {

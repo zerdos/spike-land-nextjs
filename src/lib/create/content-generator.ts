@@ -63,7 +63,17 @@ export const SYSTEM_PROMPT =
 ## PRE-LOADED LIBRARIES (zero load time)
 - react (useState, useEffect, useCallback, useMemo, useRef, useReducer)
 - framer-motion (motion, AnimatePresence, useMotionValue, useSpring)
-- lucide-react (any icon: Check, X, Plus, Search, Settings, Heart, Star, etc.)
+- lucide-react — ONLY use icons from this verified list:
+  Navigation: ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsDown, ChevronsUp, ChevronsLeft, ChevronsRight, ChevronFirst, ChevronLast
+  Arrows: ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpDown, ArrowLeftRight, MoveDown, MoveUp, Undo2, Redo2
+  Actions: X, Menu, Plus, Minus, Check, Copy, Trash2, Pencil, Save, Download, Upload, RefreshCw, RotateCcw, ExternalLink, Link, Unlink, Grip, GripVertical
+  Status: AlertCircle, AlertTriangle, Info, HelpCircle, CheckCircle, XCircle, Loader2, Clock, Timer, Ban
+  Objects: Home, Settings, User, Users, Search, Bell, Heart, Star, Bookmark, Eye, EyeOff, Lock, Unlock, Shield, Key, Zap, Flame, Sun, Moon, CloudSun
+  Media: Image, Camera, Video, File, FileText, Folder, FolderOpen, Music, Play, Pause, SquareIcon, Volume2, VolumeX, Mic
+  Communication: Mail, MessageSquare, MessageCircle, Phone, Send, Share2, AtSign
+  Layout: LayoutDashboard, Columns, Rows, PanelLeft, SidebarOpen, SidebarClose, Maximize2, Minimize2, Fullscreen
+  Data: BarChart3, LineChart, PieChart, TrendingUp, TrendingDown, Activity, Filter, SlidersHorizontal, ListOrdered, Table2, Hash
+  IMPORTANT: Do NOT invent icon names. No "ChevronDoubleDown", "EyeClosed", "FileIcon", etc.
 - clsx, tailwind-merge (for cn() — already available via @/lib/utils)
 
 ## CDN-AVAILABLE LIBRARIES (import by name)
@@ -85,12 +95,16 @@ export const SYSTEM_PROMPT =
 1. Use shadcn/ui components instead of raw HTML wherever a matching component exists
 2. Never call hooks conditionally — all hooks at top of component
 3. Handle edge cases: empty states, loading states, error boundaries
-4. Use dark: Tailwind variants for all custom colors (shadcn components handle this automatically)
+4. DARK MODE IS MANDATORY — the app must look perfect in both light and dark mode:
+   - PREFER semantic classes that auto-adapt: text-foreground, bg-background, bg-card, text-muted-foreground, border-border
+   - If using custom colors, ALWAYS pair with dark: variant: text-zinc-900 dark:text-zinc-100, bg-zinc-100 dark:bg-zinc-800
+   - NEVER use bare text-black, bg-white, text-zinc-900, bg-gray-100, border-gray-200 without dark: counterpart
 5. Use responsive classes (sm:, md:, lg:) for mobile-first design
 6. Include ARIA labels on custom interactive elements
 7. Use semantic HTML (main, section, nav, header, footer)
 8. Keep state local — do not create React context for single-component apps
 9. No inline styles — use Tailwind classes exclusively
+10. Never use setTimeout/setInterval with functions that read React state — state will be stale. Pass computed values as arguments instead.
 
 Before writing code, mentally plan: key user interactions, state variables, visual hierarchy, and which shadcn/ui components to use.`;
 
@@ -118,7 +132,7 @@ export async function generateAppContent(
     const result = await generateStructuredResponse<GeneratedAppContent>({
       prompt: buildUserPrompt(topic),
       systemPrompt: SYSTEM_PROMPT,
-      maxTokens: 16384,
+      maxTokens: 4096,
       temperature: 0.5,
     });
 

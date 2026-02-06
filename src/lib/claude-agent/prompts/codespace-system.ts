@@ -11,9 +11,14 @@ export const CODESPACE_SYSTEM_PROMPT =
 ## CRITICAL RULES
 1. ALWAYS export default function component
 2. ONLY use Tailwind CSS classes, NEVER inline styles (style={{}} is forbidden)
-3. React hooks work without imports (useState, useEffect, useCallback, useMemo are available)
-4. npm packages auto-transform to CDN URLs
-5. Read code FIRST before any modifications (or use provided code if given)
+3. DARK MODE IS MANDATORY — app must work in both light and dark mode:
+   - PREFER semantic classes that auto-adapt: text-foreground, bg-background, bg-card, text-muted-foreground, border-border
+   - If using custom colors, ALWAYS pair with dark: variant: text-zinc-900 dark:text-zinc-100, bg-zinc-100 dark:bg-zinc-800
+   - NEVER use bare text-black, bg-white, text-zinc-900, bg-gray-100, border-gray-200 without dark: counterpart
+4. React hooks work without imports (useState, useEffect, useCallback, useMemo are available)
+5. npm packages auto-transform to CDN URLs
+6. Read code FIRST before any modifications (or use provided code if given)
+7. Never use setTimeout/setInterval with functions that read React state — the closure captures stale values. Pass computed values as arguments instead.
 
 ## CODE FORMAT
 The codespace expects a single default export:
@@ -64,7 +69,17 @@ export default function App() {
 ## PRE-LOADED LIBRARIES (zero load time)
 - react, react-dom (React 19+)
 - tailwindcss (Tailwind CSS classes work automatically)
-- lucide-react (icons: <Heart />, <Settings />, etc.)
+- lucide-react — ONLY use icons from this verified list:
+  Navigation: ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsDown, ChevronsUp, ChevronsLeft, ChevronsRight, ChevronFirst, ChevronLast
+  Arrows: ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpDown, ArrowLeftRight, MoveDown, MoveUp, Undo2, Redo2
+  Actions: X, Menu, Plus, Minus, Check, Copy, Trash2, Pencil, Save, Download, Upload, RefreshCw, RotateCcw, ExternalLink, Link, Unlink, Grip, GripVertical
+  Status: AlertCircle, AlertTriangle, Info, HelpCircle, CheckCircle, XCircle, Loader2, Clock, Timer, Ban
+  Objects: Home, Settings, User, Users, Search, Bell, Heart, Star, Bookmark, Eye, EyeOff, Lock, Unlock, Shield, Key, Zap, Flame, Sun, Moon, CloudSun
+  Media: Image, Camera, Video, File, FileText, Folder, FolderOpen, Music, Play, Pause, SquareIcon, Volume2, VolumeX, Mic
+  Communication: Mail, MessageSquare, MessageCircle, Phone, Send, Share2, AtSign
+  Layout: LayoutDashboard, Columns, Rows, PanelLeft, SidebarOpen, SidebarClose, Maximize2, Minimize2, Fullscreen
+  Data: BarChart3, LineChart, PieChart, TrendingUp, TrendingDown, Activity, Filter, SlidersHorizontal, ListOrdered, Table2, Hash
+  IMPORTANT: Do NOT invent icon names. No "ChevronDoubleDown", "EyeClosed", "FileIcon", etc.
 - framer-motion (animations: motion.div, AnimatePresence, etc.)
 - clsx, tailwind-merge (for cn() — already available via @/lib/utils)
 
@@ -121,9 +136,10 @@ import { motion } from "framer-motion";
 
 ### Adding Icons (Lucide React)
 \`\`\`tsx
-import { Heart, Settings, ChevronRight } from "lucide-react";
+import { Heart, Settings, ChevronRight, Star } from "lucide-react";
 
 <Heart className="w-6 h-6 text-red-500" />
+<Star className="w-5 h-5 text-yellow-500" />
 \`\`\`
 
 ### State Management
