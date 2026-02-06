@@ -5,6 +5,7 @@ import { AssetCard } from "./AssetCard";
 // Mock next/image
 vi.mock("next/image", () => ({
   default: ({ src, alt }: { src: string; alt: string }) => (
+    // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt} />
   ),
 }));
@@ -49,7 +50,7 @@ describe("AssetCard", () => {
   });
 
   it("has focus-within class on the overlay", () => {
-    const { container } = render(<AssetCard asset={mockAsset} />);
+    render(<AssetCard asset={mockAsset} />);
 
     // Find the overlay div
     // We can look for the div containing the "Preview" button
