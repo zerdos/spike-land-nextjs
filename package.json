@@ -112,7 +112,8 @@
     "ralph:local:reset:full": "tsx scripts/ralph-local/reset-state.ts --full",
     "reset:db": "tsx scripts/reset-staging-db.ts",
     "reset:db:confirm": "tsx scripts/reset-staging-db.ts --confirm",
-    "backup": "tsx --tsconfig scripts/backup/tsconfig.json scripts/backup/backup.ts"
+    "backup": "tsx --tsconfig scripts/backup/tsconfig.json scripts/backup/backup.ts",
+    "ci:download:e2e": "./scripts/download-e2e-reports.sh"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.2.31",
