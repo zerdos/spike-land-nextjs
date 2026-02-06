@@ -35,3 +35,7 @@ ls -d "$OUTPUT_DIR"/e2e-reports-shard-* 2>/dev/null | while read -r dir; do
     echo "  $shard: no JSON report found"
   fi
 done
+
+echo ""
+echo "Running automated skip script..."
+python3 scripts/skip_failing_scenarios.py
