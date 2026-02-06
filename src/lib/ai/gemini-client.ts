@@ -4,6 +4,13 @@ import { GoogleGenAI } from "@google/genai";
 import { type AspectRatio, detectAspectRatio } from "./aspect-ratio";
 import type { AnalysisConfig, PromptConfig } from "./pipeline-types";
 
+export class StructuredResponseParseError extends Error {
+  constructor(message: string, public readonly rawText: string) {
+    super(message);
+    this.name = "StructuredResponseParseError";
+  }
+}
+
 /**
  * Known valid Gemini models for image generation.
  * This allowlist prevents runtime errors from invalid model names.
@@ -1307,10 +1314,11 @@ export async function generateStructuredResponse<T>(
         response: jsonText.slice(0, 500),
       },
     );
-    throw new Error(
+    throw new StructuredResponseParseError(
       `Failed to parse structured response: ${
         parseError instanceof Error ? parseError.message : "Invalid JSON"
       }`,
+      jsonText,
     );
   }
 

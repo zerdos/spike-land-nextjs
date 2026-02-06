@@ -1,8 +1,19 @@
-import { generateStructuredResponse } from "@/lib/ai/gemini-client";
+import { generateStructuredResponse, StructuredResponseParseError } from "@/lib/ai/gemini-client";
 import { describe, expect, it, vi } from "vitest";
-import { buildUserPrompt, generateAppContent, SYSTEM_PROMPT } from "./content-generator";
+import {
+  buildUserPrompt,
+  extractCodeFromRawText,
+  generateAppContent,
+  SYSTEM_PROMPT,
+} from "./content-generator";
 
-vi.mock("@/lib/ai/gemini-client");
+vi.mock("@/lib/ai/gemini-client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/ai/gemini-client")>();
+  return {
+    ...actual,
+    generateStructuredResponse: vi.fn(),
+  };
+});
 vi.mock("@/lib/logger", () => ({
   default: {
     error: vi.fn(),
@@ -154,6 +165,87 @@ describe("content-generator", () => {
       expect(result.content).toBeNull();
       expect(result.rawCode).toBe("export default function App() { return <div>Raw</div> }");
       expect(result.error).toBeTruthy();
+    });
+
+    it("should extract code from raw text when JSON parsing fails", async () => {
+      const rawJson =
+        `{"title":"Test","description":"A test","code":"export default function App() { return <div>Hello</div> }","relatedApps":["a/b"]}`;
+      (generateStructuredResponse as any).mockRejectedValue(
+        new StructuredResponseParseError(
+          "Failed to parse structured response: Unterminated string",
+          rawJson,
+        ),
+      );
+
+      const result = await generateAppContent(["test"]);
+
+      expect(result.content).toBeNull();
+      expect(result.rawCode).toBe("export default function App() { return <div>Hello</div> }");
+      expect(result.error).toContain("Failed to parse structured response");
+    });
+
+    it("should return null rawCode when StructuredResponseParseError has no code field", async () => {
+      const rawJson = `{"title":"Test","description":"A broken response with no code field`;
+      (generateStructuredResponse as any).mockRejectedValue(
+        new StructuredResponseParseError(
+          "Failed to parse structured response: Unterminated string",
+          rawJson,
+        ),
+      );
+
+      const result = await generateAppContent(["test"]);
+
+      expect(result.content).toBeNull();
+      expect(result.rawCode).toBeNull();
+      expect(result.error).toContain("Failed to parse structured response");
+    });
+
+    it("should still return null rawCode for non-parse errors", async () => {
+      (generateStructuredResponse as any).mockRejectedValue(new Error("Network timeout"));
+
+      const result = await generateAppContent(["test"]);
+
+      expect(result.content).toBeNull();
+      expect(result.rawCode).toBeNull();
+      expect(result.error).toBe("Network timeout");
+    });
+  });
+
+  describe("extractCodeFromRawText", () => {
+    it("should extract code from well-formed JSON text", () => {
+      const raw =
+        `{"title":"Test","code":"export default function App() { return <div>Hi</div> }","relatedApps":["a"]}`;
+      expect(extractCodeFromRawText(raw)).toBe(
+        "export default function App() { return <div>Hi</div> }",
+      );
+    });
+
+    it("should handle JSON-escaped characters in code", () => {
+      const raw = `{"code":"export default function App() {\\n  return <div>Hi</div>\\n}"}`;
+      expect(extractCodeFromRawText(raw)).toBe(
+        "export default function App() {\n  return <div>Hi</div>\n}",
+      );
+    });
+
+    it("should handle truncated JSON where code is cut off", () => {
+      const raw = `{"title":"Test","code":"export default function App() { return <div>Trun`;
+      const result = extractCodeFromRawText(raw);
+      expect(result).toContain("export default function App()");
+      expect(result).toContain("Trun");
+    });
+
+    it("should return null when no code field exists", () => {
+      expect(extractCodeFromRawText(`{"title":"Test","description":"No code here"}`)).toBeNull();
+    });
+
+    it("should return null for empty text", () => {
+      expect(extractCodeFromRawText("")).toBeNull();
+    });
+
+    it("should strip markdown fences from extracted code", () => {
+      const raw = `{"code":"\`\`\`tsx\\nexport default function App() { return <div/> }\\n\`\`\`"}`;
+      const result = extractCodeFromRawText(raw);
+      expect(result).toBe("export default function App() { return <div/> }");
     });
   });
 });

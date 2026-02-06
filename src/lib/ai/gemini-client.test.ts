@@ -15,6 +15,7 @@ import {
   type ModifyImageParams,
   modifyImageWithGemini,
   resetGeminiClient,
+  StructuredResponseParseError,
   VALID_GEMINI_MODELS,
 } from "./gemini-client";
 
@@ -1939,6 +1940,16 @@ describe("gemini-client", () => {
 
     it("should return premium model for TIER_4K", () => {
       expect(getModelForTier("TIER_4K")).toBe("gemini-3-pro-image-preview");
+    });
+  });
+
+  describe("StructuredResponseParseError", () => {
+    it("should be an instance of Error with correct name and rawText", () => {
+      const error = new StructuredResponseParseError("parse failed", "raw json text");
+      expect(error).toBeInstanceOf(Error);
+      expect(error.name).toBe("StructuredResponseParseError");
+      expect(error.message).toBe("parse failed");
+      expect(error.rawText).toBe("raw json text");
     });
   });
 

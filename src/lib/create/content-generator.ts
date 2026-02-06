@@ -1,4 +1,4 @@
-import { generateStructuredResponse } from "@/lib/ai/gemini-client";
+import { generateStructuredResponse, StructuredResponseParseError } from "@/lib/ai/gemini-client";
 import logger from "@/lib/logger";
 import { z } from "zod";
 
@@ -134,6 +134,30 @@ function cleanCode(code: string): string {
   return code.replace(/^```tsx?/, "").replace(/^```/, "").replace(/```$/, "").trim();
 }
 
+export function extractCodeFromRawText(text: string): string | null {
+  // Try to extract the "code" field value from malformed JSON
+  const codeMatch = text.match(/"code"\s*:\s*"([\s\S]+)/);
+  if (!codeMatch?.[1]) return null;
+
+  let code = codeMatch[1];
+
+  // Remove trailing JSON artifacts (closing field patterns)
+  code = code.replace(/"\s*,?\s*"(relatedApps|title|description)"\s*:[\s\S]*$/, "");
+  code = code.replace(/"\s*,?\s*}\s*$/, "");
+  code = code.replace(/"\s*$/, "");
+
+  // Unescape JSON string escapes
+  try {
+    code = JSON.parse(`"${code}"`);
+  } catch {
+    code = code.replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\"/g, '"')
+      .replace(/\\\\/g, "\\");
+  }
+
+  code = cleanCode(code);
+  return code || null;
+}
+
 export async function generateAppContent(
   path: string[],
 ): Promise<GenerationResult> {
@@ -171,6 +195,12 @@ export async function generateAppContent(
   } catch (error) {
     logger.error("Failed to generate app content:", { error });
     const message = error instanceof Error ? error.message : "Unknown error";
-    return { content: null, rawCode: null, error: message };
+
+    let rawCode: string | null = null;
+    if (error instanceof StructuredResponseParseError) {
+      rawCode = extractCodeFromRawText(error.rawText);
+    }
+
+    return { content: null, rawCode, error: message };
   }
 }
