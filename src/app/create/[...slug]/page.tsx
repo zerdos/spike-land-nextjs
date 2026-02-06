@@ -1,7 +1,9 @@
-import { AppDisplay } from "@/components/create/app-display";
+import { ExitIntentDetector } from "@/components/create/exit-intent-detector";
+import { FeedbackTimer } from "@/components/create/feedback-timer";
+import { LiveAppDisplay } from "@/components/create/live-app-display";
 import { RelatedApps } from "@/components/create/related-apps";
 import { StreamingApp } from "@/components/create/streaming-app";
-import { getCreatedApp } from "@/lib/create/content-service";
+import { getCreatedApp, getRelatedPublishedApps } from "@/lib/create/content-service";
 import { CreatedAppStatus } from "@prisma/client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -44,20 +46,37 @@ export default async function CreatePage({ params }: PageProps) {
   }
 
   const slug = pathSegments.join("/");
-  const app = await getCreatedApp(slug);
+  const [app, relatedApps] = await Promise.all([
+    getCreatedApp(slug),
+    getRelatedPublishedApps(slug, 6),
+  ]);
 
   // If app is published, show it
-  if (app && app.status === CreatedAppStatus.PUBLISHED) {
+  if (app && app.status === CreatedAppStatus.PUBLISHED && app.codespaceId && app.codespaceUrl) {
     return (
-      <div className="flex h-screen bg-background overflow-hidden">
+      <div className="flex h-[calc(100vh-4rem)] bg-background overflow-hidden">
         <div className="flex-1 flex flex-col min-w-0">
-          <AppDisplay
-            url={app.codespaceUrl}
+          <LiveAppDisplay
+            codespaceId={app.codespaceId}
+            codespaceUrl={app.codespaceUrl}
             title={app.title}
             slug={app.slug}
           />
         </div>
-        <RelatedApps links={app.outgoingLinks} />
+        <RelatedApps
+          links={app.outgoingLinks}
+          publishedApps={relatedApps}
+        />
+        <FeedbackTimer
+          appSlug={app.slug}
+          appTitle={app.title}
+          codespaceId={app.codespaceId ?? undefined}
+        />
+        <ExitIntentDetector
+          appSlug={app.slug}
+          appTitle={app.title}
+          codespaceId={app.codespaceId ?? undefined}
+        />
       </div>
     );
   }

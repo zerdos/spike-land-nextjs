@@ -1,5 +1,5 @@
 import type { Loader, Plugin } from "esbuild-wasm"; // Imported Loader
-import { EXTERNAL_DEPENDENCIES, importMap } from "./importmap-utils.ts";
+import { DEPS_PARAM, EXTERNAL_DEPENDENCIES, importMap } from "./importmap-utils.ts";
 import { tryCatch } from "./try-catch.ts";
 
 const urlCache = new Map<string, string>();
@@ -63,7 +63,7 @@ export const fetchPlugin = (origin: string) => ({
       if (argsPath === args.path && !args.path.includes(origin)) {
         argsPath = `/*${args.path}?bundle=true&external=${
           EXTERNAL_DEPENDENCIES.join(",")
-        }&deps=react@19.2.4,react-dom@19.2.4`;
+        }&${DEPS_PARAM}`;
       }
 
       const { data: response, error: fetchError } = await tryCatch(

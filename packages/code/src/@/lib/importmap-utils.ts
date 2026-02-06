@@ -53,6 +53,9 @@ const COMPONENT_PATTERNS = [
 
 const MAX_EXPORTS_PER_URL = 8;
 
+export const REACT_VERSION = "19.2.4";
+export const DEPS_PARAM = `deps=react@${REACT_VERSION},react-dom@${REACT_VERSION}`;
+
 export const EXTERNAL_DEPENDENCIES = [
   "react",
   "react/jsx-runtime",
@@ -260,7 +263,7 @@ function getMappedPath(
     const params = [
       "bundle=true",
       `external=${EXTERNAL_DEPENDENCIES.join(",")}`,
-      "deps=react@19.2.4,react-dom@19.2.4",
+      DEPS_PARAM,
     ];
 
     if (exportsParam) params.push(`exports=${sortExports(exportsParam)}`);
