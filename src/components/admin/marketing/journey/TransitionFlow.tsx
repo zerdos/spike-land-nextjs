@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { PlatformTransition } from "@spike-npm-land/shared/types";
+import type { PlatformTransition } from "@spike-npm-land/shared";
 import { ArrowRightIcon } from "lucide-react";
 
 interface TransitionFlowProps {
