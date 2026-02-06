@@ -5,23 +5,53 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, Bug, ExternalLink, Lightbulb, Loader2, MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowRight,
+  Bot,
+  Bug,
+  CheckCircle,
+  ExternalLink,
+  Lightbulb,
+  Loader2,
+  Mail,
+  MessageSquare,
+} from "lucide-react";
+import { type FormEvent, useState } from "react";
 
-const FEEDBACK_TYPES = [
-  { value: "BUG", label: "Bug Report", icon: Bug },
-  { value: "IDEA", label: "Feature Idea", icon: Lightbulb },
-  { value: "OTHER", label: "Other", icon: MessageCircle },
-] as const;
+const TYPE_CONFIG = {
+  BUG: {
+    label: "What went wrong?",
+    shortLabel: "Bug",
+    icon: Bug,
+    activeClass: "border-destructive bg-destructive text-destructive-foreground",
+    placeholder: "What went wrong? Please describe the issue...",
+  },
+  IDEA: {
+    label: "Your idea",
+    shortLabel: "Idea",
+    icon: Lightbulb,
+    activeClass: "border-amber-600 bg-amber-600 text-white",
+    placeholder: "What feature would you like to see?",
+  },
+  OTHER: {
+    label: "Your feedback",
+    shortLabel: "Other",
+    icon: MessageSquare,
+    activeClass: "border-primary bg-primary text-primary-foreground",
+    placeholder: "Tell us what's on your mind...",
+  },
+} as const;
 
-type FeedbackType = (typeof FEEDBACK_TYPES)[number]["value"];
+type FeedbackType = keyof typeof TYPE_CONFIG;
 
 interface FeedbackDialogProps {
   open: boolean;
@@ -52,7 +82,10 @@ export function FeedbackDialog({
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = async () => {
+  const config = TYPE_CONFIG[type];
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
     if (!message.trim()) return;
 
     setStatus("submitting");
@@ -87,6 +120,7 @@ export function FeedbackDialog({
         hasJulesSession: !!data.julesSessionUrl,
       });
       setStatus("success");
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Something went wrong");
       setStatus("error");
@@ -95,123 +129,153 @@ export function FeedbackDialog({
 
   const handleClose = () => {
     onOpenChange(false);
-    // Reset after animation
     setTimeout(() => {
       setStatus("idle");
       setResult(null);
       setMessage("");
       setEmail("");
       setErrorMessage("");
-    }, 200);
+    }, 300);
   };
+
+  const success = status === "success" && result;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        {status === "success" && result
-          ? (
-            <>
-              <DialogHeader>
-                <DialogTitle>Thanks for your feedback!</DialogTitle>
-                <DialogDescription>
+      <DialogContent className="overflow-hidden p-0 sm:max-w-[425px]">
+        <AnimatePresence mode="wait">
+          {success
+            ? (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col items-center p-12 text-center"
+              >
+                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+                  <CheckCircle className="h-10 w-10 text-green-600" />
+                </div>
+                <h2 className="mb-2 text-2xl font-semibold text-foreground">Thank You!</h2>
+                <p className="mb-6 text-muted-foreground">
                   Your {type === "BUG" ? "bug report" : "feedback"} has been submitted.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-3">
-                <a
-                  href={result.issueUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-primary hover:underline"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  View issue #{result.issueNumber}
-                </a>
-                {result.hasJulesSession && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md p-3">
-                    <Bot className="w-4 h-4 shrink-0" />
-                    <span>An AI agent will investigate this bug automatically.</span>
-                  </div>
-                )}
-              </div>
-              <DialogFooter>
-                <Button onClick={handleClose}>Done</Button>
-              </DialogFooter>
-            </>
-          )
-          : (
-            <>
-              <DialogHeader>
-                <DialogTitle>
-                  {appTitle ? `Feedback on "${appTitle}"` : "Send Feedback"}
-                </DialogTitle>
-                <DialogDescription>
-                  Help us improve by sharing your thoughts.
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                {/* Type selector */}
-                <div className="flex gap-2">
-                  {FEEDBACK_TYPES.map(({ value, label, icon: Icon }) => (
-                    <Button
-                      key={value}
-                      variant={type === value ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setType(value)}
-                      className="flex-1"
-                    >
-                      <Icon className="w-4 h-4 mr-1" />
-                      {label}
-                    </Button>
-                  ))}
+                </p>
+                <div className="mb-6 space-y-3">
+                  <a
+                    href={result.issueUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-primary hover:underline"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View issue #{result.issueNumber}
+                  </a>
+                  {result.hasJulesSession && (
+                    <div className="flex items-center gap-2 rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+                      <Bot className="h-4 w-4 shrink-0" />
+                      <span>An AI agent will investigate this bug automatically.</span>
+                    </div>
+                  )}
                 </div>
-
-                {/* Message */}
-                <div className="space-y-2">
-                  <Label htmlFor="feedback-message">
-                    {type === "BUG" ? "What went wrong?" : "Your feedback"}
-                  </Label>
-                  <Textarea
-                    id="feedback-message"
-                    placeholder={type === "BUG"
-                      ? "Describe the bug, steps to reproduce, and expected behavior..."
-                      : "Share your idea or feedback..."}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    rows={4}
-                  />
-                </div>
-
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="feedback-email">Email (optional)</Label>
-                  <Input
-                    id="feedback-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-
-                {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
-              </div>
-
-              <DialogFooter>
                 <Button variant="outline" onClick={handleClose}>
-                  Cancel
+                  Close
                 </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!message.trim() || status === "submitting"}
-                >
-                  {status === "submitting" && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  Submit
-                </Button>
-              </DialogFooter>
-            </>
-          )}
+              </motion.div>
+            )
+            : (
+              <motion.div
+                key="form"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <form onSubmit={handleSubmit} className="p-6">
+                  <DialogHeader className="mb-6">
+                    <DialogTitle>
+                      {appTitle ? `Feedback on "${appTitle}"` : "Send Feedback"}
+                    </DialogTitle>
+                    <DialogDescription>
+                      Help us improve by sharing your thoughts.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-4">
+                    {/* Category selector */}
+                    <div className="grid grid-cols-3 gap-3">
+                      {(Object.entries(TYPE_CONFIG) as [
+                        FeedbackType,
+                        typeof TYPE_CONFIG[FeedbackType],
+                      ][]).map(
+                        ([value, cfg]) => {
+                          const Icon = cfg.icon;
+                          const isActive = type === value;
+                          return (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => setType(value)}
+                              className={cn(
+                                "flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 text-sm font-medium transition-all",
+                                isActive
+                                  ? cfg.activeClass
+                                  : "border-border bg-background text-muted-foreground hover:border-foreground/20",
+                              )}
+                            >
+                              <Icon className="h-5 w-5" />
+                              {cfg.shortLabel}
+                            </button>
+                          );
+                        },
+                      )}
+                    </div>
+
+                    {/* Message */}
+                    <div className="space-y-2">
+                      <Label htmlFor="feedback-message">{config.label}</Label>
+                      <Textarea
+                        id="feedback-message"
+                        placeholder={config.placeholder}
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        className="min-h-[120px]"
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div className="space-y-2">
+                      <Label htmlFor="feedback-email" className="flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5" />
+                        Email <span className="text-muted-foreground">(Optional)</span>
+                      </Label>
+                      <Input
+                        id="feedback-email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+
+                    {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+
+                    {/* Submit */}
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={!message.trim() || status === "submitting"}
+                    >
+                      {status === "submitting"
+                        ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        : <ArrowRight className="mr-2 h-4 w-4" />}
+                      Send Feedback
+                    </Button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
   );

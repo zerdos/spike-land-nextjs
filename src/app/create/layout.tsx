@@ -11,8 +11,8 @@ export default function CreateLayout({
 }) {
   return (
     <FeedbackProvider>
-      <div className="min-h-screen bg-background">
-        <header className="border-b sticky top-0 z-40 bg-background/80 backdrop-blur-md">
+      <div className="h-dvh flex flex-col bg-background overflow-hidden">
+        <header className="border-b shrink-0 z-40 bg-background/80 backdrop-blur-md">
           <div className="container mx-auto px-4 h-16 flex items-center justify-between">
             <Link
               href="/create"
@@ -29,7 +29,7 @@ export default function CreateLayout({
             </nav>
           </div>
         </header>
-        <main>
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
         <FeedbackFAB />
