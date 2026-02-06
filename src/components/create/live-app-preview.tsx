@@ -55,7 +55,7 @@ export function LiveAppPreview({
           observer.disconnect();
         }
       },
-      { rootMargin: "200px" },
+      { rootMargin: "50px" },
     );
 
     observer.observe(container);

@@ -73,7 +73,7 @@ export function FeedbackProvider({ children }: { children: React.ReactNode; }) {
       ? 24 * 60 * 60 * 1000 // 24h
       : newCount === 2
       ? 7 * 24 * 60 * 60 * 1000 // 7 days
-      : Infinity; // never
+      : 365 * 24 * 60 * 60 * 1000; // ~1 year, effectively never
     saveDismissState({
       count: newCount,
       until: Date.now() + cooldownMs,

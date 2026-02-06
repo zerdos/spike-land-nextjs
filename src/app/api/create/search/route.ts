@@ -10,6 +10,10 @@ export async function GET(request: Request) {
     return NextResponse.json([]);
   }
 
+  if (query.length > 200) {
+    return NextResponse.json({ error: "Query too long" }, { status: 400 });
+  }
+
   const results = await prisma.createdApp.findMany({
     where: {
       status: CreatedAppStatus.PUBLISHED,

@@ -188,8 +188,10 @@ export async function POST(request: NextRequest) {
   ) {
     const { data: julesSession } = await tryCatch(
       createSession({
-        title: `Fix bug in "${body.appTitle || body.appSlug}"`,
-        prompt: `A user reported a bug in the app "${body.appTitle || body.appSlug}".
+        title: `Fix bug in "${(body.appTitle || body.appSlug || "").slice(0, 100)}"`,
+        prompt: `A user reported a bug in the app "${
+          (body.appTitle || body.appSlug || "").slice(0, 100)
+        }".
 
 <user_bug_report>
 ${body.message.trim().slice(0, 4000)}

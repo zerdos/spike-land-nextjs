@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function slugify(text: string): string {
   return text.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-/]/g, "");
@@ -17,36 +17,61 @@ export function CreateSearch() {
   const [results, setResults] = useState<{ slug: string; title: string; description: string; }[]>(
     [],
   );
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const debouncedQuery = useDebounce(query, 300);
 
+  // Fetch search results with abort controller to prevent race conditions
   useEffect(() => {
+    const controller = new AbortController();
+
     async function search() {
       if (debouncedQuery.length < 2) {
         setResults([]);
         return;
       }
       try {
-        const res = await fetch(`/api/create/search?q=${encodeURIComponent(debouncedQuery)}`);
+        const res = await fetch(
+          `/api/create/search?q=${encodeURIComponent(debouncedQuery)}`,
+          { signal: controller.signal },
+        );
         const data = await res.json();
         setResults(data);
       } catch (e) {
-        console.error(e);
+        if ((e as Error).name !== "AbortError") {
+          console.error(e);
+        }
       }
     }
     search();
+    return () => controller.abort();
   }, [debouncedQuery]);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    if (results.length === 0) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setResults([]);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [results.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       const slug = slugify(query);
+      setResults([]);
       router.push(`/create/${slug}`);
     }
   };
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto">
+    <div ref={containerRef} className="relative w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="relative">
         <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
         <Input
@@ -55,6 +80,10 @@ export function CreateSearch() {
           placeholder="Describe an app to create (e.g. 'todo list', 'color picker')"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onBlur={() => {
+            // Delay to allow click events on results to fire first
+            setTimeout(() => setResults([]), 200);
+          }}
         />
         <Button type="submit" className="absolute right-1.5 top-1.5 bottom-1.5">
           Create
@@ -69,7 +98,10 @@ export function CreateSearch() {
                 key={result.slug}
                 variant="ghost"
                 className="w-full justify-start text-left h-auto py-2 px-3"
-                onClick={() => router.push(`/create/${result.slug}`)}
+                onClick={() => {
+                  setResults([]);
+                  router.push(`/create/${result.slug}`);
+                }}
               >
                 <div>
                   <div className="font-medium">{result.title}</div>
