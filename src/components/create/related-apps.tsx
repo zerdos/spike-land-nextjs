@@ -1,54 +1,91 @@
 import { cn } from "@/lib/utils";
+import type { CreatedApp } from "@prisma/client";
+import { Sparkles } from "lucide-react";
 import Link from "next/link";
+import { LiveAppPreview } from "./live-app-preview";
 
 interface RelatedAppsProps {
   links: string[];
+  publishedApps?: CreatedApp[];
   className?: string;
 }
 
-export function RelatedApps({ links, className }: RelatedAppsProps) {
-  if (!links || links.length === 0) return null;
+export function RelatedApps({ links, publishedApps, className }: RelatedAppsProps) {
+  const hasPublished = publishedApps && publishedApps.length > 0;
+  const hasLinks = links && links.length > 0;
+
+  if (!hasPublished && !hasLinks) return null;
 
   return (
     <div
       className={cn(
-        "w-64 border-l bg-card h-[calc(100vh-4rem)] overflow-y-auto hidden lg:block",
+        "w-72 border-l bg-card h-[calc(100vh-4rem)] overflow-y-auto hidden lg:block",
         className,
       )}
     >
-      <div className="p-4">
-        <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">
-          Related Apps
-        </h3>
-        <nav className="space-y-2">
-          {links.map((link, i) => {
-            // Ensure link does not have /create prefix in data if purely slug
-            // But our generator might return 'cooking/pizza'.
-            // Link href should be /create/{link}
-
-            // Handle if AI returns absolute path or relative (with or without leading slash)
-            const cleanLink = link.replace(/^(\/)?create\//, "");
-            const href = `/create/${cleanLink}`;
-
-            return (
+      {/* Published apps with live previews — primary */}
+      {hasPublished && (
+        <div className="p-3">
+          <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">
+            More Apps
+          </h3>
+          <div className="space-y-3">
+            {publishedApps.map((app) => (
               <Link
-                key={i}
-                href={href}
-                className="block p-3 rounded-lg hover:bg-accent transition-colors border border-transparent hover:border-border text-sm"
+                key={app.id}
+                href={`/create/${app.slug}`}
+                className="group block rounded-lg overflow-hidden border border-border/50 hover:border-primary/30 hover:shadow-md transition-all duration-200"
               >
-                <div className="font-medium truncate">
-                  {cleanLink.split("/").pop()?.replace(/-/g, " ")}
-                </div>
-                <div className="text-xs text-muted-foreground truncate mt-0.5 opacity-70">
-                  /{cleanLink}
+                {app.codespaceId && (
+                  <div className="relative aspect-[16/10] overflow-hidden pointer-events-none">
+                    <LiveAppPreview
+                      codespaceId={app.codespaceId}
+                      scale={0.25}
+                      className="w-full h-full"
+                      fallbackTitle={app.title}
+                    />
+                  </div>
+                )}
+                <div className="p-2">
+                  <div className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+                    {app.title}
+                  </div>
                 </div>
               </Link>
-            );
-          })}
-        </nav>
-      </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-      <div className="p-4 mt-8 border-t">
+      {/* AI-generated related links — secondary */}
+      {hasLinks && (
+        <div className={cn("p-3", hasPublished && "border-t")}>
+          <h3 className="font-semibold mb-3 text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Sparkles className="w-3 h-3" />
+            Generate New
+          </h3>
+          <nav className="space-y-1">
+            {links.map((link, i) => {
+              const cleanLink = link.replace(/^(\/)?create\//, "");
+              const href = `/create/${cleanLink}`;
+
+              return (
+                <Link
+                  key={i}
+                  href={href}
+                  className="block px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm"
+                >
+                  <div className="font-medium truncate">
+                    {cleanLink.split("/").pop()?.replace(/-/g, " ")}
+                  </div>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
+
+      <div className="p-3 border-t">
         <p className="text-xs text-muted-foreground">
           Try typing any path in the URL to generate a new app!
         </p>

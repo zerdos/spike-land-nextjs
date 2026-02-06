@@ -23,6 +23,7 @@ export const Wrapper: React.FC<WrapperProps> = ({
   const renderedAppRef = useRef<RenderedApp | null>(null);
   const autoRetryCountRef = useRef(0);
   const autoRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef(false);
 
   const renderContent = useCallback(async () => {
     if (!containerRef.current) return;
@@ -43,10 +44,14 @@ export const Wrapper: React.FC<WrapperProps> = ({
         App: undefined,
       });
 
+      if (abortRef.current) return;
+
       renderedAppRef.current = rendered;
       setError(null);
       autoRetryCountRef.current = 0;
     } catch (err) {
+      if (abortRef.current) return;
+
       console.error("Failed to render app:", err);
       const renderError = err instanceof Error ? err : new Error(String(err));
       setError(renderError);
@@ -70,10 +75,12 @@ export const Wrapper: React.FC<WrapperProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    abortRef.current = false;
     autoRetryCountRef.current = 0;
     renderContent();
 
     return () => {
+      abortRef.current = true;
       if (autoRetryTimerRef.current) {
         clearTimeout(autoRetryTimerRef.current);
         autoRetryTimerRef.current = null;

@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { createIssue, isGitHubAvailable } from "@/lib/agents/github-issues";
+import { buildSourceName, createSession, isJulesAvailable } from "@/lib/agents/jules-client";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -14,6 +15,9 @@ interface FeedbackRequestBody {
   email?: string;
   page: string;
   userAgent?: string;
+  appSlug?: string;
+  appTitle?: string;
+  codespaceId?: string;
 }
 
 function isValidFeedbackType(type: string): type is FeedbackType {
@@ -40,6 +44,9 @@ function formatIssueBody(options: {
   userIdentifier: string;
   email?: string;
   userAgent?: string;
+  appSlug?: string;
+  appTitle?: string;
+  codespaceId?: string;
 }): string {
   const { message, type, page, userIdentifier, email, userAgent } = options;
   const timestamp = new Date().toISOString();
@@ -63,6 +70,15 @@ ${message}
 
   if (type === "BUG" && userAgent) {
     body += `\n- **Browser**: ${userAgent}`;
+  }
+
+  if (options.appSlug) {
+    body += `\n- **App**: ${options.appTitle || options.appSlug} (\`${options.appSlug}\`)`;
+  }
+
+  if (options.codespaceId) {
+    body +=
+      `\n- **Codespace**: [${options.codespaceId}](https://testing.spike.land/live/${options.codespaceId}/)`;
   }
 
   return body;
@@ -141,6 +157,9 @@ export async function POST(request: NextRequest) {
     userIdentifier,
     email: body.email?.trim(),
     userAgent: body.userAgent?.trim(),
+    appSlug: body.appSlug?.trim(),
+    appTitle: body.appTitle?.trim(),
+    codespaceId: body.codespaceId?.trim(),
   });
   const labels = getLabelsForFeedbackType(body.type as FeedbackType);
 
@@ -159,8 +178,50 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Try to create a Jules session for bug reports on apps
+  let julesSessionUrl: string | undefined;
+  if (
+    body.type === "BUG" &&
+    body.appSlug &&
+    body.codespaceId &&
+    isJulesAvailable()
+  ) {
+    const { data: julesSession } = await tryCatch(
+      createSession({
+        title: `Fix bug in "${(body.appTitle || body.appSlug || "").slice(0, 100)}"`,
+        prompt: `A user reported a bug in the app "${
+          (body.appTitle || body.appSlug || "").slice(0, 100)
+        }".
+
+<user_bug_report>
+${body.message.trim().slice(0, 4000)}
+</user_bug_report>
+
+The app code is at: https://testing.spike.land/live/${body.codespaceId}/
+Related GitHub issue: #${issue.number}
+
+Please investigate the bug described above and fix it. Update the codespace code accordingly.`,
+        sourceContext: {
+          source: buildSourceName("zerdos", "spike-land-nextjs"),
+        },
+        requirePlanApproval: true,
+        automationMode: "AUTO_CREATE_PR",
+      }).then((r) => {
+        if (r.error) throw new Error(r.error);
+        return r;
+      }),
+    );
+
+    julesSessionUrl = julesSession?.data?.url ?? undefined;
+  }
+
   return NextResponse.json(
-    { success: true, issueUrl: issue.url, issueNumber: issue.number },
+    {
+      success: true,
+      issueUrl: issue.url,
+      issueNumber: issue.number,
+      ...(julesSessionUrl ? { julesSessionUrl } : {}),
+    },
     { status: 201 },
   );
 }

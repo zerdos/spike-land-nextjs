@@ -12,15 +12,25 @@ vi.mock("@/lib/agents/github-issues", () => ({
   createIssue: vi.fn(),
 }));
 
+vi.mock("@/lib/agents/jules-client", () => ({
+  isJulesAvailable: vi.fn(),
+  createSession: vi.fn(),
+  buildSourceName: vi.fn((owner: string, repo: string) => `sources/github/${owner}/${repo}`),
+}));
+
 const { auth } = await import("@/auth");
 const { isGitHubAvailable, createIssue } = await import(
   "@/lib/agents/github-issues"
+);
+const { isJulesAvailable, createSession } = await import(
+  "@/lib/agents/jules-client"
 );
 
 describe("POST /api/feedback", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(isGitHubAvailable).mockReturnValue(true);
+    vi.mocked(isJulesAvailable).mockReturnValue(false);
   });
 
   it("should create GitHub issue with valid data for authenticated user", async () => {
@@ -485,6 +495,231 @@ describe("POST /api/feedback", () => {
       body: expect.stringContaining(longMessage),
       labels: expect.any(Array),
     });
+  });
+
+  it("should include app context in issue body", async () => {
+    vi.mocked(auth).mockResolvedValue(null);
+
+    vi.mocked(createIssue).mockResolvedValue({
+      data: {
+        number: 131,
+        title: "[Bug Report] App bug",
+        state: "open",
+        labels: ["user-feedback", "bug"],
+        author: "github-actions[bot]",
+        assignees: [],
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+        url: "https://github.com/zerdos/spike-land-nextjs/issues/131",
+        body: "## Feedback",
+      },
+      error: null,
+    });
+
+    const request = new NextRequest("http://localhost/api/feedback", {
+      method: "POST",
+      body: JSON.stringify({
+        type: "BUG",
+        message: "App bug",
+        page: "/create/my-app",
+        appSlug: "my-app",
+        appTitle: "My App",
+        codespaceId: "cs-123",
+      }),
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(201);
+    expect(createIssue).toHaveBeenCalledWith({
+      title: expect.any(String),
+      body: expect.stringContaining("My App"),
+      labels: expect.any(Array),
+    });
+    expect(createIssue).toHaveBeenCalledWith({
+      title: expect.any(String),
+      body: expect.stringContaining("cs-123"),
+      labels: expect.any(Array),
+    });
+  });
+
+  it("should create Jules session for bug reports with app context", async () => {
+    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(isJulesAvailable).mockReturnValue(true);
+
+    vi.mocked(createIssue).mockResolvedValue({
+      data: {
+        number: 132,
+        title: "[Bug Report] Jules bug",
+        state: "open",
+        labels: ["user-feedback", "bug"],
+        author: "github-actions[bot]",
+        assignees: [],
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+        url: "https://github.com/zerdos/spike-land-nextjs/issues/132",
+        body: "## Feedback",
+      },
+      error: null,
+    });
+
+    vi.mocked(createSession).mockResolvedValue({
+      data: {
+        name: "sessions/jules-123",
+        state: "QUEUED",
+        url: "https://jules.google.com/sessions/jules-123",
+      },
+      error: null,
+    });
+
+    const request = new NextRequest("http://localhost/api/feedback", {
+      method: "POST",
+      body: JSON.stringify({
+        type: "BUG",
+        message: "Jules bug",
+        page: "/create/my-app",
+        appSlug: "my-app",
+        appTitle: "My App",
+        codespaceId: "cs-456",
+      }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(data.julesSessionUrl).toBe("https://jules.google.com/sessions/jules-123");
+    expect(createSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: expect.stringContaining("My App"),
+        prompt: expect.stringContaining("cs-456"),
+        requirePlanApproval: true,
+        automationMode: "AUTO_CREATE_PR",
+      }),
+    );
+  });
+
+  it("should not create Jules session when Jules is unavailable", async () => {
+    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(isJulesAvailable).mockReturnValue(false);
+
+    vi.mocked(createIssue).mockResolvedValue({
+      data: {
+        number: 133,
+        title: "[Bug Report] No Jules bug",
+        state: "open",
+        labels: ["user-feedback", "bug"],
+        author: "github-actions[bot]",
+        assignees: [],
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+        url: "https://github.com/zerdos/spike-land-nextjs/issues/133",
+        body: "## Feedback",
+      },
+      error: null,
+    });
+
+    const request = new NextRequest("http://localhost/api/feedback", {
+      method: "POST",
+      body: JSON.stringify({
+        type: "BUG",
+        message: "No Jules bug",
+        page: "/create/my-app",
+        appSlug: "my-app",
+        codespaceId: "cs-789",
+      }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(data.julesSessionUrl).toBeUndefined();
+    expect(createSession).not.toHaveBeenCalled();
+  });
+
+  it("should not create Jules session for non-BUG types", async () => {
+    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(isJulesAvailable).mockReturnValue(true);
+
+    vi.mocked(createIssue).mockResolvedValue({
+      data: {
+        number: 134,
+        title: "[Feature Request] Idea",
+        state: "open",
+        labels: ["user-feedback", "enhancement"],
+        author: "github-actions[bot]",
+        assignees: [],
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+        url: "https://github.com/zerdos/spike-land-nextjs/issues/134",
+        body: "## Feedback",
+      },
+      error: null,
+    });
+
+    const request = new NextRequest("http://localhost/api/feedback", {
+      method: "POST",
+      body: JSON.stringify({
+        type: "IDEA",
+        message: "Idea",
+        page: "/create/my-app",
+        appSlug: "my-app",
+        codespaceId: "cs-abc",
+      }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(data.julesSessionUrl).toBeUndefined();
+    expect(createSession).not.toHaveBeenCalled();
+  });
+
+  it("should handle Jules session creation failure gracefully", async () => {
+    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(isJulesAvailable).mockReturnValue(true);
+
+    vi.mocked(createIssue).mockResolvedValue({
+      data: {
+        number: 135,
+        title: "[Bug Report] Jules fail",
+        state: "open",
+        labels: ["user-feedback", "bug"],
+        author: "github-actions[bot]",
+        assignees: [],
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+        url: "https://github.com/zerdos/spike-land-nextjs/issues/135",
+        body: "## Feedback",
+      },
+      error: null,
+    });
+
+    vi.mocked(createSession).mockResolvedValue({
+      data: null,
+      error: "Jules API error",
+    });
+
+    const request = new NextRequest("http://localhost/api/feedback", {
+      method: "POST",
+      body: JSON.stringify({
+        type: "BUG",
+        message: "Jules fail",
+        page: "/create/my-app",
+        appSlug: "my-app",
+        codespaceId: "cs-fail",
+      }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    // Should still succeed — Jules failure is non-blocking
+    expect(response.status).toBe(201);
+    expect(data.success).toBe(true);
+    expect(data.julesSessionUrl).toBeUndefined();
   });
 
   it("should only include userAgent for BUG type", async () => {

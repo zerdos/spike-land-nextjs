@@ -119,3 +119,18 @@ export async function getRecentApps(limit = 10): Promise<CreatedApp[]> {
     take: limit,
   });
 }
+
+export async function getRelatedPublishedApps(
+  excludeSlug: string,
+  limit = 6,
+): Promise<CreatedApp[]> {
+  return prisma.createdApp.findMany({
+    where: {
+      status: CreatedAppStatus.PUBLISHED,
+      slug: { not: excludeSlug },
+      codespaceId: { not: "" },
+    },
+    orderBy: { viewCount: "desc" },
+    take: limit,
+  });
+}

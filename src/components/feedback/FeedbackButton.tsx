@@ -146,7 +146,7 @@ export const FeedbackButton = memo(
       }
     };
 
-    if (pathname?.startsWith("/auth")) {
+    if (pathname?.startsWith("/auth") || pathname?.startsWith("/create")) {
       return null;
     }
 
