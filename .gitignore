@@ -87,6 +87,9 @@ packages/video/out/
 *.mov
 *.avi
 
+# CI artifact downloads
+/ci-output
+
 # Ralph Local Orchestrator temp files
 /tmp/ralph-*
 ralph-worktrees/

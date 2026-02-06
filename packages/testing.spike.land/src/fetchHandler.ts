@@ -72,6 +72,22 @@ Sitemap: ${new URL(request.url).origin}/sitemap.xml
   if (!firstPath) {
     return handleEsmRequest(path, request, env, ctx);
   }
+
+  // Rewrite node@<version>/<module>.mjs polyfill URLs to bare module paths.
+  // esm-worker generates these references for Node.js built-ins (buffer, process, etc.)
+  // but esm.sh doesn't serve them at this URL pattern.
+  if (firstPath && /^node@[\d.]+$/.test(firstPath)) {
+    const modulePath = path.slice(1).join("/").replace(/\.mjs$/, "");
+    const rewrittenUrl = new URL(request.url);
+    rewrittenUrl.pathname = `/${modulePath}`;
+    return handleEsmRequest(
+      [modulePath],
+      new Request(rewrittenUrl, request),
+      env,
+      ctx,
+    );
+  }
+
   const handler = handlers[firstPath];
   return handler ? handler() : handleEsmRequest(path, request, env, ctx);
 }
