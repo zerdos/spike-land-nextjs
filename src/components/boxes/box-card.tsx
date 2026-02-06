@@ -10,12 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Box, BoxStatus, BoxTier } from "@prisma/client";
 import { BoxActionType } from "@prisma/client";
 import { Copy, Monitor, Play, RefreshCw, Square, Trash2 } from "lucide-react";

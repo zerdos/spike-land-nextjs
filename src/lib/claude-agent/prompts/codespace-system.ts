@@ -27,15 +27,61 @@ export default function App() {
 }
 \`\`\`
 
-## AVAILABLE IMPORTS
-- react, react-dom (React 18+)
+## SHADCN/UI DESIGN SYSTEM (import from "@/components/ui/...")
+- @/lib/utils: cn() for conditional class composition
+- @/components/ui/button: Button (variants: default/destructive/outline/secondary/ghost/link)
+- @/components/ui/card: Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
+- @/components/ui/input: Input
+- @/components/ui/label: Label
+- @/components/ui/badge: Badge
+- @/components/ui/tabs: Tabs, TabsList, TabsTrigger, TabsContent
+- @/components/ui/dialog: Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription
+- @/components/ui/select: Select, SelectTrigger, SelectValue, SelectContent, SelectItem
+- @/components/ui/checkbox: Checkbox
+- @/components/ui/switch: Switch
+- @/components/ui/slider: Slider
+- @/components/ui/progress: Progress
+- @/components/ui/tooltip: Tooltip, TooltipTrigger, TooltipContent, TooltipProvider
+- @/components/ui/accordion: Accordion, AccordionItem, AccordionTrigger, AccordionContent
+- @/components/ui/alert: Alert, AlertTitle, AlertDescription
+- @/components/ui/separator: Separator
+- @/components/ui/scroll-area: ScrollArea
+- @/components/ui/skeleton: Skeleton
+- @/components/ui/table: Table, TableHeader, TableBody, TableRow, TableHead, TableCell
+- @/components/ui/dropdown-menu: DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem
+- @/components/ui/sheet: Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle
+- @/components/ui/avatar: Avatar, AvatarImage, AvatarFallback
+- @/components/ui/calendar: Calendar
+- @/components/ui/drawer: Drawer, DrawerTrigger, DrawerContent
+- @/components/ui/toggle: Toggle
+- @/components/ui/toggle-group: ToggleGroup, ToggleGroupItem
+- @/components/ui/radio-group: RadioGroup, RadioGroupItem
+- @/components/ui/textarea: Textarea
+- @/components/ui/form: Form, FormField, FormItem, FormLabel, FormControl, FormMessage (react-hook-form)
+- @/components/ui/chart: ChartContainer, ChartTooltip, ChartTooltipContent (recharts wrapper)
+- @/components/ui/pagination: Pagination, PaginationContent, PaginationItem, PaginationLink
+
+## PRE-LOADED LIBRARIES (zero load time)
+- react, react-dom (React 19+)
 - tailwindcss (Tailwind CSS classes work automatically)
 - lucide-react (icons: <Heart />, <Settings />, etc.)
 - framer-motion (animations: motion.div, AnimatePresence, etc.)
-- date-fns
+- clsx, tailwind-merge (for cn() — already available via @/lib/utils)
+
+## CDN-AVAILABLE LIBRARIES (import by name)
+- recharts (LineChart, BarChart, PieChart, AreaChart, XAxis, YAxis, Tooltip, ResponsiveContainer)
+- date-fns (format, parseISO, addDays, differenceInDays, startOfWeek, etc.)
+- zustand (create for complex state management)
+- react-hook-form (useForm, Controller) + zod (z.string(), z.object() for validation)
+- sonner (toast, toast.success, toast.error for notifications — add <Toaster /> in JSX)
+- react-markdown (ReactMarkdown component for rendering markdown)
+- canvas-confetti (confetti() for celebration effects)
+- @dnd-kit/core + @dnd-kit/sortable (DndContext, SortableContext, useSortable for drag & drop)
+- roughjs (rough.canvas() or rough.svg() for hand-drawn graphics)
+- howler (new Howl({ src: [url] }) for sound effects)
 - lodash
 - axios
-- recharts
+- three (Three.js for 3D — large bundle, use only for 3D-focused apps)
 
 ## WORKFLOW
 1. Read current code FIRST (or use provided code if given)

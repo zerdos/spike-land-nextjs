@@ -1,6 +1,6 @@
 import { generateStructuredResponse } from "@/lib/ai/gemini-client";
 import { describe, expect, it, vi } from "vitest";
-import { generateAppContent } from "./content-generator";
+import { buildUserPrompt, generateAppContent, SYSTEM_PROMPT } from "./content-generator";
 
 vi.mock("@/lib/ai/gemini-client");
 vi.mock("@/lib/logger", () => ({
@@ -10,6 +10,41 @@ vi.mock("@/lib/logger", () => ({
 }));
 
 describe("content-generator", () => {
+  describe("SYSTEM_PROMPT", () => {
+    it("should contain shadcn/ui components", () => {
+      expect(SYSTEM_PROMPT).toContain("@/components/ui/button");
+      expect(SYSTEM_PROMPT).toContain("@/components/ui/card");
+      expect(SYSTEM_PROMPT).toContain("@/components/ui/dialog");
+      expect(SYSTEM_PROMPT).toContain("@/components/ui/tabs");
+      expect(SYSTEM_PROMPT).toContain("@/components/ui/chart");
+    });
+
+    it("should contain CDN-available libraries", () => {
+      expect(SYSTEM_PROMPT).toContain("recharts");
+      expect(SYSTEM_PROMPT).toContain("date-fns");
+      expect(SYSTEM_PROMPT).toContain("zustand");
+      expect(SYSTEM_PROMPT).toContain("react-hook-form");
+      expect(SYSTEM_PROMPT).toContain("sonner");
+      expect(SYSTEM_PROMPT).toContain("react-markdown");
+      expect(SYSTEM_PROMPT).toContain("canvas-confetti");
+      expect(SYSTEM_PROMPT).toContain("@dnd-kit/core");
+      expect(SYSTEM_PROMPT).toContain("roughjs");
+      expect(SYSTEM_PROMPT).toContain("howler");
+    });
+
+    it("should contain pre-loaded libraries", () => {
+      expect(SYSTEM_PROMPT).toContain("framer-motion");
+      expect(SYSTEM_PROMPT).toContain("lucide-react");
+    });
+  });
+
+  describe("buildUserPrompt", () => {
+    it("should include the topic in the prompt", () => {
+      const prompt = buildUserPrompt("games/tetris");
+      expect(prompt).toContain('"/create/games/tetris"');
+    });
+  });
+
   describe("generateAppContent", () => {
     it("should return valid content when AI responds correctly", async () => {
       const mockResponse = {
@@ -26,6 +61,9 @@ describe("content-generator", () => {
       expect(result).toEqual(mockResponse);
       expect(generateStructuredResponse).toHaveBeenCalledWith(expect.objectContaining({
         prompt: expect.stringContaining('"/create/test/app"'),
+        systemPrompt: SYSTEM_PROMPT,
+        maxTokens: 16384,
+        temperature: 0.5,
       }));
     });
 
