@@ -224,10 +224,12 @@ describe("BoxCard", () => {
     it("always renders Clone and Delete buttons", () => {
       render(<BoxCard box={mockBox} />);
 
-      expect(screen.getByTitle("Clone Box")).toBeInTheDocument();
-      // Delete button has Trash2 icon
-      const deleteButtons = screen.getAllByRole("button");
-      expect(deleteButtons.length).toBeGreaterThanOrEqual(3);
+      expect(
+        screen.getByRole("button", { name: /clone box/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /delete box/i }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -320,7 +322,7 @@ describe("BoxCard", () => {
 
       // Buttons should be disabled during loading
       expect(startButton).toBeDisabled();
-      expect(screen.getByTitle("Clone Box")).toBeDisabled();
+      expect(screen.getByRole("button", { name: /clone box/i })).toBeDisabled();
 
       // Resolve the fetch
       resolvePromise!({ ok: true, json: async () => ({ success: true }) });
@@ -343,12 +345,9 @@ describe("BoxCard", () => {
 
       render(<BoxCard box={mockBox} />);
 
-      // Find delete button (it's the one with destructive styling)
-      const deleteButton = screen.getAllByRole("button").find((btn) =>
-        btn.className.includes("text-destructive")
-      );
-      expect(deleteButton).toBeTruthy();
-      await user.click(deleteButton!);
+      // Find delete button by accessible name
+      const deleteButton = screen.getByRole("button", { name: /delete box/i });
+      await user.click(deleteButton);
 
       expect(mockConfirm).toHaveBeenCalledWith(
         "Are you sure you want to delete this box?",
@@ -369,10 +368,8 @@ describe("BoxCard", () => {
 
       render(<BoxCard box={mockBox} />);
 
-      const deleteButton = screen.getAllByRole("button").find((btn) =>
-        btn.className.includes("text-destructive")
-      );
-      await user.click(deleteButton!);
+      const deleteButton = screen.getByRole("button", { name: /delete box/i });
+      await user.click(deleteButton);
 
       expect(mockConfirm).toHaveBeenCalled();
       expect(global.fetch).not.toHaveBeenCalled();
@@ -388,10 +385,8 @@ describe("BoxCard", () => {
 
       render(<BoxCard box={mockBox} />);
 
-      const deleteButton = screen.getAllByRole("button").find((btn) =>
-        btn.className.includes("text-destructive")
-      );
-      await user.click(deleteButton!);
+      const deleteButton = screen.getByRole("button", { name: /delete box/i });
+      await user.click(deleteButton);
 
       await waitFor(() => {
         expect(toast.error).toHaveBeenCalledWith("Failed to delete box");
@@ -410,7 +405,7 @@ describe("BoxCard", () => {
 
       render(<BoxCard box={mockBox} />);
 
-      const cloneButton = screen.getByTitle("Clone Box");
+      const cloneButton = screen.getByRole("button", { name: /clone box/i });
       await user.click(cloneButton);
 
       expect(mockPrompt).toHaveBeenCalledWith(
@@ -435,7 +430,7 @@ describe("BoxCard", () => {
 
       render(<BoxCard box={mockBox} />);
 
-      const cloneButton = screen.getByTitle("Clone Box");
+      const cloneButton = screen.getByRole("button", { name: /clone box/i });
       await user.click(cloneButton);
 
       expect(mockPrompt).toHaveBeenCalled();
@@ -455,7 +450,7 @@ describe("BoxCard", () => {
 
       render(<BoxCard box={mockBox} />);
 
-      const cloneButton = screen.getByTitle("Clone Box");
+      const cloneButton = screen.getByRole("button", { name: /clone box/i });
       await user.click(cloneButton);
 
       await waitFor(() => {
@@ -479,7 +474,7 @@ describe("BoxCard", () => {
 
       render(<BoxCard box={mockBox} />);
 
-      const cloneButton = screen.getByTitle("Clone Box");
+      const cloneButton = screen.getByRole("button", { name: /clone box/i });
       await user.click(cloneButton);
 
       await waitFor(() => {
@@ -502,7 +497,7 @@ describe("BoxCard", () => {
 
       render(<BoxCard box={mockBox} />);
 
-      const cloneButton = screen.getByTitle("Clone Box");
+      const cloneButton = screen.getByRole("button", { name: /clone box/i });
       await user.click(cloneButton);
 
       await waitFor(() => {
