@@ -51,11 +51,17 @@ const COMPONENT_PATTERNS = [
   "@/hooks",
 ];
 
-const EXTERNAL_DEPENDENCIES = [
+export const EXTERNAL_DEPENDENCIES = [
   "react",
+  "react/jsx-runtime",
+  "react/jsx-dev-runtime",
   "react-dom",
+  "react-dom/client",
+  "react-dom/server",
   "framer-motion",
   "@emotion/react",
+  "@emotion/react/jsx-runtime",
+  "@emotion/react/jsx-dev-runtime",
   "@emotion/styled",
 ];
 
@@ -191,6 +197,7 @@ function getMappedPath(
     const params = [
       "bundle=true",
       `external=${EXTERNAL_DEPENDENCIES.join(",")}`,
+      "deps=react@19.2.4,react-dom@19.2.4",
     ];
 
     if (exportsParam) params.push(`exports=${exportsParam}`);

@@ -34,7 +34,7 @@ export async function generateAppContent(
     1. Generate a **fully functional, interactive React component**.
     2. Use **Tailwind CSS** for beautiful, modern styling.
     3. The component must be the **default export**.
-    4. Do not use external libraries other than 'react', 'lucide-react', 'framer-motion', 'clsx', 'tailwind-merge'.
+    4. Do not use external libraries other than 'react', 'lucide-react', 'framer-motion', 'clsx', 'tailwind-merge', 'three'.
     5. Ensure the code is self-contained.
     6. Suggest 3-5 related app paths for the "relatedApps" field. These should start with the logic path (e.g. "cooking/pizza").
     
