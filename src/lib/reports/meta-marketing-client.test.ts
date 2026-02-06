@@ -22,22 +22,37 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 // Mock FacebookMarketingClient - use vi.hoisted() so mocks are available when factory runs
-const { mockListCampaigns, mockGetCampaignMetrics, mockValidateToken } = vi
+const {
+  mockListCampaigns,
+  mockGetCampaignMetrics,
+  mockValidateToken,
+  mockConstructor,
+} = vi
   .hoisted(() => ({
     mockListCampaigns: vi.fn(),
     mockGetCampaignMetrics: vi.fn(),
     mockValidateToken: vi.fn(),
+    mockConstructor: vi.fn(),
   }));
 
 vi.mock("@/lib/marketing/facebook-client", () => ({
   // Use a regular function (not arrow) so it can be called with `new`
-  FacebookMarketingClient: function MockFacebookMarketingClient() {
+  FacebookMarketingClient: function MockFacebookMarketingClient(options: any) {
+    mockConstructor(options);
     return {
       listCampaigns: mockListCampaigns,
       getCampaignMetrics: mockGetCampaignMetrics,
       validateToken: mockValidateToken,
     };
   },
+}));
+
+// Mock token encryption
+vi.mock("@/lib/crypto/token-encryption", () => ({
+  safeDecryptToken: vi.fn((token) => {
+    if (token === "encrypted:token") return "decrypted-token";
+    return token;
+  }),
 }));
 
 import prisma from "@/lib/prisma";
@@ -163,6 +178,34 @@ describe("Meta Marketing Client", () => {
       expect(result?.totalConversions).toBe(30);
       expect(result?.ctr).toBe(2); // (300/15000)*100 = 2
       expect(result?.cpc).toBe(0.25); // 75/300
+
+      // Verify constructor was called with token
+      expect(mockConstructor).toHaveBeenCalledWith({ accessToken: "test-token" });
+    });
+
+    it("should decrypt encrypted access token", async () => {
+      vi.mocked(prisma.marketingAccount.findFirst).mockResolvedValue({
+        id: "ma_123",
+        userId: "user_123",
+        platform: "FACEBOOK",
+        accountId: "act_123",
+        accountName: "Test Account",
+        accessToken: "encrypted:token",
+        refreshToken: null,
+        expiresAt: null,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      mockListCampaigns.mockResolvedValue([]);
+
+      await fetchMetaAdsForUser(userId, startDate, endDate);
+
+      // Verify client was initialized with decrypted token
+      expect(mockConstructor).toHaveBeenCalledWith({
+        accessToken: "decrypted-token",
+      });
     });
 
     it("should handle campaign fetch errors gracefully", async () => {

@@ -5,6 +5,7 @@
  * Wraps the existing FacebookMarketingClient.
  */
 
+import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import { FacebookMarketingClient } from "@/lib/marketing/facebook-client";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
@@ -46,7 +47,7 @@ async function getStoredAccessToken(
   }
 
   return {
-    token: account.accessToken,
+    token: safeDecryptToken(account.accessToken),
     accountId: account.accountId,
   };
 }
@@ -75,7 +76,10 @@ async function getActiveMarketingAccounts(): Promise<
     return [];
   }
 
-  return accounts;
+  return accounts.map((account) => ({
+    ...account,
+    accessToken: safeDecryptToken(account.accessToken),
+  }));
 }
 
 /**
