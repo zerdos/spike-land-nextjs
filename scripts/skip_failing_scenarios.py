@@ -88,17 +88,36 @@ def skip_failures():
         
         modified = False
         for failure in file_failures:
-            line_idx = failure['line'] - 1 # 0-indexed
+            # Try to find the scenario line dynamically because line numbers might have shifted
+            target_name = failure['name']
+            expected_line = failure['line'] - 1
+            line_idx = -1
             
-            # Find the actual start of the Scenario (accounting for tags/comments)
-            # The line reported in JSON is usually the Scenario: definition line.
-            # We want to insert simply before this line.
+            # Check if likely at expected line (or shifted)
+            # Scan the whole file for the scenario name? 
+            # It's safer to scan the whole file, but there might be duplicates? 
+            # Scenarios usually have unique names in a file.
+            
+            entry_found = False
+            for i, line in enumerate(lines):
+                if line.strip().endswith(target_name): # "Scenario: <name>" or "Scenario Outline: <name>"
+                    # Double check it is a scenario definition
+                    if line.strip().startswith('Scenario') and target_name in line:
+                        line_idx = i
+                        entry_found = True
+                        break
+            
+            if not entry_found:
+                 print(f"  Could not locate scenario '{target_name}' in {uri}. It might have been skipped or moved.")
+                 # Fallback to line number? No, risky.
+                 continue
+
+            # Normalized line_idx is where we want to potentially insert BEFORE
             
             indentation = ""
-            if line_idx < len(lines):
-                match = re.search(r'^(\s*)', lines[line_idx])
-                if match:
-                    indentation = match.group(1)
+            match = re.search(r'^(\s*)', lines[line_idx])
+            if match:
+                indentation = match.group(1)
             
             reason = failure['error'].replace('"', "'")
             # Limit reason length
@@ -108,29 +127,29 @@ def skip_failures():
             skip_tag = f"{indentation}@skip # {reason}\n"
             
             # Check if already skipped
-            # Look at current and previous lines for @skip or @ignore
+            # Look at previous lines AND the current line (if we found the scenario line, the skip should be ABOVE it)
             is_already_skipped = False
             
-            # Check the line itself (in case it was shifted or we are looking at the tag)
-            if line_idx < len(lines):
-                 current_line = lines[line_idx].strip()
-                 if current_line.startswith('@skip') or current_line.startswith('@ignore'):
-                     is_already_skipped = True
+            # Search backwards for tags
+            for i in range(1, 5):
+                if line_idx - i >= 0:
+                    prev_line = lines[line_idx - i].strip()
+                    if prev_line.startswith('@skip') or prev_line.startswith('@ignore'):
+                        # Check if duplicate?
+                        # Assuming if it is skipped, it covers this scenario
+                        is_already_skipped = True
+                        break
+                    if prev_line.startswith('Scenario') or prev_line.startswith('Feature') or prev_line == "":
+                        # Stop looking if we hit another scenario or empty line (maybe)
+                        # But tags can be separated by spaces?
+                        pass
 
             if not is_already_skipped:
-                for i in range(1, 5):
-                    if line_idx - i >= 0:
-                        prev_line = lines[line_idx - i].strip()
-                        if '@skip' in prev_line or '@ignore' in prev_line:
-                            is_already_skipped = True
-                            break
-            
-            if not is_already_skipped:
-                print(f"  Skipping '{failure['name']}' at line {failure['line']}")
+                print(f"  Skipping '{target_name}' at line {line_idx + 1}")
                 lines.insert(line_idx, skip_tag)
                 modified = True
-            # else:
-            #     print(f"  '{failure['name']}' is already skipped.")
+            else:
+                print(f"  '{target_name}' is already skipped.")
                 
         if modified:
             with open(uri, 'w') as f:
