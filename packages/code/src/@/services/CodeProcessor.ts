@@ -1,4 +1,3 @@
-import { getInitialDarkMode } from "@/hooks/use-dark-mode";
 import { importMap, importMapReplace } from "@/lib/importmap-utils";
 import type { ICodeSession } from "@/lib/interfaces";
 import { md5 } from "@/lib/md5";
@@ -180,8 +179,6 @@ export class CodeProcessor {
         console.error("Error creating blob URL:", blobError);
         return false;
       }
-      const isDarkMode = getInitialDarkMode();
-
       // Create an iframe which renders the transpiled code
       const iframeSource = `<!DOCTYPE html>
         <html lang="en">
@@ -198,19 +195,97 @@ export class CodeProcessor {
             href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap"
             rel="stylesheet"
           />
-          <style>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+          <style>
             html,body,#embed {
               isolation: isolate;
-              height: 100vh; /* Fallback for browsers that don't support dvh/svh */
-              height: 100dvh; /* Use dynamic viewport height */
-              height: 100svh; /* Use static viewport height */
+              height: 100vh;
+              height: 100dvh;
+              height: 100svh;
               font-family: "Roboto Flex", sans-serif;
             }
-            body {
-              margin: 0;
-              padding: 0;
-              background-color: ${isDarkMode ? "#1e1e1e" : "#ffffff"};
-              color: ${isDarkMode ? "#ffffff" : "#000000"};
+            body { margin: 0; padding: 0; }
+          </style>
+          <style type="text/tailwindcss">
+            @import "tailwindcss";
+            @custom-variant dark (&:where(.dark, .dark *));
+            @theme inline {
+              --color-background: hsl(var(--background));
+              --color-foreground: hsl(var(--foreground));
+              --color-card: hsl(var(--card));
+              --color-card-foreground: hsl(var(--card-foreground));
+              --color-popover: hsl(var(--popover));
+              --color-popover-foreground: hsl(var(--popover-foreground));
+              --color-primary: hsl(var(--primary));
+              --color-primary-foreground: hsl(var(--primary-foreground));
+              --color-secondary: hsl(var(--secondary));
+              --color-secondary-foreground: hsl(var(--secondary-foreground));
+              --color-muted: hsl(var(--muted));
+              --color-muted-foreground: hsl(var(--muted-foreground));
+              --color-accent: hsl(var(--accent));
+              --color-accent-foreground: hsl(var(--accent-foreground));
+              --color-destructive: hsl(var(--destructive));
+              --color-destructive-foreground: hsl(var(--destructive-foreground));
+              --color-border: hsl(var(--border));
+              --color-input: hsl(var(--input));
+              --color-ring: hsl(var(--ring));
+              --color-sidebar: hsl(var(--sidebar-background));
+              --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+              --color-sidebar-primary: hsl(var(--sidebar-primary));
+              --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+              --color-sidebar-accent: hsl(var(--sidebar-accent));
+              --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+              --color-sidebar-border: hsl(var(--sidebar-border));
+              --color-sidebar-ring: hsl(var(--sidebar-ring));
+              --radius-lg: var(--radius);
+              --radius-md: calc(var(--radius) - 2px);
+              --radius-sm: calc(var(--radius) - 4px);
+              --animate-accordion-down: accordion-down 0.2s ease-out;
+              --animate-accordion-up: accordion-up 0.2s ease-out;
+            }
+            :root {
+              --background: 0 0% 100%;
+              --foreground: 222.2 84% 4.9%;
+              --card: 0 0% 100%;
+              --card-foreground: 222.2 84% 4.9%;
+              --popover: 0 0% 100%;
+              --popover-foreground: 222.2 84% 4.9%;
+              --primary: 222.2 47.4% 11.2%;
+              --primary-foreground: 210 40% 98%;
+              --secondary: 210 40% 96.1%;
+              --secondary-foreground: 222.2 47.4% 11.2%;
+              --muted: 210 40% 96.1%;
+              --muted-foreground: 215.4 16.3% 46.9%;
+              --accent: 210 40% 96.1%;
+              --accent-foreground: 222.2 47.4% 11.2%;
+              --destructive: 0 84.2% 60.2%;
+              --destructive-foreground: 210 40% 98%;
+              --border: 214.3 31.8% 91.4%;
+              --input: 214.3 31.8% 91.4%;
+              --ring: 222.2 84% 4.9%;
+              --radius: 0.5rem;
+              --sidebar-background: 0 0% 98%;
+              --sidebar-foreground: 240 5.3% 26.1%;
+              --sidebar-primary: 240 5.9% 10%;
+              --sidebar-primary-foreground: 0 0% 98%;
+              --sidebar-accent: 240 4.8% 95.9%;
+              --sidebar-accent-foreground: 240 5.9% 10%;
+              --sidebar-border: 220 13% 91%;
+              --sidebar-ring: 217.2 91.2% 59.8%;
+            }
+            @layer base {
+              * { border-color: hsl(var(--border)); }
+              body {
+                background-color: hsl(var(--background));
+                color: hsl(var(--foreground));
+              }
+            }
+            @keyframes accordion-down {
+              from { height: 0; }
+              to { height: var(--radix-accordion-content-height); }
+            }
+            @keyframes accordion-up {
+              from { height: var(--radix-accordion-content-height); }
+              to { height: 0; }
             }
           </style>
           <script src="${origin}/@/workers/tw.worker.js"></script>

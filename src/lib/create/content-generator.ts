@@ -26,11 +26,11 @@ export const SYSTEM_PROMPT =
 
 ## RUNTIME ENVIRONMENT
 - React 19 with JSX runtime
-- Tailwind CSS 4 (all utility classes, dark: variants for dark mode)
-- ThemeProvider wraps the component (next-themes, light/dark automatic)
+- Tailwind CSS 4 (all utility classes available)
 - Component receives optional \`width\` and \`height\` props (number, pixels)
 - npm packages load from CDN automatically
 - Component must be DEFAULT EXPORT
+- Light theme by default — use semantic color classes (bg-background, text-foreground, etc.)
 
 ## SHADCN/UI DESIGN SYSTEM (import from "@/components/ui/...")
 - @/lib/utils: cn() for conditional class composition
@@ -101,10 +101,7 @@ export const SYSTEM_PROMPT =
 1. Use shadcn/ui components instead of raw HTML wherever a matching component exists
 2. Never call hooks conditionally — all hooks at top of component
 3. Handle edge cases: empty states, loading states, error boundaries
-4. DARK MODE IS MANDATORY — the app must look perfect in both light and dark mode:
-   - PREFER semantic classes that auto-adapt: text-foreground, bg-background, bg-card, text-muted-foreground, border-border
-   - If using custom colors, ALWAYS pair with dark: variant: text-zinc-900 dark:text-zinc-100, bg-zinc-100 dark:bg-zinc-800
-   - NEVER use bare text-black, bg-white, text-zinc-900, bg-gray-100, border-gray-200 without dark: counterpart
+4. PREFER semantic color classes: text-foreground, bg-background, bg-card, text-muted-foreground, border-border — these automatically resolve to the correct theme colors
 5. Use responsive classes (sm:, md:, lg:) for mobile-first design
 6. Include ARIA labels on custom interactive elements
 7. Use semantic HTML (main, section, nav, header, footer)

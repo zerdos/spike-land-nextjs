@@ -53,11 +53,10 @@ describe("content-generator", () => {
       expect(SYSTEM_PROMPT).toContain("stale");
     });
 
-    it("should contain dark mode guidance with semantic classes", () => {
-      expect(SYSTEM_PROMPT).toContain("DARK MODE IS MANDATORY");
+    it("should contain semantic color class guidance", () => {
       expect(SYSTEM_PROMPT).toContain("text-foreground");
       expect(SYSTEM_PROMPT).toContain("bg-background");
-      expect(SYSTEM_PROMPT).toContain("dark:");
+      expect(SYSTEM_PROMPT).toContain("semantic color classes");
     });
 
     it("should contain curated lucide-react icon list with hallucination guard", () => {
@@ -98,9 +97,9 @@ describe("content-generator", () => {
       expect(generateStructuredResponse).toHaveBeenCalledWith(expect.objectContaining({
         prompt: expect.stringContaining('"/create/test/app"'),
         systemPrompt: SYSTEM_PROMPT,
-        maxTokens: 16384,
+        maxTokens: 32768,
         temperature: 0.5,
-        thinkingBudget: 2048,
+        thinkingBudget: 32768,
       }));
     });
 

@@ -13,7 +13,7 @@ import type { FlexibleComponentType, IRenderApp, RenderedApp } from "@/lib/inter
 import { md5 } from "@/lib/md5";
 import { transpile } from "@/lib/shared";
 import { tryCatch } from "@/lib/try-catch";
-import { ThemeProvider as NextThemesProvider } from "next-themes"; // Added next-themes provider
+
 import React from "react";
 
 // Moved toHtmlAndCss function definition before renderApp
@@ -422,25 +422,18 @@ function _performReactRender({
 }: PerformReactRenderParams): RenderedApp {
   try {
     reactRoot.render(
-      <NextThemesProvider
-        attribute="class"
-        defaultTheme="dark"
-        enableSystem
-        storageKey="darkMode"
-      >
-        <React.Fragment>
-          <CacheProvider value={cssCache}>
-            {emptyApp
-              ? <AppToRender />
-              : (
-                <ErrorBoundary {...(codeSpace ? { codeSpace } : {})}>
-                  <AppWithScreenSize AppToRender={AppToRender} />
-                </ErrorBoundary>
-              )}
-          </CacheProvider>{" "}
-          {codeSpace && <AIBuildingOverlay codeSpace={codeSpace} />}
-        </React.Fragment>
-      </NextThemesProvider>,
+      <React.Fragment>
+        <CacheProvider value={cssCache}>
+          {emptyApp
+            ? <AppToRender />
+            : (
+              <ErrorBoundary {...(codeSpace ? { codeSpace } : {})}>
+                <AppWithScreenSize AppToRender={AppToRender} />
+              </ErrorBoundary>
+            )}
+        </CacheProvider>{" "}
+        {codeSpace && <AIBuildingOverlay codeSpace={codeSpace} />}
+      </React.Fragment>,
     );
     const newRenderedApp = {
       rootElement: rootEl,

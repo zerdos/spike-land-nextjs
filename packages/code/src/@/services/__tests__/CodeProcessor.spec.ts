@@ -2,10 +2,6 @@ import type { ICodeSession } from "@/lib/interfaces";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies before importing CodeProcessor
-vi.mock("@/hooks/use-dark-mode", () => ({
-  getInitialDarkMode: vi.fn(() => false),
-}));
-
 vi.mock("@/lib/importmap-utils", () => ({
   importMap: { imports: {} },
   importMapReplace: vi.fn((code: string) => code),
@@ -48,7 +44,6 @@ vi.mock("@/services/RenderService", () => ({
   }),
 }));
 
-import { getInitialDarkMode } from "@/hooks/use-dark-mode";
 import { importMapReplace } from "@/lib/importmap-utils";
 import { md5 } from "@/lib/md5";
 import { transpileCode } from "@/services/editorUtils";
@@ -405,24 +400,6 @@ describe("CodeProcessor", () => {
       expect(importMapReplace).toHaveBeenCalled();
     });
 
-    it("should check dark mode for iframe styling", async () => {
-      vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
-      vi.mocked(md5).mockReturnValueOnce("test-request-id");
-      const { simulateRender } = setupMessageHandlerMock();
-
-      const processPromise = processor.process(
-        "new code",
-        false,
-        mockAbortController.signal,
-        mockGetSession,
-      );
-
-      await simulateRender("test-request-id");
-      await processPromise;
-
-      expect(getInitialDarkMode).toHaveBeenCalled();
-    });
-
     it("should use md5 for request ID matching", async () => {
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
       vi.mocked(md5).mockReturnValueOnce("test-request-id");
@@ -725,87 +702,6 @@ describe("CodeProcessor", () => {
 
       const result = await processPromise;
       expect(result).toBe(false);
-    });
-  });
-
-  describe("dark mode handling", () => {
-    it("should use dark mode colors when dark mode is enabled", async () => {
-      vi.mocked(getInitialDarkMode).mockReturnValueOnce(true);
-      vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
-
-      let createdIframe: HTMLIFrameElement | null = null;
-      vi.spyOn(document, "createElement").mockImplementation((tagName) => {
-        if (tagName === "iframe") {
-          const iframe = {
-            srcdoc: "",
-            title: "",
-            className: "",
-            style: { display: "" },
-            contentWindow: null,
-          } as unknown as HTMLIFrameElement;
-          createdIframe = iframe;
-          return iframe;
-        }
-        return document.createElement(tagName);
-      });
-
-      const processPromise = processor.process(
-        "new code",
-        false,
-        mockAbortController.signal,
-        mockGetSession,
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockAbortController.abort();
-
-      await processPromise.catch(() => {});
-
-      expect(getInitialDarkMode).toHaveBeenCalled();
-      if (createdIframe) {
-        expect((createdIframe as HTMLIFrameElement).srcdoc).toContain(
-          "#1e1e1e",
-        );
-      }
-    });
-
-    it("should use light mode colors when dark mode is disabled", async () => {
-      vi.mocked(getInitialDarkMode).mockReturnValueOnce(false);
-      vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
-
-      let createdIframe: HTMLIFrameElement | null = null;
-      vi.spyOn(document, "createElement").mockImplementation((tagName) => {
-        if (tagName === "iframe") {
-          const iframe = {
-            srcdoc: "",
-            title: "",
-            className: "",
-            style: { display: "" },
-            contentWindow: null,
-          } as unknown as HTMLIFrameElement;
-          createdIframe = iframe;
-          return iframe;
-        }
-        return document.createElement(tagName);
-      });
-
-      const processPromise = processor.process(
-        "new code",
-        false,
-        mockAbortController.signal,
-        mockGetSession,
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockAbortController.abort();
-
-      await processPromise.catch(() => {});
-
-      if (createdIframe) {
-        expect((createdIframe as HTMLIFrameElement).srcdoc).toContain(
-          "#ffffff",
-        );
-      }
     });
   });
 });
