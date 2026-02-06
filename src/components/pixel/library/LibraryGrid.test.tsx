@@ -1,10 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { LibraryGrid } from "./LibraryGrid";
-import { LibraryImage } from "./LibraryItem";
+import type { LibraryImage } from "./LibraryItem";
 
 // Mock next/image
 vi.mock("next/image", () => ({
+  // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
   default: (props: any) => <img {...props} />,
 }));
 
