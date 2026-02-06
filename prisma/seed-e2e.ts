@@ -256,13 +256,15 @@ async function main() {
 
   // Verify album exists and log details (Debug for CI failures)
   const albumVerification = await prisma.album.findUnique({
-    where: { id: unlistedAlbum.id }
+    where: { id: unlistedAlbum.id },
   });
 
   if (!albumVerification) {
     console.error("CRITICAL: Album returned by upsert does not exist in DB immediately after!");
     // Attempt to recover or inspect
-    const byToken = await prisma.album.findUnique({ where: { shareToken: "e2e-album-share-token-456" } });
+    const byToken = await prisma.album.findUnique({
+      where: { shareToken: "e2e-album-share-token-456" },
+    });
     console.log("Album by shareToken:", byToken);
   }
 
@@ -307,7 +309,9 @@ async function main() {
         break; // Success
       } catch (e) {
         retries--;
-        console.warn(`Failed to link image ${image.id} to album ${unlistedAlbum.id}. Retries left: ${retries}`);
+        console.warn(
+          `Failed to link image ${image.id} to album ${unlistedAlbum.id}. Retries left: ${retries}`,
+        );
         if (retries === 0) {
           console.error("CRITICAL: Failed to link image after retries:", e);
           // Verify existence to debug
