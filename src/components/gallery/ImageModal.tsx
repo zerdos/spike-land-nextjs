@@ -4,14 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getBestThumbnail } from "@/lib/images/get-best-thumbnail";
-import type { EnhancedImage, ImageEnhancementJob, User } from "@prisma/client";
 import { Download } from "lucide-react";
 import Image from "next/image";
-
-interface PublicImage extends EnhancedImage {
-  enhancementJobs: ImageEnhancementJob[];
-  user: Pick<User, "name" | "image">;
-}
+import type { PublicImage } from "./types";
 
 interface ImageModalProps {
   image: PublicImage | null;

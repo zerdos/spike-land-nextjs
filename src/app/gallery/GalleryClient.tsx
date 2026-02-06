@@ -2,15 +2,10 @@
 
 import { GalleryFilters } from "@/components/gallery/GalleryFilters";
 import { GalleryGrid } from "@/components/gallery/GalleryGrid";
+import type { PublicImage } from "@/components/gallery/types";
 import { Button } from "@/components/ui/button";
-import type { EnhancedImage, ImageEnhancementJob, User } from "@prisma/client";
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-
-interface PublicImage extends EnhancedImage {
-  enhancementJobs: ImageEnhancementJob[];
-  user: Pick<User, "name" | "image">;
-}
 
 interface ApiResponse {
   items: PublicImage[];
