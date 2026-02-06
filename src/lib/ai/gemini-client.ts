@@ -1243,6 +1243,8 @@ export interface GenerateStructuredResponseParams {
   maxTokens?: number;
   /** Temperature for generation (default: 0.3 for structured output) */
   temperature?: number;
+  /** Thinking budget in tokens — lets the model reason before generating output */
+  thinkingBudget?: number;
 }
 
 /**
@@ -1272,6 +1274,9 @@ export async function generateStructuredResponse<T>(
         systemInstruction: params.systemPrompt,
         maxOutputTokens: params.maxTokens ?? 4096,
         temperature: params.temperature ?? 0.3,
+        ...(params.thinkingBudget != null && {
+          thinkingConfig: { thinkingBudget: params.thinkingBudget },
+        }),
       },
     }),
   );

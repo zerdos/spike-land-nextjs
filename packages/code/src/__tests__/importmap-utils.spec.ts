@@ -183,7 +183,7 @@ describe("importMapReplace", () => {
       for (const line of lines) {
         const exportsMatch = line.match(/exports=([^&"]+)/);
         if (exportsMatch) {
-          expect(exportsMatch[1].split(",").length).toBeLessThanOrEqual(8);
+          expect(exportsMatch[1]!.split(",").length).toBeLessThanOrEqual(8);
         }
       }
     });
@@ -232,7 +232,7 @@ describe("importMapReplace", () => {
       for (const line of lines) {
         const exportsMatch = line.match(/exports=([^&"]+)/);
         if (exportsMatch) {
-          expect(exportsMatch[1].split(",").length).toBeLessThanOrEqual(8);
+          expect(exportsMatch[1]!.split(",").length).toBeLessThanOrEqual(8);
         }
       }
     });

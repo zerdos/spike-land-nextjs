@@ -5,7 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 
 import { AIBuildingOverlay } from "@/components/app/ai-building-overlay";
 import ErrorBoundary from "@/components/app/error-boundary";
-import { ThemeProvider as CustomThemeProvider } from "@/components/ui/theme-provider"; // Renamed to avoid conflict
+
 import { getCodeSpace } from "@/hooks/use-code-space";
 import useWindowSize from "@/hooks/use-window-size";
 import { importMapReplace } from "@/lib/importmap-utils";
@@ -424,24 +424,22 @@ function _performReactRender({
     reactRoot.render(
       <NextThemesProvider
         attribute="class"
-        defaultTheme="system"
+        defaultTheme="dark"
         enableSystem
-        storageKey="darkMode" // Ensure this matches useDarkMode's localStorage key
+        storageKey="darkMode"
       >
-        <CustomThemeProvider>
-          <React.Fragment>
-            <CacheProvider value={cssCache}>
-              {emptyApp
-                ? <AppToRender />
-                : (
-                  <ErrorBoundary {...(codeSpace ? { codeSpace } : {})}>
-                    <AppWithScreenSize AppToRender={AppToRender} />
-                  </ErrorBoundary>
-                )}
-            </CacheProvider>{" "}
-            {codeSpace && <AIBuildingOverlay codeSpace={codeSpace} />}
-          </React.Fragment>
-        </CustomThemeProvider>
+        <React.Fragment>
+          <CacheProvider value={cssCache}>
+            {emptyApp
+              ? <AppToRender />
+              : (
+                <ErrorBoundary {...(codeSpace ? { codeSpace } : {})}>
+                  <AppWithScreenSize AppToRender={AppToRender} />
+                </ErrorBoundary>
+              )}
+          </CacheProvider>{" "}
+          {codeSpace && <AIBuildingOverlay codeSpace={codeSpace} />}
+        </React.Fragment>
       </NextThemesProvider>,
     );
     const newRenderedApp = {

@@ -98,8 +98,9 @@ describe("content-generator", () => {
       expect(generateStructuredResponse).toHaveBeenCalledWith(expect.objectContaining({
         prompt: expect.stringContaining('"/create/test/app"'),
         systemPrompt: SYSTEM_PROMPT,
-        maxTokens: 4096,
+        maxTokens: 16384,
         temperature: 0.5,
+        thinkingBudget: 2048,
       }));
     });
 

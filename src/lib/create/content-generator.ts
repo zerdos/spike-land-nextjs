@@ -167,8 +167,9 @@ export async function generateAppContent(
     const result = await generateStructuredResponse<GeneratedAppContent>({
       prompt: buildUserPrompt(topic),
       systemPrompt: SYSTEM_PROMPT,
-      maxTokens: 4096,
+      maxTokens: 32768,
       temperature: 0.5,
+      thinkingBudget: 32768,
     });
 
     // Extract rawCode before validation so it's available even if other fields fail
