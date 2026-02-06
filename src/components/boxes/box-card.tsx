@@ -10,6 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Box, BoxStatus, BoxTier } from "@prisma/client";
 import { BoxActionType } from "@prisma/client";
 import { Copy, Monitor, Play, RefreshCw, Square, Trash2 } from "lucide-react";
@@ -177,25 +183,42 @@ export function BoxCard({ box }: BoxCardProps) {
           </Button>
         )}
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleClone}
-          disabled={isLoading}
-          title="Clone Box"
-        >
-          <Copy className="h-4 w-4" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleClone}
+                disabled={isLoading}
+                aria-label="Clone box"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Clone Box</p>
+            </TooltipContent>
+          </Tooltip>
 
-        <Button
-          size="sm"
-          variant="ghost"
-          className="text-destructive hover:text-destructive/90"
-          onClick={handleDelete}
-          disabled={isLoading}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-destructive hover:text-destructive/90"
+                onClick={handleDelete}
+                disabled={isLoading}
+                aria-label="Delete box"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Delete Box</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </CardFooter>
     </Card>
   );
