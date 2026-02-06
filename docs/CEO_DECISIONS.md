@@ -186,3 +186,9 @@ _(None recorded yet)_
 
 **Document Owner**: [Zoltan Erdos](./ZOLTAN_ERDOS.md) (CEO) | **Last Updated**:
 January 29, 2026 | **Version**: 1.1
+
+## Agent Notes Registry
+
+| Agent Name | Notes Location | Last Updated |
+| :--- | :--- | :--- |
+| Bolt ⚡ | `.jules/bolt.md` | 2024-05-22 |
