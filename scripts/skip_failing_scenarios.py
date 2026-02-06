@@ -1,7 +1,66 @@
+import argparse
 import json
 import glob
 import os
 import re
+
+def cleanup_skip_tags():
+    """Remove duplicate @skip lines and convert inline @skip comments to proper format."""
+    feature_files = glob.glob('e2e/features/**/*.feature', recursive=True)
+    feature_files += glob.glob('e2e/features/*.feature')
+    feature_files = list(set(feature_files))
+
+    for filepath in sorted(feature_files):
+        if not os.path.exists(filepath):
+            continue
+
+        with open(filepath, 'r') as f:
+            lines = f.readlines()
+
+        new_lines = []
+        modified = False
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            stripped = line.strip()
+
+            # Check for malformed @skip with inline comment
+            match = re.match(r'^(\s*)@skip\s+#\s*(.*)', line)
+            if match:
+                indentation = match.group(1)
+                reason = match.group(2).strip()
+                # Remove "Error: " prefix if present
+                if reason.startswith('Error: '):
+                    reason = reason[len('Error: '):]
+
+                # Skip any consecutive duplicate @skip lines
+                while i + 1 < len(lines) and re.match(r'^\s*@skip\s+#', lines[i + 1]):
+                    i += 1
+                    modified = True
+
+                # Emit proper format
+                new_lines.append(f"{indentation}# SKIP REASON: {reason}\n")
+                new_lines.append(f"{indentation}@skip\n")
+                modified = True
+                i += 1
+                continue
+
+            # Check for duplicate consecutive @skip lines (bare)
+            if stripped == '@skip' and new_lines:
+                prev_stripped = new_lines[-1].strip()
+                if prev_stripped == '@skip':
+                    # Skip this duplicate
+                    modified = True
+                    i += 1
+                    continue
+
+            new_lines.append(line)
+            i += 1
+
+        if modified:
+            print(f"  Cleaned up {filepath}")
+            with open(filepath, 'w') as f:
+                f.writelines(new_lines)
 
 def analyze_failures():
     report_files = glob.glob('ci-output/e2e-reports-shard-*/cucumber-report-ci.json')
@@ -123,30 +182,27 @@ def skip_failures():
             # Limit reason length
             if len(reason) > 100:
                 reason = reason[:97] + "..."
-                
-            skip_tag = f"{indentation}@skip # {reason}\n"
-            
+
+            skip_comment = f"{indentation}# SKIP REASON: {reason}\n"
+            skip_tag = f"{indentation}@skip\n"
+
             # Check if already skipped
-            # Look at previous lines AND the current line (if we found the scenario line, the skip should be ABOVE it)
             is_already_skipped = False
-            
-            # Search backwards for tags
+
+            # Search backwards for existing @skip or # SKIP REASON: tags
             for i in range(1, 5):
                 if line_idx - i >= 0:
                     prev_line = lines[line_idx - i].strip()
-                    if prev_line.startswith('@skip') or prev_line.startswith('@ignore'):
-                        # Check if duplicate?
-                        # Assuming if it is skipped, it covers this scenario
+                    if prev_line.startswith('@skip') or prev_line.startswith('@ignore') or prev_line.startswith('# SKIP REASON:'):
                         is_already_skipped = True
                         break
-                    if prev_line.startswith('Scenario') or prev_line.startswith('Feature') or prev_line == "":
-                        # Stop looking if we hit another scenario or empty line (maybe)
-                        # But tags can be separated by spaces?
-                        pass
+                    if prev_line.startswith('Scenario') or prev_line.startswith('Feature'):
+                        break
 
             if not is_already_skipped:
                 print(f"  Skipping '{target_name}' at line {line_idx + 1}")
                 lines.insert(line_idx, skip_tag)
+                lines.insert(line_idx, skip_comment)
                 modified = True
             else:
                 print(f"  '{target_name}' is already skipped.")
@@ -156,4 +212,12 @@ def skip_failures():
                 f.writelines(lines)
 
 if __name__ == "__main__":
-    skip_failures()
+    parser = argparse.ArgumentParser(description="Skip failing E2E scenarios based on CI reports")
+    parser.add_argument('--cleanup', action='store_true',
+                        help="Remove duplicate @skip tags and fix inline comment format")
+    args = parser.parse_args()
+
+    if args.cleanup:
+        cleanup_skip_tags()
+    else:
+        skip_failures()

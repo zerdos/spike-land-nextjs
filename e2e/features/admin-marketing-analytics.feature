@@ -80,8 +80,8 @@ Feature: Admin Marketing Analytics
     And I should see "Enhancements" funnel stage
     And I should see "Purchases" funnel stage
 
-  @skip # Error: expect(locator).toBeVisible() failed
-  @skip # Error: expect(locator).toBeVisible() failed
+  # SKIP REASON: expect(locator).toBeVisible() failed
+  @skip
   Scenario: Accounts tab displays account management
     Given the user is an admin
     When I visit "/admin/marketing"
@@ -117,7 +117,8 @@ Feature: Admin Marketing Analytics
     And I select "Last 7 days" from date range picker
     Then the metrics should update for 7 day period
 
-  @skip # Error: expect(locator).toBeVisible() failed
+  # SKIP REASON: expect(locator).toBeVisible() failed
+  @skip
   Scenario: Export button is available
     Given the user is an admin
     When I visit "/admin/marketing"

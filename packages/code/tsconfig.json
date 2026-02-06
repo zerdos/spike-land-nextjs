@@ -53,6 +53,7 @@
     "declarationDir": "./dts",
     "isolatedModules": true,
     "noEmit": false,
+    "tsBuildInfoFile": "./dts/tsconfig.tsbuildinfo",
     "moduleDetection": "force",
     "types": ["vite/client", "vitest/globals", "@types/node"]
   }

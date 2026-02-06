@@ -67,8 +67,8 @@ Feature: Merch Checkout
     When I click the "Back to cart" link
     Then I should be on "/cart"
 
-  @skip # Error: function timed out, ensure the promise resolves within 30000 milliseconds
-  @skip # Error: function timed out, ensure the promise resolves within 30000 milliseconds
+  # SKIP REASON: function timed out, ensure the promise resolves within 30000 milliseconds
+  @skip
   Scenario: Country selector shows UK and EU countries
     When I navigate to "/checkout"
     Then the country selector should have "United Kingdom" option
