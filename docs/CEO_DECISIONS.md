@@ -181,7 +181,7 @@ This section tracks agent-specific documentation and productivity notes. Each ag
 
 | Agent | Notes Location | Last Updated | Health Score | Status |
 |-------|---------------|--------------|--------------|---------|
-| @copilot | [.copilot/CLAUDE.md](../.copilot/CLAUDE.md) | 2026-02-06 | 7/9 | Active |
+| @copilot | [.copilot/notes.md](../.copilot/notes.md) | 2026-02-06 | 7/9 | Active |
 | @jules | [.jules/bolt.md](../.jules/bolt.md) | 2024-05-22 | - | Active |
 | @claude | _Not yet registered_ | - | - | - |
 
