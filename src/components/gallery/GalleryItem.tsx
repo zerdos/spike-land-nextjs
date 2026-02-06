@@ -13,7 +13,9 @@ export const GalleryItem = memo(function GalleryItem({
   image,
   onSelect,
 }: GalleryItemProps) {
-  const job = image.enhancementJobs[0];
+  if (!image) return null;
+
+  const job = image.enhancementJobs?.[0];
 
   return (
     <button
@@ -41,7 +43,7 @@ export const GalleryItem = memo(function GalleryItem({
         <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              {image.user.image
+              {image.user?.image
                 ? (
                   <Image
                     src={image.user.image}
@@ -53,7 +55,7 @@ export const GalleryItem = memo(function GalleryItem({
                 )
                 : <div className="w-5 h-5 rounded-full bg-white/20" />}
               <span className="text-xs text-white/90 font-medium truncate">
-                {image.user.name || "Anonymous"}
+                {image.user?.name || "Anonymous"}
               </span>
             </div>
             {job?.tier && (
@@ -64,7 +66,7 @@ export const GalleryItem = memo(function GalleryItem({
                 >
                   {job.tier.replace("TIER_", "")}
                 </Badge>
-                {image.tags.slice(0, 2).map((tag) => (
+                {image.tags?.slice(0, 2).map((tag) => (
                   <Badge
                     key={tag}
                     variant="secondary"
