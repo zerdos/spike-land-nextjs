@@ -12,7 +12,7 @@ exports[`importMapReplace > App specific imports: should handle react-extra libs
 {
   "code": "import { extras } from "react-extras";",
   "result": "/** importMapReplace */
-import { extras } from "/react-extras?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=extras";",
+import { extras } from "/react-extras?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=extras";",
 }
 `;
 
@@ -28,7 +28,7 @@ exports[`importMapReplace > Basic imports: basic named imports 1`] = `
 {
   "code": "import { prop, prop2 } from "foo";",
   "result": "/** importMapReplace */
-import { prop, prop2 } from "/foo?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=prop,prop2";",
+import { prop, prop2 } from "/foo?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=prop,prop2";",
 }
 `;
 
@@ -52,7 +52,7 @@ exports[`importMapReplace > Basic imports: multiple named imports with complex n
 {
   "code": "import { camelCase, snake_case, PascalCase, CONSTANT_CASE } from "utils";",
   "result": "/** importMapReplace */
-import { camelCase, snake_case, PascalCase, CONSTANT_CASE } from "/utils?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=camelCase,snake_case,PascalCase,CONSTANT_CASE";",
+import { camelCase, snake_case, PascalCase, CONSTANT_CASE } from "/utils?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=CONSTANT_CASE,PascalCase,camelCase,snake_case";",
 }
 `;
 
@@ -60,7 +60,7 @@ exports[`importMapReplace > Basic imports: specific exports 1`] = `
 {
   "code": "import { __await, __rest } from "tslib";",
   "result": "/** importMapReplace */
-import { __await, __rest } from "/tslib?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=__await,__rest";",
+import { __await, __rest } from "/tslib?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=__await,__rest";",
 }
 `;
 
@@ -68,7 +68,7 @@ exports[`importMapReplace > Basic imports: specific named imports with aliases 1
 {
   "code": "import { __await as aw, __rest as restNow} from "tslib";",
   "result": "/** importMapReplace */
-import { __await as aw, __rest as restNow} from "/tslib?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=__await,__rest";",
+import { __await as aw, __rest as restNow} from "/tslib?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=__await,__rest";",
 }
 `;
 
@@ -76,7 +76,7 @@ exports[`importMapReplace > Dynamic imports: dynamic imports 1`] = `
 {
   "code": "const mod = await import("module");",
   "result": "/** importMapReplace */
-const mod = await import("/module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled");",
+const mod = await import("/module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4");",
 }
 `;
 
@@ -124,9 +124,9 @@ exports[`importMapReplace > Edge cases: code with line comments 1`] = `
   "result": "/** importMapReplace */
 
         // This is a comment
-        import { foo } from "/module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=foo"; // End line comment
+        import { foo } from "/module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=foo"; // End line comment
         // Another comment
-        export { bar } from "/module2?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=bar";
+        export { bar } from "/module2?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=bar";
         // Final comment
       ",
 }
@@ -150,10 +150,10 @@ exports[`importMapReplace > Edge cases: multiple import patterns in same file 1`
       ",
   "result": "/** importMapReplace */
 
-        import { foo } from "/module1?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=foo";
-        export { bar } from "/module2?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=bar";
-        const mod = await import("/module3?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled");
-        import "/module4?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled";
+        import { foo } from "/module1?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=foo";
+        export { bar } from "/module2?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=bar";
+        const mod = await import("/module3?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4");
+        import "/module4?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4";
       ",
 }
 `;
@@ -192,7 +192,7 @@ exports[`importMapReplace > Export variations: export all from a module 1`] = `
 {
   "code": "export * from "module";",
   "result": "/** importMapReplace */
-export * from "/module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled";",
+export * from "/module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4";",
 }
 `;
 
@@ -208,7 +208,7 @@ exports[`importMapReplace > Export variations: export with destructuring 1`] = `
 {
   "code": "export const { foo, bar } = await import("module");",
   "result": "/** importMapReplace */
-export const { foo, bar } = await import("/module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled");",
+export const { foo, bar } = await import("/module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4");",
 }
 `;
 
@@ -216,7 +216,7 @@ exports[`importMapReplace > Export variations: export with rename 1`] = `
 {
   "code": "export { foo as default } from "module";",
   "result": "/** importMapReplace */
-export { foo as default } from "/module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=foo";",
+export { foo as default } from "/module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=foo";",
 }
 `;
 
@@ -224,7 +224,7 @@ exports[`importMapReplace > Export variations: import with export 1`] = `
 {
   "code": "export { foo } from "bar";",
   "result": "/** importMapReplace */
-export { foo } from "/bar?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=foo";",
+export { foo } from "/bar?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=foo";",
 }
 `;
 
@@ -232,7 +232,7 @@ exports[`importMapReplace > Export variations: multiple exports 1`] = `
 {
   "code": "export { foo, bar as default, baz as customName } from "module";",
   "result": "/** importMapReplace */
-export { foo, bar as default, baz as customName } from "/module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=foo,bar,baz";",
+export { foo, bar as default, baz as customName } from "/module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=bar,baz,foo";",
 }
 `;
 
@@ -240,7 +240,7 @@ exports[`importMapReplace > Export variations: re-export default 1`] = `
 {
   "code": "export { default } from "module";",
   "result": "/** importMapReplace */
-export { default } from "/module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=default";",
+export { default } from "/module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=default";",
 }
 `;
 
@@ -248,7 +248,7 @@ exports[`importMapReplace > Import variations: mixed default and namespace impor
 {
   "code": "import Default, * as All from "my-module";",
   "result": "/** importMapReplace */
-import Default, * as All from "/my-module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled";",
+import Default, * as All from "/my-module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4";",
 }
 `;
 
@@ -256,7 +256,7 @@ exports[`importMapReplace > Import variations: namespace imports 1`] = `
 {
   "code": "import * as utils from "utils";",
   "result": "/** importMapReplace */
-import * as utils from "/utils?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled";",
+import * as utils from "/utils?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4";",
 }
 `;
 
@@ -264,7 +264,7 @@ exports[`importMapReplace > Import variations: side-effect only imports 1`] = `
 {
   "code": "import "polyfill";",
   "result": "/** importMapReplace */
-import "/polyfill?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled";",
+import "/polyfill?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4";",
 }
 `;
 
@@ -320,7 +320,7 @@ exports[`importMapReplace > Package imports: Vue package default import 1`] = `
 {
   "code": "import Vue from "vue";",
   "result": "/** importMapReplace */
-import Vue from "/vue?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled";",
+import Vue from "/vue?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4";",
 }
 `;
 
@@ -336,7 +336,7 @@ exports[`importMapReplace > Package imports: scoped packages 1`] = `
 {
   "code": "import { component } from "@scope/package/component";",
   "result": "/** importMapReplace */
-import { component } from "/@scope/package/component?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=component";",
+import { component } from "/@scope/package/component?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=component";",
 }
 `;
 
@@ -344,7 +344,7 @@ exports[`importMapReplace > Package imports: tilde aliases 1`] = `
 {
   "code": "import { button } from "~components/Button";",
   "result": "/** importMapReplace */
-import { button } from "/~components/Button?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=button";",
+import { button } from "/~components/Button?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=button";",
 }
 `;
 
@@ -424,7 +424,7 @@ exports[`importMapReplace > Special syntax: import with $-prefixed variables 1`]
 {
   "code": "import { $state, $effect } from "framework";",
   "result": "/** importMapReplace */
-import { $state, $effect } from "/framework?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=$state,$effect";",
+import { $state, $effect } from "/framework?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=$effect,$state";",
 }
 `;
 
@@ -432,7 +432,7 @@ exports[`importMapReplace > Special syntax: import with empty specifiers 1`] = `
 {
   "code": "import {} from "empty-module";",
   "result": "/** importMapReplace */
-import {} from "/empty-module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled";",
+import {} from "/empty-module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4";",
 }
 `;
 
@@ -442,7 +442,7 @@ exports[`importMapReplace > Special syntax: imports with comments 1`] = `
       import { foo } from "bar"; // End of line comment",
   "result": "/** importMapReplace */
 // This is a comment
-      import { foo } from "/bar?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=foo"; // End of line comment",
+      import { foo } from "/bar?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=foo"; // End of line comment",
 }
 `;
 
@@ -450,7 +450,7 @@ exports[`importMapReplace > Special syntax: imports with unicode characters 1`] 
 {
   "code": "import { π, λ, γ } from "math-symbols";",
   "result": "/** importMapReplace */
-import { π, λ, γ } from "/math-symbols?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=π,λ,γ";",
+import { π, λ, γ } from "/math-symbols?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=γ,λ,π";",
 }
 `;
 
@@ -458,7 +458,7 @@ exports[`importMapReplace > Special syntax: imports with unusual whitespace 1`] 
 {
   "code": "import    {    foo   ,   bar   }    from     "module"   ;",
   "result": "/** importMapReplace */
-import    {    foo   ,   bar   }    from     "/module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=foo,bar"   ;",
+import    {    foo   ,   bar   }    from     "/module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=bar,foo"   ;",
 }
 `;
 
@@ -466,7 +466,7 @@ exports[`importMapReplace > Special syntax: inline comments in import 1`] = `
 {
   "code": "import /* inline comment */ { foo } from "module";",
   "result": "/** importMapReplace */
-import /* inline comment */ { foo } from "/module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=foo";",
+import /* inline comment */ { foo } from "/module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=foo";",
 }
 `;
 
@@ -482,7 +482,7 @@ import {
         foo,
         bar,
         baz
-      } from "/module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=foo,bar,baz";",
+      } from "/module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=bar,baz,foo";",
 }
 `;
 
@@ -499,7 +499,7 @@ exports[`importMapReplace > Special syntax: single quotes in imports 1`] = `
 {
   "code": "import module from 'my-module';",
   "result": "/** importMapReplace */
-import module from "/my-module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled";",
+import module from "/my-module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4";",
 }
 `;
 
@@ -515,7 +515,7 @@ exports[`importMapReplace > URL imports: URLs with hash fragments 1`] = `
 {
   "code": "import { section } from "module#section";",
   "result": "/** importMapReplace */
-import { section } from "/module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=section#section";",
+import { section } from "/module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=section#section";",
 }
 `;
 
@@ -539,7 +539,7 @@ exports[`importMapReplace > URL imports: external lib 1`] = `
 {
   "code": "import { MoonIcon, SunIcon, PlusIcon, TrashIcon, PencilIcon } from "lucide-react";",
   "result": "/** importMapReplace */
-import { MoonIcon, SunIcon, PlusIcon, TrashIcon, PencilIcon } from "/lucide-react?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=MoonIcon,SunIcon,PlusIcon,TrashIcon,PencilIcon";",
+import { MoonIcon, SunIcon, PlusIcon, TrashIcon, PencilIcon } from "/lucide-react?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=MoonIcon,PencilIcon,PlusIcon,SunIcon,TrashIcon";",
 }
 `;
 
@@ -627,6 +627,6 @@ exports[`importMapReplace > should respect custom importMap 1`] = `
 {
   "code": "import { feature } from "custom-module";",
   "result": "/** importMapReplace */
-import { feature } from "/custom-module?bundle=true&external=react,react-dom,framer-motion,@emotion/react,@emotion/styled&exports=feature";",
+import { feature } from "/custom-module?bundle=true&external=react,react/jsx-runtime,react/jsx-dev-runtime,react-dom,react-dom/client,react-dom/server,framer-motion,@emotion/react,@emotion/react/jsx-runtime,@emotion/react/jsx-dev-runtime,@emotion/styled&deps=react@19.2.4,react-dom@19.2.4&exports=feature";",
 }
 `;

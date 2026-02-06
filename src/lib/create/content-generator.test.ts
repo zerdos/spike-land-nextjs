@@ -55,6 +55,10 @@ describe("content-generator", () => {
       expect(SYSTEM_PROMPT).toContain("BarChart3");
       expect(SYSTEM_PROMPT).toContain("Do NOT invent icon names");
     });
+
+    it("should limit icon imports per component", () => {
+      expect(SYSTEM_PROMPT).toContain("Limit icon imports to 6-8 icons maximum per component");
+    });
   });
 
   describe("buildUserPrompt", () => {
@@ -77,11 +81,13 @@ describe("content-generator", () => {
 
       const result = await generateAppContent(["test", "app"]);
 
-      expect(result).toEqual(mockResponse);
+      expect(result.content).toEqual(mockResponse);
+      expect(result.rawCode).toBe(mockResponse.code);
+      expect(result.error).toBeNull();
       expect(generateStructuredResponse).toHaveBeenCalledWith(expect.objectContaining({
         prompt: expect.stringContaining('"/create/test/app"'),
         systemPrompt: SYSTEM_PROMPT,
-        maxTokens: 16384,
+        maxTokens: 4096,
         temperature: 0.5,
       }));
     });
@@ -98,26 +104,56 @@ describe("content-generator", () => {
 
       const result = await generateAppContent(["test", "app"]);
 
-      expect(result?.code).toBe("export default function App() { return <div>Test</div> }");
+      expect(result.content?.code).toBe("export default function App() { return <div>Test</div> }");
+      expect(result.rawCode).toBe("export default function App() { return <div>Test</div> }");
     });
 
-    it("should return null on error", async () => {
+    it("should return error with null content on API error", async () => {
       (generateStructuredResponse as any).mockRejectedValue(new Error("AI Error"));
 
       const result = await generateAppContent(["test", "app"]);
 
-      expect(result).toBeNull();
+      expect(result.content).toBeNull();
+      expect(result.rawCode).toBeNull();
+      expect(result.error).toBe("AI Error");
     });
 
-    it("should return null if keys are missing", async () => {
-      // Missing code
+    it("should return error with null rawCode if keys are missing", async () => {
+      // Missing code, description, relatedApps
       (generateStructuredResponse as any).mockResolvedValue({
         title: "Test",
       });
 
       const result = await generateAppContent(["test"]);
 
-      expect(result).toBeNull();
+      expect(result.content).toBeNull();
+      expect(result.rawCode).toBeNull();
+      expect(result.error).toBeTruthy();
+    });
+
+    it("should preserve rawCode when Zod validation fails but code exists", async () => {
+      // Has code but missing title and description
+      (generateStructuredResponse as any).mockResolvedValue({
+        code: "export default function App() { return <div>Partial</div> }",
+      });
+
+      const result = await generateAppContent(["test"]);
+
+      expect(result.content).toBeNull();
+      expect(result.rawCode).toBe("export default function App() { return <div>Partial</div> }");
+      expect(result.error).toBeTruthy();
+    });
+
+    it("should clean markdown from rawCode even when validation fails", async () => {
+      (generateStructuredResponse as any).mockResolvedValue({
+        code: "```tsx\nexport default function App() { return <div>Raw</div> }\n```",
+      });
+
+      const result = await generateAppContent(["test"]);
+
+      expect(result.content).toBeNull();
+      expect(result.rawCode).toBe("export default function App() { return <div>Raw</div> }");
+      expect(result.error).toBeTruthy();
     });
   });
 });

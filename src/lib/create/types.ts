@@ -8,4 +8,4 @@ export type StreamEvent =
     description: string;
     relatedApps: string[];
   }
-  | { type: "error"; message: string; };
+  | { type: "error"; message: string; codespaceUrl?: string; };

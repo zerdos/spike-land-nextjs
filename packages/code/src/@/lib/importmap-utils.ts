@@ -51,6 +51,8 @@ const COMPONENT_PATTERNS = [
   "@/hooks",
 ];
 
+const MAX_EXPORTS_PER_URL = 8;
+
 export const EXTERNAL_DEPENDENCIES = [
   "react",
   "react/jsx-runtime",
@@ -130,6 +132,67 @@ function getExportsString(match: string): string {
     .join(",") || "";
 }
 
+function sortExports(param: string): string {
+  return param.split(",").filter(Boolean).sort().join(",");
+}
+
+function parseNamedExports(match: string): Array<{ name: string; alias?: string; }> {
+  const namedImports = match.match(/\{([^}]*)\}/s)?.[1];
+  if (!namedImports) return [];
+  return namedImports
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => {
+      const parts = s.split(/\s+as\s+/);
+      return { name: parts[0], alias: parts.length > 1 ? parts[1] : undefined };
+    });
+}
+
+function splitLargeImport(
+  match: string,
+  importPath: string,
+  keyword: "import" | "export",
+  importMapImports: ImportMap["imports"] = importMap.imports,
+): string | null {
+  const exports = parseNamedExports(match);
+  if (exports.length <= MAX_EXPORTS_PER_URL) return null;
+
+  // Detect default import (only for import statements)
+  let defaultImport: string | undefined;
+  if (keyword === "import") {
+    const defaultMatch = match.match(/import\s+([A-Za-z_$][\w$]*)\s*,\s*\{/);
+    if (defaultMatch) defaultImport = defaultMatch[1];
+  }
+
+  // Detect indentation from the original match
+  const indentMatch = match.match(/^(\s*)/);
+  const indent = indentMatch ? indentMatch[1] : "";
+
+  const chunks: Array<{ name: string; alias?: string; }>[] = [];
+  for (let i = 0; i < exports.length; i += MAX_EXPORTS_PER_URL) {
+    chunks.push(exports.slice(i, i + MAX_EXPORTS_PER_URL));
+  }
+
+  return chunks.map((chunk, idx) => {
+    const specifiers = chunk
+      .map((e) => e.alias ? `${e.name} as ${e.alias}` : e.name)
+      .join(", ");
+    const exportsParam = sortExports(chunk.map((e) => e.name).join(","));
+    const mappedPath = getMappedPath(importPath, exportsParam, true, importMapImports);
+
+    if (keyword === "export") {
+      return `${indent}export { ${specifiers} } from "${mappedPath}";`;
+    }
+
+    // First chunk gets default import if present
+    if (idx === 0 && defaultImport) {
+      return `${indent}import ${defaultImport}, { ${specifiers} } from "${mappedPath}";`;
+    }
+    return `${indent}import { ${specifiers} } from "${mappedPath}";`;
+  }).join("\n");
+}
+
 function getMappedPath(
   path: string,
   exportsParam = "",
@@ -200,7 +263,7 @@ function getMappedPath(
       "deps=react@19.2.4,react-dom@19.2.4",
     ];
 
-    if (exportsParam) params.push(`exports=${exportsParam}`);
+    if (exportsParam) params.push(`exports=${sortExports(exportsParam)}`);
 
     return `/${basePath}?${params.join("&")}${query}${hash}`;
   }
@@ -250,6 +313,10 @@ export function importMapReplace(
       const importPath = pathMatch[1];
       if (!importPath || !shouldTransformPath(importPath)) return match;
 
+      // Try splitting large imports
+      const split = splitLargeImport(match, importPath, "import");
+      if (split) return split;
+
       const exportsParam = getExportsString(match);
       const mappedPath = getMappedPath(importPath!, exportsParam, true);
       return match.replace(/['"][^'"]+['"]/, `"${mappedPath}"`);
@@ -267,6 +334,10 @@ export function importMapReplace(
 
       const exportPath = pathMatch[1];
       if (!exportPath || !shouldTransformPath(exportPath)) return match;
+
+      // Try splitting large exports
+      const split = splitLargeImport(match, exportPath, "export");
+      if (split) return split;
 
       const exportsParam = getExportsString(match);
       const mappedPath = getMappedPath(exportPath!, exportsParam, true);

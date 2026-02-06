@@ -2,7 +2,7 @@
 
 import { SignInButton } from "@/components/auth/sign-in-button";
 import { cn } from "@/lib/utils";
-import { Loader2, LogIn } from "lucide-react";
+import { ExternalLink, Loader2, LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
     "connecting",
   );
   const [error, setError] = useState<string | null>(null);
+  const [errorCodespaceUrl, setErrorCodespaceUrl] = useState<string | null>(null);
   const [isAuthError, setIsAuthError] = useState(false);
   const router = useRouter();
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -29,6 +30,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
     setStatus("connecting");
     setMessages([]);
     setError(null);
+    setErrorCodespaceUrl(null);
     setIsAuthError(false);
     hasAttemptedGeneration.current = true;
 
@@ -104,6 +106,9 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
               } else if (event.type === "error") {
                 setStatus("error");
                 setError(event.message);
+                if (event.codespaceUrl) {
+                  setErrorCodespaceUrl(event.codespaceUrl);
+                }
                 toast.error(`Generation failed: ${event.message}`);
               }
             } catch {
@@ -173,12 +178,25 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
         <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-6 max-w-md w-full text-center">
           <h3 className="text-xl font-bold text-destructive mb-2">Generation Failed</h3>
           <p className="text-muted-foreground mb-6">{error}</p>
-          <button
-            onClick={startStreaming}
-            className="px-6 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors"
-          >
-            Try Again
-          </button>
+          <div className="flex flex-col items-center gap-3">
+            <button
+              onClick={startStreaming}
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors"
+            >
+              Try Again
+            </button>
+            {errorCodespaceUrl && (
+              <a
+                href={errorCodespaceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                View generated code in codespace
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
+          </div>
         </div>
       </div>
     );

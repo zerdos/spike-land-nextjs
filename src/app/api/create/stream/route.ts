@@ -79,11 +79,11 @@ async function* generateStream(
   path: string[],
   userId: string,
 ): AsyncGenerator<StreamEvent> {
+  const codespaceId = generateCodespaceId(slug);
+  const codespaceUrl = `https://testing.spike.land/live/${codespaceId}/`;
+
   try {
     yield { type: "status", message: "Initializing app generation..." };
-
-    const codespaceId = generateCodespaceId(slug);
-    const codespaceUrl = `https://testing.spike.land/live/${codespaceId}/`;
 
     // 1. Mark as generating in DB
     // We need initial title/desc, use placeholders until we generate them
@@ -103,19 +103,34 @@ async function* generateStream(
     yield { type: "status", message: "Designing application logic..." };
 
     // This might take 10-20s
-    const generatedContent = await generateAppContent(path);
+    const { content, rawCode, error: genError } = await generateAppContent(path);
 
-    if (!generatedContent) {
-      throw new Error("Failed to generate content from AI");
+    // Determine the best code to push — prefer validated content, fall back to raw
+    const codeToPush = content?.code ?? rawCode;
+
+    if (!codeToPush) {
+      throw new Error(genError || "Failed to generate content from AI");
     }
 
     yield { type: "status", message: "Writing code..." };
 
-    // 3. Update Codespace
-    const updateResult = await updateCodespace(codespaceId, generatedContent.code);
+    // 3. Update Codespace with whatever code we have
+    const updateResult = await updateCodespace(codespaceId, codeToPush);
 
     if (!updateResult.success) {
       throw new Error(updateResult.error || "Failed to update codespace");
+    }
+
+    // If validation failed but we pushed raw code, report the error with codespace link
+    if (!content) {
+      logger.error(`App generation partially failed for ${slug}: ${genError}`);
+      await updateAppStatus(slug, CreatedAppStatus.FAILED);
+      yield {
+        type: "error",
+        message: genError || "Generated content failed validation",
+        codespaceUrl,
+      };
+      return;
     }
 
     // 4. Update DB as PUBLISHED
@@ -123,10 +138,10 @@ async function* generateStream(
 
     // Extract outgoing links if any found in code or use the suggestions
     // We prefer the explicit relatedApps from AI
-    const relatedLinks = generatedContent.relatedApps || [];
+    const relatedLinks = content.relatedApps || [];
 
     // Update the title/description with the generated ones
-    await updateAppContent(slug, generatedContent.title, generatedContent.description);
+    await updateAppContent(slug, content.title, content.description);
 
     await updateAppStatus(slug, CreatedAppStatus.PUBLISHED, relatedLinks);
 
@@ -134,8 +149,8 @@ async function* generateStream(
       type: "complete",
       slug,
       url: codespaceUrl,
-      title: generatedContent.title,
-      description: generatedContent.description,
+      title: content.title,
+      description: content.description,
       relatedApps: relatedLinks,
     };
   } catch (error) {
@@ -146,6 +161,7 @@ async function* generateStream(
     yield {
       type: "error",
       message: error instanceof Error ? error.message : "Generation failed",
+      codespaceUrl,
     };
   }
 }

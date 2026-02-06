@@ -15,6 +15,12 @@ const GeneratedAppSchema = z.object({
 
 export type GeneratedAppContent = z.infer<typeof GeneratedAppSchema>;
 
+export type GenerationResult = {
+  content: GeneratedAppContent | null;
+  rawCode: string | null;
+  error: string | null;
+};
+
 export const SYSTEM_PROMPT =
   `You are an expert React developer building polished, production-quality micro-apps.
 
@@ -105,6 +111,7 @@ export const SYSTEM_PROMPT =
 8. Keep state local — do not create React context for single-component apps
 9. No inline styles — use Tailwind classes exclusively
 10. Never use setTimeout/setInterval with functions that read React state — state will be stale. Pass computed values as arguments instead.
+11. Limit icon imports to 6-8 icons maximum per component. Prefer semantic alternatives (text labels, colors, shapes) over additional icons.
 
 Before writing code, mentally plan: key user interactions, state variables, visual hierarchy, and which shadcn/ui components to use.`;
 
@@ -123,9 +130,13 @@ Respond with JSON: { title, description, code, relatedApps }
 - relatedApps: 3-5 related paths without "/create/" prefix`;
 }
 
+function cleanCode(code: string): string {
+  return code.replace(/^```tsx?/, "").replace(/^```/, "").replace(/```$/, "").trim();
+}
+
 export async function generateAppContent(
   path: string[],
-): Promise<GeneratedAppContent | null> {
+): Promise<GenerationResult> {
   const topic = path.join("/");
 
   try {
@@ -136,17 +147,30 @@ export async function generateAppContent(
       temperature: 0.5,
     });
 
-    // Gemini sometimes returns markdown code blocks in the 'code' string even if asked not to.
-    // Clean it up just in case.
+    // Extract rawCode before validation so it's available even if other fields fail
+    const resultObj = result as Record<string, unknown> | null;
+    const rawCode = resultObj && typeof resultObj === "object" && "code" in resultObj &&
+        typeof resultObj["code"] === "string"
+      ? cleanCode(resultObj["code"])
+      : null;
+
+    // Clean the code field in-place for validation
     if (result && result.code) {
-      result.code = result.code.replace(/^```tsx?/, "").replace(/^```/, "").replace(/```$/, "")
-        .trim();
+      result.code = cleanCode(result.code);
     }
 
-    const parsedResult = GeneratedAppSchema.parse(result);
-    return parsedResult;
+    const parsed = GeneratedAppSchema.safeParse(result);
+    if (parsed.success) {
+      return { content: parsed.data, rawCode: parsed.data.code, error: null };
+    }
+
+    // Validation failed but we may have raw code
+    const errorMsg = parsed.error.issues.map((i) => i.message).join(", ");
+    logger.error("Generated content failed validation:", { error: errorMsg });
+    return { content: null, rawCode, error: errorMsg };
   } catch (error) {
     logger.error("Failed to generate app content:", { error });
-    return null;
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return { content: null, rawCode: null, error: message };
   }
 }

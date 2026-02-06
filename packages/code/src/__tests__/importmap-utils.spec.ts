@@ -171,6 +171,85 @@ describe("importMapReplace", () => {
     }
   }
 
+  // Import splitting tests
+  describe("Import splitting", () => {
+    it("should split >8 named exports into chunks", () => {
+      const code = `import { A, B, C, D, E, F, G, H, I, J } from "big-lib";`;
+      const result = importMapReplace(code);
+      // Should produce two import lines
+      const lines = result.split("\n").filter((l) => l.includes("import {"));
+      expect(lines.length).toBe(2);
+      // Each URL should have ≤8 exports
+      for (const line of lines) {
+        const exportsMatch = line.match(/exports=([^&"]+)/);
+        if (exportsMatch) {
+          expect(exportsMatch[1].split(",").length).toBeLessThanOrEqual(8);
+        }
+      }
+    });
+
+    it("should not split exactly 8 exports", () => {
+      const code = `import { A, B, C, D, E, F, G, H } from "exact-lib";`;
+      const result = importMapReplace(code);
+      const lines = result.split("\n").filter((l) => l.includes("import {"));
+      expect(lines.length).toBe(1);
+    });
+
+    it("should not split <8 exports", () => {
+      const code = `import { A, B, C } from "small-lib";`;
+      const result = importMapReplace(code);
+      const lines = result.split("\n").filter((l) => l.includes("import {"));
+      expect(lines.length).toBe(1);
+    });
+
+    it("should preserve aliases across split", () => {
+      const code = `import { A as a1, B as b1, C, D, E, F, G, H, I as i1 } from "alias-lib";`;
+      const result = importMapReplace(code);
+      expect(result).toContain("A as a1");
+      expect(result).toContain("I as i1");
+      // Exports param should use original names, not aliases
+      expect(result).not.toContain("exports=a1");
+      expect(result).not.toContain("exports=i1");
+    });
+
+    it("should put default import on first chunk only", () => {
+      const code = `import Default, { A, B, C, D, E, F, G, H, I } from "default-lib";`;
+      const result = importMapReplace(code);
+      const lines = result.split("\n").filter((l) => l.includes("from"));
+      expect(lines.length).toBe(2);
+      // First line has default
+      expect(lines[0]).toContain("import Default,");
+      // Second line does not
+      expect(lines[1]).not.toContain("Default");
+      expect(lines[1]).toMatch(/^.*import \{/);
+    });
+
+    it("should split large re-exports", () => {
+      const code = `export { A, B, C, D, E, F, G, H, I, J } from "reexport-lib";`;
+      const result = importMapReplace(code);
+      const lines = result.split("\n").filter((l) => l.includes("export {"));
+      expect(lines.length).toBe(2);
+      for (const line of lines) {
+        const exportsMatch = line.match(/exports=([^&"]+)/);
+        if (exportsMatch) {
+          expect(exportsMatch[1].split(",").length).toBeLessThanOrEqual(8);
+        }
+      }
+    });
+
+    it("should sort exports for cache normalization", () => {
+      const codeZA = `import { Z, A, M } from "sort-lib";`;
+      const codeAZ = `import { A, M, Z } from "sort-lib";`;
+      const resultZA = importMapReplace(codeZA);
+      const resultAZ = importMapReplace(codeAZ);
+      // Both should produce the same exports= param (A,M,Z)
+      const urlZA = resultZA.match(/exports=([^&"]+)/)?.[1];
+      const urlAZ = resultAZ.match(/exports=([^&"]+)/)?.[1];
+      expect(urlZA).toBe("A,M,Z");
+      expect(urlAZ).toBe("A,M,Z");
+    });
+  });
+
   // Test with custom importMap
   it("should respect custom importMap", () => {
     const code = `import { feature } from "custom-module";`;

@@ -19,6 +19,7 @@ export const CODESPACE_SYSTEM_PROMPT =
 5. npm packages auto-transform to CDN URLs
 6. Read code FIRST before any modifications (or use provided code if given)
 7. Never use setTimeout/setInterval with functions that read React state — the closure captures stale values. Pass computed values as arguments instead.
+8. Limit icon imports to 6-8 icons maximum per component. Prefer semantic alternatives (text labels, colors, shapes) over additional icons.
 
 ## CODE FORMAT
 The codespace expects a single default export:
