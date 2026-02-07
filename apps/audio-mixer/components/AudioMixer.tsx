@@ -7,18 +7,20 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   Check,
+  Circle,
   Download,
-  Keyboard,
+  HelpCircle,
   Loader2,
   Pause,
   Play,
   Plus,
-  RefreshCw,
+  SkipBack,
+  SkipForward,
   Square,
   Volume2,
 } from "lucide-react";
@@ -685,167 +687,172 @@ export function AudioMixer() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-page text-white pt-24 px-6 pb-12 relative overflow-hidden">
-      {/* Background blobs for depth */}
-      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-5%] left-[-5%] w-[30%] h-[30%] bg-secondary/10 blur-[100px] rounded-full pointer-events-none" />
-
-      <div className="max-w-6xl mx-auto space-y-8 relative z-10">
-        {/* Header */}
-        <div className="text-center space-y-3">
-          <div className="flex items-center justify-center gap-4">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gradient-primary py-1">
-              Audio Mixer
-            </h1>
-            {/* Save Status Indicator */}
+    <TooltipProvider delayDuration={300}>
+      <div className="h-screen flex flex-col overflow-hidden bg-gradient-page text-white">
+        {/* Top Bar - 36px */}
+        <div className="h-9 flex-shrink-0 flex items-center justify-between px-4 bg-black/40 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-bold text-white/80">Audio Mixer</span>
+            {/* Save Status */}
             {persistenceState.isSaving && (
               <Badge
                 variant="outline"
-                className="flex items-center gap-1.5 glass-1 border-white/10 text-gray-400"
+                className="flex items-center gap-1 h-5 px-2 text-[10px] glass-1 border-white/10 text-gray-400"
               >
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Saving...</span>
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Saving
               </Badge>
             )}
             {!persistenceState.isSaving && persistenceState.lastSavedAt &&
               !persistenceState.hasUnsavedChanges && (
               <Badge
                 variant="outline"
-                className="flex items-center gap-1.5 glass-1 border-white/10 text-green-400"
+                className="flex items-center gap-1 h-5 px-2 text-[10px] glass-1 border-white/10 text-green-400"
               >
-                <Check className="w-3.5 h-3.5" />
-                <span>Saved</span>
+                <Check className="w-3 h-3" />
+                Saved
               </Badge>
             )}
-            {!persistenceState.isSaving && persistenceState.hasUnsavedChanges &&
-              (
-                <Badge
-                  variant="outline"
-                  className="glass-1 border-white/10 text-yellow-400"
-                >
-                  Unsaved changes
-                </Badge>
-              )}
+            {!persistenceState.isSaving && persistenceState.hasUnsavedChanges && (
+              <Badge
+                variant="outline"
+                className="h-5 px-2 text-[10px] glass-1 border-white/10 text-yellow-400"
+              >
+                Unsaved
+              </Badge>
+            )}
           </div>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Professional multi-track layering and recording studio in your browser
-          </p>
+          <div className="flex items-center gap-4">
+            {/* Master Volume */}
+            <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-lg">
+              <Volume2 className="w-4 h-4 text-primary" />
+              <div className="w-20">
+                <Slider
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={[masterVolume]}
+                  onValueChange={(vals) => setMasterVolume(vals[0] ?? 0.8)}
+                  aria-label="Master volume"
+                />
+              </div>
+              <span className="text-[10px] font-mono text-primary/80 w-8">
+                {Math.round(masterVolume * 100)}%
+              </span>
+            </div>
+            {/* Recording Indicator */}
+            {recording.isRecording && (
+              <div className="flex items-center gap-2 text-red-400">
+                <Circle className="w-3 h-3 fill-current animate-pulse" />
+                <span className="text-xs font-mono">REC</span>
+              </div>
+            )}
+            {/* Shortcuts */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setShowShortcuts(true)}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+                  aria-label="Keyboard Shortcuts"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Keyboard Shortcuts (?)</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
-        {/* Master Controls */}
-        <Card className="glass-1 glass-edge border-none p-6 space-y-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-xl font-bold font-heading">Master Station</h2>
-              <p className="text-sm text-muted-foreground italic">
-                Global output & monitoring
-              </p>
-            </div>
-            <div className="flex items-center gap-6">
-              {/* Keyboard shortcuts button */}
-              <button
-                onClick={() => setShowShortcuts(true)}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 hover:text-white glass-0 hover:glass-1 rounded-xl transition-all border border-white/5 active:scale-95"
-                title="Keyboard shortcuts (?)"
-              >
-                <Keyboard className="w-4 h-4" />
-                <span className="hidden sm:inline">Shortcuts</span>
-                <kbd className="hidden sm:inline px-1.5 py-0.5 bg-white/10 rounded text-xs font-mono">
-                  ?
-                </kbd>
-              </button>
-
-              {/* Master Volume */}
-              <div className="flex items-center gap-3 bg-white/5 p-2 px-4 rounded-2xl glass-edge">
-                <Volume2 className="w-5 h-5 text-primary" />
-                <div className="w-32">
-                  <Slider
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={[masterVolume]}
-                    onValueChange={(vals) => setMasterVolume(vals[0] ?? 0.8)}
-                    aria-label="Master volume"
-                  />
-                </div>
-                <span className="text-primary/90 text-sm font-mono w-10 text-right">
-                  {Math.round(masterVolume * 100)}%
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="h-px bg-white/5 mx-[-1.5rem]" />
-
+        {/* Transport Bar - 40px */}
+        <div className="h-10 flex-shrink-0 flex items-center gap-3 px-4 bg-black/20 border-b border-white/5">
           {/* Transport Controls */}
-          <div className="flex flex-wrap items-center gap-4">
-            <Button
-              size="lg"
-              variant="default"
-              onClick={isPlaying ? handleStopAll : handlePlayAll}
-              disabled={trackManager.tracks.length === 0}
-              className={cn(
-                "rounded-xl font-bold min-w-[140px] transition-all duration-300",
-                isPlaying
-                  ? "bg-amber-600 hover:bg-amber-700 shadow-glow-primary"
-                  : "bg-emerald-600 hover:bg-emerald-700 shadow-glow-cyan-sm",
-              )}
-            >
-              {isPlaying
-                ? (
-                  <>
-                    <Pause className="w-5 h-5 mr-2" />
-                    Pause Mix
-                  </>
-                )
-                : (
-                  <>
-                    <Play className="w-5 h-5 mr-2" />
-                    Play Session
-                  </>
-                )}
-            </Button>
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handlePlayheadSeek(0)}
+                  disabled={trackManager.tracks.length === 0}
+                  className="h-8 w-8 p-0 rounded-lg hover:bg-white/10"
+                >
+                  <SkipBack className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Go to Start (Home)</TooltipContent>
+            </Tooltip>
 
-            <Button
-              size="lg"
-              variant="secondary"
-              onClick={handleStopAll}
-              disabled={trackManager.tracks.length === 0}
-              className="rounded-xl glass-2 border-white/10 text-white font-semibold hover:bg-white/10 transition-all active:scale-95"
-            >
-              <Square className="w-5 h-5 mr-2" />
-              Stop
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant={isPlaying ? "default" : "ghost"}
+                  onClick={handleTogglePlayPause}
+                  disabled={trackManager.tracks.length === 0}
+                  className={cn(
+                    "h-8 w-8 p-0 rounded-lg",
+                    isPlaying ? "bg-emerald-600 hover:bg-emerald-700" : "hover:bg-white/10",
+                  )}
+                >
+                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {isPlaying ? "Pause (Space)" : "Play (Space)"}
+              </TooltipContent>
+            </Tooltip>
 
-            <div className="flex-1" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleStopAll}
+                  disabled={trackManager.tracks.length === 0}
+                  className="h-8 w-8 p-0 rounded-lg hover:bg-white/10"
+                >
+                  <Square className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Stop (S)</TooltipContent>
+            </Tooltip>
 
-            <Button
-              size="lg"
-              variant="default"
-              onClick={handleExport}
-              disabled={trackManager.tracks.length === 0 || isExporting}
-              className="rounded-xl bg-purple-600 hover:bg-purple-700 shadow-glow-fuchsia font-bold min-w-[140px] text-white"
-            >
-              {isExporting
-                ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                )
-                : (
-                  <>
-                    <Download className="w-5 h-5 mr-2" />
-                    Export Mix
-                  </>
-                )}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    const maxTime = Math.max(
+                      ...trackManager.tracks.map((t) => {
+                        const effectiveTrimEnd = t.trimEnd > 0 ? t.trimEnd : t.duration;
+                        return (t.position ?? t.delay ?? 0) + effectiveTrimEnd - t.trimStart;
+                      }),
+                      0,
+                    );
+                    handlePlayheadSeek(maxTime);
+                  }}
+                  disabled={trackManager.tracks.length === 0}
+                  className="h-8 w-8 p-0 rounded-lg hover:bg-white/10"
+                >
+                  <SkipForward className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Go to End (End)</TooltipContent>
+            </Tooltip>
           </div>
-        </Card>
 
-        {/* Add Track Controls */}
-        <div className="flex items-center gap-4 p-2 bg-white/5 rounded-2xl glass-edge backdrop-blur-sm w-fit">
-          {/* File Upload */}
+          {/* Playhead Time */}
+          <div className="px-3 py-1 bg-black/40 rounded-lg font-mono text-sm text-primary">
+            {Math.floor(timeline.state.playheadTime / 60)}:{String(
+              Math.floor(timeline.state.playheadTime % 60),
+            ).padStart(2, "0")}.{String(Math.floor((timeline.state.playheadTime % 1) * 10))
+              .padStart(1, "0")}
+          </div>
+
+          <div className="flex-1" />
+
+          {/* Import Button */}
           <input
             ref={fileInputRef}
             type="file"
@@ -855,18 +862,25 @@ export function AudioMixer() {
             className="hidden"
             id="audio-file-input"
           />
-          <Button
-            asChild
-            variant="ghost"
-            className="rounded-xl glass-2 border-white/10 text-white hover:bg-white/10 cursor-pointer h-12 px-6 font-semibold"
-          >
-            <label htmlFor="audio-file-input">
-              <Plus className="w-5 h-5 mr-2 text-cyan-400" />
-              Import Tracks
-            </label>
-          </Button>
-
-          <div className="w-px h-8 bg-white/10 mx-1" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                asChild
+                size="sm"
+                variant="ghost"
+                className="h-8 px-3 rounded-lg hover:bg-white/10"
+              >
+                <label
+                  htmlFor="audio-file-input"
+                  className="cursor-pointer flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4 text-cyan-400" />
+                  Import
+                </label>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Import Tracks (⌘O)</TooltipContent>
+          </Tooltip>
 
           {/* Recording */}
           <RecordingPanel
@@ -880,81 +894,71 @@ export function AudioMixer() {
             onStop={handleStopRecording}
             onCancel={recording.cancelRecording}
           />
+
+          {/* Export */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleExport}
+                disabled={trackManager.tracks.length === 0 || isExporting}
+                className="h-8 px-3 rounded-lg hover:bg-white/10"
+              >
+                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                  <>
+                    <Download className="w-4 h-4 mr-1.5 text-purple-400" />
+                    Export
+                  </>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Export Mix (⌘E)</TooltipContent>
+          </Tooltip>
+
+          {/* Track Count */}
+          <Badge variant="secondary" className="h-6 px-2 text-xs glass-1 border-white/10">
+            {trackManager.tracks.length} {trackManager.tracks.length === 1 ? "Track" : "Tracks"}
+          </Badge>
         </div>
 
-        {/* Timeline */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold font-heading">
-              Studio Timeline
-            </h2>
-            <Badge
-              variant="secondary"
-              className="glass-1 border-white/10 px-3 py-1 text-sm font-light"
-            >
-              {trackManager.tracks.length} {trackManager.tracks.length === 1 ? "Track" : "Tracks"}
-              {" "}
-              Active
-            </Badge>
-          </div>
-
-          <Card className="glass-0 glass-edge border-none overflow-hidden">
-            <Timeline
-              tracks={trackManager.tracks}
-              playheadTime={timeline.state.playheadTime}
-              isPlaying={isPlaying}
-              zoom={timeline.state.zoom}
-              snapEnabled={timeline.state.snapEnabled}
-              snapGrid={timeline.state.snapGrid}
-              selectedTrackId={timeline.state.selectedTrackId}
-              onTrackPositionChange={trackManager.setPosition}
-              onPlayheadSeek={handlePlayheadSeek}
-              onZoomChange={timeline.setZoom}
-              onSnapToggle={timeline.setSnapEnabled}
-              onSnapGridChange={timeline.setSnapGrid}
-              onSelectTrack={timeline.setSelectedTrackId}
-              onVolumeChange={trackManager.setVolume}
-              onMuteToggle={trackManager.toggleMute}
-              onSoloToggle={trackManager.toggleSolo}
-              onTrimChange={trackManager.setTrim}
-              onRemoveTrack={trackManager.removeTrack}
-              onScrubAudio={handleScrubAudio}
-            />
-          </Card>
+        {/* Timeline - fills remaining space */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <Timeline
+            tracks={trackManager.tracks}
+            playheadTime={timeline.state.playheadTime}
+            isPlaying={isPlaying}
+            zoom={timeline.state.zoom}
+            snapEnabled={timeline.state.snapEnabled}
+            snapGrid={timeline.state.snapGrid}
+            selectedTrackId={timeline.state.selectedTrackId}
+            onTrackPositionChange={trackManager.setPosition}
+            onPlayheadSeek={handlePlayheadSeek}
+            onZoomChange={timeline.setZoom}
+            onSnapToggle={timeline.setSnapEnabled}
+            onSnapGridChange={timeline.setSnapGrid}
+            onSelectTrack={timeline.setSelectedTrackId}
+            onVolumeChange={trackManager.setVolume}
+            onMuteToggle={trackManager.toggleMute}
+            onSoloToggle={trackManager.toggleSolo}
+            onTrimChange={trackManager.setTrim}
+            onRemoveTrack={trackManager.removeTrack}
+            onScrubAudio={handleScrubAudio}
+            isRecording={recording.isRecording}
+            recordingDuration={recording.duration}
+            recordingStartPosition={0}
+          />
         </div>
 
-        {/* Clear All & New Project */}
-        {trackManager.tracks.length > 0 && (
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={trackManager.clearTracks}
-              className="text-red-400 hover:text-red-300 text-sm transition-colors"
-            >
-              Clear All Tracks
-            </button>
-            <span className="text-gray-600">|</span>
-            <button
-              onClick={() => {
-                trackManager.clearTracks();
-                persistenceActions.createNewProject();
-              }}
-              className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm transition-colors"
-            >
-              <RefreshCw className="w-3 h-3" />
-              New Project
-            </button>
-          </div>
-        )}
+        {/* Keyboard Shortcuts Panel */}
+        <KeyboardShortcutsPanel
+          isOpen={showShortcuts}
+          onClose={() => setShowShortcuts(false)}
+        />
+
+        {/* Shortcut Toast */}
+        <ShortcutToast action={shortcutToast} />
       </div>
-
-      {/* Keyboard Shortcuts Panel */}
-      <KeyboardShortcutsPanel
-        isOpen={showShortcuts}
-        onClose={() => setShowShortcuts(false)}
-      />
-
-      {/* Shortcut Toast */}
-      <ShortcutToast action={shortcutToast} />
-    </div>
+    </TooltipProvider>
   );
 }

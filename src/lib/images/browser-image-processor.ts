@@ -13,6 +13,7 @@ import { type AspectRatio, detectAspectRatio, getAspectRatioValue } from "@/lib/
 
 // Constants
 export const MAX_DIMENSION = 4096;
+export const DEFAULT_BASE_DIMENSION = 1024;
 export const WEBP_QUALITY = 0.8;
 export const FALLBACK_FORMAT = "image/jpeg";
 export const FALLBACK_QUALITY = 0.85;
@@ -30,6 +31,7 @@ export interface ProcessedImage {
 
 interface ProcessingOptions {
   maxDimension?: number;
+  baseDimension?: number;
   quality?: number;
   forceAspectRatio?: AspectRatio;
 }
@@ -114,6 +116,28 @@ export function calculateFinalDimensions(
 }
 
 /**
+ * Calculate dimensions so that width × height ≈ baseDimension²,
+ * preserving the given aspect ratio. Does not upscale.
+ */
+export function calculateDimensionsForArea(
+  aspectRatio: number,
+  baseDimension: number,
+  sourceWidth: number,
+  sourceHeight: number,
+): { width: number; height: number; } {
+  const targetArea = baseDimension * baseDimension;
+  const sourceArea = sourceWidth * sourceHeight;
+
+  if (sourceArea <= targetArea) {
+    return { width: sourceWidth, height: sourceHeight };
+  }
+
+  const width = Math.round(Math.sqrt(targetArea * aspectRatio));
+  const height = Math.round(Math.sqrt(targetArea / aspectRatio));
+  return { width, height };
+}
+
+/**
  * Process an image file for upload
  *
  * @param file - Image file to process
@@ -125,7 +149,8 @@ export async function processImageForUpload(
   options: ProcessingOptions = {},
 ): Promise<ProcessedImage> {
   const {
-    maxDimension = MAX_DIMENSION,
+    maxDimension,
+    baseDimension = DEFAULT_BASE_DIMENSION,
     quality = WEBP_QUALITY,
     forceAspectRatio,
   } = options;
@@ -152,11 +177,14 @@ export async function processImageForUpload(
         );
 
         // Calculate final dimensions after resize
-        const { width: finalWidth, height: finalHeight } = calculateFinalDimensions(
-          cropWidth,
-          cropHeight,
-          maxDimension,
-        );
+        const { width: finalWidth, height: finalHeight } = maxDimension !== undefined
+          ? calculateFinalDimensions(cropWidth, cropHeight, maxDimension)
+          : calculateDimensionsForArea(
+            cropWidth / cropHeight,
+            baseDimension,
+            cropWidth,
+            cropHeight,
+          );
 
         // Create canvas and apply crop + resize
         const canvas = document.createElement("canvas");

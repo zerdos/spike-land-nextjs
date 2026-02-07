@@ -41,7 +41,7 @@ export function TimelineControls({
   };
 
   return (
-    <div className="flex items-center gap-6 px-6 py-3 bg-black/20 backdrop-blur-sm border-b border-white/5">
+    <div className="flex items-center gap-4 px-4 py-1.5 bg-black/20 backdrop-blur-sm border-b border-white/5">
       {/* Zoom controls */}
       <div className="flex items-center gap-3">
         <button
