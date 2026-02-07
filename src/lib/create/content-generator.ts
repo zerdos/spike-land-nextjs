@@ -110,6 +110,21 @@ export const SYSTEM_PROMPT =
 10. Never use setTimeout/setInterval with functions that read React state — state will be stale. Pass computed values as arguments instead.
 11. Limit icon imports to 6-8 icons maximum per component. Prefer semantic alternatives (text labels, colors, shapes) over additional icons.
 
+## URL PARAMETER SUPPORT
+The component MUST support receiving initial data via URL search parameters:
+1. Read URL params at component top level:
+   const params = new URLSearchParams(window.location.search);
+2. Parse param values (JSON for complex data, strings for simple):
+   const initialItems = (() => { try { return JSON.parse(params.get("items") || "null"); } catch { return null; } })();
+3. Use parsed values as initial state with sensible fallback defaults:
+   const [items, setItems] = useState(initialItems ?? DEFAULT_ITEMS);
+4. Sync state back to URL so the link stays shareable:
+   useEffect(() => { const url = new URL(window.location.href); url.searchParams.set("items", JSON.stringify(items)); window.history.replaceState({}, "", url); }, [items]);
+5. Keep param names short (e.g., "items", "title", "view", "config").
+6. Handle malformed/missing params gracefully — never crash on bad input.
+7. Do NOT use param name "room" — it is reserved by the runtime.
+8. Add a comment at the top listing accepted URL params.
+
 Before writing code, mentally plan: key user interactions, state variables, visual hierarchy, and which shadcn/ui components to use.`;
 
 export function buildUserPrompt(topic: string): string {
@@ -121,6 +136,8 @@ Interpret this path as user intent. Examples:
 - "tools/calculator" → Beautiful scientific calculator
 - "finance/mortgage" → Mortgage calculator with amortization chart
 - "fitness/timer" → Workout interval timer with presets
+
+IMPORTANT: The component must read URL search params (via new URLSearchParams(window.location.search)) as initial/default values. When state changes, sync back to URL with window.history.replaceState so the URL is always shareable. Provide sensible defaults when no params are present.
 
 Respond with JSON: { title, description, code, relatedApps }
 - code: raw string (no markdown fences), single default-exported React component
