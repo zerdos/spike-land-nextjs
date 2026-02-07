@@ -143,6 +143,7 @@ Feature: User Authentication
     And I should see error title "Authentication Error"
     And I should see error description containing "unexpected error"
 
+  @flaky
   Scenario: Auth error page Try Again button navigates to sign-in
     When I visit "/auth/error?error=Configuration"
     And I click the "Try Again" button

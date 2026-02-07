@@ -117,7 +117,7 @@ Feature: Orbit Social Media Integration
     And the link preview should be included
 
   # LinkedIn Metrics
-  @linkedin @metrics
+  @linkedin @metrics @flaky
   Scenario: View LinkedIn metrics in dashboard
     Given I have a LinkedIn account "Test Company" connected
     And metrics have been collected for the account

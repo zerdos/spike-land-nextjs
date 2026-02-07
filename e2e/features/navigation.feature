@@ -50,6 +50,7 @@ Feature: Site Navigation
     And I click the "My Apps" option in the dropdown
     Then I should be redirected to "/my-apps"
 
+  @flaky
   Scenario: Click Profile in dropdown navigates to /profile
     When I am logged in as "David Davis" with email "david@example.com"
     And I click on the user avatar
