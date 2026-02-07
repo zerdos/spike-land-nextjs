@@ -7730,7 +7730,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@spike-npm-land/code@npm:0.9.56, @spike-npm-land/code@workspace:packages/code":
+"@spike-npm-land/code@npm:0.9.57, @spike-npm-land/code@workspace:packages/code":
   version: 0.0.0-use.local
   resolution: "@spike-npm-land/code@workspace:packages/code"
   dependencies:
@@ -7929,7 +7929,7 @@ __metadata:
     "@eslint/js": "npm:10.0.1"
     "@rollup/plugin-commonjs": "npm:29.0.0"
     "@rollup/plugin-node-resolve": "npm:16.0.3"
-    "@spike-npm-land/code": "npm:0.9.56"
+    "@spike-npm-land/code": "npm:0.9.57"
     "@spike-npm-land/transpile": "npm:0.9.56"
     "@types/mime-db": "npm:1.43.6"
     "@types/mime-types": "npm:3.0.1"
@@ -7976,7 +7976,7 @@ __metadata:
   resolution: "@spike-npm-land/transpile@workspace:packages/js.spike.land"
   dependencies:
     "@cloudflare/kv-asset-handler": "npm:0.4.2"
-    "@spike-npm-land/code": "npm:0.9.56"
+    "@spike-npm-land/code": "npm:0.9.57"
     "@vitest/runner": "npm:4.0.18"
     "@vitest/snapshot": "npm:4.0.18"
     esbuild-wasm: "npm:0.27.3"
