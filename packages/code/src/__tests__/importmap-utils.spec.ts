@@ -2,6 +2,10 @@ import { importMapReplace } from "@/lib/importmap-utils";
 import { describe, expect, it } from "vitest";
 
 // SNAPSHOT_MISMATCH: Snapshots need update due to 'recharts' added to external dependencies
+// SKIP REASON: Snapshots need update due to 'recharts' added to external dependencies
+// CATEGORY: environment
+// TRACKING: #1113
+// ACTION: fix
 describe.skip("importMapReplace", () => {
   const scenarios = {
     // Basic imports
