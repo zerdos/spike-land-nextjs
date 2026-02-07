@@ -994,8 +994,10 @@ export async function getWorkflowMetrics(
   });
 
   const reviewedDrafts = drafts.filter((d) => d.reviewedAt);
-  const approvedDrafts = drafts.filter((d) => d.status === "APPROVED" || d.status === "SENT");
-  const rejectedDrafts = drafts.filter((d) => d.status === "REJECTED");
+  const approvedDrafts = reviewedDrafts.filter((d) =>
+    d.status === "APPROVED" || d.status === "SENT"
+  );
+  const rejectedDrafts = reviewedDrafts.filter((d) => d.status === "REJECTED");
   const sentDrafts = drafts.filter((d) => d.status === "SENT");
   const failedDrafts = drafts.filter((d) => d.status === "FAILED");
   const editedDrafts = drafts.filter((d) => d.editHistory.length > 0);
