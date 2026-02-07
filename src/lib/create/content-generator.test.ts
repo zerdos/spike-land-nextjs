@@ -69,12 +69,25 @@ describe("content-generator", () => {
     it("should limit icon imports per component", () => {
       expect(SYSTEM_PROMPT).toContain("Limit icon imports to 6-8 icons maximum per component");
     });
+
+    it("should contain URL parameter support instructions", () => {
+      expect(SYSTEM_PROMPT).toContain("URL PARAMETER SUPPORT");
+      expect(SYSTEM_PROMPT).toContain("URLSearchParams(window.location.search)");
+      expect(SYSTEM_PROMPT).toContain("replaceState");
+      expect(SYSTEM_PROMPT).toContain('Do NOT use param name "room"');
+    });
   });
 
   describe("buildUserPrompt", () => {
     it("should include the topic in the prompt", () => {
       const prompt = buildUserPrompt("games/tetris");
       expect(prompt).toContain('"/create/games/tetris"');
+    });
+
+    it("should instruct URL param awareness", () => {
+      const prompt = buildUserPrompt("tools/dashboard");
+      expect(prompt).toContain("URL search params");
+      expect(prompt).toContain("replaceState");
     });
   });
 

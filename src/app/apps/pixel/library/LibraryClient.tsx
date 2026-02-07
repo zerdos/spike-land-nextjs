@@ -38,9 +38,11 @@ export function LibraryClient() {
     fetchLibrary();
   }, [fetchLibrary]);
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-  };
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  }, []);
 
   const deleteSelected = async () => {
     if (!confirm(`Delete ${selectedIds.length} images? This cannot be undone.`)) return;
