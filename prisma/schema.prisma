@@ -3432,6 +3432,7 @@ model AbTest {
   status            AbTestStatus    @default(DRAFT)
   winnerVariantId   String?
   significanceLevel Float           @default(0.95)
+  results           Json?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   variants          AbTestVariant[]
@@ -3444,6 +3445,7 @@ model AbTestVariant {
   abTestId        String
   name            String
   splitPercentage Float
+  isControl       Boolean        @default(false)
   abTest          AbTest         @relation(fields: [abTestId], references: [id], onDelete: Cascade)
   results         AbTestResult[]
 
