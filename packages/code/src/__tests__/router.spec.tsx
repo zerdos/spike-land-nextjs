@@ -12,6 +12,13 @@ vi.mock("@/services/ServiceWorkerManager", () => ({
   initializeApp: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("workbox-window", () => ({
+  Workbox: class {
+    register = vi.fn().mockResolvedValue(undefined);
+    addEventListener = vi.fn();
+  },
+}));
+
 vi.mock("@/hooks/use-code-space", () => ({
   getCodeSpace: vi.fn().mockReturnValue("test-space"),
 }));
