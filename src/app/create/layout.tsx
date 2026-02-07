@@ -8,7 +8,7 @@ export default function CreateLayout({
 }) {
   return (
     <FeedbackProvider>
-      <div className="pt-16 min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-background">
         <main className="flex-1">
           {children}
         </main>
