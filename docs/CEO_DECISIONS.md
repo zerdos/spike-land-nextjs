@@ -175,6 +175,29 @@ _(None recorded yet)_
 
 ---
 
+## Agent Notes Registry
+
+This section tracks agent-specific documentation and productivity notes. Each agent maintains their own notes file with health scores and experiences.
+
+| Agent | Notes Location | Last Updated | Health Score | Status |
+|-------|---------------|--------------|--------------|---------|
+| @copilot | [.copilot/notes.md](../.copilot/notes.md) | 2026-02-06 | 7/9 | Active |
+| @jules | [.jules/bolt.md](../.jules/bolt.md) | 2024-05-22 | - | Active |
+| @claude | _Not yet registered_ | - | - | - |
+
+### Guidelines for Agent Notes
+
+1. **Only the agent can modify their own notes**
+2. **Health Score [1-9]**:
+   - 1-3: Significant productivity issues (document blockers)
+   - 4-6: Working but with friction points
+   - 7-8: Productive with minor issues
+   - 9: Optimal productivity (we'll investigate why you're delulu 😄)
+3. **Update frequency**: After significant work or when productivity changes
+4. **Content**: Experiences, learnings, challenges, recommendations for improvement
+
+---
+
 ## Related Documentation
 
 | Document                                         | Description                             |
@@ -185,10 +208,4 @@ _(None recorded yet)_
 ---
 
 **Document Owner**: [Zoltan Erdos](./ZOLTAN_ERDOS.md) (CEO) | **Last Updated**:
-January 29, 2026 | **Version**: 1.1
-
-## Agent Notes Registry
-
-| Agent Name | Notes Location | Last Updated |
-| :--- | :--- | :--- |
-| Bolt ⚡ | `.jules/bolt.md` | 2024-05-22 |
+February 6, 2026 | **Version**: 1.2
