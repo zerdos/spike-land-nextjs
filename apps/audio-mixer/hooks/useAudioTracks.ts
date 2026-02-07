@@ -144,7 +144,9 @@ function tracksReducer(state: AudioTrack[], action: TrackAction): AudioTrack[] {
 export function useAudioTracks() {
   const [tracks, dispatch] = useReducer(tracksReducer, []);
   const sourceRefs = useRef<Map<string, AudioBufferSourceNode>>(new Map());
+  const activeGainRefs = useRef<Map<string, GainNode>>(new Map());
   const startTimeRefs = useRef<Map<string, number>>(new Map());
+  const onAllEndedRef = useRef<(() => void) | null>(null);
 
   const addTrack = useCallback(
     async (
@@ -234,15 +236,22 @@ export function useAudioTracks() {
       }
       sourceRefs.current.delete(id);
     }
+    activeGainRefs.current.delete(id);
     startTimeRefs.current.delete(id);
     dispatch({ type: "REMOVE_TRACK", payload: id });
   }, []);
 
   const setVolume = useCallback(
     (id: string, volume: number) => {
-      const track = tracks.find((t) => t.id === id);
-      if (track?.gainNode) {
-        track.gainNode.gain.value = volume;
+      // Prefer the active playback gain node, fall back to the track's stored one
+      const activeGain = activeGainRefs.current.get(id);
+      if (activeGain) {
+        activeGain.gain.value = volume;
+      } else {
+        const track = tracks.find((t) => t.id === id);
+        if (track?.gainNode) {
+          track.gainNode.gain.value = volume;
+        }
       }
       dispatch({ type: "SET_VOLUME", payload: { id, volume } });
     },
@@ -252,17 +261,45 @@ export function useAudioTracks() {
   const toggleMute = useCallback(
     (id: string) => {
       const track = tracks.find((t) => t.id === id);
-      if (track?.gainNode) {
-        track.gainNode.gain.value = track.muted ? track.volume : 0;
+      if (track) {
+        const gainNode = activeGainRefs.current.get(id) ?? track.gainNode;
+        if (gainNode) {
+          gainNode.gain.value = track.muted ? track.volume : 0;
+        }
       }
       dispatch({ type: "TOGGLE_MUTE", payload: id });
     },
     [tracks],
   );
 
-  const toggleSolo = useCallback((id: string) => {
-    dispatch({ type: "TOGGLE_SOLO", payload: id });
-  }, []);
+  const toggleSolo = useCallback(
+    (id: string) => {
+      dispatch({ type: "TOGGLE_SOLO", payload: id });
+
+      // Immediately update active gain nodes for live solo changes
+      // Compute the new solo state after the toggle
+      const toggledTrack = tracks.find((t) => t.id === id);
+      if (!toggledTrack) return;
+
+      const newSoloValue = !toggledTrack.solo;
+      const hasSoloAfter = tracks.some((t) => t.id === id ? newSoloValue : t.solo);
+
+      for (const track of tracks) {
+        const gain = activeGainRefs.current.get(track.id);
+        if (!gain) continue;
+
+        const isSolo = track.id === id ? newSoloValue : track.solo;
+        const isMuted = track.muted;
+
+        if (hasSoloAfter) {
+          gain.gain.value = isSolo && !isMuted ? track.volume : 0;
+        } else {
+          gain.gain.value = isMuted ? 0 : track.volume;
+        }
+      }
+    },
+    [tracks],
+  );
 
   const setDelay = useCallback((id: string, delay: number) => {
     dispatch({ type: "SET_DELAY", payload: { id, delay } });
@@ -319,6 +356,12 @@ export function useAudioTracks() {
       source.onended = () => {
         dispatch({ type: "STOP_TRACK", payload: id });
         sourceRefs.current.delete(id);
+        activeGainRefs.current.delete(id);
+        // When all sources have finished, fire the completion callback
+        if (sourceRefs.current.size === 0 && onAllEndedRef.current) {
+          onAllEndedRef.current();
+          onAllEndedRef.current = null;
+        }
       };
 
       const trackPosition = track.position ?? track.delay ?? 0;
@@ -401,8 +444,7 @@ export function useAudioTracks() {
       }
 
       sourceRefs.current.set(id, source);
-      // Store the timeline time when playback started, to calculate elapsed time later?
-      // Or just keep track of the offset
+      activeGainRefs.current.set(id, gainNode);
       startTimeRefs.current.set(id, context.currentTime);
 
       dispatch({ type: "PLAY_TRACK", payload: id });
@@ -420,6 +462,7 @@ export function useAudioTracks() {
       }
       sourceRefs.current.delete(id);
     }
+    activeGainRefs.current.delete(id);
     startTimeRefs.current.delete(id);
     dispatch({ type: "STOP_TRACK", payload: id });
   }, []);
@@ -435,7 +478,9 @@ export function useAudioTracks() {
       context: AudioContext,
       masterGain: GainNode,
       startFromTime: number = 0,
+      onComplete?: () => void,
     ) => {
+      onAllEndedRef.current = onComplete ?? null;
       const hasSolo = tracks.some((t) => t.solo);
 
       tracks.forEach((track) => {
@@ -446,6 +491,12 @@ export function useAudioTracks() {
           }
         }
       });
+
+      // If no tracks were actually started, fire completion immediately
+      if (sourceRefs.current.size === 0 && onComplete) {
+        onComplete();
+        onAllEndedRef.current = null;
+      }
     },
     [tracks, playTrack],
   );
@@ -453,6 +504,7 @@ export function useAudioTracks() {
   const clearTracks = useCallback(() => {
     stopAllTracks();
     sourceRefs.current.clear();
+    activeGainRefs.current.clear();
     startTimeRefs.current.clear();
     dispatch({ type: "CLEAR_TRACKS" });
   }, [stopAllTracks]);
