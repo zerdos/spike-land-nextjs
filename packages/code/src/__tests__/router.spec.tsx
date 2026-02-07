@@ -12,6 +12,15 @@ vi.mock("@/services/ServiceWorkerManager", () => ({
   initializeApp: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../app-loader", () => ({
+  loadApp: vi.fn().mockResolvedValue({
+    codeSpace: "test-space",
+    cSess: {},
+    AppComponent: () => <div>App Component</div>,
+  }),
+  initializeSessionSync: vi.fn().mockResolvedValue(() => {}),
+}));
+
 vi.mock("@/hooks/use-code-space", () => ({
   getCodeSpace: vi.fn().mockReturnValue("test-space"),
 }));

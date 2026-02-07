@@ -147,6 +147,7 @@ export class CodeProcessor {
     origin: string,
     replaceIframe: ((newIframe: HTMLIFrameElement) => void) | undefined,
     processedSession: ProcessedSession,
+    signal?: AbortSignal,
   ): Promise<boolean> {
     // Generate a unique request ID for this render operation based on transpiled code hash
     const expectedRequestId = md5(transpiled);
@@ -405,17 +406,29 @@ export class CodeProcessor {
         }, OVERALL_PROCESS_TIMEOUT_MS);
       });
 
-      // Race the `renderPromise` (waiting for iframe message) against the `timeoutPromise`.
+      // Abort promise to handle signal abortion
+      const abortPromise = new Promise<void>((_, reject) => {
+        if (signal?.aborted) {
+          reject(new Error("Aborted"));
+          return;
+        }
+        signal?.addEventListener("abort", () => reject(new Error("Aborted")));
+      });
+
+      // Race the `renderPromise` (waiting for iframe message) against the `timeoutPromise` and `abortPromise`.
       // The first one to resolve or reject determines the outcome.
       const { error: raceError } = await tryCatch(
-        Promise.race([renderPromise, timeoutPromise]),
+        Promise.race([renderPromise, timeoutPromise, abortPromise]),
       );
 
       if (raceError) {
-        console.error(
-          "Error during rendering (race condition or timeout):",
-          raceError,
-        );
+        // Don't log error if it was aborted
+        if (raceError.message !== "Aborted") {
+          console.error(
+            "Error during rendering (race condition or timeout):",
+            raceError,
+          );
+        }
         // If cleanupPreviousRender were active, it would be called here to remove the failed iframe/listener.
         // this.cleanupPreviousRender();
         return false;
@@ -481,6 +494,7 @@ export class CodeProcessor {
       origin,
       replaceIframe,
       processedSession,
+      signal,
     );
 
     if (!executionSuccessful) {
