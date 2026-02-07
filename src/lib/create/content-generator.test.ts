@@ -1,6 +1,7 @@
 import { generateStructuredResponse, StructuredResponseParseError } from "@/lib/ai/gemini-client";
 import { describe, expect, it, vi } from "vitest";
 import {
+  attemptCodeCorrection,
   buildSystemPrompt,
   buildUserPrompt,
   extractCodeFromRawText,
@@ -22,6 +23,9 @@ vi.mock("@/lib/ai/gemini-client", async (importOriginal) => {
 vi.mock("@/lib/logger", () => ({
   default: {
     error: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+    warn: vi.fn(),
   },
 }));
 
@@ -612,6 +616,183 @@ describe("content-generator", () => {
       const categories = new Set(skills.map((s) => s.categoryLabel));
       expect(categories.has("DATA VISUALIZATION")).toBe(true);
       expect(categories.has("URL PARAMETER SUPPORT")).toBe(true);
+    });
+  });
+
+  describe("buildUserPrompt - few-shot examples", () => {
+    it("should include example JSON responses in user prompt", () => {
+      const prompt = buildUserPrompt("games/tetris");
+      expect(prompt).toContain("EXAMPLE RESPONSES");
+      expect(prompt).toContain("Click Counter");
+      expect(prompt).toContain("Quick Tasks");
+    });
+
+    it("should include both example code snippets", () => {
+      const prompt = buildUserPrompt("tools/timer");
+      expect(prompt).toContain("ClickCounter");
+      expect(prompt).toContain("QuickTasks");
+    });
+
+    it("should include plan field mention in the response format", () => {
+      const prompt = buildUserPrompt("games/tetris");
+      expect(prompt).toContain('"plan"');
+      expect(prompt).toContain("architecture");
+    });
+
+    it("should show plan field usage in examples", () => {
+      const prompt = buildUserPrompt("anything");
+      // Both examples include a plan field
+      expect(prompt).toContain('"plan": "useState for count');
+      expect(prompt).toContain('"plan": "useState for tasks');
+    });
+  });
+
+  describe("plan field in schema", () => {
+    it("should strip plan field from successful response", async () => {
+      const mockResponse = {
+        plan: "Use useState for counter, Card for layout",
+        title: "Counter",
+        description: "A simple counter",
+        code: "export default function App() { return <div>Counter</div> }",
+        relatedApps: ["test/one"],
+      };
+
+      (generateStructuredResponse as any).mockResolvedValue(mockResponse);
+
+      const result = await generateAppContent(["test", "counter"]);
+
+      expect(result.content).toBeDefined();
+      expect(result.content!.title).toBe("Counter");
+      expect(result.content!.code).toBe(
+        "export default function App() { return <div>Counter</div> }",
+      );
+      // Plan should be stripped from the public content
+      expect(result.content).not.toHaveProperty("plan");
+      expect(result.error).toBeNull();
+    });
+
+    it("should work when plan field is absent", async () => {
+      const mockResponse = {
+        title: "No Plan",
+        description: "App without plan",
+        code: "export default function App() { return <div>No plan</div> }",
+        relatedApps: ["a/b"],
+      };
+
+      (generateStructuredResponse as any).mockResolvedValue(mockResponse);
+
+      const result = await generateAppContent(["test"]);
+
+      expect(result.content).toBeDefined();
+      expect(result.content!.title).toBe("No Plan");
+      expect(result.content).not.toHaveProperty("plan");
+      expect(result.error).toBeNull();
+    });
+  });
+
+  describe("attemptCodeCorrection", () => {
+    it("should return corrected code on successful correction", async () => {
+      const mockResponse = {
+        code: "export default function App() { return <div>Fixed</div> }",
+      };
+
+      (generateStructuredResponse as any).mockResolvedValue(mockResponse);
+
+      const result = await attemptCodeCorrection(
+        "export default function App() { return <div>Broken",
+        "Unexpected end of input",
+        "test/app",
+      );
+
+      expect(result).toBe("export default function App() { return <div>Fixed</div> }");
+      expect(generateStructuredResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maxTokens: 16384,
+          temperature: 0.2,
+          thinkingBudget: 4096,
+        }),
+      );
+    });
+
+    it("should return null when correction API fails", async () => {
+      (generateStructuredResponse as any).mockRejectedValue(new Error("API Error"));
+
+      const result = await attemptCodeCorrection(
+        "broken code",
+        "Some error",
+        "test/app",
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it("should return null when response has no code field", async () => {
+      (generateStructuredResponse as any).mockResolvedValue({});
+
+      const result = await attemptCodeCorrection(
+        "broken code",
+        "Some error",
+        "test/app",
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it("should return null when code field is not a string", async () => {
+      (generateStructuredResponse as any).mockResolvedValue({ code: 123 });
+
+      const result = await attemptCodeCorrection(
+        "broken code",
+        "Some error",
+        "test/app",
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it("should clean corrected code through cleanCode pipeline", async () => {
+      const mockResponse = {
+        code:
+          "```tsx\nimport { Plus } from 'lucide-react';\nexport default function App() { return <div>Fixed</div> }\n```",
+      };
+
+      (generateStructuredResponse as any).mockResolvedValue(mockResponse);
+
+      const result = await attemptCodeCorrection(
+        "broken code",
+        "Some error",
+        "test/app",
+      );
+
+      // Should strip markdown fences and prune unused Plus import
+      expect(result).not.toContain("```");
+      expect(result).not.toContain("Plus");
+      expect(result).toContain("export default function App()");
+    });
+
+    it("should include error and code in correction prompt", async () => {
+      const mockResponse = {
+        code: "export default function App() { return <div>Fixed</div> }",
+      };
+
+      (generateStructuredResponse as any).mockResolvedValue(mockResponse);
+
+      await attemptCodeCorrection(
+        "const broken = <div>",
+        "Unterminated JSX",
+        "test/app",
+      );
+
+      expect(generateStructuredResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prompt: expect.stringContaining("Unterminated JSX"),
+        }),
+      );
+      expect(generateStructuredResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prompt: expect.stringContaining("const broken = <div>"),
+        }),
+      );
     });
   });
 });

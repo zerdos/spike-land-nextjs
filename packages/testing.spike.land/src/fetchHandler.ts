@@ -73,6 +73,21 @@ Sitemap: ${new URL(request.url).origin}/sitemap.xml
     return handleEsmRequest(path, request, env, ctx);
   }
 
+  // Rewrite tailwindcss@<version> to tailwindcss@<version>/index.css.
+  // @tailwindcss/browser resolves @import "tailwindcss" to this URL, expecting CSS,
+  // but esm.sh returns a JS module for bare package URLs. Tailwind v4's CSS entry
+  // is at index.css (package.json "style" export).
+  if (firstPath && /^tailwindcss@[\d.]+$/.test(firstPath) && path.length === 1) {
+    const rewrittenUrl = new URL(request.url);
+    rewrittenUrl.pathname = `/${firstPath}/index.css`;
+    return handleEsmRequest(
+      [firstPath, "index.css"],
+      new Request(rewrittenUrl, request),
+      env,
+      ctx,
+    );
+  }
+
   // Rewrite node@<version>/<module>.mjs polyfill URLs to bare module paths.
   // esm-worker generates these references for Node.js built-ins (buffer, process, etc.)
   // but esm.sh doesn't serve them at this URL pattern.
