@@ -393,4 +393,9 @@ export const rateLimitConfigs = {
     maxRequests: 20,
     windowMs: 24 * 60 * 60 * 1000, // 24 hours
   },
+  /** Slug classification: 30 requests per minute per user/IP */
+  slugClassify: {
+    maxRequests: 30,
+    windowMs: 60 * 1000, // 1 minute
+  },
 } as const;

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { AnimatePresence } from "framer-motion";
-import { Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SkillsBar } from "./skills-bar";
@@ -15,6 +15,13 @@ function slugify(text: string): string {
 
 export function CreateSearch() {
   const [query, setQuery] = useState("");
+  const [isClassifying, setIsClassifying] = useState(false);
+  const [classifyError, setClassifyError] = useState<
+    {
+      type: "blocked" | "unclear";
+      message: string;
+    } | null
+  >(null);
   const router = useRouter();
   const [results, setResults] = useState<{ slug: string; title: string; description: string; }[]>(
     [],
@@ -63,12 +70,50 @@ export function CreateSearch() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [results.length]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      const slug = slugify(query);
-      setResults([]);
-      router.push(`/create/${slug}`);
+    if (!query.trim() || isClassifying) return;
+
+    setIsClassifying(true);
+    setClassifyError(null);
+    setResults([]);
+
+    try {
+      const res = await fetch("/api/create/classify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: query.trim() }),
+      });
+
+      if (!res.ok) {
+        // API error — fallback to naive slug
+        router.push(`/create/${slugify(query)}`);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.status === "ok" && data.slug) {
+        router.push(`/create/${data.slug}`);
+      } else if (data.status === "blocked") {
+        setClassifyError({
+          type: "blocked",
+          message: data.reason || "This topic is not allowed.",
+        });
+      } else if (data.status === "unclear") {
+        setClassifyError({
+          type: "unclear",
+          message: data.reason || "Try describing what the app should do.",
+        });
+      } else {
+        // Unexpected response — fallback
+        router.push(`/create/${slugify(query)}`);
+      }
+    } catch {
+      // Network error — fallback to naive slug
+      router.push(`/create/${slugify(query)}`);
+    } finally {
+      setIsClassifying(false);
     }
   };
 
@@ -81,16 +126,35 @@ export function CreateSearch() {
           className="pl-10 py-6 text-lg shadow-sm"
           placeholder="Describe an app to create (e.g. 'todo list', 'color picker')"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            if (classifyError) setClassifyError(null);
+          }}
           onBlur={() => {
             // Delay to allow click events on results to fire first
             setTimeout(() => setResults([]), 200);
           }}
         />
-        <Button type="submit" className="absolute right-1.5 top-1.5 bottom-1.5">
-          Create
+        <Button
+          type="submit"
+          className="absolute right-1.5 top-1.5 bottom-1.5"
+          disabled={isClassifying}
+        >
+          {isClassifying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
         </Button>
       </form>
+
+      {classifyError && (
+        <p
+          className={`mt-2 text-sm ${
+            classifyError.type === "blocked"
+              ? "text-destructive"
+              : "text-muted-foreground"
+          }`}
+        >
+          {classifyError.message}
+        </p>
+      )}
 
       <AnimatePresence>
         <SkillsBar query={debouncedQuery} />
