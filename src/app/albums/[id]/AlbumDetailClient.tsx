@@ -441,8 +441,11 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
             )
             : (
               <MasonryGridUniform zoomLevel={zoomLevel}>
-                {/* Show uploading placeholders first */}
-                {uploadingFiles.map((fileStatus) => (
+                {/* Show uploading placeholders first (filter out completed ones already in album) */}
+                {uploadingFiles.filter((f) => {
+                  if (f.status !== "completed") return true;
+                  return !f.imageId || !album.images.some((img) => img.id === f.imageId);
+                }).map((fileStatus) => (
                   <ImagePlaceholder
                     key={fileStatus.id}
                     file={fileStatus.file}

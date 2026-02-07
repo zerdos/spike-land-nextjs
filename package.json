@@ -47,6 +47,7 @@
     "test:e2e:flaky": "cucumber-js --profile flaky",
     "test:e2e:smoke": "BASE_URL=http://localhost:3000 CI=true cucumber-js --profile smoke",
     "test:e2e:coverage": "E2E_COVERAGE=true BASE_URL=http://localhost:3000 CI=true cucumber-js --profile coverage",
+    "jules:clear": "expect scripts/jules-clear.sh",
     "postinstall": "yarn prisma generate --no-hints",
     "prisma": "prisma",
     "db:generate": "yarn prisma generate --no-hints",

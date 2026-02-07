@@ -1,7 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { GripVertical } from "lucide-react";
-import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // Log broken images to server for monitoring
@@ -32,13 +32,17 @@ interface ImageComparisonSliderProps {
   width?: number;
   /** Height of the original image. Used to calculate aspect ratio. Omit for auto-detection. */
   height?: number;
+  /** Width of the enhanced image. Kept for backward compat; not used for layout. */
+  enhancedWidth?: number;
+  /** Height of the enhanced image. Kept for backward compat; not used for layout. */
+  enhancedHeight?: number;
 }
 
 /**
  * A slider component to compare original and enhanced images.
- * Uses object-contain to ensure images fit within the container, and dynamic aspect ratio
- * to match the original image dimensions. When width/height are omitted, the component
- * auto-detects the image dimensions for natural aspect ratio display.
+ * Both images use object-cover so they fill the container at the original's AR.
+ * Since uploads now resize to exact standard 1K dimensions, both images should
+ * share the same AR and object-cover center-crops any sub-pixel rounding difference.
  */
 export function ImageComparisonSlider({
   originalUrl,
@@ -57,7 +61,7 @@ export function ImageComparisonSlider({
   >(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Auto-detect dimensions if not provided (or invalid)
+  // Auto-detect original dimensions if not provided (or invalid)
   const shouldAutoDetect = width === undefined || height === undefined ||
     !Number.isFinite(width) ||
     !Number.isFinite(height) || width <= 0 || height <= 0;
@@ -177,20 +181,17 @@ export function ImageComparisonSlider({
         role="slider"
         tabIndex={0}
         aria-label="Image comparison slider"
-        aria-valuenow={Math.round(sliderPosition * 100)}
+        aria-valuenow={Math.round(sliderPosition)}
         aria-valuemin={0}
         aria-valuemax={100}
       >
         {/* Enhanced image (background) */}
         {!enhancedError
           ? (
-            <Image
+            <img
               src={enhancedUrl}
               alt={enhancedLabel}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
-              className="object-contain"
-              priority
+              className="absolute inset-0 w-full h-full object-cover"
               onError={handleEnhancedError}
             />
           )
@@ -209,13 +210,10 @@ export function ImageComparisonSlider({
         >
           {!originalError
             ? (
-              <Image
+              <img
                 src={originalUrl}
                 alt={originalLabel}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
-                className="object-contain"
-                priority
+                className="w-full h-full object-cover"
                 onError={handleOriginalError}
               />
             )

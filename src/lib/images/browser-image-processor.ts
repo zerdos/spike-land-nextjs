@@ -9,10 +9,16 @@
  * - Convert to WebP format (with JPEG fallback)
  */
 
-import { type AspectRatio, detectAspectRatio, getAspectRatioValue } from "@/lib/ai/aspect-ratio";
+import {
+  type AspectRatio,
+  detectAspectRatio,
+  getAspectRatioValue,
+  STANDARD_1K_DIMENSIONS,
+} from "@/lib/ai/aspect-ratio";
 
 // Constants
 export const MAX_DIMENSION = 4096;
+export const DEFAULT_BASE_DIMENSION = 1024;
 export const WEBP_QUALITY = 0.8;
 export const FALLBACK_FORMAT = "image/jpeg";
 export const FALLBACK_QUALITY = 0.85;
@@ -30,6 +36,8 @@ export interface ProcessedImage {
 
 interface ProcessingOptions {
   maxDimension?: number;
+  /** Use standard 1K dimensions (~1024px) matched to the detected aspect ratio */
+  useStandard1K?: boolean;
   quality?: number;
   forceAspectRatio?: AspectRatio;
 }
@@ -114,6 +122,28 @@ export function calculateFinalDimensions(
 }
 
 /**
+ * Calculate dimensions so that width × height ≈ baseDimension²,
+ * preserving the given aspect ratio. Does not upscale.
+ */
+export function calculateDimensionsForArea(
+  aspectRatio: number,
+  baseDimension: number,
+  sourceWidth: number,
+  sourceHeight: number,
+): { width: number; height: number; } {
+  const targetArea = baseDimension * baseDimension;
+  const sourceArea = sourceWidth * sourceHeight;
+
+  if (sourceArea <= targetArea) {
+    return { width: sourceWidth, height: sourceHeight };
+  }
+
+  const width = Math.round(Math.sqrt(targetArea * aspectRatio));
+  const height = Math.round(Math.sqrt(targetArea / aspectRatio));
+  return { width, height };
+}
+
+/**
  * Process an image file for upload
  *
  * @param file - Image file to process
@@ -126,6 +156,7 @@ export async function processImageForUpload(
 ): Promise<ProcessedImage> {
   const {
     maxDimension = MAX_DIMENSION,
+    useStandard1K = false,
     quality = WEBP_QUALITY,
     forceAspectRatio,
   } = options;
@@ -152,11 +183,25 @@ export async function processImageForUpload(
         );
 
         // Calculate final dimensions after resize
-        const { width: finalWidth, height: finalHeight } = calculateFinalDimensions(
-          cropWidth,
-          cropHeight,
-          maxDimension,
-        );
+        let finalWidth: number, finalHeight: number;
+        if (useStandard1K) {
+          // Use exact standard 1K dimensions for the detected AR
+          const standardDims = STANDARD_1K_DIMENSIONS[targetRatio];
+          // Don't upscale: if source crop is smaller than standard dims, keep source size
+          if (cropWidth <= standardDims.width && cropHeight <= standardDims.height) {
+            finalWidth = cropWidth;
+            finalHeight = cropHeight;
+          } else {
+            finalWidth = standardDims.width;
+            finalHeight = standardDims.height;
+          }
+        } else {
+          ({ width: finalWidth, height: finalHeight } = calculateFinalDimensions(
+            cropWidth,
+            cropHeight,
+            maxDimension,
+          ));
+        }
 
         // Create canvas and apply crop + resize
         const canvas = document.createElement("canvas");

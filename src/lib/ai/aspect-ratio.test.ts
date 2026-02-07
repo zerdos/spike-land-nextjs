@@ -3,6 +3,7 @@ import {
   detectAspectRatio,
   getAspectRatioValue,
   isValidAspectRatio,
+  STANDARD_1K_DIMENSIONS,
   SUPPORTED_ASPECT_RATIOS,
 } from "./aspect-ratio";
 
@@ -21,6 +22,38 @@ describe("aspect-ratio", () => {
         "16:9",
         "21:9",
       ]);
+    });
+  });
+
+  describe("STANDARD_1K_DIMENSIONS", () => {
+    it("should have an entry for every supported ratio", () => {
+      for (const ratio of SUPPORTED_ASPECT_RATIOS) {
+        expect(STANDARD_1K_DIMENSIONS[ratio]).toBeDefined();
+        expect(STANDARD_1K_DIMENSIONS[ratio].width).toBeGreaterThan(0);
+        expect(STANDARD_1K_DIMENSIONS[ratio].height).toBeGreaterThan(0);
+      }
+    });
+
+    it("should have correct dimensions for 1:1", () => {
+      expect(STANDARD_1K_DIMENSIONS["1:1"]).toEqual({ width: 1024, height: 1024 });
+    });
+
+    it("should have correct dimensions for 16:9", () => {
+      expect(STANDARD_1K_DIMENSIONS["16:9"]).toEqual({ width: 1376, height: 768 });
+    });
+
+    it("should have correct dimensions for 9:16", () => {
+      expect(STANDARD_1K_DIMENSIONS["9:16"]).toEqual({ width: 768, height: 1376 });
+    });
+
+    it("should produce approximately 1M pixels for each ratio", () => {
+      for (const ratio of SUPPORTED_ASPECT_RATIOS) {
+        const { width, height } = STANDARD_1K_DIMENSIONS[ratio];
+        const area = width * height;
+        // All standard 1K dimensions should be roughly ~1M pixels (within 15%)
+        expect(area).toBeGreaterThan(800_000);
+        expect(area).toBeLessThan(1_200_000);
+      }
     });
   });
 

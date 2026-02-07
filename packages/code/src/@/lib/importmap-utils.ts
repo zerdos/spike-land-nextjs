@@ -68,6 +68,7 @@ export const EXTERNAL_DEPENDENCIES = [
   "@emotion/react/jsx-runtime",
   "@emotion/react/jsx-dev-runtime",
   "@emotion/styled",
+  "recharts",
 ];
 
 // Default Import Map
@@ -84,6 +85,7 @@ export const importMap: ImportMap = {
     "react": "/reactMod.mjs",
     "framer-motion": "/@/workers/framer-motion.mjs",
     "react-dom": "/reactDom.mjs",
+    "recharts": "/recharts.mjs",
   },
 };
 

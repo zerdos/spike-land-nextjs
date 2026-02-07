@@ -45,6 +45,7 @@ const defaultMockReturn = {
   tier: null as string | null,
   maxBalance: null as number | null,
   isLoading: false,
+  hasFetched: true,
   error: null,
   isLowBalance: false,
   isCriticalBalance: false,

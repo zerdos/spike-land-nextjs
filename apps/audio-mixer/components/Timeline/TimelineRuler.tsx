@@ -62,7 +62,7 @@ export function TimelineRuler({ zoom, duration, onSeek }: TimelineRulerProps) {
 
   return (
     <div
-      className="relative h-10 bg-black/40 border-b border-white/5 cursor-pointer select-none overflow-hidden"
+      className="relative h-7 bg-black/40 border-b border-white/5 cursor-pointer select-none overflow-hidden"
       style={{ width: `${width}px` }}
       onClick={handleClick}
       onKeyDown={(e) =>

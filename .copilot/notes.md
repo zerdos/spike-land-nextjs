@@ -1,24 +1,106 @@
 # Copilot Agent Notes
 
 **Agent**: GitHub Copilot (@copilot)\
-**Last Modified**: 2026-02-06\
-**Health Score**: 7/9
+**Last Modified**: 2026-02-07\
+**Health Score**: 8/9
 
 ## Health Assessment
 
-**Current State**: Working effectively with good tooling, but experiencing some friction points.
+**Current State**: Fully configured with setup steps, instructions, skills, and custom agents.
 
-**Issues (preventing 9/9)**:
+**Remaining friction (preventing 9/9)**:
 
-- Limited visibility into CI/CD status during PR creation (need to manually check after push)
-- Iterative test-fix cycles can be time-consuming when dealing with TypeScript/lint errors
-- No direct access to Vercel preview URLs for manual smoke testing
+- No direct access to Vercel preview URLs for automated smoke testing (manual check via PR comments)
+
+**Resolved since last assessment**:
+
+- CI visibility: `debug-ci` skill + `gh run view --log-failed` workflows documented
+- Test-fix cycles: `test-specialist` agent + path-specific testing instructions
+- Skills were broken symlinks: Replaced with actual files (20 skills total)
 
 **Strengths**:
 
 - Excellent code analysis and refactoring capabilities
 - Strong understanding of React performance patterns (memo, useCallback)
 - Good integration with git workflow and PR process
+- Full environment setup via `copilot-setup-steps.yml` (Node 24, Yarn 4, Prisma, Playwright)
+- 20 skills covering Next.js, testing, security, design, and more
+- Path-specific instructions for TypeScript, testing, Cloudflare Workers, shared package
+
+---
+
+## Configuration
+
+### Setup Steps
+
+`copilot-setup-steps.yml` provisions the environment:
+
+- Node.js 24 (from `.nvmrc`)
+- Corepack + Yarn 4 Berry
+- Dependencies cached via `actions/cache`
+- Prisma client generated
+- Shared package built
+- Playwright Chromium installed
+
+### Instructions
+
+- `.github/copilot-instructions.md` — Repo-wide guidance
+- `.github/instructions/typescript.instructions.md` — TS strict mode rules
+- `.github/instructions/testing.instructions.md` — Vitest + Playwright patterns
+- `.github/instructions/cloudflare-workers.instructions.md` — Worker constraints
+- `.github/instructions/shared-package.instructions.md` — Shared package conventions
+
+### Skills (20 total)
+
+| Category     | Skills                                                                                        |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| Framework    | nextjs, vercel-react-best-practices, frontend-patterns                                        |
+| UI/Design    | shadcn-ui, tailwind-design-system, frontend-design, web-design-guidelines, building-native-ui |
+| Testing      | javascript-testing-patterns, qa-testing-playwright                                            |
+| Security     | security-review, better-auth-best-practices                                                   |
+| Code Quality | clean-code, software-code-review                                                              |
+| Content      | copywriting, seo-audit                                                                        |
+| Media        | remotion-best-practices                                                                       |
+| DevOps       | debug-ci                                                                                      |
+| Tools        | agent-browser, skill-creator                                                                  |
+
+### Custom Agents
+
+- `test-specialist` — Write/fix tests for 100% coverage
+- `ci-debugger` — Debug CI failures from workflow logs
+
+### Manual Configuration Required
+
+The following must be set up in **GitHub Repository Settings > Copilot > Coding agent**:
+
+**MCP Servers** (Settings > MCP configuration):
+
+```json
+{
+  "mcpServers": {
+    "spike-land": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "@spike-npm-land/mcp-server"],
+      "tools": ["*"],
+      "env": {
+        "SPIKE_LAND_API_KEY": "$COPILOT_MCP_SPIKE_LAND_API_KEY"
+      }
+    }
+  }
+}
+```
+
+**Environment Secrets** (Settings > Environments > `copilot`):
+
+- `COPILOT_MCP_SPIKE_LAND_API_KEY`
+
+**Firewall Allowlist** (Settings > Copilot > Coding agent > Custom allowlist):
+
+- `esm.sh`
+- `testing.spike.land`
+- `js.spike.land`
+- `api.cloudflare.com`
 
 ---
 
@@ -42,19 +124,6 @@
 - `28e4895` - perf(pixel): optimize LibraryGrid rendering
 - `224362c` - Initial plan
 
-**Challenges Encountered**:
-
-- Multiple iterations needed to fix TypeScript errors (TS2345) in test files
-- Lint errors required attention to detail (import type, img alt attributes)
-- Test coverage requirements meant careful consideration of test cases
-
-**Learnings**:
-
-- React.memo is effective for preventing prop-based re-renders in list items
-- useCallback is critical for stabilizing callback references passed to child components
-- The codebase has strict TypeScript and lint rules that catch issues early
-- Test coverage requirements are enforced (100% coverage expected)
-
 **Performance Impact**:
 
 - Before: Selecting one item caused all N items to re-render
@@ -73,17 +142,9 @@
 
 ### Areas for Improvement
 
-1. **CI Feedback Loop**: Would benefit from real-time CI status updates during PR work
+1. **Vercel Preview Access**: Automated smoke tests on preview URLs would close the gap to 9/9
 2. **Test Performance**: Vitest runs could be faster with better caching or parallel execution
-3. **Documentation Discovery**: Could use better indexing of docs/ directory (many files)
-4. **Agent Coordination**: Need clearer protocols for when multiple agents work on same codebase
-
-### Future Productivity Enhancements
-
-1. Implement automated smoke tests that run on Vercel preview deployments
-2. Add pre-commit hooks for faster feedback on lint/type errors
-3. Create a docs index/search tool for quickly finding relevant documentation
-4. Establish agent handoff protocols for collaborative work
+3. **Agent Coordination**: Need clearer protocols for when multiple agents work on same codebase
 
 ---
 
@@ -102,22 +163,6 @@
 - `docs/CEO_DECISIONS.md` - Strategic decisions log
 - `.github/workflows/` - CI/CD pipeline definitions
 - `vitest.config.ts` - Test configuration
-
----
-
-## Collaboration Notes
-
-**Works Well With**: Other agents that follow ticket-driven development and proper git conventions
-
-**Communication Style**: Direct, technical, focused on code quality and performance
-
-**Preferred Workflow**:
-
-1. Understand requirements thoroughly
-2. Create detailed implementation plan
-3. Make surgical, minimal changes
-4. Validate with tests
-5. Report progress incrementally
 
 ---
 

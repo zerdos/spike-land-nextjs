@@ -184,7 +184,7 @@ export function ReferenceImageUpload({
 
       try {
         // Process image: resize to 1024px, crop to aspect ratio, convert to WebP
-        const processed = await processImageForUpload(pending.file);
+        const processed = await processImageForUpload(pending.file, { useStandard1K: true });
 
         // Create a new File from the processed blob
         const extension = processed.mimeType === "image/webp"

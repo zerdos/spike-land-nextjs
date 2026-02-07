@@ -456,6 +456,7 @@ describe("TokensPage", () => {
       tier: null,
       maxBalance: null,
       isLoading: true,
+      hasFetched: false,
       stats: null,
       estimatedEnhancements: {
         tier1K: 0,
@@ -492,6 +493,7 @@ describe("TokensPage", () => {
       tier: null,
       maxBalance: null,
       isLoading: false,
+      hasFetched: true,
       stats: null,
       estimatedEnhancements: {
         tier1K: 25,
@@ -529,6 +531,7 @@ describe("TokensPage", () => {
       tier: null,
       maxBalance: null,
       isLoading: false,
+      hasFetched: true,
       stats: null,
       estimatedEnhancements: {
         tier1K: 25,
@@ -626,6 +629,7 @@ describe("TokensPage", () => {
       tier: null,
       maxBalance: null,
       isLoading: false,
+      hasFetched: true,
       stats: null,
       estimatedEnhancements: {
         tier1K: 25,

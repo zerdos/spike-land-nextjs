@@ -14,6 +14,7 @@ const EXCLUDED_PATHS = [
   "/auth",
   "/live",
   "/create",
+  "/apps/audio-mixer",
 ];
 
 // Check if pathname is a child route of /apps/pixel (but not /apps/pixel itself)

@@ -32,6 +32,8 @@ interface EnhancementSidebarProps {
   onEnhance: (tier: EnhancementTier) => Promise<void>;
   balance: number;
   isBalanceLoading?: boolean;
+  hasFetched?: boolean;
+  isEnhancing?: boolean;
   onBalanceRefresh: () => void;
 }
 
@@ -42,6 +44,8 @@ export function EnhancementSidebar({
   onEnhance,
   balance,
   isBalanceLoading = false,
+  hasFetched = false,
+  isEnhancing = false,
   onBalanceRefresh,
 }: EnhancementSidebarProps) {
   // --- 1. PREPARE DATA ---
@@ -191,6 +195,7 @@ export function EnhancementSidebar({
               const info = TIER_INFO[tier];
               const cost = info.cost;
               const canAfford = balance >= cost;
+              const optimisticCanAfford = !hasFetched || canAfford;
 
               return (
                 <div
@@ -211,21 +216,11 @@ export function EnhancementSidebar({
                     </div>
                   </div>
 
-                  {isBalanceLoading
-                    ? (
-                      <Button
-                        disabled
-                        className="w-full bg-primary/5 text-muted-foreground border border-primary/10"
-                        variant="secondary"
-                      >
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                        Loading...
-                      </Button>
-                    )
-                    : canAfford
+                  {optimisticCanAfford
                     ? (
                       <Button
                         onClick={() => onEnhance(tier)}
+                        loading={isEnhancing}
                         className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
                         variant="secondary"
                       >
@@ -234,7 +229,7 @@ export function EnhancementSidebar({
                       </Button>
                     )
                     : (
-                      <div className="space-y-2">
+                      <div className="space-y-2 animate-in fade-in duration-300">
                         <Button
                           disabled
                           className="w-full opacity-50"

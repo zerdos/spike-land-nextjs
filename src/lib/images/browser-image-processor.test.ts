@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateCropDimensions,
+  calculateDimensionsForArea,
   calculateFinalDimensions,
+  DEFAULT_BASE_DIMENSION,
   FALLBACK_FORMAT,
   FALLBACK_QUALITY,
   MAX_DIMENSION,
@@ -12,6 +14,10 @@ describe("browser-image-processor", () => {
   describe("constants", () => {
     it("should have correct MAX_DIMENSION", () => {
       expect(MAX_DIMENSION).toBe(4096);
+    });
+
+    it("should have correct DEFAULT_BASE_DIMENSION", () => {
+      expect(DEFAULT_BASE_DIMENSION).toBe(1024);
     });
 
     it("should have correct WEBP_QUALITY", () => {
@@ -179,6 +185,53 @@ describe("browser-image-processor", () => {
     it("should use custom max dimension", () => {
       const result = calculateFinalDimensions(4000, 3000, 2048);
       expect(result).toEqual({ width: 2048, height: 1536 });
+    });
+  });
+
+  describe("calculateDimensionsForArea", () => {
+    it("should produce 1024x1024 for 1:1 at baseDim 1024", () => {
+      const result = calculateDimensionsForArea(1, 1024, 4000, 4000);
+      expect(result).toEqual({ width: 1024, height: 1024 });
+    });
+
+    it("should produce ~1M pixels for 16:9 at baseDim 1024", () => {
+      const result = calculateDimensionsForArea(16 / 9, 1024, 4000, 2250);
+      const area = result.width * result.height;
+      expect(area).toBeGreaterThan(1_000_000);
+      expect(area).toBeLessThan(1_100_000);
+      expect(result.width).toBeGreaterThan(result.height);
+    });
+
+    it("should produce ~1M pixels for 9:16 at baseDim 1024", () => {
+      const result = calculateDimensionsForArea(9 / 16, 1024, 2250, 4000);
+      const area = result.width * result.height;
+      expect(area).toBeGreaterThan(1_000_000);
+      expect(area).toBeLessThan(1_100_000);
+      expect(result.height).toBeGreaterThan(result.width);
+    });
+
+    it("should produce ~1M pixels for 21:9 at baseDim 1024", () => {
+      const result = calculateDimensionsForArea(21 / 9, 1024, 5000, 2000);
+      const area = result.width * result.height;
+      expect(area).toBeGreaterThan(1_000_000);
+      expect(area).toBeLessThan(1_100_000);
+    });
+
+    it("should produce ~4M pixels at baseDim 2048", () => {
+      const result = calculateDimensionsForArea(16 / 9, 2048, 8000, 4500);
+      const area = result.width * result.height;
+      expect(area).toBeGreaterThan(4_000_000);
+      expect(area).toBeLessThan(4_300_000);
+    });
+
+    it("should not upscale when source is smaller than target", () => {
+      const result = calculateDimensionsForArea(1, 1024, 500, 500);
+      expect(result).toEqual({ width: 500, height: 500 });
+    });
+
+    it("should not upscale when source area equals target area", () => {
+      const result = calculateDimensionsForArea(1, 1024, 1024, 1024);
+      expect(result).toEqual({ width: 1024, height: 1024 });
     });
   });
 });
