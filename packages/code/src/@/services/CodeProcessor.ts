@@ -152,6 +152,10 @@ export class CodeProcessor {
     // Generate a unique request ID for this render operation based on transpiled code hash
     const expectedRequestId = md5(transpiled);
 
+    if (signal?.aborted) {
+      return false;
+    }
+
     try {
       // The cleanupPreviousRender was commented out. If uncommented,
       // its purpose is to ensure that any previous rendering iframe and its associated
