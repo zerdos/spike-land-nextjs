@@ -1,9 +1,12 @@
 import { generateStructuredResponse, StructuredResponseParseError } from "@/lib/ai/gemini-client";
 import { describe, expect, it, vi } from "vitest";
 import {
+  buildSystemPrompt,
   buildUserPrompt,
   extractCodeFromRawText,
+  extractKeywords,
   generateAppContent,
+  matchesAny,
   SYSTEM_PROMPT,
 } from "./content-generator";
 
@@ -21,60 +24,189 @@ vi.mock("@/lib/logger", () => ({
 }));
 
 describe("content-generator", () => {
-  describe("SYSTEM_PROMPT", () => {
-    it("should contain shadcn/ui components", () => {
+  describe("extractKeywords", () => {
+    it("should split topic by slashes, hyphens, underscores, and spaces", () => {
+      expect(extractKeywords("games/tic-tac-toe")).toEqual(["games", "tic", "tac", "toe"]);
+      expect(extractKeywords("tools/my_calculator")).toEqual(["tools", "my", "calculator"]);
+      expect(extractKeywords("3d globe")).toEqual(["3d", "globe"]);
+    });
+
+    it("should lowercase all keywords", () => {
+      expect(extractKeywords("Games/TicTacToe")).toEqual(["games", "tictactoe"]);
+    });
+
+    it("should filter out empty strings", () => {
+      expect(extractKeywords("//double//slash//")).toEqual(["double", "slash"]);
+    });
+  });
+
+  describe("matchesAny", () => {
+    it("should match when a keyword includes a trigger", () => {
+      expect(matchesAny(["tictactoe"], ["game", "tictactoe"])).toBe(true);
+    });
+
+    it("should match when a trigger includes a keyword", () => {
+      expect(matchesAny(["3d"], ["three", "3d"])).toBe(true);
+    });
+
+    it("should match partial substring inclusion", () => {
+      expect(matchesAny(["dashboard"], ["board"])).toBe(true);
+      expect(matchesAny(["gameplay"], ["game"])).toBe(true);
+    });
+
+    it("should return false when no match", () => {
+      expect(matchesAny(["cooking", "pasta"], ["game", "play"])).toBe(false);
+    });
+  });
+
+  describe("buildSystemPrompt", () => {
+    it("should always include core components", () => {
+      const prompt = buildSystemPrompt("anything");
+      expect(prompt).toContain("@/components/ui/button");
+      expect(prompt).toContain("@/components/ui/card");
+      expect(prompt).toContain("@/components/ui/dialog");
+      expect(prompt).toContain("@/components/ui/tabs");
+      expect(prompt).toContain("@/components/ui/progress");
+    });
+
+    it("should always include pre-loaded libraries", () => {
+      const prompt = buildSystemPrompt("anything");
+      expect(prompt).toContain("framer-motion");
+      expect(prompt).toContain("lucide-react");
+      expect(prompt).toContain("date-fns");
+      expect(prompt).toContain("zustand");
+      expect(prompt).toContain("sonner");
+    });
+
+    it("should always include code quality rules", () => {
+      const prompt = buildSystemPrompt("anything");
+      expect(prompt).toContain("setTimeout");
+      expect(prompt).toContain("stale");
+      expect(prompt).toContain("text-foreground");
+      expect(prompt).toContain("bg-background");
+      expect(prompt).toContain("semantic color classes");
+      expect(prompt).toContain("Do NOT invent icon names");
+      expect(prompt).toContain("Limit icon imports to 6-8 icons maximum per component");
+    });
+
+    it("should include 3D layer only for 3D topics", () => {
+      const prompt3d = buildSystemPrompt("3d/globe");
+      expect(prompt3d).toContain("three");
+      expect(prompt3d).toContain("3D RENDERING");
+      expect(prompt3d).toContain("OrbitControls");
+
+      const promptTodo = buildSystemPrompt("tools/todo");
+      expect(promptTodo).not.toContain("3D RENDERING");
+    });
+
+    it("should include data viz layer for chart/dashboard topics", () => {
+      const prompt = buildSystemPrompt("finance/stock-chart");
+      expect(prompt).toContain("recharts");
+      expect(prompt).toContain("@/components/ui/chart");
+      expect(prompt).toContain("DATA VISUALIZATION");
+    });
+
+    it("should include game layer for game topics", () => {
+      const prompt = buildSystemPrompt("games/tictactoe");
+      expect(prompt).toContain("howler");
+      expect(prompt).toContain("canvas-confetti");
+      expect(prompt).toContain("GAME DEVELOPMENT");
+
+      const promptPoem = buildSystemPrompt("writing/poem");
+      expect(promptPoem).not.toContain("GAME DEVELOPMENT");
+    });
+
+    it("should include form layer for form topics", () => {
+      const prompt = buildSystemPrompt("tools/calculator");
+      expect(prompt).toContain("react-hook-form");
+      expect(prompt).toContain("@/components/ui/form");
+      expect(prompt).toContain("@/components/ui/checkbox");
+      expect(prompt).toContain("FORMS & VALIDATION");
+    });
+
+    it("should include DnD layer for kanban/todo topics", () => {
+      const prompt = buildSystemPrompt("tools/kanban-board");
+      expect(prompt).toContain("@dnd-kit/core");
+      expect(prompt).toContain("@dnd-kit/sortable");
+      expect(prompt).toContain("DRAG & DROP");
+    });
+
+    it("should include drawing layer for drawing topics", () => {
+      const prompt = buildSystemPrompt("tools/whiteboard");
+      expect(prompt).toContain("roughjs");
+      expect(prompt).toContain("DRAWING & CANVAS");
+    });
+
+    it("should include content layer for blog/wiki topics", () => {
+      const prompt = buildSystemPrompt("writing/blog");
+      expect(prompt).toContain("react-markdown");
+      expect(prompt).toContain("@/components/ui/accordion");
+      expect(prompt).toContain("@/components/ui/table");
+      expect(prompt).toContain("CONTENT & MARKDOWN");
+    });
+
+    it("should include audio layer for music/audio topics", () => {
+      const prompt = buildSystemPrompt("music/piano");
+      expect(prompt).toContain("howler");
+      expect(prompt).toContain("Web Audio API");
+      expect(prompt).toContain("AUDIO & SOUND");
+    });
+
+    it("should include URL params layer for dashboard topics", () => {
+      const prompt = buildSystemPrompt("tools/dashboard");
+      expect(prompt).toContain("URL PARAMETER SUPPORT");
+      expect(prompt).toContain("URLSearchParams(window.location.search)");
+      expect(prompt).toContain("replaceState");
+      expect(prompt).toContain('Do NOT use param name "room"');
+    });
+
+    it("should NOT include URL params for non-dashboard topics", () => {
+      const prompt = buildSystemPrompt("games/tetris");
+      expect(prompt).not.toContain("URL PARAMETER SUPPORT");
+    });
+
+    it("should include multiple layers when topic matches multiple triggers", () => {
+      const prompt = buildSystemPrompt("dashboard/analytics");
+      expect(prompt).toContain("DATA VISUALIZATION");
+      expect(prompt).toContain("URL PARAMETER SUPPORT");
+    });
+
+    it("should include fallback when no layers match", () => {
+      const prompt = buildSystemPrompt("surprise");
+      expect(prompt).toContain("ADDITIONAL CDN LIBRARIES");
+      expect(prompt).toContain("recharts");
+      expect(prompt).toContain("howler");
+      expect(prompt).toContain("three");
+      // Should NOT include detailed layer content
+      expect(prompt).not.toContain("3D RENDERING");
+      expect(prompt).not.toContain("GAME DEVELOPMENT");
+    });
+
+    it("should NOT include fallback when at least one layer matches", () => {
+      const prompt = buildSystemPrompt("games/tetris");
+      expect(prompt).not.toContain("ADDITIONAL CDN LIBRARIES");
+    });
+
+    it("should not include form components in core prompt (moved to form layer)", () => {
+      const prompt = buildSystemPrompt("surprise");
+      expect(prompt).not.toContain("@/components/ui/checkbox");
+      expect(prompt).not.toContain("@/components/ui/switch");
+      expect(prompt).not.toContain("@/components/ui/radio-group");
+    });
+
+    it("should not include chart components in core prompt (moved to data viz layer)", () => {
+      const prompt = buildSystemPrompt("surprise");
+      // The fallback mentions "recharts" briefly but not the full chart component paths
+      expect(prompt).not.toContain("@/components/ui/chart");
+    });
+  });
+
+  describe("SYSTEM_PROMPT backward compatibility", () => {
+    it("should be a string (result of buildSystemPrompt('general'))", () => {
+      expect(typeof SYSTEM_PROMPT).toBe("string");
       expect(SYSTEM_PROMPT).toContain("@/components/ui/button");
-      expect(SYSTEM_PROMPT).toContain("@/components/ui/card");
-      expect(SYSTEM_PROMPT).toContain("@/components/ui/dialog");
-      expect(SYSTEM_PROMPT).toContain("@/components/ui/tabs");
-      expect(SYSTEM_PROMPT).toContain("@/components/ui/chart");
-    });
-
-    it("should contain CDN-available libraries", () => {
-      expect(SYSTEM_PROMPT).toContain("recharts");
-      expect(SYSTEM_PROMPT).toContain("date-fns");
-      expect(SYSTEM_PROMPT).toContain("zustand");
-      expect(SYSTEM_PROMPT).toContain("react-hook-form");
-      expect(SYSTEM_PROMPT).toContain("sonner");
-      expect(SYSTEM_PROMPT).toContain("react-markdown");
-      expect(SYSTEM_PROMPT).toContain("canvas-confetti");
-      expect(SYSTEM_PROMPT).toContain("@dnd-kit/core");
-      expect(SYSTEM_PROMPT).toContain("roughjs");
-      expect(SYSTEM_PROMPT).toContain("howler");
-    });
-
-    it("should contain pre-loaded libraries", () => {
-      expect(SYSTEM_PROMPT).toContain("framer-motion");
-      expect(SYSTEM_PROMPT).toContain("lucide-react");
-    });
-
-    it("should warn against stale closures with setTimeout", () => {
-      expect(SYSTEM_PROMPT).toContain("setTimeout");
-      expect(SYSTEM_PROMPT).toContain("stale");
-    });
-
-    it("should contain semantic color class guidance", () => {
-      expect(SYSTEM_PROMPT).toContain("text-foreground");
-      expect(SYSTEM_PROMPT).toContain("bg-background");
-      expect(SYSTEM_PROMPT).toContain("semantic color classes");
-    });
-
-    it("should contain curated lucide-react icon list with hallucination guard", () => {
-      expect(SYSTEM_PROMPT).toContain("ChevronDown");
-      expect(SYSTEM_PROMPT).toContain("AlertCircle");
-      expect(SYSTEM_PROMPT).toContain("BarChart3");
-      expect(SYSTEM_PROMPT).toContain("Do NOT invent icon names");
-    });
-
-    it("should limit icon imports per component", () => {
-      expect(SYSTEM_PROMPT).toContain("Limit icon imports to 6-8 icons maximum per component");
-    });
-
-    it("should contain URL parameter support instructions", () => {
-      expect(SYSTEM_PROMPT).toContain("URL PARAMETER SUPPORT");
-      expect(SYSTEM_PROMPT).toContain("URLSearchParams(window.location.search)");
-      expect(SYSTEM_PROMPT).toContain("replaceState");
-      expect(SYSTEM_PROMPT).toContain('Do NOT use param name "room"');
+      // "general" matches no layers → fallback
+      expect(SYSTEM_PROMPT).toContain("ADDITIONAL CDN LIBRARIES");
     });
   });
 
@@ -84,10 +216,26 @@ describe("content-generator", () => {
       expect(prompt).toContain('"/create/games/tetris"');
     });
 
-    it("should instruct URL param awareness", () => {
+    it("should include URL param instruction for dashboard topics", () => {
       const prompt = buildUserPrompt("tools/dashboard");
       expect(prompt).toContain("URL search params");
       expect(prompt).toContain("replaceState");
+    });
+
+    it("should include URL param instruction for tracker topics", () => {
+      const prompt = buildUserPrompt("fitness/tracker");
+      expect(prompt).toContain("URL search params");
+    });
+
+    it("should NOT include URL param instruction for non-dashboard topics", () => {
+      const prompt = buildUserPrompt("games/tetris");
+      expect(prompt).not.toContain("URL search params");
+      expect(prompt).not.toContain("replaceState");
+    });
+
+    it("should NOT include URL param instruction for poem topics", () => {
+      const prompt = buildUserPrompt("writing/poem");
+      expect(prompt).not.toContain("URL search params");
     });
   });
 
@@ -109,10 +257,27 @@ describe("content-generator", () => {
       expect(result.error).toBeNull();
       expect(generateStructuredResponse).toHaveBeenCalledWith(expect.objectContaining({
         prompt: expect.stringContaining('"/create/test/app"'),
-        systemPrompt: SYSTEM_PROMPT,
+        systemPrompt: expect.any(String),
         maxTokens: 32768,
         temperature: 0.5,
         thinkingBudget: 32768,
+      }));
+    });
+
+    it("should use topic-specific system prompt", async () => {
+      const mockResponse = {
+        title: "Dashboard",
+        description: "A dashboard",
+        code: "export default function App() { return <div>Dashboard</div> }",
+        relatedApps: ["test/one"],
+      };
+
+      (generateStructuredResponse as any).mockResolvedValue(mockResponse);
+
+      await generateAppContent(["tools", "dashboard"]);
+
+      expect(generateStructuredResponse).toHaveBeenCalledWith(expect.objectContaining({
+        systemPrompt: expect.stringContaining("URL PARAMETER SUPPORT"),
       }));
     });
 

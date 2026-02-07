@@ -21,7 +21,9 @@ export type GenerationResult = {
   error: string | null;
 };
 
-export const SYSTEM_PROMPT =
+// --- Lean Core Prompt (always included) ---
+
+const CORE_PROMPT =
   `You are an expert React developer building polished, production-quality micro-apps.
 
 ## RUNTIME ENVIRONMENT
@@ -39,32 +41,17 @@ export const SYSTEM_PROMPT =
 - @/components/ui/input: Input
 - @/components/ui/label: Label
 - @/components/ui/badge: Badge
-- @/components/ui/tabs: Tabs, TabsList, TabsTrigger, TabsContent
 - @/components/ui/dialog: Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription
+- @/components/ui/tabs: Tabs, TabsList, TabsTrigger, TabsContent
 - @/components/ui/select: Select, SelectTrigger, SelectValue, SelectContent, SelectItem
-- @/components/ui/checkbox: Checkbox
-- @/components/ui/switch: Switch
-- @/components/ui/slider: Slider
-- @/components/ui/progress: Progress
 - @/components/ui/tooltip: Tooltip, TooltipTrigger, TooltipContent, TooltipProvider
-- @/components/ui/accordion: Accordion, AccordionItem, AccordionTrigger, AccordionContent
 - @/components/ui/alert: Alert, AlertTitle, AlertDescription
 - @/components/ui/separator: Separator
 - @/components/ui/scroll-area: ScrollArea
 - @/components/ui/skeleton: Skeleton
-- @/components/ui/table: Table, TableHeader, TableBody, TableRow, TableHead, TableCell
 - @/components/ui/dropdown-menu: DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem
 - @/components/ui/sheet: Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle
-- @/components/ui/avatar: Avatar, AvatarImage, AvatarFallback
-- @/components/ui/calendar: Calendar
-- @/components/ui/drawer: Drawer, DrawerTrigger, DrawerContent
-- @/components/ui/toggle: Toggle
-- @/components/ui/toggle-group: ToggleGroup, ToggleGroupItem
-- @/components/ui/radio-group: RadioGroup, RadioGroupItem
-- @/components/ui/textarea: Textarea
-- @/components/ui/form: Form, FormField, FormItem, FormLabel, FormControl, FormMessage (react-hook-form)
-- @/components/ui/chart: ChartContainer, ChartTooltip, ChartTooltipContent (recharts wrapper)
-- @/components/ui/pagination: Pagination, PaginationContent, PaginationItem, PaginationLink
+- @/components/ui/progress: Progress
 
 ## PRE-LOADED LIBRARIES (zero load time)
 - react (useState, useEffect, useCallback, useMemo, useRef, useReducer)
@@ -83,19 +70,9 @@ export const SYSTEM_PROMPT =
 - clsx, tailwind-merge (for cn() — already available via @/lib/utils)
 
 ## CDN-AVAILABLE LIBRARIES (import by name)
-- recharts (LineChart, BarChart, PieChart, AreaChart, XAxis, YAxis, Tooltip, ResponsiveContainer)
 - date-fns (format, parseISO, addDays, differenceInDays, startOfWeek, etc.)
 - zustand (create for complex state management)
-- react-hook-form (useForm, Controller) + zod (z.string(), z.object() for validation)
 - sonner (toast, toast.success, toast.error for notifications — add <Toaster /> in JSX)
-- react-markdown (ReactMarkdown component for rendering markdown)
-- canvas-confetti (confetti() for celebration effects)
-- @dnd-kit/core + @dnd-kit/sortable (DndContext, SortableContext, useSortable for drag & drop)
-- roughjs (rough.canvas() or rough.svg() for hand-drawn graphics)
-- howler (new Howl({ src: [url] }) for sound effects)
-
-## ADVANCED (use when specifically relevant)
-- three (Three.js for 3D — large bundle, use only for 3D-focused apps)
 
 ## CODE QUALITY RULES
 1. Use shadcn/ui components instead of raw HTML wherever a matching component exists
@@ -110,6 +87,60 @@ export const SYSTEM_PROMPT =
 10. Never use setTimeout/setInterval with functions that read React state — state will be stale. Pass computed values as arguments instead.
 11. Limit icon imports to 6-8 icons maximum per component. Prefer semantic alternatives (text labels, colors, shapes) over additional icons.
 
+Before writing code, mentally plan: key user interactions, state variables, visual hierarchy, and which shadcn/ui components to use.`;
+
+// --- Conditional Layers ---
+
+const LAYER_3D = `
+## 3D RENDERING
+- three (Three.js — import THREE from "three")
+- Performance: Use requestAnimationFrame, dispose geometries/materials on unmount
+- Prefer OrbitControls for camera interaction
+- Keep polygon counts reasonable for browser performance`;
+
+const LAYER_DATA_VIZ = `
+## DATA VISUALIZATION
+- recharts (LineChart, BarChart, PieChart, AreaChart, XAxis, YAxis, Tooltip, ResponsiveContainer)
+- @/components/ui/chart: ChartContainer, ChartTooltip, ChartTooltipContent (recharts wrapper)`;
+
+const LAYER_GAME = `
+## GAME DEVELOPMENT
+- howler (new Howl({ src: [url] }) for sound effects)
+- canvas-confetti (confetti() for celebration/win effects)`;
+
+const LAYER_FORM = `
+## FORMS & VALIDATION
+- react-hook-form (useForm, Controller) + zod (z.string(), z.object() for validation)
+- @/components/ui/form: Form, FormField, FormItem, FormLabel, FormControl, FormMessage
+- @/components/ui/checkbox: Checkbox
+- @/components/ui/switch: Switch
+- @/components/ui/slider: Slider
+- @/components/ui/radio-group: RadioGroup, RadioGroupItem
+- @/components/ui/textarea: Textarea`;
+
+const LAYER_DND = `
+## DRAG & DROP
+- @dnd-kit/core + @dnd-kit/sortable (DndContext, SortableContext, useSortable for drag & drop)`;
+
+const LAYER_DRAWING = `
+## DRAWING & CANVAS
+- roughjs (rough.canvas() or rough.svg() for hand-drawn style graphics)`;
+
+const LAYER_CONTENT = `
+## CONTENT & MARKDOWN
+- react-markdown (ReactMarkdown component for rendering markdown)
+- @/components/ui/accordion: Accordion, AccordionItem, AccordionTrigger, AccordionContent
+- @/components/ui/avatar: Avatar, AvatarImage, AvatarFallback
+- @/components/ui/pagination: Pagination, PaginationContent, PaginationItem, PaginationLink
+- @/components/ui/table: Table, TableHeader, TableBody, TableRow, TableHead, TableCell`;
+
+const LAYER_AUDIO = `
+## AUDIO & SOUND
+- howler (new Howl({ src: [url], sprite: {...} }) — full audio playback, sprites, volume, seek)
+- Web Audio API: AudioContext, OscillatorNode, GainNode for synthesis
+- Patterns: useRef for AudioContext (create on user gesture), cleanup on unmount`;
+
+const LAYER_URL_PARAMS = `
 ## URL PARAMETER SUPPORT
 The component MUST support receiving initial data via URL search parameters:
 1. Read URL params at component top level:
@@ -123,11 +154,189 @@ The component MUST support receiving initial data via URL search parameters:
 5. Keep param names short (e.g., "items", "title", "view", "config").
 6. Handle malformed/missing params gracefully — never crash on bad input.
 7. Do NOT use param name "room" — it is reserved by the runtime.
-8. Add a comment at the top listing accepted URL params.
+8. Add a comment at the top listing accepted URL params.`;
 
-Before writing code, mentally plan: key user interactions, state variables, visual hierarchy, and which shadcn/ui components to use.`;
+const FALLBACK_LIBS = `
+## ADDITIONAL CDN LIBRARIES (import by name when relevant)
+- recharts — charts and data visualization
+- react-hook-form + zod — form validation
+- react-markdown — render markdown content
+- canvas-confetti — celebration effects
+- @dnd-kit/core + @dnd-kit/sortable — drag and drop
+- roughjs — hand-drawn style graphics
+- howler — audio playback
+- three — 3D rendering (large bundle)`;
+
+// --- Layer Definitions ---
+
+interface Layer {
+  triggers: string[];
+  content: string;
+}
+
+const LAYERS: Layer[] = [
+  {
+    triggers: ["three", "3d", "globe", "scene", "orbit", "planet", "cube"],
+    content: LAYER_3D,
+  },
+  {
+    triggers: [
+      "chart",
+      "dashboard",
+      "analytics",
+      "stats",
+      "graph",
+      "metrics",
+      "finance",
+      "stock",
+      "tracker",
+    ],
+    content: LAYER_DATA_VIZ,
+  },
+  {
+    triggers: [
+      "game",
+      "play",
+      "puzzle",
+      "quiz",
+      "tictactoe",
+      "chess",
+      "snake",
+      "tetris",
+      "wordle",
+      "sudoku",
+      "maze",
+      "arcade",
+    ],
+    content: LAYER_GAME,
+  },
+  {
+    triggers: [
+      "form",
+      "survey",
+      "signup",
+      "checkout",
+      "wizard",
+      "booking",
+      "contact",
+      "calculator",
+      "converter",
+    ],
+    content: LAYER_FORM,
+  },
+  {
+    triggers: [
+      "kanban",
+      "board",
+      "drag",
+      "sort",
+      "planner",
+      "calendar",
+      "schedule",
+      "timeline",
+      "todo",
+      "builder",
+      "rank",
+    ],
+    content: LAYER_DND,
+  },
+  {
+    triggers: [
+      "draw",
+      "paint",
+      "sketch",
+      "canvas",
+      "whiteboard",
+      "doodle",
+      "art",
+      "signature",
+      "diagram",
+    ],
+    content: LAYER_DRAWING,
+  },
+  {
+    triggers: [
+      "blog",
+      "story",
+      "writing",
+      "note",
+      "journal",
+      "recipe",
+      "wiki",
+      "markdown",
+      "article",
+      "portfolio",
+      "gallery",
+    ],
+    content: LAYER_CONTENT,
+  },
+  {
+    triggers: [
+      "music",
+      "audio",
+      "sound",
+      "beat",
+      "drum",
+      "piano",
+      "instrument",
+      "synth",
+      "metronome",
+    ],
+    content: LAYER_AUDIO,
+  },
+  {
+    triggers: ["dashboard", "tracker", "monitor", "analytics", "config", "settings"],
+    content: LAYER_URL_PARAMS,
+  },
+];
+
+// --- Keyword Helpers ---
+
+export function extractKeywords(topic: string): string[] {
+  return topic.toLowerCase().split(/[/\-_\s]+/).filter(Boolean);
+}
+
+export function matchesAny(keywords: string[], triggers: string[]): boolean {
+  return triggers.some((t) => keywords.some((k) => k.includes(t) || t.includes(k)));
+}
+
+// --- Dynamic Prompt Builder ---
+
+export function buildSystemPrompt(topic: string): string {
+  const keywords = extractKeywords(topic);
+  const matchedLayers: string[] = [];
+
+  for (const layer of LAYERS) {
+    if (matchesAny(keywords, layer.triggers)) {
+      matchedLayers.push(layer.content);
+    }
+  }
+
+  if (matchedLayers.length === 0) {
+    matchedLayers.push(FALLBACK_LIBS);
+  }
+
+  return CORE_PROMPT + "\n" + matchedLayers.join("\n");
+}
+
+// Backward compatibility — general-purpose prompt with all layers
+export const SYSTEM_PROMPT = buildSystemPrompt("general");
 
 export function buildUserPrompt(topic: string): string {
+  const keywords = extractKeywords(topic);
+  const includeUrlParams = matchesAny(keywords, [
+    "dashboard",
+    "tracker",
+    "monitor",
+    "analytics",
+    "config",
+    "settings",
+  ]);
+
+  const urlParamInstruction = includeUrlParams
+    ? `\n\nIMPORTANT: The component must read URL search params (via new URLSearchParams(window.location.search)) as initial/default values. When state changes, sync back to URL with window.history.replaceState so the URL is always shareable. Provide sensible defaults when no params are present.`
+    : "";
+
   return `Build an interactive app for: "/create/${topic}"
 
 Interpret this path as user intent. Examples:
@@ -136,9 +345,7 @@ Interpret this path as user intent. Examples:
 - "tools/calculator" → Beautiful scientific calculator
 - "finance/mortgage" → Mortgage calculator with amortization chart
 - "fitness/timer" → Workout interval timer with presets
-
-IMPORTANT: The component must read URL search params (via new URLSearchParams(window.location.search)) as initial/default values. When state changes, sync back to URL with window.history.replaceState so the URL is always shareable. Provide sensible defaults when no params are present.
-
+${urlParamInstruction}
 Respond with JSON: { title, description, code, relatedApps }
 - code: raw string (no markdown fences), single default-exported React component
 - relatedApps: 3-5 related paths without "/create/" prefix`;
@@ -180,7 +387,7 @@ export async function generateAppContent(
   try {
     const result = await generateStructuredResponse<GeneratedAppContent>({
       prompt: buildUserPrompt(topic),
-      systemPrompt: SYSTEM_PROMPT,
+      systemPrompt: buildSystemPrompt(topic),
       maxTokens: 32768,
       temperature: 0.5,
       thinkingBudget: 32768,
