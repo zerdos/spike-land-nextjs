@@ -36,7 +36,8 @@ export interface ProcessedImage {
 
 interface ProcessingOptions {
   maxDimension?: number;
-  baseDimension?: number;
+  /** Use standard 1K dimensions (~1024px) matched to the detected aspect ratio */
+  useStandard1K?: boolean;
   quality?: number;
   forceAspectRatio?: AspectRatio;
 }
@@ -154,7 +155,8 @@ export async function processImageForUpload(
   options: ProcessingOptions = {},
 ): Promise<ProcessedImage> {
   const {
-    maxDimension,
+    maxDimension = MAX_DIMENSION,
+    useStandard1K = false,
     quality = WEBP_QUALITY,
     forceAspectRatio,
   } = options;
@@ -182,13 +184,7 @@ export async function processImageForUpload(
 
         // Calculate final dimensions after resize
         let finalWidth: number, finalHeight: number;
-        if (maxDimension !== undefined) {
-          ({ width: finalWidth, height: finalHeight } = calculateFinalDimensions(
-            cropWidth,
-            cropHeight,
-            maxDimension,
-          ));
-        } else {
+        if (useStandard1K) {
           // Use exact standard 1K dimensions for the detected AR
           const standardDims = STANDARD_1K_DIMENSIONS[targetRatio];
           // Don't upscale: if source crop is smaller than standard dims, keep source size
@@ -199,6 +195,12 @@ export async function processImageForUpload(
             finalWidth = standardDims.width;
             finalHeight = standardDims.height;
           }
+        } else {
+          ({ width: finalWidth, height: finalHeight } = calculateFinalDimensions(
+            cropWidth,
+            cropHeight,
+            maxDimension,
+          ));
         }
 
         // Create canvas and apply crop + resize

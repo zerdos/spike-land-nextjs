@@ -35,7 +35,7 @@ export function ImageUpload(
         const processedFiles: File[] = [];
         for (const file of filesArray) {
           try {
-            const processed = await processImageForUpload(file);
+            const processed = await processImageForUpload(file, { useStandard1K: true });
             // Create a new File from the processed blob
             const extension = processed.mimeType === "image/webp"
               ? ".webp"

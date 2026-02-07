@@ -553,7 +553,7 @@ export function AudioMixer() {
         return;
       }
 
-      if (key === "o") {
+      if (key === "o" && !isMeta) {
         e.preventDefault();
         if (selectedTrack) {
           trackManager.toggleSolo(selectedTrack.id);

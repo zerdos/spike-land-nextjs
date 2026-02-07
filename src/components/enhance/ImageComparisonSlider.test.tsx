@@ -2,30 +2,6 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ImageComparisonSlider } from "./ImageComparisonSlider";
 
-// Mock next/image
-vi.mock("next/image", () => ({
-  default: (
-    { src, alt, className, onError, style, ...props }: {
-      src: string;
-      alt: string;
-      className?: string;
-      onError?: () => void;
-      style?: React.CSSProperties;
-      [key: string]: unknown;
-    },
-  ) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt={alt}
-      className={className}
-      onError={onError}
-      style={style}
-      {...props}
-    />
-  ),
-}));
-
 // Mock fetch for error logging
 global.fetch = vi.fn();
 

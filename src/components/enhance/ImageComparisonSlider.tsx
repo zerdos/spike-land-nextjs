@@ -181,7 +181,7 @@ export function ImageComparisonSlider({
         role="slider"
         tabIndex={0}
         aria-label="Image comparison slider"
-        aria-valuenow={Math.round(sliderPosition * 100)}
+        aria-valuenow={Math.round(sliderPosition)}
         aria-valuemin={0}
         aria-valuemax={100}
       >

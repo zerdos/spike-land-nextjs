@@ -354,6 +354,8 @@ export function useAudioTracks() {
       gainNode.connect(masterGain);
 
       source.onended = () => {
+        // Guard: if source was replaced, this is a stale callback
+        if (sourceRefs.current.get(id) !== source) return;
         dispatch({ type: "STOP_TRACK", payload: id });
         sourceRefs.current.delete(id);
         activeGainRefs.current.delete(id);
@@ -455,6 +457,7 @@ export function useAudioTracks() {
   const stopTrack = useCallback((id: string) => {
     const source = sourceRefs.current.get(id);
     if (source) {
+      source.onended = null;
       try {
         source.stop();
       } catch {
@@ -468,6 +471,7 @@ export function useAudioTracks() {
   }, []);
 
   const stopAllTracks = useCallback(() => {
+    onAllEndedRef.current = null;
     tracks.forEach((track) => {
       stopTrack(track.id);
     });

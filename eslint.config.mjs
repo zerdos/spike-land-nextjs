@@ -25,6 +25,7 @@ const eslintConfig = tseslint.config(
       "packages/mobile-app/coverage/**",
       "src/app/.well-known/**",
       "live/**",
+      ".github/skills/**",
     ],
   },
   // TypeScript files configuration
