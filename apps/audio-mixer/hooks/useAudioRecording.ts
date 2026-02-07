@@ -93,9 +93,12 @@ export function useAudioRecording() {
     }
   }, []);
 
+  const pauseStartTimeRef = useRef<number>(0);
+
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state === "recording") {
       mediaRecorderRef.current.pause();
+      pauseStartTimeRef.current = Date.now();
       if (timerRef.current) {
         window.clearInterval(timerRef.current);
         timerRef.current = null;
@@ -106,12 +109,12 @@ export function useAudioRecording() {
 
   const resumeRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state === "paused") {
-      const pauseTime = Date.now();
+      // Calculate pause duration ONCE before restarting
+      pausedDurationRef.current += Date.now() - pauseStartTimeRef.current;
       mediaRecorderRef.current.resume();
 
-      // Update timer
+      // Restart the duration timer
       timerRef.current = window.setInterval(() => {
-        pausedDurationRef.current += Date.now() - pauseTime;
         const elapsed = (Date.now() - startTimeRef.current - pausedDurationRef.current) /
           1000;
         setState((prev) => ({ ...prev, duration: elapsed }));

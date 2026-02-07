@@ -48,6 +48,7 @@ export function AudioMixer() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recordingStartTimeRef = useRef<number>(0);
+  const seekCounterRef = useRef<number>(0);
 
   const audioContext = useAudioContext();
   const recording = useAudioRecording();
@@ -265,10 +266,15 @@ export function AudioMixer() {
       context,
       masterGain,
       timeline.state.playheadTime,
+      () => {
+        // All tracks finished — stop playback state
+        setIsPlaying(false);
+        timeline.stopPlayheadAnimation();
+      },
     );
     setIsPlaying(true);
-    // Start playhead animation from current position
-    timeline.startPlayheadAnimation(timeline.state.playheadTime);
+    // Start playhead animation from current position, synced to AudioContext clock
+    timeline.startPlayheadAnimation(timeline.state.playheadTime, context);
   }, [audioContext, trackManager, timeline]);
 
   // Stop all tracks
@@ -296,10 +302,15 @@ export function AudioMixer() {
       // If playing, restart from new position
       if (isPlaying) {
         trackManager.stopAllTracks();
+        const seekId = ++seekCounterRef.current;
         audioContext.initialize().then(({ context, masterGain }) => {
-          // Update currentTime on tracks before playing
-          trackManager.playAllTracks(context, masterGain, time);
-          timeline.startPlayheadAnimation(time);
+          // Abandon stale seeks from rapid scrubbing
+          if (seekCounterRef.current !== seekId) return;
+          trackManager.playAllTracks(context, masterGain, time, () => {
+            setIsPlaying(false);
+            timeline.stopPlayheadAnimation();
+          });
+          timeline.startPlayheadAnimation(time, context);
         });
       }
     },

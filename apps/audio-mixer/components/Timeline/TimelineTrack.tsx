@@ -32,24 +32,38 @@ const TRACK_COLORS = [
   "bg-red-600",
 ];
 
-function drawWaveform(
+// Get RGB values from track color class
+const COLOR_MAP: Record<string, string> = {
+  "bg-blue-600": "0, 229, 255", // Pixel Cyan
+  "bg-green-600": "16, 185, 129",
+  "bg-purple-600": "168, 85, 247",
+  "bg-orange-600": "249, 115, 22",
+  "bg-pink-600": "236, 72, 153",
+  "bg-cyan-600": "6, 182, 212",
+  "bg-yellow-600": "234, 179, 8",
+  "bg-red-600": "239, 68, 68",
+};
+
+/**
+ * Draw the static (unplayed) waveform — called only when waveform data, zoom, or trim changes.
+ * Returns the ImageData for fast restoration on each frame.
+ */
+function drawStaticWaveform(
   canvas: HTMLCanvasElement,
   waveformData: number[],
-  progress: number,
   trackColor: string,
   trimStart: number,
   trimEnd: number,
   duration: number,
-) {
+): ImageData | null {
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+  if (!ctx) return null;
 
   const { width, height } = canvas;
   ctx.clearRect(0, 0, width, height);
 
-  if (waveformData.length === 0) return;
+  if (waveformData.length === 0) return null;
 
-  // Calculate which portion of the waveform to show
   const startRatio = Math.max(0, trimStart) / duration;
   const endRatio = (trimEnd > 0 ? trimEnd : duration) / duration;
   const visibleDataLength = Math.floor(
@@ -58,24 +72,11 @@ function drawWaveform(
   const dataOffset = Math.floor(waveformData.length * startRatio);
 
   const barCount = Math.min(visibleDataLength, Math.floor(width / 3));
-  if (barCount === 0) return;
+  if (barCount === 0) return null;
 
   const step = visibleDataLength / barCount;
   const barWidth = Math.max(1, (width / barCount) - 1);
-  const progressIndex = Math.floor(progress * barCount);
-
-  // Get RGB values from track color class
-  const colorMap: Record<string, string> = {
-    "bg-blue-600": "0, 229, 255", // Pixel Cyan
-    "bg-green-600": "16, 185, 129",
-    "bg-purple-600": "168, 85, 247",
-    "bg-orange-600": "249, 115, 22",
-    "bg-pink-600": "236, 72, 153",
-    "bg-cyan-600": "6, 182, 212",
-    "bg-yellow-600": "234, 179, 8",
-    "bg-red-600": "239, 68, 68",
-  };
-  const rgb = colorMap[trackColor] || "0, 229, 255";
+  const rgb = COLOR_MAP[trackColor] || "0, 229, 255";
 
   for (let i = 0; i < barCount; i++) {
     const dataIndex = dataOffset + Math.floor(i * step);
@@ -84,30 +85,58 @@ function drawWaveform(
     const x = i * (barWidth + 1);
     const y = (height - barHeight) / 2;
 
-    const isPlayed = i < progressIndex;
-
-    // Create gradient for each bar
     const gradient = ctx.createLinearGradient(x, y, x, y + barHeight);
-    if (isPlayed) {
-      gradient.addColorStop(0, `rgba(${rgb}, 1)`);
-      gradient.addColorStop(1, `rgba(${rgb}, 0.6)`);
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = `rgba(${rgb}, 0.5)`;
-    } else {
-      gradient.addColorStop(0, `rgba(${rgb}, 0.3)`);
-      gradient.addColorStop(1, `rgba(${rgb}, 0.15)`);
-      ctx.shadowBlur = 0;
-    }
-
+    gradient.addColorStop(0, `rgba(${rgb}, 0.3)`);
+    gradient.addColorStop(1, `rgba(${rgb}, 0.15)`);
     ctx.fillStyle = gradient;
 
-    // Rounded rectangles for bars
     const radius = barWidth / 2;
     ctx.beginPath();
     ctx.roundRect(x, y, barWidth, barHeight, radius);
     ctx.fill();
-    ctx.shadowBlur = 0; // Reset for next bar
   }
+
+  return ctx.getImageData(0, 0, width, height);
+}
+
+/**
+ * Draw the progress overlay on top of the cached static waveform.
+ * Uses `source-atop` compositing so the highlight only paints over existing waveform pixels.
+ */
+function drawProgressOverlay(
+  canvas: HTMLCanvasElement,
+  cachedImage: ImageData,
+  progress: number,
+  trackColor: string,
+) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const { width, height } = canvas;
+  const rgb = COLOR_MAP[trackColor] || "0, 229, 255";
+
+  // Restore the cached static waveform
+  ctx.putImageData(cachedImage, 0, 0);
+
+  if (progress <= 0) return;
+
+  // Draw played highlight using source-atop — only fills where waveform pixels exist
+  const progressX = Math.floor(progress * width);
+  ctx.save();
+  ctx.globalCompositeOperation = "source-atop";
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, height);
+  gradient.addColorStop(0, `rgba(${rgb}, 1)`);
+  gradient.addColorStop(1, `rgba(${rgb}, 0.6)`);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, progressX, height);
+
+  // Add glow effect for played region
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = `rgba(${rgb}, 0.5)`;
+  ctx.fillRect(0, 0, progressX, height);
+
+  ctx.restore();
 }
 
 type DragMode = "move" | "trim-start" | "trim-end" | null;
@@ -123,6 +152,7 @@ export function TimelineTrack({
   onSelect,
 }: TimelineTrackProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const waveformCacheRef = useRef<ImageData | null>(null);
   const [dragMode, setDragMode] = useState<DragMode>(null);
   const [isHoveringHandle, setIsHoveringHandle] = useState<
     "start" | "end" | null
@@ -155,6 +185,7 @@ export function TimelineTrack({
     TRACK_COLORS.length;
   const trackColor = TRACK_COLORS[colorIndex] ?? "bg-blue-600";
 
+  // Static effect: re-draw & cache waveform only when shape changes
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -163,10 +194,9 @@ export function TimelineTrack({
     canvas.width = Math.max(1, Math.floor(audioWidth));
     canvas.height = TRACK_HEIGHT - 24;
 
-    drawWaveform(
+    waveformCacheRef.current = drawStaticWaveform(
       canvas,
       track.waveformData,
-      track.isPlaying ? progress : 0,
       trackColor,
       actualAudioStart,
       effectiveTrimEnd,
@@ -176,13 +206,25 @@ export function TimelineTrack({
     track.waveformData,
     actualAudioDuration,
     zoom,
-    progress,
-    track.isPlaying,
     trackColor,
     actualAudioStart,
     effectiveTrimEnd,
     track.duration,
   ]);
+
+  // Progress effect: cheap overlay using cached ImageData
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const cached = waveformCacheRef.current;
+    if (!canvas || !cached) return;
+
+    drawProgressOverlay(
+      canvas,
+      cached,
+      track.isPlaying ? progress : 0,
+      trackColor,
+    );
+  }, [progress, track.isPlaying, trackColor]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, mode: DragMode) => {

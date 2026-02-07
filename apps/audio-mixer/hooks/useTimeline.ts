@@ -36,7 +36,7 @@ interface UseTimelineReturn {
   setSnapGrid: (grid: SnapGrid) => void;
 
   // Playback animation
-  startPlayheadAnimation: (startTime: number) => void;
+  startPlayheadAnimation: (startTime: number, audioContext?: AudioContext) => void;
   stopPlayheadAnimation: () => void;
 
   // Scrubbing
@@ -72,7 +72,12 @@ export function useTimeline(
 
   const animationRef = useRef<number | null>(null);
   const animationStartRef = useRef<
-    { wallTime: number; playheadTime: number; } | null
+    {
+      wallTime: number;
+      contextTime: number;
+      playheadTime: number;
+      audioContext: AudioContext | null;
+    } | null
   >(null);
   const scrubRef = useRef<
     {
@@ -145,7 +150,7 @@ export function useTimeline(
   }, []);
 
   // Playhead animation for playback
-  const startPlayheadAnimation = useCallback((startTime: number) => {
+  const startPlayheadAnimation = useCallback((startTime: number, audioContext?: AudioContext) => {
     // Cancel any existing animation
     if (animationRef.current !== null) {
       cancelAnimationFrame(animationRef.current);
@@ -153,15 +158,20 @@ export function useTimeline(
 
     animationStartRef.current = {
       wallTime: performance.now(),
+      contextTime: audioContext?.currentTime ?? 0,
       playheadTime: startTime,
+      audioContext: audioContext ?? null,
     };
 
     const animate = () => {
       if (!animationStartRef.current) return;
 
-      const elapsed = (performance.now() - animationStartRef.current.wallTime) /
-        1000;
-      const newTime = animationStartRef.current.playheadTime + elapsed;
+      const { audioContext: ctx, contextTime, wallTime, playheadTime } = animationStartRef.current;
+      // Prefer AudioContext clock when available to stay in sync with audio
+      const elapsed = ctx
+        ? ctx.currentTime - contextTime
+        : (performance.now() - wallTime) / 1000;
+      const newTime = playheadTime + elapsed;
 
       setState((prev) => ({
         ...prev,
