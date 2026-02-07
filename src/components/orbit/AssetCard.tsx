@@ -77,7 +77,7 @@ export function AssetCard({ asset, onPreview, onDelete }: AssetCardProps) {
             )}
 
           {/* Hover overlay with quick actions */}
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <Button
               size="sm"
               variant="secondary"
@@ -88,7 +88,7 @@ export function AssetCard({ asset, onPreview, onDelete }: AssetCardProps) {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="secondary">
+                <Button size="sm" variant="secondary" aria-label="More options">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>

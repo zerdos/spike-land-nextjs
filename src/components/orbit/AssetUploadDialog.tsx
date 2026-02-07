@@ -146,6 +146,7 @@ export function AssetUploadDialog({
                     variant="ghost"
                     onClick={() => removeFile(index)}
                     disabled={uploadProgress[file.name] !== undefined}
+                    aria-label="Remove file"
                   >
                     <X className="h-4 w-4" />
                   </Button>
