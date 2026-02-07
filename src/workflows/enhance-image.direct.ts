@@ -456,8 +456,8 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
       currentStage: null, // Clear stage on completion
       enhancedUrl: uploadResult.url,
       enhancedR2Key: enhancedR2Key,
-      enhancedWidth: geminiWidth,
-      enhancedHeight: geminiHeight,
+      enhancedWidth: extractWidth,
+      enhancedHeight: extractHeight,
       enhancedSizeBytes: enhancedBuffer.length,
       processingCompletedAt: new Date(),
       geminiModel: modelToUse,

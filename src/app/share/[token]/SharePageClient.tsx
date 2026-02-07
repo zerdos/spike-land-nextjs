@@ -26,16 +26,15 @@ export function SharePageClient({
   enhancedUrl,
   originalWidth,
   originalHeight,
-  enhancedWidth,
-  enhancedHeight,
   shareToken,
 }: SharePageClientProps) {
   const [downloadingOriginal, setDownloadingOriginal] = useState(false);
   const [downloadingEnhanced, setDownloadingEnhanced] = useState(false);
 
-  // Use enhanced dimensions if available, otherwise fall back to original
-  const displayWidth = enhancedWidth ?? originalWidth;
-  const displayHeight = enhancedHeight ?? originalHeight;
+  // Always use original dimensions for the container so both images
+  // share the same aspect ratio in the comparison slider
+  const displayWidth = originalWidth;
+  const displayHeight = originalHeight;
 
   // Aspect ratio for container calculation
   const aspectRatio = displayWidth / displayHeight;

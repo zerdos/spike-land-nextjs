@@ -84,14 +84,14 @@ describe("SharePageClient", () => {
     );
   });
 
-  it("uses enhanced dimensions for the slider", () => {
+  it("always uses original dimensions for the slider", () => {
     render(<SharePageClient {...defaultProps} />);
 
-    expect(screen.getByTestId("slider-width")).toHaveTextContent("3840");
-    expect(screen.getByTestId("slider-height")).toHaveTextContent("2160");
+    expect(screen.getByTestId("slider-width")).toHaveTextContent("1920");
+    expect(screen.getByTestId("slider-height")).toHaveTextContent("1080");
   });
 
-  it("falls back to original dimensions when enhanced are null", () => {
+  it("uses original dimensions even when enhanced are null", () => {
     render(
       <SharePageClient
         {...defaultProps}

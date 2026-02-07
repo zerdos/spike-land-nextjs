@@ -1,7 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { GripVertical } from "lucide-react";
-import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // Log broken images to server for monitoring
@@ -184,13 +184,10 @@ export function ImageComparisonSlider({
         {/* Enhanced image (background) */}
         {!enhancedError
           ? (
-            <Image
+            <img
               src={enhancedUrl}
               alt={enhancedLabel}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
               className="object-contain"
-              priority
               onError={handleEnhancedError}
             />
           )
@@ -209,13 +206,10 @@ export function ImageComparisonSlider({
         >
           {!originalError
             ? (
-              <Image
+              <img
                 src={originalUrl}
                 alt={originalLabel}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
                 className="object-contain"
-                priority
                 onError={handleOriginalError}
               />
             )
