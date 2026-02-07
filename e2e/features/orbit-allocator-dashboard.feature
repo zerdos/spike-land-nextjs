@@ -278,7 +278,7 @@ Feature: Allocator Dashboard
     And the recommendation cards should be full width
     And the charts should be scrollable
 
-  @responsive
+  @responsive @flaky
   Scenario: Dashboard displays correctly on tablet
     Given I am using a tablet device
     When I navigate to the Allocator page

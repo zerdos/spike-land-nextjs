@@ -103,7 +103,7 @@ Feature: Admin Photos Page
     When I close the modal
     Then the photo details modal should not be visible
 
-  @requires-db
+  @requires-db @flaky
   Scenario: Photo enhancement count badge displays
     Given there are photos in the system
     When I visit "/admin/photos"

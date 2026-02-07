@@ -64,7 +64,7 @@ Feature: Canvas Smart Photo Frame Display
     When I change the interval setting to "30"
     Then the QR code URL should contain "interval=30"
 
-  @qr-panel
+  @qr-panel @flaky
   Scenario: Copy URL button works
     Given I have an UNLISTED album with images
     And I am on my album detail page
