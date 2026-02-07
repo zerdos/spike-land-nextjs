@@ -12,6 +12,8 @@ vi.mock("@/lib/prisma", () => ({
   default: {
     relayDraft: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
+      count: vi.fn(),
       update: vi.fn(),
     },
     draftEditHistory: {
@@ -40,10 +42,13 @@ import {
   approveDraftWorkflow,
   createAuditLog,
   editDraft,
+  getAggregatedFeedback,
   getApprovalSettings,
   getAuditLogs,
   getDraftWithHistory,
+  getEditFeedbackData,
   getEditHistory,
+  getWorkflowMetrics,
   markDraftAsFailed,
   markDraftAsSent,
   rejectDraftWorkflow,
@@ -827,6 +832,219 @@ describe("approval-workflow", () => {
       const result = await getDraftWithHistory("nonexistent");
 
       expect(result).toBeNull();
+    });
+  });
+
+  // ============================================
+  // Metrics Tests
+  // ============================================
+
+  describe("getWorkflowMetrics", () => {
+    it("returns zero metrics for workspace with no drafts", async () => {
+      vi.mocked(prisma.relayDraft.findMany).mockResolvedValue([]);
+
+      const result = await getWorkflowMetrics("workspace-123");
+
+      expect(result).toEqual({
+        averageApprovalTime: 0,
+        approvalRate: 0,
+        rejectionRate: 0,
+        editBeforeApprovalRate: 0,
+        averageEditsPerDraft: 0,
+        sendSuccessRate: 100,
+      });
+    });
+
+    it("calculates metrics correctly", async () => {
+      const now = new Date();
+      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
+      const mockDrafts = [
+        // Draft 1: Approved, reviewed in 60 mins, no edits
+        {
+          id: "d1",
+          status: "APPROVED",
+          createdAt: oneHourAgo,
+          reviewedAt: now,
+          reviewedById: "u1",
+          editHistory: [],
+        },
+        // Draft 2: Rejected, reviewed in 30 mins, 1 edit
+        {
+          id: "d2",
+          status: "REJECTED",
+          createdAt: new Date(now.getTime() - 30 * 60 * 1000),
+          reviewedAt: now,
+          reviewedById: "u1",
+          editHistory: [{ id: "e1" }],
+        },
+        // Draft 3: Sent, no review time (auto-approved?), no edits
+        {
+          id: "d3",
+          status: "SENT",
+          createdAt: now,
+          reviewedAt: null,
+          reviewedById: null,
+          editHistory: [],
+        },
+        // Draft 4: Failed, no review time, 2 edits
+        {
+          id: "d4",
+          status: "FAILED",
+          createdAt: now,
+          reviewedAt: null,
+          reviewedById: null,
+          editHistory: [{ id: "e2" }, { id: "e3" }],
+        },
+      ];
+
+      vi.mocked(prisma.relayDraft.findMany).mockResolvedValue(mockDrafts as never);
+
+      const result = await getWorkflowMetrics("workspace-123");
+
+      // Approval time: (60 + 30) / 2 = 45 mins
+      expect(result.averageApprovalTime).toBe(45);
+
+      // Approval rate: 1 approved + 0 sent (only counted from reviewed) / 2 reviewed = 50%
+      // Wait, approvedDrafts logic: status APPROVED or SENT
+      // reviewedDrafts logic: has reviewedAt
+      // d1: APPROVED, reviewed. d2: REJECTED, reviewed. d3: SENT, not reviewed. d4: FAILED, not reviewed.
+      // reviewed: [d1, d2]
+      // approved from reviewed: [d1] -> 1/2 = 50%
+      expect(result.approvalRate).toBe(50);
+
+      // Rejection rate: 1 rejected / 2 reviewed = 50%
+      expect(result.rejectionRate).toBe(50);
+
+      // Edit before approval rate: 2 drafts with edits (d2, d4) / 4 total = 50%
+      expect(result.editBeforeApprovalRate).toBe(50);
+
+      // Average edits: (0 + 1 + 0 + 2) / 4 = 0.75
+      expect(result.averageEditsPerDraft).toBe(0.75);
+
+      // Send success rate: 1 sent / (1 sent + 1 failed) = 50%
+      expect(result.sendSuccessRate).toBe(50);
+    });
+
+    it("respects date filters", async () => {
+      vi.mocked(prisma.relayDraft.findMany).mockResolvedValue([]);
+
+      const startDate = new Date("2023-01-01");
+      const endDate = new Date("2023-01-31");
+
+      await getWorkflowMetrics("workspace-123", startDate, endDate);
+
+      expect(prisma.relayDraft.findMany).toHaveBeenCalledWith({
+        where: {
+          inboxItem: { workspaceId: "workspace-123" },
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+        include: { editHistory: true },
+      });
+    });
+  });
+
+  describe("getAggregatedFeedback", () => {
+    it("returns zero metrics with no edits", async () => {
+      vi.mocked(prisma.draftEditHistory.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.relayDraft.count).mockResolvedValue(10);
+
+      const result = await getAggregatedFeedback("workspace-123");
+
+      expect(result.totalEdits).toBe(0);
+      expect(result.averageEditDistance).toBe(0);
+      expect(result.editRate).toBe(0);
+      expect(result.editTypeBreakdown.MINOR_TWEAK).toBe(0);
+    });
+
+    it("calculates aggregated statistics correctly", async () => {
+      const mockEdits = [
+        { editType: "MINOR_TWEAK", editDistance: 5 },
+        { editType: "MINOR_TWEAK", editDistance: 3 },
+        { editType: "TONE_ADJUSTMENT", editDistance: 10 },
+        { editType: "COMPLETE_REWRITE", editDistance: 50 },
+      ];
+
+      vi.mocked(prisma.draftEditHistory.findMany).mockResolvedValue(mockEdits as never);
+      vi.mocked(prisma.relayDraft.count).mockResolvedValue(8); // 4 edits / 8 drafts = 50% edit rate
+
+      const result = await getAggregatedFeedback("workspace-123");
+
+      expect(result.totalEdits).toBe(4);
+      expect(result.editRate).toBe(50);
+      // Avg distance: (5 + 3 + 10 + 50) / 4 = 17
+      expect(result.averageEditDistance).toBe(17);
+      expect(result.editTypeBreakdown.MINOR_TWEAK).toBe(2);
+      expect(result.editTypeBreakdown.TONE_ADJUSTMENT).toBe(1);
+      expect(result.editTypeBreakdown.COMPLETE_REWRITE).toBe(1);
+      expect(result.editTypeBreakdown.PLATFORM_FORMATTING).toBe(0);
+    });
+  });
+
+  describe("getEditFeedbackData", () => {
+    it("returns empty array when no edits exist", async () => {
+      vi.mocked(prisma.draftEditHistory.findMany).mockResolvedValue([]);
+
+      const result = await getEditFeedbackData("workspace-123");
+
+      expect(result).toEqual([]);
+    });
+
+    it("maps edit history to ML-friendly format", async () => {
+      const mockEdits = [
+        {
+          originalContent: "Original",
+          editedContent: "Edited",
+          editType: "CONTENT_REVISION",
+          editDistance: 10,
+          draft: {
+            confidenceScore: 0.8,
+            inboxItem: {
+              platform: "TWITTER",
+              type: "COMPLAINT",
+            },
+          },
+        },
+      ];
+
+      vi.mocked(prisma.draftEditHistory.findMany).mockResolvedValue(mockEdits as never);
+
+      const result = await getEditFeedbackData("workspace-123");
+
+      expect(result).toHaveLength(1);
+      expect(result[0]!.originalContent).toBe("Original");
+      expect(result[0]!.editedContent).toBe("Edited");
+      expect(result[0]!.editType).toBe("CONTENT_REVISION");
+      expect(result[0]!.platform).toBe("TWITTER");
+      expect(result[0]!.messageType).toBe("COMPLAINT");
+      expect(result[0]!.isSubstantialEdit).toBe(true);
+    });
+
+    it("flags non-substantial edits correctly", async () => {
+      const mockEdits = [
+        {
+          originalContent: "Original",
+          editedContent: "Original.",
+          editType: "MINOR_TWEAK",
+          editDistance: 1,
+          draft: {
+            confidenceScore: 0.9,
+            inboxItem: {
+              platform: "LINKEDIN",
+              type: "QUESTION",
+            },
+          },
+        },
+      ];
+
+      vi.mocked(prisma.draftEditHistory.findMany).mockResolvedValue(mockEdits as never);
+
+      const result = await getEditFeedbackData("workspace-123");
+
+      expect(result[0]!.isSubstantialEdit).toBe(false);
     });
   });
 });

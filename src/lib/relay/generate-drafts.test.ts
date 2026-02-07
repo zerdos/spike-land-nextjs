@@ -42,6 +42,7 @@ import {
   approveDraft,
   generateDrafts,
   getDraftsForInboxItem,
+  regenerateDrafts,
   rejectDraft,
   saveDraftsToDatabase,
 } from "./generate-drafts";
@@ -451,6 +452,61 @@ describe("generate-drafts", () => {
           workspaceId: "workspace-123",
         }),
       ).rejects.toThrow("Invalid draft response structure");
+    });
+  });
+
+  // ============================================
+  // regenerateDrafts Tests
+  // ============================================
+
+  describe("regenerateDrafts", () => {
+    it("combines feedback with existing custom instructions", async () => {
+      vi.mocked(prisma.brandProfile.findFirst).mockResolvedValue(null);
+      mockGenerateStructuredResponse.mockResolvedValue(mockAIResponse);
+
+      await regenerateDrafts({
+        inboxItem: mockInboxItem,
+        workspaceId: "workspace-123",
+        customInstructions: "Be concise",
+        feedback: "Make it friendlier",
+      });
+
+      const call = mockGenerateStructuredResponse.mock.calls[0]![0]!;
+      expect(call.prompt).toContain("Additional Instructions");
+      expect(call.prompt).toContain("Be concise");
+      expect(call.prompt).toContain("User Feedback: Make it friendlier");
+    });
+
+    it("passes feedback alone when no custom instructions exist", async () => {
+      vi.mocked(prisma.brandProfile.findFirst).mockResolvedValue(null);
+      mockGenerateStructuredResponse.mockResolvedValue(mockAIResponse);
+
+      await regenerateDrafts({
+        inboxItem: mockInboxItem,
+        workspaceId: "workspace-123",
+        feedback: "Make it friendlier",
+      });
+
+      const call = mockGenerateStructuredResponse.mock.calls[0]![0]!;
+      expect(call.prompt).toContain(
+        "**Additional Instructions**: User Feedback: Make it friendlier",
+      );
+      expect(call.prompt).not.toContain("undefined");
+    });
+
+    it("delegates to generateDrafts with combined instructions", async () => {
+      vi.mocked(prisma.brandProfile.findFirst).mockResolvedValue(null);
+      mockGenerateStructuredResponse.mockResolvedValue(mockAIResponse);
+
+      const result = await regenerateDrafts({
+        inboxItem: mockInboxItem,
+        workspaceId: "workspace-123",
+        feedback: "Fix typos",
+      });
+
+      expect(result.drafts).toHaveLength(3);
+      expect(prisma.brandProfile.findFirst).toHaveBeenCalled();
+      expect(mockGenerateStructuredResponse).toHaveBeenCalled();
     });
   });
 
