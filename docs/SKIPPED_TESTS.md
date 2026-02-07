@@ -182,6 +182,8 @@ These E2E tests were skipped to unblock the CI pipeline due to persistent failur
 | `e2e/features/agent-polling-e2e.feature`         | Entire Feature                                    | All tests failing             | #1072          |
 | `e2e/features/album-drag-drop.feature`           | Entire Feature                                    | All tests failing             | #1073          |
 | `e2e/features/album-management.feature`          | Multiple Scenarios                                | Element not found / Timeouts  | #1074          |
+| `e2e/features/storybook-layout.feature`          | "Mobile menu opens and shows navigation"          | Element visibility timeout    | PR #1103       |
+| `e2e/features/storybook-layout.feature`          | "Mobile menu closes after navigation"             | Element visibility timeout    | PR #1103       |
 
 ## Related Documentation
 
