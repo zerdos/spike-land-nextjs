@@ -3,9 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
+import { AnimatePresence } from "framer-motion";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { SkillsBar } from "./skills-bar";
 
 function slugify(text: string): string {
   return text.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-/]/g, "");
@@ -89,6 +91,10 @@ export function CreateSearch() {
           Create
         </Button>
       </form>
+
+      <AnimatePresence>
+        <SkillsBar query={debouncedQuery} />
+      </AnimatePresence>
 
       {results.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-popover border rounded-md shadow-lg z-50 overflow-hidden">

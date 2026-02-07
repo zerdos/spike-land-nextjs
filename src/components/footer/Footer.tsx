@@ -28,7 +28,7 @@ export function Footer() {
   // Hide footer on my-apps, live, create, and orbit routes
   if (
     pathname?.startsWith("/my-apps") || pathname?.startsWith("/live") ||
-    pathname?.startsWith("/orbit") || pathname?.startsWith("/create")
+    pathname?.startsWith("/orbit") || pathname?.startsWith("/create/")
   ) {
     return null;
   }

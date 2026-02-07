@@ -6,6 +6,7 @@ import {
   extractCodeFromRawText,
   extractKeywords,
   generateAppContent,
+  getMatchedSkills,
   matchesAny,
   SYSTEM_PROMPT,
 } from "./content-generator";
@@ -27,7 +28,7 @@ describe("content-generator", () => {
   describe("extractKeywords", () => {
     it("should split topic by slashes, hyphens, underscores, and spaces", () => {
       expect(extractKeywords("games/tic-tac-toe")).toEqual(["games", "tic", "tac", "toe"]);
-      expect(extractKeywords("tools/my_calculator")).toEqual(["tools", "my", "calculator"]);
+      expect(extractKeywords("tools/calculator")).toEqual(["tools", "calculator"]);
       expect(extractKeywords("3d globe")).toEqual(["3d", "globe"]);
     });
 
@@ -38,20 +39,39 @@ describe("content-generator", () => {
     it("should filter out empty strings", () => {
       expect(extractKeywords("//double//slash//")).toEqual(["double", "slash"]);
     });
+
+    it("should filter out stop words", () => {
+      expect(extractKeywords("to-do-list")).toEqual(["list"]);
+      expect(extractKeywords("tools/my_calculator")).toEqual(["tools", "calculator"]);
+      expect(extractKeywords("a-note-for-the-day")).toEqual(["note", "day"]);
+    });
   });
 
   describe("matchesAny", () => {
-    it("should match when a keyword includes a trigger", () => {
+    it("should match exact keywords", () => {
       expect(matchesAny(["tictactoe"], ["game", "tictactoe"])).toBe(true);
-    });
-
-    it("should match when a trigger includes a keyword", () => {
       expect(matchesAny(["3d"], ["three", "3d"])).toBe(true);
     });
 
-    it("should match partial substring inclusion", () => {
-      expect(matchesAny(["dashboard"], ["board"])).toBe(true);
-      expect(matchesAny(["gameplay"], ["game"])).toBe(true);
+    it("should match prefix compound for 5+ char triggers", () => {
+      expect(matchesAny(["charting"], ["chart"])).toBe(true);
+      expect(matchesAny(["musical"], ["music"])).toBe(true);
+      expect(matchesAny(["soundtrack"], ["sound"])).toBe(true);
+    });
+
+    it("should NOT match short triggers (<5 chars) as prefix", () => {
+      expect(matchesAny(["gameplay"], ["game"])).toBe(false);
+      expect(matchesAny(["sorting"], ["sort"])).toBe(false);
+      expect(matchesAny(["drawing"], ["draw"])).toBe(false);
+    });
+
+    it("should NOT match false positives from substring matching", () => {
+      expect(matchesAny(["smart"], ["art"])).toBe(false);
+      expect(matchesAny(["platform"], ["form"])).toBe(false);
+      expect(matchesAny(["display"], ["play"])).toBe(false);
+      expect(matchesAny(["dragon"], ["drag"])).toBe(false);
+      expect(matchesAny(["dashboard"], ["board"])).toBe(false);
+      expect(matchesAny(["denote"], ["note"])).toBe(false);
     });
 
     it("should return false when no match", () => {
@@ -109,6 +129,7 @@ describe("content-generator", () => {
     it("should include game layer for game topics", () => {
       const prompt = buildSystemPrompt("games/tictactoe");
       expect(prompt).toContain("howler");
+      expect(prompt).toContain('import { Howl } from "howler"');
       expect(prompt).toContain("canvas-confetti");
       expect(prompt).toContain("GAME DEVELOPMENT");
 
@@ -198,6 +219,24 @@ describe("content-generator", () => {
       const prompt = buildSystemPrompt("surprise");
       // The fallback mentions "recharts" briefly but not the full chart component paths
       expect(prompt).not.toContain("@/components/ui/chart");
+    });
+
+    it("should NOT match 'smart-display' to DRAWING or GAME layers (regression)", () => {
+      const prompt = buildSystemPrompt("smart-display");
+      expect(prompt).not.toContain("DRAWING & CANVAS");
+      expect(prompt).not.toContain("GAME DEVELOPMENT");
+      // Should get fallback since no layers match
+      expect(prompt).toContain("ADDITIONAL CDN LIBRARIES");
+    });
+
+    it("should NOT match 'platform' to FORM layer (regression)", () => {
+      const prompt = buildSystemPrompt("platform");
+      expect(prompt).not.toContain("FORMS & VALIDATION");
+    });
+
+    it("should NOT match 'dragon' to DND layer (regression)", () => {
+      const prompt = buildSystemPrompt("dragon");
+      expect(prompt).not.toContain("DRAG & DROP");
     });
   });
 
@@ -424,6 +463,35 @@ describe("content-generator", () => {
       const raw = `{"code":"\`\`\`tsx\\nexport default function App() { return <div/> }\\n\`\`\`"}`;
       const result = extractCodeFromRawText(raw);
       expect(result).toBe("export default function App() { return <div/> }");
+    });
+  });
+
+  describe("getMatchedSkills", () => {
+    it("should return matched skills for game topics", () => {
+      const skills = getMatchedSkills("games/tetris");
+      expect(skills.length).toBeGreaterThan(0);
+      expect(skills[0]!.categoryLabel).toBe("GAME DEVELOPMENT");
+      expect(skills.every((s) => s.id && s.name && s.icon && s.description)).toBe(true);
+    });
+
+    it("should return empty array when no skills match", () => {
+      const skills = getMatchedSkills("surprise");
+      expect(skills).toEqual([]);
+    });
+
+    it("should not include promptContent or triggers in results", () => {
+      const skills = getMatchedSkills("3d/globe");
+      for (const skill of skills) {
+        expect(skill).not.toHaveProperty("promptContent");
+        expect(skill).not.toHaveProperty("triggers");
+      }
+    });
+
+    it("should return skills for multiple matched categories", () => {
+      const skills = getMatchedSkills("dashboard/analytics");
+      const categories = new Set(skills.map((s) => s.categoryLabel));
+      expect(categories.has("DATA VISUALIZATION")).toBe(true);
+      expect(categories.has("URL PARAMETER SUPPORT")).toBe(true);
     });
   });
 });

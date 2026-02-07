@@ -1,6 +1,9 @@
 import { generateStructuredResponse, StructuredResponseParseError } from "@/lib/ai/gemini-client";
 import logger from "@/lib/logger";
 import { z } from "zod";
+import { extractKeywords, matchesAny } from "./keyword-utils";
+
+export { extractKeywords, matchesAny } from "./keyword-utils";
 
 const GeneratedAppSchema = z.object({
   title: z.string().describe("The name of the app"),
@@ -89,60 +92,347 @@ const CORE_PROMPT =
 
 Before writing code, mentally plan: key user interactions, state variables, visual hierarchy, and which shadcn/ui components to use.`;
 
-// --- Conditional Layers ---
+// --- Skill Types ---
 
-const LAYER_3D = `
-## 3D RENDERING
-- three (Three.js — import THREE from "three")
-- Performance: Use requestAnimationFrame, dispose geometries/materials on unmount
-- Prefer OrbitControls for camera interaction
-- Keep polygon counts reasonable for browser performance`;
+export type SkillCategory =
+  | "3d"
+  | "data-viz"
+  | "game"
+  | "form"
+  | "dnd"
+  | "drawing"
+  | "content"
+  | "audio"
+  | "url-params";
 
-const LAYER_DATA_VIZ = `
-## DATA VISUALIZATION
-- recharts (LineChart, BarChart, PieChart, AreaChart, XAxis, YAxis, Tooltip, ResponsiveContainer)
-- @/components/ui/chart: ChartContainer, ChartTooltip, ChartTooltipContent (recharts wrapper)`;
+export interface Skill {
+  id: string;
+  name: string;
+  icon: string;
+  category: SkillCategory;
+  categoryLabel: string;
+  triggers: string[];
+  promptContent: string;
+  description: string;
+}
 
-const LAYER_GAME = `
-## GAME DEVELOPMENT
-- howler (new Howl({ src: [url] }) for sound effects)
-- canvas-confetti (confetti() for celebration/win effects)`;
+export interface MatchedSkill {
+  id: string;
+  name: string;
+  icon: string;
+  category: SkillCategory;
+  categoryLabel: string;
+  description: string;
+}
 
-const LAYER_FORM = `
-## FORMS & VALIDATION
-- react-hook-form (useForm, Controller) + zod (z.string(), z.object() for validation)
-- @/components/ui/form: Form, FormField, FormItem, FormLabel, FormControl, FormMessage
-- @/components/ui/checkbox: Checkbox
-- @/components/ui/switch: Switch
-- @/components/ui/slider: Slider
-- @/components/ui/radio-group: RadioGroup, RadioGroupItem
-- @/components/ui/textarea: Textarea`;
+// --- Category Triggers (shared per category) ---
 
-const LAYER_DND = `
-## DRAG & DROP
-- @dnd-kit/core + @dnd-kit/sortable (DndContext, SortableContext, useSortable for drag & drop)`;
+const CATEGORY_TRIGGERS: Record<SkillCategory, string[]> = {
+  "3d": [
+    "three",
+    "3d",
+    "globe",
+    "scene",
+    "orbit",
+    "planet",
+    "cube",
+    "sphere",
+    "terrain",
+    "space",
+    "solar",
+    "earth",
+    "webgl",
+  ],
+  "data-viz": [
+    "chart",
+    "charts",
+    "dashboard",
+    "analytics",
+    "stats",
+    "graph",
+    "graphs",
+    "metrics",
+    "finance",
+    "stock",
+    "tracker",
+    "data",
+    "visualization",
+    "reporting",
+    "trending",
+  ],
+  "game": [
+    "game",
+    "games",
+    "gaming",
+    "gameplay",
+    "player",
+    "playing",
+    "play",
+    "puzzle",
+    "quiz",
+    "tictactoe",
+    "chess",
+    "snake",
+    "tetris",
+    "wordle",
+    "sudoku",
+    "maze",
+    "arcade",
+  ],
+  "form": [
+    "form",
+    "forms",
+    "survey",
+    "signup",
+    "checkout",
+    "wizard",
+    "booking",
+    "contact",
+    "calculator",
+    "converter",
+    "registration",
+  ],
+  "dnd": [
+    "kanban",
+    "board",
+    "boards",
+    "drag",
+    "draggable",
+    "sort",
+    "sorting",
+    "sortable",
+    "reorder",
+    "planner",
+    "calendar",
+    "schedule",
+    "timeline",
+    "todo",
+    "todos",
+    "builder",
+    "rank",
+  ],
+  "drawing": [
+    "draw",
+    "drawing",
+    "paint",
+    "painting",
+    "sketch",
+    "canvas",
+    "whiteboard",
+    "doodle",
+    "art",
+    "artistic",
+    "signature",
+    "diagram",
+  ],
+  "content": [
+    "blog",
+    "blogging",
+    "story",
+    "stories",
+    "writing",
+    "note",
+    "notes",
+    "notebook",
+    "journal",
+    "recipe",
+    "wiki",
+    "markdown",
+    "article",
+    "articles",
+    "portfolio",
+    "gallery",
+  ],
+  "audio": [
+    "music",
+    "musical",
+    "audio",
+    "sound",
+    "beat",
+    "beats",
+    "drum",
+    "drums",
+    "piano",
+    "instrument",
+    "synth",
+    "metronome",
+    "rhythm",
+    "melody",
+    "guitar",
+  ],
+  "url-params": ["dashboard", "tracker", "monitor", "analytics", "config", "settings"],
+};
 
-const LAYER_DRAWING = `
-## DRAWING & CANVAS
-- roughjs (rough.canvas() or rough.svg() for hand-drawn style graphics)`;
+// --- Skills Definitions ---
 
-const LAYER_CONTENT = `
-## CONTENT & MARKDOWN
-- react-markdown (ReactMarkdown component for rendering markdown)
-- @/components/ui/accordion: Accordion, AccordionItem, AccordionTrigger, AccordionContent
-- @/components/ui/avatar: Avatar, AvatarImage, AvatarFallback
-- @/components/ui/pagination: Pagination, PaginationContent, PaginationItem, PaginationLink
-- @/components/ui/table: Table, TableHeader, TableBody, TableRow, TableHead, TableCell`;
-
-const LAYER_AUDIO = `
-## AUDIO & SOUND
-- howler (new Howl({ src: [url], sprite: {...} }) — full audio playback, sprites, volume, seek)
-- Web Audio API: AudioContext, OscillatorNode, GainNode for synthesis
-- Patterns: useRef for AudioContext (create on user gesture), cleanup on unmount`;
-
-const LAYER_URL_PARAMS = `
-## URL PARAMETER SUPPORT
-The component MUST support receiving initial data via URL search parameters:
+const SKILLS: Skill[] = [
+  // 3D
+  {
+    id: "three-js",
+    name: "Three.js",
+    icon: "🧊",
+    category: "3d",
+    categoryLabel: "3D RENDERING",
+    triggers: CATEGORY_TRIGGERS["3d"],
+    promptContent:
+      '- three (Three.js — import THREE from "three")\n- Performance: Use requestAnimationFrame, dispose geometries/materials on unmount',
+    description: "3D scene rendering with Three.js",
+  },
+  {
+    id: "three-perf",
+    name: "3D Performance",
+    icon: "🎯",
+    category: "3d",
+    categoryLabel: "3D RENDERING",
+    triggers: CATEGORY_TRIGGERS["3d"],
+    promptContent:
+      "- Prefer OrbitControls for camera interaction\n- Keep polygon counts reasonable for browser performance",
+    description: "OrbitControls and performance patterns",
+  },
+  // Data Viz
+  {
+    id: "recharts",
+    name: "Recharts",
+    icon: "📊",
+    category: "data-viz",
+    categoryLabel: "DATA VISUALIZATION",
+    triggers: CATEGORY_TRIGGERS["data-viz"],
+    promptContent:
+      "- recharts (LineChart, BarChart, PieChart, AreaChart, XAxis, YAxis, Tooltip, ResponsiveContainer)",
+    description: "Interactive charts and graphs",
+  },
+  {
+    id: "chart-ui",
+    name: "Chart UI",
+    icon: "📈",
+    category: "data-viz",
+    categoryLabel: "DATA VISUALIZATION",
+    triggers: CATEGORY_TRIGGERS["data-viz"],
+    promptContent:
+      "- @/components/ui/chart: ChartContainer, ChartTooltip, ChartTooltipContent (recharts wrapper)",
+    description: "shadcn/ui chart components",
+  },
+  // Game
+  {
+    id: "canvas-confetti",
+    name: "Confetti",
+    icon: "🎉",
+    category: "game",
+    categoryLabel: "GAME DEVELOPMENT",
+    triggers: CATEGORY_TRIGGERS["game"],
+    promptContent: "- canvas-confetti (confetti() for celebration/win effects)",
+    description: "Celebration and win effects",
+  },
+  {
+    id: "howler-game",
+    name: "Game Audio",
+    icon: "🔊",
+    category: "game",
+    categoryLabel: "GAME DEVELOPMENT",
+    triggers: CATEGORY_TRIGGERS["game"],
+    promptContent: '- Sound effects: use howler — import { Howl } from "howler"',
+    description: "Game sound effects with Howler.js",
+  },
+  // Form
+  {
+    id: "react-hook-form",
+    name: "React Hook Form",
+    icon: "📝",
+    category: "form",
+    categoryLabel: "FORMS & VALIDATION",
+    triggers: CATEGORY_TRIGGERS["form"],
+    promptContent:
+      "- react-hook-form (useForm, Controller) + zod (z.string(), z.object() for validation)\n- @/components/ui/form: Form, FormField, FormItem, FormLabel, FormControl, FormMessage",
+    description: "Form state management and validation",
+  },
+  {
+    id: "form-ui",
+    name: "Form Components",
+    icon: "🎛️",
+    category: "form",
+    categoryLabel: "FORMS & VALIDATION",
+    triggers: CATEGORY_TRIGGERS["form"],
+    promptContent:
+      "- @/components/ui/checkbox: Checkbox\n- @/components/ui/switch: Switch\n- @/components/ui/slider: Slider\n- @/components/ui/radio-group: RadioGroup, RadioGroupItem\n- @/components/ui/textarea: Textarea",
+    description: "Checkbox, switch, slider, radio, textarea",
+  },
+  // DnD
+  {
+    id: "dnd-kit",
+    name: "DnD Kit",
+    icon: "🖱️",
+    category: "dnd",
+    categoryLabel: "DRAG & DROP",
+    triggers: CATEGORY_TRIGGERS["dnd"],
+    promptContent:
+      "- @dnd-kit/core + @dnd-kit/sortable (DndContext, SortableContext, useSortable for drag & drop)",
+    description: "Drag and drop with sortable lists",
+  },
+  // Drawing
+  {
+    id: "roughjs",
+    name: "Rough.js",
+    icon: "✏️",
+    category: "drawing",
+    categoryLabel: "DRAWING & CANVAS",
+    triggers: CATEGORY_TRIGGERS["drawing"],
+    promptContent: "- roughjs (rough.canvas() or rough.svg() for hand-drawn style graphics)",
+    description: "Hand-drawn style graphics",
+  },
+  // Content
+  {
+    id: "react-markdown",
+    name: "React Markdown",
+    icon: "📄",
+    category: "content",
+    categoryLabel: "CONTENT & MARKDOWN",
+    triggers: CATEGORY_TRIGGERS["content"],
+    promptContent: "- react-markdown (ReactMarkdown component for rendering markdown)",
+    description: "Markdown rendering",
+  },
+  {
+    id: "content-ui",
+    name: "Content UI",
+    icon: "🗂️",
+    category: "content",
+    categoryLabel: "CONTENT & MARKDOWN",
+    triggers: CATEGORY_TRIGGERS["content"],
+    promptContent:
+      "- @/components/ui/accordion: Accordion, AccordionItem, AccordionTrigger, AccordionContent\n- @/components/ui/avatar: Avatar, AvatarImage, AvatarFallback\n- @/components/ui/pagination: Pagination, PaginationContent, PaginationItem, PaginationLink\n- @/components/ui/table: Table, TableHeader, TableBody, TableRow, TableHead, TableCell",
+    description: "Accordion, avatar, pagination, table components",
+  },
+  // Audio
+  {
+    id: "howler",
+    name: "Howler.js",
+    icon: "🎵",
+    category: "audio",
+    categoryLabel: "AUDIO & SOUND",
+    triggers: CATEGORY_TRIGGERS["audio"],
+    promptContent:
+      "- howler (new Howl({ src: [url], sprite: {...} }) — full audio playback, sprites, volume, seek)",
+    description: "Full audio playback and sprites",
+  },
+  {
+    id: "web-audio",
+    name: "Web Audio",
+    icon: "🎹",
+    category: "audio",
+    categoryLabel: "AUDIO & SOUND",
+    triggers: CATEGORY_TRIGGERS["audio"],
+    promptContent:
+      "- Web Audio API: AudioContext, OscillatorNode, GainNode for synthesis\n- Patterns: useRef for AudioContext (create on user gesture), cleanup on unmount",
+    description: "Audio synthesis with Web Audio API",
+  },
+  // URL Params
+  {
+    id: "url-params",
+    name: "URL Params",
+    icon: "🔗",
+    category: "url-params",
+    categoryLabel: "URL PARAMETER SUPPORT",
+    triggers: CATEGORY_TRIGGERS["url-params"],
+    promptContent: `The component MUST support receiving initial data via URL search parameters:
 1. Read URL params at component top level:
    const params = new URLSearchParams(window.location.search);
 2. Parse param values (JSON for complex data, strings for simple):
@@ -154,7 +444,10 @@ The component MUST support receiving initial data via URL search parameters:
 5. Keep param names short (e.g., "items", "title", "view", "config").
 6. Handle malformed/missing params gracefully — never crash on bad input.
 7. Do NOT use param name "room" — it is reserved by the runtime.
-8. Add a comment at the top listing accepted URL params.`;
+8. Add a comment at the top listing accepted URL params.`,
+    description: "Shareable state via URL search params",
+  },
+];
 
 const FALLBACK_LIBS = `
 ## ADDITIONAL CDN LIBRARIES (import by name when relevant)
@@ -167,156 +460,62 @@ const FALLBACK_LIBS = `
 - howler — audio playback
 - three — 3D rendering (large bundle)`;
 
-// --- Layer Definitions ---
+// --- Skill Matching ---
 
-interface Layer {
-  triggers: string[];
-  content: string;
-}
+export function getMatchedSkills(topic: string): MatchedSkill[] {
+  const keywords = extractKeywords(topic);
+  const seen = new Set<string>();
+  const matched: MatchedSkill[] = [];
 
-const LAYERS: Layer[] = [
-  {
-    triggers: ["three", "3d", "globe", "scene", "orbit", "planet", "cube"],
-    content: LAYER_3D,
-  },
-  {
-    triggers: [
-      "chart",
-      "dashboard",
-      "analytics",
-      "stats",
-      "graph",
-      "metrics",
-      "finance",
-      "stock",
-      "tracker",
-    ],
-    content: LAYER_DATA_VIZ,
-  },
-  {
-    triggers: [
-      "game",
-      "play",
-      "puzzle",
-      "quiz",
-      "tictactoe",
-      "chess",
-      "snake",
-      "tetris",
-      "wordle",
-      "sudoku",
-      "maze",
-      "arcade",
-    ],
-    content: LAYER_GAME,
-  },
-  {
-    triggers: [
-      "form",
-      "survey",
-      "signup",
-      "checkout",
-      "wizard",
-      "booking",
-      "contact",
-      "calculator",
-      "converter",
-    ],
-    content: LAYER_FORM,
-  },
-  {
-    triggers: [
-      "kanban",
-      "board",
-      "drag",
-      "sort",
-      "planner",
-      "calendar",
-      "schedule",
-      "timeline",
-      "todo",
-      "builder",
-      "rank",
-    ],
-    content: LAYER_DND,
-  },
-  {
-    triggers: [
-      "draw",
-      "paint",
-      "sketch",
-      "canvas",
-      "whiteboard",
-      "doodle",
-      "art",
-      "signature",
-      "diagram",
-    ],
-    content: LAYER_DRAWING,
-  },
-  {
-    triggers: [
-      "blog",
-      "story",
-      "writing",
-      "note",
-      "journal",
-      "recipe",
-      "wiki",
-      "markdown",
-      "article",
-      "portfolio",
-      "gallery",
-    ],
-    content: LAYER_CONTENT,
-  },
-  {
-    triggers: [
-      "music",
-      "audio",
-      "sound",
-      "beat",
-      "drum",
-      "piano",
-      "instrument",
-      "synth",
-      "metronome",
-    ],
-    content: LAYER_AUDIO,
-  },
-  {
-    triggers: ["dashboard", "tracker", "monitor", "analytics", "config", "settings"],
-    content: LAYER_URL_PARAMS,
-  },
-];
+  for (const skill of SKILLS) {
+    if (!seen.has(skill.id) && matchesAny(keywords, skill.triggers)) {
+      seen.add(skill.id);
+      matched.push({
+        id: skill.id,
+        name: skill.name,
+        icon: skill.icon,
+        category: skill.category,
+        categoryLabel: skill.categoryLabel,
+        description: skill.description,
+      });
+    }
+  }
 
-// --- Keyword Helpers ---
-
-export function extractKeywords(topic: string): string[] {
-  return topic.toLowerCase().split(/[/\-_\s]+/).filter(Boolean);
-}
-
-export function matchesAny(keywords: string[], triggers: string[]): boolean {
-  return triggers.some((t) => keywords.some((k) => k.includes(t) || t.includes(k)));
+  return matched;
 }
 
 // --- Dynamic Prompt Builder ---
 
 export function buildSystemPrompt(topic: string): string {
   const keywords = extractKeywords(topic);
-  const matchedLayers: string[] = [];
 
-  for (const layer of LAYERS) {
-    if (matchesAny(keywords, layer.triggers)) {
-      matchedLayers.push(layer.content);
+  // Group matched skills by category, preserving SKILLS array order
+  const categoryOrder: SkillCategory[] = [];
+  const categorySkills = new Map<SkillCategory, Skill[]>();
+
+  for (const skill of SKILLS) {
+    if (matchesAny(keywords, skill.triggers)) {
+      if (!categorySkills.has(skill.category)) {
+        categoryOrder.push(skill.category);
+        categorySkills.set(skill.category, []);
+      }
+      categorySkills.get(skill.category)!.push(skill);
     }
   }
 
-  if (matchedLayers.length === 0) {
-    matchedLayers.push(FALLBACK_LIBS);
+  if (categoryOrder.length === 0) {
+    return CORE_PROMPT + "\n" + FALLBACK_LIBS;
   }
 
-  return CORE_PROMPT + "\n" + matchedLayers.join("\n");
+  const sections: string[] = [];
+  for (const category of categoryOrder) {
+    const skills = categorySkills.get(category)!;
+    const header = `\n## ${skills[0]!.categoryLabel}`;
+    const lines = skills.map((s) => s.promptContent).join("\n");
+    sections.push(header + "\n" + lines);
+  }
+
+  return CORE_PROMPT + "\n" + sections.join("\n");
 }
 
 // Backward compatibility — general-purpose prompt with all layers
@@ -324,14 +523,7 @@ export const SYSTEM_PROMPT = buildSystemPrompt("general");
 
 export function buildUserPrompt(topic: string): string {
   const keywords = extractKeywords(topic);
-  const includeUrlParams = matchesAny(keywords, [
-    "dashboard",
-    "tracker",
-    "monitor",
-    "analytics",
-    "config",
-    "settings",
-  ]);
+  const includeUrlParams = matchesAny(keywords, CATEGORY_TRIGGERS["url-params"]);
 
   const urlParamInstruction = includeUrlParams
     ? `\n\nIMPORTANT: The component must read URL search params (via new URLSearchParams(window.location.search)) as initial/default values. When state changes, sync back to URL with window.history.replaceState so the URL is always shareable. Provide sensible defaults when no params are present.`
