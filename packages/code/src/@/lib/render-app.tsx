@@ -323,11 +323,32 @@ async function _loadAppComponent(
   if (App) {
     AppToRender = App;
   } else if (codeSpace && !transpiled && !code) {
-    AppToRender = (await import(
-      /* @vite-ignore */
-      `${currentOrigin}/live/${codeSpace}/index.js`
-    ))
-      .default as FlexibleComponentType;
+    // Fetch raw transpiled code and apply client-side importMapReplace
+    // This avoids relying on the server's potentially stale importMapReplace
+    const { data: resp } = await tryCatch(
+      fetch(`${currentOrigin}/live/${codeSpace}/session.json`),
+    );
+    let sessionTranspiled: string | null = null;
+    if (resp?.ok) {
+      const { data: session } = await tryCatch(resp.json());
+      if (session?.transpiled) {
+        sessionTranspiled = session.transpiled;
+      }
+    }
+    if (sessionTranspiled) {
+      const { data: appComponent, error: importError } = await tryCatch(
+        importFromString(sessionTranspiled),
+      );
+      AppToRender = importError || !appComponent
+        ? FallbackErrorComponent
+        : appComponent;
+    } else {
+      // Fallback to direct import if session fetch fails
+      AppToRender = (await import(
+        /* @vite-ignore */
+        `${currentOrigin}/live/${codeSpace}/index.js`
+      )).default as FlexibleComponentType;
+    }
   } else if (transpiled || code) {
     if (
       transpiled?.indexOf("stdin_default") === -1 &&

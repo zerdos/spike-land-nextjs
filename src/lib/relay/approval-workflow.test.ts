@@ -96,6 +96,13 @@ describe("approval-workflow", () => {
     it("calculates correct distance for complex changes", () => {
       expect(_levenshteinDistance("kitten", "sitting")).toBe(3);
     });
+
+    it("handles large strings efficiently", () => {
+      const str1 = "a".repeat(5000);
+      const str2 = "b".repeat(5000);
+      // The distance between 5000 'a's and 5000 'b's involves 5000 substitutions
+      expect(_levenshteinDistance(str1, str2)).toBe(5000);
+    });
   });
 
   // ============================================
