@@ -7,6 +7,7 @@ import {
   extractKeywords,
   generateAppContent,
   getMatchedSkills,
+  LUCIDE_ICONS,
   matchesAny,
   SYSTEM_PROMPT,
 } from "./content-generator";
@@ -106,7 +107,38 @@ describe("content-generator", () => {
       expect(prompt).toContain("bg-background");
       expect(prompt).toContain("semantic color classes");
       expect(prompt).toContain("Do NOT invent icon names");
-      expect(prompt).toContain("Limit icon imports to 6-8 icons maximum per component");
+      expect(prompt).toContain("Icons are decoration, not content");
+      expect(prompt).toContain("Glass:");
+      expect(prompt).toContain("Shadow:");
+      expect(prompt).toContain("Typography:");
+      expect(prompt).toContain("LAYOUT PATTERNS");
+      expect(prompt).toContain("Modern Card");
+      expect(prompt).toContain("Responsive Grid");
+      expect(prompt).toContain("FINAL VERIFICATION CHECKLIST");
+      expect(prompt).toContain("sub-components");
+    });
+
+    it("should enforce strict icon import rules in prompt", () => {
+      const prompt = buildSystemPrompt("anything");
+      expect(prompt).toContain("MUST have a matching import");
+      expect(prompt).toContain("Maximum 5 icons per component");
+      expect(prompt).toContain('import { Heart, Star, X } from "lucide-react"');
+    });
+
+    it("should list reduced icon set (4 categories, not 9)", () => {
+      const prompt = buildSystemPrompt("anything");
+      // New 4 categories
+      expect(prompt).toContain("Core:");
+      expect(prompt).toContain("Feedback:");
+      expect(prompt).toContain("Actions:");
+      expect(prompt).toContain("Objects:");
+      // Old categories should be gone
+      expect(prompt).not.toContain("Navigation:");
+      expect(prompt).not.toContain("Arrows:");
+      expect(prompt).not.toContain("Media:");
+      expect(prompt).not.toContain("Communication:");
+      expect(prompt).not.toContain("Layout:");
+      expect(prompt).not.toContain("Data:");
     });
 
     it("should include 3D layer only for 3D topics", () => {
@@ -143,6 +175,7 @@ describe("content-generator", () => {
       expect(prompt).toContain("@/components/ui/form");
       expect(prompt).toContain("@/components/ui/checkbox");
       expect(prompt).toContain("FORMS & VALIDATION");
+      expect(prompt).toContain("variant: default|outline|secondary|ghost|link");
     });
 
     it("should include DnD layer for kanban/todo topics", () => {
@@ -428,13 +461,37 @@ describe("content-generator", () => {
     });
   });
 
-  describe("extractCodeFromRawText", () => {
+  describe("extractCodeFromRawText and cleanCode", () => {
     it("should extract code from well-formed JSON text", () => {
       const raw =
         `{"title":"Test","code":"export default function App() { return <div>Hi</div> }","relatedApps":["a"]}`;
       expect(extractCodeFromRawText(raw)).toBe(
         "export default function App() { return <div>Hi</div> }",
       );
+    });
+
+    it("should prune unused lucide-react icons", () => {
+      const raw =
+        `{"code":"import { Plus, X, Search } from 'lucide-react';\\nexport default function App() { return <Plus /> }"}`;
+      const result = extractCodeFromRawText(raw);
+      expect(result).toContain('import { Plus } from "lucide-react";');
+      expect(result).not.toContain("X");
+      expect(result).not.toContain("Search");
+    });
+
+    it("should remove entire lucide-react import if no icons are used", () => {
+      const raw =
+        `{"code":"import { Plus } from 'lucide-react';\\nexport default function App() { return <div /> }"}`;
+      const result = extractCodeFromRawText(raw);
+      expect(result).not.toContain("lucide-react");
+      expect(result).not.toContain("Plus");
+    });
+
+    it("should preserve multiple icons if they are used", () => {
+      const raw =
+        `{"code":"import { Plus, X } from 'lucide-react';\\nexport default function App() { return <div><Plus /><X /></div> }"}`;
+      const result = extractCodeFromRawText(raw);
+      expect(result).toContain('import { Plus, X } from "lucide-react";');
     });
 
     it("should handle JSON-escaped characters in code", () => {
@@ -463,6 +520,69 @@ describe("content-generator", () => {
       const raw = `{"code":"\`\`\`tsx\\nexport default function App() { return <div/> }\\n\`\`\`"}`;
       const result = extractCodeFromRawText(raw);
       expect(result).toBe("export default function App() { return <div/> }");
+    });
+  });
+
+  describe("LUCIDE_ICONS constant", () => {
+    it("should contain common icons", () => {
+      expect(LUCIDE_ICONS.has("Plus")).toBe(true);
+      expect(LUCIDE_ICONS.has("X")).toBe(true);
+      expect(LUCIDE_ICONS.has("ChevronDown")).toBe(true);
+      expect(LUCIDE_ICONS.has("Heart")).toBe(true);
+    });
+
+    it("should not contain non-icon names", () => {
+      expect(LUCIDE_ICONS.has("Button")).toBe(false);
+      expect(LUCIDE_ICONS.has("Card")).toBe(false);
+      expect(LUCIDE_ICONS.has("Dialog")).toBe(false);
+    });
+
+    it("should have reduced icon count (55 or fewer)", () => {
+      expect(LUCIDE_ICONS.size).toBeLessThanOrEqual(60);
+      expect(LUCIDE_ICONS.size).toBeGreaterThan(40);
+    });
+  });
+
+  describe("addMissingIconImports (via cleanCode pipeline)", () => {
+    it("should add missing icon imports when icon is used in JSX but not imported", () => {
+      const raw =
+        `{"code":"import React from 'react';\\nexport default function App() { return <Plus /> }"}`;
+      const result = extractCodeFromRawText(raw);
+      expect(result).toContain('import { Plus } from "lucide-react";');
+      expect(result).toContain("<Plus />");
+    });
+
+    it("should merge missing icons into existing lucide-react import", () => {
+      const raw =
+        `{"code":"import { X } from 'lucide-react';\\nexport default function App() { return <div><X /><Plus /><Heart /></div> }"}`;
+      const result = extractCodeFromRawText(raw);
+      expect(result).toContain("X");
+      expect(result).toContain("Heart");
+      expect(result).toContain("Plus");
+      expect(result).toContain("lucide-react");
+    });
+
+    it("should NOT add non-lucide components to import", () => {
+      const raw =
+        `{"code":"import { Button } from '@/components/ui/button';\\nexport default function App() { return <Button>Hi</Button> }"}`;
+      const result = extractCodeFromRawText(raw);
+      expect(result).not.toContain("lucide-react");
+    });
+
+    it("should handle code with no imports at all", () => {
+      const raw = `{"code":"export default function App() { return <div><Star /><Moon /></div> }"}`;
+      const result = extractCodeFromRawText(raw);
+      expect(result).toContain('import { Moon, Star } from "lucide-react";');
+    });
+
+    it("should not duplicate icons already imported", () => {
+      const raw =
+        `{"code":"import { Plus } from 'lucide-react';\\nexport default function App() { return <Plus /> }"}`;
+      const result = extractCodeFromRawText(raw);
+      // Should have exactly one lucide-react import with Plus
+      const matches = result!.match(/lucide-react/g);
+      expect(matches).toHaveLength(1);
+      expect(result).toContain('import { Plus } from "lucide-react";');
     });
   });
 

@@ -5,6 +5,74 @@ import { extractKeywords, matchesAny } from "./keyword-utils";
 
 export { extractKeywords, matchesAny } from "./keyword-utils";
 
+// --- Valid Lucide Icon Names (shared by prompt + post-processing validation) ---
+
+export const LUCIDE_ICONS = new Set([
+  // Core navigation & arrows
+  "ChevronDown",
+  "ChevronUp",
+  "ChevronLeft",
+  "ChevronRight",
+  "ArrowDown",
+  "ArrowUp",
+  "ArrowLeft",
+  "ArrowRight",
+  "Menu",
+  "Search",
+  "ExternalLink",
+  "Link",
+  // Feedback & status
+  "AlertCircle",
+  "AlertTriangle",
+  "Info",
+  "HelpCircle",
+  "CheckCircle",
+  "XCircle",
+  "Loader2",
+  "Clock",
+  "Ban",
+  "Activity",
+  // Actions
+  "X",
+  "Plus",
+  "Minus",
+  "Check",
+  "Copy",
+  "Trash2",
+  "Pencil",
+  "Save",
+  "Download",
+  "Upload",
+  "RefreshCw",
+  "RotateCcw",
+  "Undo2",
+  "Redo2",
+  "Filter",
+  // Objects
+  "Home",
+  "Settings",
+  "User",
+  "Users",
+  "Bell",
+  "Heart",
+  "Star",
+  "Bookmark",
+  "Eye",
+  "EyeOff",
+  "Lock",
+  "Unlock",
+  "Shield",
+  "Key",
+  "Zap",
+  "Sun",
+  "Moon",
+  "Image",
+  "Mail",
+  "Send",
+  "Play",
+  "Pause",
+]);
+
 const GeneratedAppSchema = z.object({
   title: z.string().describe("The name of the app"),
   description: z.string().describe("A concise 1-sentence description of what the app does"),
@@ -36,40 +104,44 @@ const CORE_PROMPT =
 - npm packages load from CDN automatically
 - Component must be DEFAULT EXPORT
 - Light theme by default — use semantic color classes (bg-background, text-foreground, etc.)
+- Design Tokens for Premium Look:
+  - Glass: "bg-background/80 backdrop-blur-md border-border/50"
+  - Shadow: "shadow-xl shadow-primary/5"
+  - Typography: headings use "tracking-tight font-bold", labels "font-medium text-sm"
+
 
 ## SHADCN/UI DESIGN SYSTEM (import from "@/components/ui/...")
 - @/lib/utils: cn() for conditional class composition
-- @/components/ui/button: Button (variants: default/destructive/outline/secondary/ghost/link)
-- @/components/ui/card: Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
-- @/components/ui/input: Input
-- @/components/ui/label: Label
-- @/components/ui/badge: Badge
-- @/components/ui/dialog: Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription
-- @/components/ui/tabs: Tabs, TabsList, TabsTrigger, TabsContent
-- @/components/ui/select: Select, SelectTrigger, SelectValue, SelectContent, SelectItem
-- @/components/ui/tooltip: Tooltip, TooltipTrigger, TooltipContent, TooltipProvider
-- @/components/ui/alert: Alert, AlertTitle, AlertDescription
-- @/components/ui/separator: Separator
-- @/components/ui/scroll-area: ScrollArea
-- @/components/ui/skeleton: Skeleton
+- @/components/ui/button: Button (variant: default|outline|secondary|ghost|link, size: default|sm|lg|icon)
+- @/components/ui/card: Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter (structural wrappers)
+- @/components/ui/input: Input (standard text input)
+- @/components/ui/label: Label (associated with forms/inputs)
+- @/components/ui/badge: Badge (variant: default|secondary|outline|destructive)
+- @/components/ui/dialog: Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription (modals)
+- @/components/ui/tabs: Tabs, TabsList, TabsTrigger, TabsContent (horizontal navigation)
+- @/components/ui/select: Select, SelectTrigger, SelectValue, SelectContent, SelectItem (dropdown pickers)
+- @/components/ui/tooltip: Tooltip, TooltipTrigger, TooltipContent (hover info)
+- @/components/ui/alert: Alert, AlertTitle, AlertDescription (status banners)
+- @/components/ui/separator: Separator (thin dividers)
+- @/components/ui/scroll-area: ScrollArea (custom scrollbars)
+- @/components/ui/skeleton: Skeleton (loading placeholder)
 - @/components/ui/dropdown-menu: DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem
-- @/components/ui/sheet: Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle
-- @/components/ui/progress: Progress
+- @/components/ui/sheet: Sheet, SheetTrigger, SheetContent (side panels)
+- @/components/ui/progress: Progress (value: 0-100)
+
 
 ## PRE-LOADED LIBRARIES (zero load time)
 - react (useState, useEffect, useCallback, useMemo, useRef, useReducer)
 - framer-motion (motion, AnimatePresence, useMotionValue, useSpring)
-- lucide-react — ONLY use icons from this verified list:
-  Navigation: ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsDown, ChevronsUp, ChevronsLeft, ChevronsRight, ChevronFirst, ChevronLast
-  Arrows: ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpDown, ArrowLeftRight, MoveDown, MoveUp, Undo2, Redo2
-  Actions: X, Menu, Plus, Minus, Check, Copy, Trash2, Pencil, Save, Download, Upload, RefreshCw, RotateCcw, ExternalLink, Link, Unlink, Grip, GripVertical
-  Status: AlertCircle, AlertTriangle, Info, HelpCircle, CheckCircle, XCircle, Loader2, Clock, Timer, Ban
-  Objects: Home, Settings, User, Users, Search, Bell, Heart, Star, Bookmark, Eye, EyeOff, Lock, Unlock, Shield, Key, Zap, Flame, Sun, Moon, CloudSun
-  Media: Image, Camera, Video, File, FileText, Folder, FolderOpen, Music, Play, Pause, SquareIcon, Volume2, VolumeX, Mic
-  Communication: Mail, MessageSquare, MessageCircle, Phone, Send, Share2, AtSign
-  Layout: LayoutDashboard, Columns, Rows, PanelLeft, SidebarOpen, SidebarClose, Maximize2, Minimize2, Fullscreen
-  Data: BarChart3, LineChart, PieChart, TrendingUp, TrendingDown, Activity, Filter, SlidersHorizontal, ListOrdered, Table2, Hash
-  IMPORTANT: Do NOT invent icon names. No "ChevronDoubleDown", "EyeClosed", "FileIcon", etc.
+- lucide-react — Icons. STRICT RULES:
+  1. Every icon in JSX MUST have a matching import { IconName } from "lucide-react" at the top.
+  2. Only import icons you actually render in JSX. Maximum 5 icons per component.
+  3. Do NOT invent icon names. Only use names from the list below.
+  Example: import { Heart, Star, X } from "lucide-react";
+  Core: ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ArrowDown, ArrowUp, ArrowLeft, ArrowRight, Menu, Search, ExternalLink, Link
+  Feedback: AlertCircle, AlertTriangle, Info, HelpCircle, CheckCircle, XCircle, Loader2, Clock, Ban, Activity
+  Actions: X, Plus, Minus, Check, Copy, Trash2, Pencil, Save, Download, Upload, RefreshCw, RotateCcw, Undo2, Redo2, Filter
+  Objects: Home, Settings, User, Users, Bell, Heart, Star, Bookmark, Eye, EyeOff, Lock, Unlock, Shield, Key, Zap, Sun, Moon, Image, Mail, Send, Play, Pause
 - clsx, tailwind-merge (for cn() — already available via @/lib/utils)
 
 ## CDN-AVAILABLE LIBRARIES (import by name)
@@ -77,18 +149,30 @@ const CORE_PROMPT =
 - zustand (create for complex state management)
 - sonner (toast, toast.success, toast.error for notifications — add <Toaster /> in JSX)
 
+## LAYOUT PATTERNS (Modern & Responsive)
+- Modern Card: Use "bg-card/50 border-border/50 shadow-sm" with a header-content-footer structure.
+- Responsive Grid: Use "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" for collections.
+- Interactive List: Use "divide-y divide-border/30" with hover highlights on items.
+
 ## CODE QUALITY RULES
 1. Use shadcn/ui components instead of raw HTML wherever a matching component exists
 2. Never call hooks conditionally — all hooks at top of component
 3. Handle edge cases: empty states, loading states, error boundaries
-4. PREFER semantic color classes: text-foreground, bg-background, bg-card, text-muted-foreground, border-border — these automatically resolve to the correct theme colors
+4. PREFER semantic color classes: text-foreground, bg-background, bg-card, text-muted-foreground, border-border
 5. Use responsive classes (sm:, md:, lg:) for mobile-first design
 6. Include ARIA labels on custom interactive elements
 7. Use semantic HTML (main, section, nav, header, footer)
 8. Keep state local — do not create React context for single-component apps
-9. No inline styles — use Tailwind classes exclusively
+9. No inline styles — use Tailwind 4 classes exclusively (e.g., use "grid-cols-subgrid" where useful)
 10. Never use setTimeout/setInterval with functions that read React state — state will be stale. Pass computed values as arguments instead.
-11. Limit icon imports to 6-8 icons maximum per component. Prefer semantic alternatives (text labels, colors, shapes) over additional icons.
+11. Icons are decoration, not content. Prefer text labels and emoji over icons.
+12. For complexity, split code into internal sub-components (e.g., const Header = ...) within the same file.
+
+## FINAL VERIFICATION CHECKLIST
+- [ ] Are all used icons imported from "lucide-react"? (Max 5)
+- [ ] Is there exactly one DEFAULT EXPORT?
+- [ ] Are semantic colors like "bg-background" used for the container?
+- [ ] Is the UI fully responsive and premium-feeling?
 
 Before writing code, mentally plan: key user interactions, state variables, visual hierarchy, and which shadcn/ui components to use.`;
 
@@ -543,8 +627,99 @@ Respond with JSON: { title, description, code, relatedApps }
 - relatedApps: 3-5 related paths without "/create/" prefix`;
 }
 
+function pruneUnusedIcons(code: string): string {
+  // 1. Identify Lucide icon imports
+  const lucideImportRegex = /import\s*{([^}]+)}\s*from\s*["']lucide-react["'];?/g;
+  let match;
+  const importsToReplace: Array<{ fullMatch: string; icons: string[]; }> = [];
+
+  while ((match = lucideImportRegex.exec(code)) !== null) {
+    const importContent = match[1];
+    if (importContent) {
+      const icons = importContent.split(",").map((i) => i.trim()).filter(Boolean);
+      importsToReplace.push({ fullMatch: match[0], icons });
+    }
+  }
+
+  if (importsToReplace.length === 0) return code;
+
+  let prunedCode = code;
+
+  for (const { fullMatch, icons } of importsToReplace) {
+    // 2. For each icon in this import, check if it's used elsewhere in the code
+    // We remove the import itself from the code search to avoid self-matches
+    const codeWithoutCurrentImport = prunedCode.replace(fullMatch, "");
+
+    const usedIcons = icons.filter((icon) => {
+      // Look for the icon name as a whole word (e.g., <Plus, Plus., Plus )
+      const usageRegex = new RegExp(`\\b${icon}\\b`, "g");
+      return usageRegex.test(codeWithoutCurrentImport);
+    });
+
+    if (usedIcons.length === 0) {
+      // No icons from this import are used — remove the whole line
+      prunedCode = prunedCode.replace(fullMatch, "");
+    } else {
+      // Rewrite the import line to prune unused icons AND normalize to double quotes
+      const newImport = `import { ${usedIcons.join(", ")} } from "lucide-react";`;
+      prunedCode = prunedCode.replace(fullMatch, newImport);
+    }
+  }
+
+  return prunedCode.trim();
+}
+
+function addMissingIconImports(code: string): string {
+  // Find all lucide icons used in JSX: <IconName
+  const jsxUsagePattern = /<([A-Z][A-Za-z0-9]*)/g;
+  const usedIcons = new Set<string>();
+  let m: RegExpExecArray | null;
+  while ((m = jsxUsagePattern.exec(code)) !== null) {
+    if (LUCIDE_ICONS.has(m[1]!)) usedIcons.add(m[1]!);
+  }
+  if (usedIcons.size === 0) return code;
+
+  // Find existing lucide-react import and extract already-imported names
+  const importPattern = /^(import\s*\{([^}]*)\}\s*from\s*["']lucide-react["'];?)$/m;
+  const existing = importPattern.exec(code);
+  const alreadyImported = new Set<string>();
+  if (existing) {
+    for (const spec of existing[2]!.split(",")) {
+      const name = spec.trim().split(/\s+as\s+/)[0]!.trim();
+      if (name) alreadyImported.add(name);
+    }
+  }
+
+  const missing = [...usedIcons].filter((i) => !alreadyImported.has(i)).sort();
+  if (missing.length === 0) return code;
+
+  if (existing) {
+    // Merge missing icons into existing import
+    const original = existing[2]!.trim().replace(/,\s*$/, "");
+    const merged = original ? `${original}, ${missing.join(", ")}` : missing.join(", ");
+    return code.replace(existing[0], `import { ${merged} } from "lucide-react";`);
+  }
+
+  // No existing import — insert after last import statement
+  const lastImportPattern = /^import\s.+$/gm;
+  let lastIdx = -1;
+  let lastLen = 0;
+  while ((m = lastImportPattern.exec(code)) !== null) {
+    lastIdx = m.index;
+    lastLen = m[0].length;
+  }
+  const newImport = `import { ${missing.join(", ")} } from "lucide-react";`;
+  if (lastIdx !== -1) {
+    const pos = lastIdx + lastLen;
+    return code.slice(0, pos) + "\n" + newImport + code.slice(pos);
+  }
+  return newImport + "\n" + code;
+}
+
 function cleanCode(code: string): string {
-  return code.replace(/^```tsx?/, "").replace(/^```/, "").replace(/```$/, "").trim();
+  const cleaned = code.replace(/^```tsx?/, "").replace(/^```/, "").replace(/```$/, "").trim();
+  // First add missing imports, then prune unused — order matters
+  return pruneUnusedIcons(addMissingIconImports(cleaned));
 }
 
 export function extractCodeFromRawText(text: string): string | null {
