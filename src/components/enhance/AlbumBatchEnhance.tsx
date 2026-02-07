@@ -99,7 +99,7 @@ export function AlbumBatchEnhance({
   const [isProcessing, setIsProcessing] = useState(false);
   const [enhancingImages, setEnhancingImages] = useState<EnhancingImage[]>([]);
   const [userBalance, setUserBalance] = useState<number | null>(null);
-  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [hasFetchedBalance, setHasFetchedBalance] = useState(false);
 
   const enhancedCounts = countEnhancedByTier(images);
   const notEnhancedForTier = images.filter(
@@ -132,7 +132,6 @@ export function AlbumBatchEnhance({
     : 0;
 
   const fetchBalance = useCallback(async () => {
-    setIsLoadingBalance(true);
     try {
       const response = await fetch("/api/tokens/balance");
       if (response.ok) {
@@ -142,7 +141,7 @@ export function AlbumBatchEnhance({
     } catch (error) {
       console.error("Failed to fetch balance:", error);
     } finally {
-      setIsLoadingBalance(false);
+      setHasFetchedBalance(true);
     }
   }, []);
 
@@ -423,7 +422,7 @@ export function AlbumBatchEnhance({
               <Coins className="h-5 w-5 text-yellow-500" />
               <span className="text-sm font-medium">Your Balance</span>
             </div>
-            {isLoadingBalance
+            {!hasFetchedBalance
               ? (
                 <Loader2
                   className="h-4 w-4 animate-spin"
@@ -614,8 +613,7 @@ export function AlbumBatchEnhance({
                   onClick={startBatchEnhancement}
                   disabled={isProcessing ||
                     imagesToEnhance === 0 ||
-                    !hasEnoughTokens ||
-                    isLoadingBalance}
+                    (hasFetchedBalance && !hasEnoughTokens)}
                   data-testid="confirm-enhance-button"
                 >
                   {isProcessing

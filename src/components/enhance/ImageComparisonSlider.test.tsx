@@ -37,7 +37,7 @@ describe("ImageComparisonSlider", () => {
     height: 100,
   };
 
-  it("renders both images with object-contain class", () => {
+  it("renders both images with object-cover for matching AR display", () => {
     render(<ImageComparisonSlider {...defaultProps} />);
 
     const originalImage = screen.getByAltText("Original");
@@ -45,8 +45,8 @@ describe("ImageComparisonSlider", () => {
 
     expect(originalImage).toBeDefined();
     expect(enhancedImage).toBeDefined();
-    expect(originalImage.className).toContain("object-contain");
-    expect(enhancedImage.className).toContain("object-contain");
+    expect(originalImage.className).toContain("object-cover");
+    expect(enhancedImage.className).toContain("object-cover");
   });
 
   it("applies correct aspect ratio from width/height props", () => {
@@ -54,8 +54,6 @@ describe("ImageComparisonSlider", () => {
       <ImageComparisonSlider {...defaultProps} width={1600} height={900} />,
     );
 
-    // Find the container div with the style
-    // The structure is: div > div(style) > images
     const wrapper = container.firstChild?.firstChild as HTMLElement;
     expect(wrapper).toBeDefined();
     expect(wrapper.style.aspectRatio).toBe("1600 / 900");
@@ -70,6 +68,7 @@ describe("ImageComparisonSlider", () => {
     );
 
     const wrapper = container.firstChild?.firstChild as HTMLElement;
+    // Defaults to 16/9 when no dimensions provided
     expect(wrapper.style.aspectRatio).toBe("16 / 9");
   });
 
@@ -585,10 +584,6 @@ describe("ImageComparisonSlider", () => {
   });
 
   it("handles case when container ref exists but getBoundingClientRect works", () => {
-    // This test verifies that the updatePosition callback checks for container ref
-    // The actual null check is for containerRef.current, not getBoundingClientRect
-    // The component always has the ref attached to the container div, so we just verify
-    // the normal flow works correctly
     const { container } = render(<ImageComparisonSlider {...defaultProps} />);
     const sliderContainer = container.querySelector(
       '[class*="cursor-ew-resize"]',
@@ -613,5 +608,59 @@ describe("ImageComparisonSlider", () => {
       '[class*="bg-primary"]',
     ) as HTMLElement;
     expect(divider.style.left).toBe("50%");
+  });
+
+  it("uses original AR for container when both images have same standard dims", () => {
+    // With exact standard dims, both images are the same AR
+    const { container } = render(
+      <ImageComparisonSlider
+        {...defaultProps}
+        width={1376}
+        height={768}
+        enhancedWidth={1376}
+        enhancedHeight={768}
+      />,
+    );
+
+    const wrapper = container.firstChild?.firstChild as HTMLElement;
+    expect(wrapper.style.aspectRatio).toBe("1376 / 768");
+  });
+
+  it("ignores enhanced dimensions for container AR (backward compat props)", () => {
+    // Enhanced dims are kept in the interface but not used for layout
+    const { container } = render(
+      <ImageComparisonSlider
+        {...defaultProps}
+        width={1600}
+        height={900}
+        enhancedWidth={1264}
+        enhancedHeight={848}
+      />,
+    );
+
+    const wrapper = container.firstChild?.firstChild as HTMLElement;
+    // Container always uses original AR, not min(original, enhanced)
+    expect(wrapper.style.aspectRatio).toBe("1600 / 900");
+  });
+
+  it("falls back to original AR when enhanced dimensions are not provided", () => {
+    const { container } = render(
+      <ImageComparisonSlider
+        {...defaultProps}
+        width={1600}
+        height={900}
+      />,
+    );
+
+    const wrapper = container.firstChild?.firstChild as HTMLElement;
+    expect(wrapper.style.aspectRatio).toBe("1600 / 900");
+  });
+
+  it("does not apply transform/scale to original image", () => {
+    render(<ImageComparisonSlider {...defaultProps} width={1376} height={768} />);
+
+    const originalImage = screen.getByAltText("Original");
+    // No inline transform style should be present
+    expect(originalImage.style.transform).toBe("");
   });
 });

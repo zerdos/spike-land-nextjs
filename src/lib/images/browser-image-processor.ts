@@ -9,7 +9,12 @@
  * - Convert to WebP format (with JPEG fallback)
  */
 
-import { type AspectRatio, detectAspectRatio, getAspectRatioValue } from "@/lib/ai/aspect-ratio";
+import {
+  type AspectRatio,
+  detectAspectRatio,
+  getAspectRatioValue,
+  STANDARD_1K_DIMENSIONS,
+} from "@/lib/ai/aspect-ratio";
 
 // Constants
 export const MAX_DIMENSION = 4096;
@@ -150,7 +155,6 @@ export async function processImageForUpload(
 ): Promise<ProcessedImage> {
   const {
     maxDimension,
-    baseDimension = DEFAULT_BASE_DIMENSION,
     quality = WEBP_QUALITY,
     forceAspectRatio,
   } = options;
@@ -177,14 +181,25 @@ export async function processImageForUpload(
         );
 
         // Calculate final dimensions after resize
-        const { width: finalWidth, height: finalHeight } = maxDimension !== undefined
-          ? calculateFinalDimensions(cropWidth, cropHeight, maxDimension)
-          : calculateDimensionsForArea(
-            cropWidth / cropHeight,
-            baseDimension,
+        let finalWidth: number, finalHeight: number;
+        if (maxDimension !== undefined) {
+          ({ width: finalWidth, height: finalHeight } = calculateFinalDimensions(
             cropWidth,
             cropHeight,
-          );
+            maxDimension,
+          ));
+        } else {
+          // Use exact standard 1K dimensions for the detected AR
+          const standardDims = STANDARD_1K_DIMENSIONS[targetRatio];
+          // Don't upscale: if source crop is smaller than standard dims, keep source size
+          if (cropWidth <= standardDims.width && cropHeight <= standardDims.height) {
+            finalWidth = cropWidth;
+            finalHeight = cropHeight;
+          } else {
+            finalWidth = standardDims.width;
+            finalHeight = standardDims.height;
+          }
+        }
 
         // Create canvas and apply crop + resize
         const canvas = document.createElement("canvas");

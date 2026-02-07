@@ -26,6 +26,8 @@ export function SharePageClient({
   enhancedUrl,
   originalWidth,
   originalHeight,
+  enhancedWidth,
+  enhancedHeight,
   shareToken,
 }: SharePageClientProps) {
   const [downloadingOriginal, setDownloadingOriginal] = useState(false);
@@ -120,6 +122,8 @@ export function SharePageClient({
               enhancedLabel="After"
               width={displayWidth}
               height={displayHeight}
+              enhancedWidth={enhancedWidth ?? undefined}
+              enhancedHeight={enhancedHeight ?? undefined}
             />
           </div>
 

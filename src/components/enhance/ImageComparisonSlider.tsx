@@ -32,13 +32,17 @@ interface ImageComparisonSliderProps {
   width?: number;
   /** Height of the original image. Used to calculate aspect ratio. Omit for auto-detection. */
   height?: number;
+  /** Width of the enhanced image. Kept for backward compat; not used for layout. */
+  enhancedWidth?: number;
+  /** Height of the enhanced image. Kept for backward compat; not used for layout. */
+  enhancedHeight?: number;
 }
 
 /**
  * A slider component to compare original and enhanced images.
- * Uses object-contain to ensure images fit within the container, and dynamic aspect ratio
- * to match the original image dimensions. When width/height are omitted, the component
- * auto-detects the image dimensions for natural aspect ratio display.
+ * Both images use object-cover so they fill the container at the original's AR.
+ * Since uploads now resize to exact standard 1K dimensions, both images should
+ * share the same AR and object-cover center-crops any sub-pixel rounding difference.
  */
 export function ImageComparisonSlider({
   originalUrl,
@@ -57,7 +61,7 @@ export function ImageComparisonSlider({
   >(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Auto-detect dimensions if not provided (or invalid)
+  // Auto-detect original dimensions if not provided (or invalid)
   const shouldAutoDetect = width === undefined || height === undefined ||
     !Number.isFinite(width) ||
     !Number.isFinite(height) || width <= 0 || height <= 0;
@@ -187,7 +191,7 @@ export function ImageComparisonSlider({
             <img
               src={enhancedUrl}
               alt={enhancedLabel}
-              className="object-contain"
+              className="absolute inset-0 w-full h-full object-cover"
               onError={handleEnhancedError}
             />
           )
@@ -209,7 +213,7 @@ export function ImageComparisonSlider({
               <img
                 src={originalUrl}
                 alt={originalLabel}
-                className="object-contain"
+                className="w-full h-full object-cover"
                 onError={handleOriginalError}
               />
             )

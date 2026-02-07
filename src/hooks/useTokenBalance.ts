@@ -72,6 +72,7 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
   const [stats, setStats] = useState<TokenStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [hasFetched, setHasFetched] = useState(false);
   // Track last fetch time for debouncing focus refreshes
   const lastFetchTimeRef = useRef<number>(0);
 
@@ -131,6 +132,7 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
       setStats(data.stats);
     }
     setError(null);
+    setHasFetched(true);
     lastFetchTimeRef.current = Date.now();
     setIsLoading(false);
   }, []);
@@ -191,6 +193,7 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
     tier,
     maxBalance,
     isLoading,
+    hasFetched,
     error,
     isLowBalance,
     isCriticalBalance,
