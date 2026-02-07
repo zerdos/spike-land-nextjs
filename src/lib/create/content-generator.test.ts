@@ -30,6 +30,10 @@ vi.mock("@/lib/logger", () => ({
 }));
 
 describe("content-generator", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
   describe("extractKeywords", () => {
     it("should split topic by slashes, hyphens, underscores, and spaces", () => {
       expect(extractKeywords("games/tic-tac-toe")).toEqual(["games", "tic", "tac", "toe"]);
@@ -374,7 +378,7 @@ describe("content-generator", () => {
     });
 
     it("should return error with null content on API error", async () => {
-      (generateStructuredResponse as any).mockRejectedValue(new Error("AI Error"));
+      (generateStructuredResponse as any).mockRejectedValueOnce(new Error("AI Error"));
 
       const result = await generateAppContent(["test", "app"]);
 
@@ -385,9 +389,11 @@ describe("content-generator", () => {
 
     it("should return error with null rawCode if keys are missing", async () => {
       // Missing code, description, relatedApps
-      (generateStructuredResponse as any).mockResolvedValue({
-        title: "Test",
-      });
+      (generateStructuredResponse as any)
+        .mockResolvedValueOnce({
+          title: "Test",
+        })
+        .mockResolvedValueOnce({}); // Correction fails
 
       const result = await generateAppContent(["test"]);
 
@@ -398,9 +404,11 @@ describe("content-generator", () => {
 
     it("should preserve rawCode when Zod validation fails but code exists", async () => {
       // Has code but missing title and description
-      (generateStructuredResponse as any).mockResolvedValue({
-        code: "export default function App() { return <div>Partial</div> }",
-      });
+      (generateStructuredResponse as any)
+        .mockResolvedValueOnce({
+          code: "export default function App() { return <div>Partial</div> }",
+        })
+        .mockResolvedValueOnce({}); // Correction fails
 
       const result = await generateAppContent(["test"]);
 
@@ -410,9 +418,11 @@ describe("content-generator", () => {
     });
 
     it("should clean markdown from rawCode even when validation fails", async () => {
-      (generateStructuredResponse as any).mockResolvedValue({
-        code: "```tsx\nexport default function App() { return <div>Raw</div> }\n```",
-      });
+      (generateStructuredResponse as any)
+        .mockResolvedValueOnce({
+          code: "```tsx\nexport default function App() { return <div>Raw</div> }\n```",
+        })
+        .mockResolvedValueOnce({}); // Correction fails
 
       const result = await generateAppContent(["test"]);
 
@@ -424,12 +434,15 @@ describe("content-generator", () => {
     it("should extract code from raw text when JSON parsing fails", async () => {
       const rawJson =
         `{"title":"Test","description":"A test","code":"export default function App() { return <div>Hello</div> }","relatedApps":["a/b"]}`;
-      (generateStructuredResponse as any).mockRejectedValue(
-        new StructuredResponseParseError(
-          "Failed to parse structured response: Unterminated string",
-          rawJson,
-        ),
-      );
+      (generateStructuredResponse as any)
+        .mockRejectedValueOnce(
+          new StructuredResponseParseError(
+            "Failed to parse structured response: Unterminated string",
+            rawJson,
+          ),
+        )
+        // Correction also fails
+        .mockRejectedValueOnce(new Error("Correction failed"));
 
       const result = await generateAppContent(["test"]);
 
@@ -440,7 +453,7 @@ describe("content-generator", () => {
 
     it("should return null rawCode when StructuredResponseParseError has no code field", async () => {
       const rawJson = `{"title":"Test","description":"A broken response with no code field`;
-      (generateStructuredResponse as any).mockRejectedValue(
+      (generateStructuredResponse as any).mockRejectedValueOnce(
         new StructuredResponseParseError(
           "Failed to parse structured response: Unterminated string",
           rawJson,
@@ -793,6 +806,60 @@ describe("content-generator", () => {
           prompt: expect.stringContaining("const broken = <div>"),
         }),
       );
+    });
+  });
+
+  describe("retry logic in generateAppContent", () => {
+    it("should retry with attemptCodeCorrection when validation fails", async () => {
+      // 1. First call returns invalid schema (missing description) but has code
+      const invalidResponse = {
+        title: "Invalid App",
+        // description missing
+        code: "export default function App() { return <div>Bad</div> }",
+        relatedApps: [],
+      };
+
+      // 2. Correction call returns fixed code
+      const correctedResponse = {
+        code: "export default function App() { return <div>Fixed</div> }",
+      };
+
+      (generateStructuredResponse as any)
+        .mockResolvedValueOnce(invalidResponse) // Initial generation
+        .mockResolvedValueOnce(correctedResponse); // Correction attempt
+
+      const result = await generateAppContent(["test", "retry"]);
+
+      expect(generateStructuredResponse).toHaveBeenCalledTimes(2);
+      expect(result.content).toBeDefined();
+      expect(result.content!.code).toBe(
+        "export default function App() { return <div>Fixed</div> }",
+      );
+      expect(result.content!.title).toBe("Invalid App"); // Should preserve valid fields
+      expect(result.error).toBeNull();
+    });
+
+    it("should retry with attemptCodeCorrection when JSON parse fails", async () => {
+      // 1. First call throws parse error
+      const rawText = `{"code": "export default function App() { return <div>ParseError</div>"`; // Unterminated
+      (generateStructuredResponse as any).mockRejectedValueOnce(
+        new StructuredResponseParseError("Parse error", rawText),
+      );
+
+      // 2. Correction call fixes it
+      const correctedResponse = {
+        code: "export default function App() { return <div>FixedParse</div> }",
+      };
+      (generateStructuredResponse as any).mockResolvedValueOnce(correctedResponse);
+
+      const result = await generateAppContent(["test", "parse-retry"]);
+
+      expect(generateStructuredResponse).toHaveBeenCalledTimes(2);
+      expect(result.content).toBeDefined();
+      expect(result.content!.code).toBe(
+        "export default function App() { return <div>FixedParse</div> }",
+      );
+      expect(result.content!.description).toContain("Automatically corrected");
     });
   });
 });

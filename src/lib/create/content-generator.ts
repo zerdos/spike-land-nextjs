@@ -108,9 +108,11 @@ const CORE_PROMPT =
 - Component must be DEFAULT EXPORT
 - Light theme by default — use semantic color classes (bg-background, text-foreground, etc.)
 - Design Tokens for Premium Look:
-  - Glass: "bg-background/80 backdrop-blur-md border-border/50"
-  - Shadow: "shadow-xl shadow-primary/5"
-  - Typography: headings use "tracking-tight font-bold", labels "font-medium text-sm"
+  - Glass: "bg-background/80 backdrop-blur-md border-border/50" (MANDATORY for cards/containers)
+  - Shadow: "shadow-xl shadow-primary/5" (Soft, premium elevastion)
+  - Typography: headings use "tracking-tight font-bold", labels "font-medium text-sm text-muted-foreground"
+  - Micro-animations: Use framer-motion for smooth entrance/exit (AnimatePresence) and hover states (whileHover={{ scale: 1.02 }})
+  - Gradients: Use subtle gradients "bg-gradient-to-br from-background to-muted/50" for depth
 
 
 ## SHADCN/UI DESIGN SYSTEM (import from "@/components/ui/...")
@@ -865,7 +867,40 @@ export async function generateAppContent(
 
     // Validation failed but we may have raw code
     const errorMsg = parsed.error.issues.map((i) => i.message).join(", ");
-    logger.error("Generated content failed validation:", { error: errorMsg });
+    logger.warn("Generated content failed validation, attempting correction...", {
+      error: errorMsg,
+    });
+
+    if (rawCode) {
+      const correctedCode = await attemptCodeCorrection(rawCode, errorMsg, topic);
+      if (correctedCode) {
+        logger.info("Correction successful, returning fixed code");
+        // If we have other valid fields from the initial parse (even if partial), use them
+        // verification: we know parsing failed, but maybe we can salvage title/desc if they were valid?
+        // For safe fallback, we use the original result properties if they exist and are strings
+        const safeTitle = resultObj && typeof resultObj["title"] === "string"
+          ? resultObj["title"]
+          : topic.split("/").pop() || "App";
+        const safeDesc = resultObj && typeof resultObj["description"] === "string"
+          ? resultObj["description"]
+          : "Generated application";
+        const safeRelated = resultObj && Array.isArray(resultObj["relatedApps"])
+          ? resultObj["relatedApps"]
+          : [];
+
+        return {
+          content: {
+            title: safeTitle,
+            description: safeDesc,
+            code: correctedCode,
+            relatedApps: safeRelated as string[],
+          },
+          rawCode: correctedCode,
+          error: null,
+        };
+      }
+    }
+
     return { content: null, rawCode, error: errorMsg };
   } catch (error) {
     logger.error("Failed to generate app content:", { error });
@@ -874,6 +909,31 @@ export async function generateAppContent(
     let rawCode: string | null = null;
     if (error instanceof StructuredResponseParseError) {
       rawCode = extractCodeFromRawText(error.rawText);
+
+      // Attempt correction on parse errors too if we successfully extracted code
+      if (rawCode) {
+        logger.warn("Attempting correction on content with parse error...");
+        const correctedCode = await attemptCodeCorrection(
+          rawCode,
+          `JSON Parse Error: ${message}`,
+          topic,
+        );
+
+        if (correctedCode) {
+          // Since we failed to parse the JSON, we don't have title/desc.
+          // We'll return the code and synthesized metadata.
+          return {
+            content: {
+              title: topic.split("/").pop() || "Generated App",
+              description: "Automatically corrected application",
+              code: correctedCode,
+              relatedApps: [],
+            },
+            rawCode: correctedCode,
+            error: null,
+          };
+        }
+      }
     }
 
     return { content: null, rawCode, error: message };
