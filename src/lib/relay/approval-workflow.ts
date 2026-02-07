@@ -58,9 +58,9 @@ function levenshteinDistance(str1: string, str2: string): number {
         currentRow[j] = prevRow[j - 1]!;
       } else {
         currentRow[j] = Math.min(
-          prevRow[j]! + 1,    // deletion
+          prevRow[j]! + 1, // deletion
           currentRow[j - 1]! + 1, // insertion
-          prevRow[j - 1]! + 1 // substitution
+          prevRow[j - 1]! + 1, // substitution
         );
       }
     }
