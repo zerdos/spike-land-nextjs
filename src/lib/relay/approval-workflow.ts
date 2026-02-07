@@ -32,34 +32,47 @@ import { DEFAULT_APPROVAL_SETTINGS } from "./approval-workflow-types";
  * Calculate Levenshtein distance between two strings.
  */
 function levenshteinDistance(str1: string, str2: string): number {
+  // Optimization: Make sure n is smaller than m to minimize space
+  // This reduces space complexity from O(M*N) to O(min(M, N))
+  if (str1.length < str2.length) {
+    return levenshteinDistance(str2, str1);
+  }
+
   const m = str1.length;
   const n = str2.length;
 
-  // Create a matrix
-  const dp: number[][] = Array(m + 1)
-    .fill(null)
-    .map(() => Array(n + 1).fill(0) as number[]);
+  // We only need two rows to calculate the distance
+  // prevRow represents dp[i-1], currentRow represents dp[i]
+  let prevRow: number[] = Array(n + 1).fill(0);
+  let currentRow: number[] = Array(n + 1).fill(0);
 
-  // Initialize first column and row
-  for (let i = 0; i <= m; i++) dp[i]![0] = i;
-  for (let j = 0; j <= n; j++) dp[0]![j] = j;
+  // Initialize first row (transforming empty string to str2[0..j])
+  for (let j = 0; j <= n; j++) prevRow[j] = j;
 
-  // Fill in the rest of the matrix
   for (let i = 1; i <= m; i++) {
+    // Initialize first column of current row (transforming str1[0..i] to empty string)
+    currentRow[0] = i;
+
     for (let j = 1; j <= n; j++) {
       if (str1[i - 1] === str2[j - 1]) {
-        dp[i]![j] = dp[i - 1]![j - 1]!;
+        currentRow[j] = prevRow[j - 1]!;
       } else {
-        dp[i]![j] = Math.min(
-          dp[i - 1]![j]! + 1, // deletion
-          dp[i]![j - 1]! + 1, // insertion
-          dp[i - 1]![j - 1]! + 1, // substitution
+        currentRow[j] = Math.min(
+          prevRow[j]! + 1,    // deletion
+          currentRow[j - 1]! + 1, // insertion
+          prevRow[j - 1]! + 1 // substitution
         );
       }
     }
+
+    // Swap rows for next iteration
+    // prevRow becomes the current row we just calculated
+    // currentRow becomes the buffer for the next iteration
+    [prevRow, currentRow] = [currentRow, prevRow];
   }
 
-  return dp[m]![n]!;
+  // After the loop finishes, prevRow holds the result for row m
+  return prevRow[n]!;
 }
 
 /**
