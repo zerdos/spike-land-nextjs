@@ -24,6 +24,7 @@ const eslintConfig = tseslint.config(
       ".pnp.loader.mjs",
       "packages/mobile-app/coverage/**",
       "src/app/.well-known/**",
+      "live/**",
     ],
   },
   // TypeScript files configuration
