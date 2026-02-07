@@ -39,9 +39,7 @@ export function LibraryClient() {
   }, [fetchLibrary]);
 
   const toggleSelect = useCallback((id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
   }, []);
 
   const deleteSelected = async () => {

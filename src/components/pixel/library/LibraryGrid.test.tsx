@@ -48,7 +48,7 @@ describe("LibraryGrid", () => {
         images={[]}
         selectedIds={[]}
         onToggleSelect={() => {}}
-      />
+      />,
     );
     expect(screen.getByText("Your library is empty.")).toBeInTheDocument();
   });
@@ -59,7 +59,7 @@ describe("LibraryGrid", () => {
         images={mockImages}
         selectedIds={[]}
         onToggleSelect={() => {}}
-      />
+      />,
     );
     expect(screen.getByText("Image 1")).toBeInTheDocument();
     expect(screen.getByText("Image 2")).toBeInTheDocument();
@@ -72,7 +72,7 @@ describe("LibraryGrid", () => {
         images={mockImages}
         selectedIds={[]}
         onToggleSelect={onToggleSelect}
-      />
+      />,
     );
 
     const checkboxes = screen.getAllByRole("checkbox");
@@ -87,7 +87,7 @@ describe("LibraryGrid", () => {
         images={mockImages}
         selectedIds={["img1"]}
         onToggleSelect={() => {}}
-      />
+      />,
     );
 
     const checkboxes = screen.getAllByRole("checkbox");

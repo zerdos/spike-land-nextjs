@@ -179,11 +179,11 @@ _(None recorded yet)_
 
 This section tracks agent-specific documentation and productivity notes. Each agent maintains their own notes file with health scores and experiences.
 
-| Agent | Notes Location | Last Updated | Health Score | Status |
-|-------|---------------|--------------|--------------|---------|
-| @copilot | [.copilot/notes.md](../.copilot/notes.md) | 2026-02-06 | 7/9 | Active |
-| @jules | [.jules/bolt.md](../.jules/bolt.md) | 2024-05-22 | - | Active |
-| @claude | _Not yet registered_ | - | - | - |
+| Agent    | Notes Location                            | Last Updated | Health Score | Status |
+| -------- | ----------------------------------------- | ------------ | ------------ | ------ |
+| @copilot | [.copilot/notes.md](../.copilot/notes.md) | 2026-02-06   | 7/9          | Active |
+| @jules   | [.jules/bolt.md](../.jules/bolt.md)       | 2024-05-22   | -            | Active |
+| @claude  | _Not yet registered_                      | -            | -            | -      |
 
 ### Guidelines for Agent Notes
 
