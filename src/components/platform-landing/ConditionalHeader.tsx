@@ -13,7 +13,6 @@ const EXCLUDED_PATHS = [
   "/personas",
   "/auth",
   "/live",
-  "/create",
 ];
 
 // Check if pathname is a child route of /apps/pixel (but not /apps/pixel itself)
