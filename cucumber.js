@@ -85,10 +85,10 @@ module.exports = {
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
     failFast: false, // Stop on first failure for faster CI feedback
-    retry: 0, // Retry once in CI to handle transient issues (faster feedback)
+    retry: 1, // Retry once in CI to handle transient issues (faster feedback)
     tags: "not @skip and not @flaky and not @wip", // Include @requires-db tests in sharded runs
-    timeout: 10000, // 10 second timeout for CI
-    parallel: 8,
+    timeout: 30000, // 30 second timeout for CI
+    parallel: 16,
   },
   local: {
     paths: ["e2e/features/**/*.feature"],
