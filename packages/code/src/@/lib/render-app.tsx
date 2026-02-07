@@ -346,10 +346,15 @@ async function _loadAppComponent(
         : appComponent;
     } else {
       // Fallback to direct import if session fetch fails
-      AppToRender = (await import(
-        /* @vite-ignore */
-        `${currentOrigin}/live/${codeSpace}/index.js`
-      )).default as FlexibleComponentType;
+      // Ensure we don't try to import from URL in test environment as it's not supported by Node loader
+      if (process.env.VITEST) {
+        AppToRender = FallbackErrorComponent;
+      } else {
+        AppToRender = (await import(
+          /* @vite-ignore */
+          `${currentOrigin}/live/${codeSpace}/index.js`
+        )).default as FlexibleComponentType;
+      }
     }
   } else if (transpiled || code) {
     if (
