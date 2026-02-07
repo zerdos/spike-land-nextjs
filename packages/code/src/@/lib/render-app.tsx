@@ -143,9 +143,11 @@ export const importFromString = async (code: string) => {
   );
 
   // Check if we're in a browser environment
+  // We explicitly check for VITEST to avoid using Blob URLs in JSDOM/Node environment
   const isBrowser = typeof window !== "undefined" &&
     typeof URL !== "undefined" &&
-    typeof Blob !== "undefined";
+    typeof Blob !== "undefined" &&
+    !process.env.VITEST;
 
   // In a browser environment, try the Blob URL approach first
   if (isBrowser) {
