@@ -27,8 +27,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/photos", label: "Photos", icon: "📸" },
   { href: "/admin/gallery", label: "Featured Gallery", icon: "🖼️" },
   { href: "/admin/errors", label: "Error Logs", icon: "🐛" },
-  { href: "/admin/marketing", label: "Marketing", icon: "📣" },
-  { href: "/admin/marketing/ab-tests", label: "A/B Tests", icon: "🧪" },
   { href: "/admin/social-media", label: "Social Media", icon: "📱" },
   { href: "/admin/emails", label: "Email Logs", icon: "📧" },
   { href: "/admin/sitemap", label: "Sitemap Preview", icon: "🗺️" },
