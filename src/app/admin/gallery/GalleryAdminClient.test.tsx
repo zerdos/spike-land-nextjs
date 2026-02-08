@@ -282,11 +282,6 @@ describe("GalleryAdminClient", () => {
       mockFetchResponse({ success: true }),
     );
 
-    // Mock refetch after reorder
-    vi.mocked(global.fetch).mockResolvedValueOnce(
-      mockFetchResponse({ items: mockGalleryItems }),
-    );
-
     // Click Move Up on the second item (item2 at index 1 wants to move to item1's sortOrder which is 1)
     const moveUpButtons = screen.getAllByText("Up");
     fireEvent.click(moveUpButtons[1]!);
@@ -317,11 +312,6 @@ describe("GalleryAdminClient", () => {
     // Mock reorder API call
     vi.mocked(global.fetch).mockResolvedValueOnce(
       mockFetchResponse({ success: true }),
-    );
-
-    // Mock refetch after reorder
-    vi.mocked(global.fetch).mockResolvedValueOnce(
-      mockFetchResponse({ items: mockGalleryItems }),
     );
 
     // Click Move Down on the first item (item1 at index 0 wants to move to item2's sortOrder which is 2)
@@ -367,6 +357,11 @@ describe("GalleryAdminClient", () => {
     // Mock failed toggle
     vi.mocked(global.fetch).mockResolvedValueOnce(
       mockFetchResponse({ error: "Failed to update" }, false),
+    );
+
+    // Mock revert fetch
+    vi.mocked(global.fetch).mockResolvedValueOnce(
+      mockFetchResponse({ items: mockGalleryItems }),
     );
 
     const switches = document.querySelectorAll('button[role="switch"]');

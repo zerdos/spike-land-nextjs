@@ -88,6 +88,13 @@ export function GalleryAdminClient() {
   }, [fetchItems]);
 
   const handleToggleActive = async (item: GalleryItem) => {
+    // Optimistic update
+    setItems((prev) =>
+      prev.map((i) =>
+        i.id === item.id ? { ...i, isActive: !i.isActive } : i
+      )
+    );
+
     setIsUpdating(true);
     try {
       const response = await fetch("/api/admin/gallery", {
@@ -103,10 +110,9 @@ export function GalleryAdminClient() {
         const data = await response.json();
         throw new Error(data.error || "Failed to update item");
       }
-
-      setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, isActive: !i.isActive } : i));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update item");
+      await fetchItems(); // Revert on error
     } finally {
       setIsUpdating(false);
     }
@@ -119,6 +125,23 @@ export function GalleryAdminClient() {
     const prevItem = items[currentIndex - 1];
     if (!prevItem) return;
 
+    // Optimistic update
+    const newItems = [...items];
+    // Create copies to avoid mutating state directly
+    const currentItem = { ...newItems[currentIndex] };
+    const targetItem = { ...newItems[currentIndex - 1] };
+
+    // Swap sortOrder to keep consistency if we don't refetch immediately
+    const tempOrder = currentItem.sortOrder;
+    currentItem.sortOrder = targetItem.sortOrder;
+    targetItem.sortOrder = tempOrder;
+
+    // Swap positions
+    newItems[currentIndex] = targetItem;
+    newItems[currentIndex - 1] = currentItem;
+
+    setItems(newItems);
+
     setIsUpdating(true);
     try {
       const response = await fetch("/api/admin/gallery/reorder", {
@@ -126,7 +149,7 @@ export function GalleryAdminClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: item.id,
-          newOrder: prevItem.sortOrder,
+          newOrder: prevItem.sortOrder, // Use the original sortOrder of the prev item (which we swapped to)
         }),
       });
 
@@ -134,12 +157,11 @@ export function GalleryAdminClient() {
         const data = await response.json();
         throw new Error(data.error || "Failed to reorder item");
       }
-
-      await fetchItems();
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to reorder item",
       );
+      await fetchItems(); // Revert on error
     } finally {
       setIsUpdating(false);
     }
@@ -152,6 +174,23 @@ export function GalleryAdminClient() {
     const nextItem = items[currentIndex + 1];
     if (!nextItem) return;
 
+    // Optimistic update
+    const newItems = [...items];
+    // Create copies to avoid mutating state directly
+    const currentItem = { ...newItems[currentIndex] };
+    const targetItem = { ...newItems[currentIndex + 1] };
+
+    // Swap sortOrder
+    const tempOrder = currentItem.sortOrder;
+    currentItem.sortOrder = targetItem.sortOrder;
+    targetItem.sortOrder = tempOrder;
+
+    // Swap positions
+    newItems[currentIndex] = targetItem;
+    newItems[currentIndex + 1] = currentItem;
+
+    setItems(newItems);
+
     setIsUpdating(true);
     try {
       const response = await fetch("/api/admin/gallery/reorder", {
@@ -159,7 +198,7 @@ export function GalleryAdminClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: item.id,
-          newOrder: nextItem.sortOrder,
+          newOrder: nextItem.sortOrder, // Use original sortOrder of next item
         }),
       });
 
@@ -167,12 +206,11 @@ export function GalleryAdminClient() {
         const data = await response.json();
         throw new Error(data.error || "Failed to reorder item");
       }
-
-      await fetchItems();
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to reorder item",
       );
+      await fetchItems(); // Revert on error
     } finally {
       setIsUpdating(false);
     }
@@ -186,6 +224,10 @@ export function GalleryAdminClient() {
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
 
+    // Optimistic update
+    setItems((prev) => prev.filter((i) => i.id !== itemToDelete.id));
+    setShowDeleteDialog(false);
+
     setIsUpdating(true);
     try {
       const response = await fetch(`/api/admin/gallery?id=${itemToDelete.id}`, {
@@ -196,12 +238,10 @@ export function GalleryAdminClient() {
         const data = await response.json();
         throw new Error(data.error || "Failed to delete item");
       }
-
-      await fetchItems();
-      setShowDeleteDialog(false);
       setItemToDelete(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to delete item");
+      await fetchItems(); // Revert on error
     } finally {
       setIsUpdating(false);
     }
