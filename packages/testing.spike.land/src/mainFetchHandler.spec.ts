@@ -187,6 +187,7 @@ describe("MainFetchHandler", () => {
 
       const mockFetchApiResponse = new Response("Handled response");
       (handleErrors as Mock).mockImplementation(async (_, handler) => await handler());
+      (handleFetchApi as Mock).mockResolvedValue(mockFetchApiResponse);
 
       const response = await handleMainFetch(
         mockRequest,
