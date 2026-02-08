@@ -40,9 +40,9 @@ vi.mock("@/lib/ai/gemini-client", () => ({
   DEFAULT_TEMPERATURE: null,
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: {
-    refundTokens: mockRefundTokens,
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: {
+    refundCredits: mockRefundTokens,
   },
 }));
 
@@ -297,7 +297,7 @@ describe("enhance-image.direct", () => {
 
       expect(result.success).toBe(false);
       expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to refund tokens"),
+        expect.stringContaining("Failed to refund credits"),
         "Refund failed",
       );
     });
