@@ -1,9 +1,4 @@
 import { auth } from "@/auth";
-import {
-  CODESPACE_TOOL_NAMES,
-  createCodespaceServer,
-} from "@/lib/claude-agent/tools/codespace-tools";
-import { query } from "@anthropic-ai/claude-agent-sdk";
 import { NextResponse } from "next/server";
 
 export const maxDuration = 120;
@@ -39,6 +34,12 @@ export async function POST(request: Request) {
     console.log("[test/agent-debug] Starting test");
     console.log("[test/agent-debug] codespaceId:", codespaceId);
     console.log("[test/agent-debug] prompt:", prompt);
+
+    // Dynamic imports to prevent side effects in production/CI
+    const { CODESPACE_TOOL_NAMES, createCodespaceServer } = await import(
+      "@/lib/claude-agent/tools/codespace-tools"
+    );
+    const { query } = await import("@anthropic-ai/claude-agent-sdk");
 
     // Create MCP server
     const server = createCodespaceServer(codespaceId);
