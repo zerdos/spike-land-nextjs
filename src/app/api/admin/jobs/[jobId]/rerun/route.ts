@@ -14,7 +14,7 @@ import { isAdminByUserId } from "@/lib/auth/admin-middleware";
 import { rerunMcpJob } from "@/lib/mcp/generation-service";
 import prisma from "@/lib/prisma";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { enhanceImageDirect } from "@/workflows/enhance-image.direct";
 import type { EnhancementTier } from "@prisma/client";

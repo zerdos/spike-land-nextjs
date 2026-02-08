@@ -30,6 +30,7 @@ vi.mock("./MDXComponents", () => ({
     Gallery: "div",
     CTAButton: "button",
     ImageComparisonSlider: "div",
+    PDFViewer: "div",
   },
 }));
 

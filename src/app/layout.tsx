@@ -39,32 +39,34 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://spike.land"),
-  title: "Spike Land - AI-Powered Social Media Command Center",
+  title: "Spike Land - Open-Source AI-Powered Development Platform",
   description:
-    "Manage all your social accounts with AI agents. Create content, schedule posts, run A/B tests, and grow your audience - all from one command center.",
+    "Build and ship software faster with AI agents, recursive workflows, and engineering discipline. Open source on GitHub. Clone it, run it, see what AI-assisted development looks like.",
   keywords: [
     "Spike Land",
-    "social media management",
+    "AI development platform",
     "AI agents",
-    "content scheduling",
-    "A/B testing",
-    "social media automation",
-    "marketing platform",
-    "AI marketing",
+    "coding agents",
+    "context engineering",
+    "AI-assisted development",
+    "open source",
+    "developer tools",
+    "CI/CD automation",
+    "Claude Code",
   ],
-  authors: [{ name: "Spike Land Team" }],
+  authors: [{ name: "Zoltan Erdos" }],
   openGraph: {
-    title: "Spike Land - AI-Powered Social Media Command Center",
+    title: "Spike Land - Open-Source AI-Powered Development Platform",
     description:
-      "Manage all your social accounts with AI agents. Create content, schedule posts, run A/B tests, and grow your audience.",
+      "Build and ship software faster with AI agents, recursive workflows, and engineering discipline. Open source on GitHub.",
     type: "website",
     siteName: "Spike Land",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Spike Land - AI-Powered Social Media Command Center",
+    title: "Spike Land - Open-Source AI-Powered Development Platform",
     description:
-      "Manage all your social accounts with AI agents. Create content, schedule posts, run A/B tests, and grow your audience.",
+      "Build and ship software faster with AI agents, recursive workflows, and engineering discipline. Open source on GitHub.",
   },
 };
 

@@ -1,8 +1,8 @@
 import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { createModificationJob } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
-import type { EnhancementTier } from "@/lib/tokens/costs";
-import { MCP_GENERATION_COSTS } from "@/lib/tokens/costs";
+import type { EnhancementTier } from "@/lib/credits/costs";
+import { MCP_GENERATION_COSTS } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";

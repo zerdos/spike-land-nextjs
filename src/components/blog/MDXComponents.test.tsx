@@ -155,6 +155,45 @@ describe("MDXComponents", () => {
     });
   });
 
+  describe("PDFViewer", () => {
+    it("renders iframe with correct src", () => {
+      const PDFViewer = mdxComponents["PDFViewer"] as any;
+      render(<PDFViewer src="/test.pdf" title="Test PDF" />);
+
+      const iframe = screen.getByTitle("Test PDF");
+      expect(iframe).toBeInTheDocument();
+      expect(iframe).toHaveAttribute("src", "/test.pdf");
+    });
+
+    it("renders title and download link when title is provided", () => {
+      const PDFViewer = mdxComponents["PDFViewer"] as any;
+      render(<PDFViewer src="/test.pdf" title="Test PDF" />);
+
+      expect(screen.getByText("Test PDF")).toBeInTheDocument();
+      const downloadLink = screen.getByText("Download PDF");
+      expect(downloadLink).toHaveAttribute("href", "/test.pdf");
+      expect(downloadLink).toHaveAttribute("download", "");
+    });
+
+    it("renders download link without title", () => {
+      const PDFViewer = mdxComponents["PDFViewer"] as any;
+      render(<PDFViewer src="/test.pdf" />);
+
+      const iframe = screen.getByTitle("PDF document");
+      expect(iframe).toBeInTheDocument();
+      const downloadLink = screen.getByText("Download PDF");
+      expect(downloadLink).toHaveAttribute("href", "/test.pdf");
+    });
+
+    it("accepts custom height", () => {
+      const PDFViewer = mdxComponents["PDFViewer"] as any;
+      render(<PDFViewer src="/test.pdf" title="Tall PDF" height="1200px" />);
+
+      const iframe = screen.getByTitle("Tall PDF");
+      expect(iframe).toHaveStyle({ height: "1200px" });
+    });
+  });
+
   describe("YouTubeEmbed", () => {
     it("renders iframe with validated src", () => {
       const YouTubeEmbed = mdxComponents["YouTubeEmbed"] as any;

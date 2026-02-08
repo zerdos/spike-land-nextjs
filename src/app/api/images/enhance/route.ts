@@ -5,7 +5,7 @@ import { getHttpStatusForError, resolveBlendSource } from "@/lib/images/blend-so
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { attributeConversion } from "@/lib/tracking/attribution";
 import { tryCatch } from "@/lib/try-catch";
 import { validateBase64Size, validateEnhanceRequest } from "@/lib/validations/enhance-image";
@@ -155,8 +155,8 @@ export async function POST(request: NextRequest) {
           title: blendResult.error.code === "ACCESS_DENIED"
             ? "Access denied"
             : blendResult.error.code === "NOT_FOUND"
-            ? "Image not found"
-            : "Processing failed",
+              ? "Image not found"
+              : "Processing failed",
           suggestion: blendResult.error.suggestion,
         },
         {

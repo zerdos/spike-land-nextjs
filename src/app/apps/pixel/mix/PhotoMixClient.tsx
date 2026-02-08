@@ -16,7 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { type MixHistoryItem, useMixHistory } from "@/hooks/useMixHistory";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { cn } from "@/lib/utils";
 import type { EnhancementTier } from "@prisma/client";
 import { AlertTriangle, ArrowLeft, Check, Coins, Crown, Sparkles, Upload } from "lucide-react";
@@ -560,25 +560,25 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
               {/* Only show "not enough tokens" for paid tiers - not for anonymous */}
               {!isAnonymous && tokenCost > 0 && !hasEnoughTokens &&
                 !isBalanceLoading && (
-                <>
-                  <Separator />
-                  <div className="space-y-3">
-                    <p className="text-sm text-destructive">
-                      You need {tokenCost}{" "}
-                      tokens for Premium tier. Try Free tier or get more tokens.
-                    </p>
-                    <PurchaseModal
-                      trigger={
-                        <Button className="w-full">
-                          <Coins className="mr-2 h-4 w-4" />
-                          Get Tokens
-                        </Button>
-                      }
-                      onPurchaseComplete={refetchBalance}
-                    />
-                  </div>
-                </>
-              )}
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      <p className="text-sm text-destructive">
+                        You need {tokenCost}{" "}
+                        tokens for Premium tier. Try Free tier or get more tokens.
+                      </p>
+                      <PurchaseModal
+                        trigger={
+                          <Button className="w-full">
+                            <Coins className="mr-2 h-4 w-4" />
+                            Get Tokens
+                          </Button>
+                        }
+                        onPurchaseComplete={refetchBalance}
+                      />
+                    </div>
+                  </>
+                )}
             </CardContent>
           </Card>
         </div>
@@ -600,8 +600,8 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
           excludeImageId={selectorTarget === "image1"
             ? image2?.type === "gallery" ? image2.id : undefined
             : image1?.type === "gallery"
-            ? image1.id
-            : undefined}
+              ? image1.id
+              : undefined}
           title={selectorTarget === "image1"
             ? "Select Input Photo 1"
             : "Select Input Photo 2"}

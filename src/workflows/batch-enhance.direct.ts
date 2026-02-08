@@ -11,7 +11,7 @@
  */
 
 import prisma from "@/lib/prisma";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import type { EnhancementTier } from "@prisma/client";
 import { JobStatus } from "@prisma/client";

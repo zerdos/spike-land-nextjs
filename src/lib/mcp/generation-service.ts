@@ -4,12 +4,12 @@ import {
   generateImageWithGemini,
   modifyImageWithGemini,
 } from "@/lib/ai/gemini-client";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
+import type { EnhancementTier } from "@/lib/credits/costs";
+import { getMcpGenerationCost } from "@/lib/credits/costs";
 import { getImageDimensionsFromBuffer } from "@/lib/images/image-dimensions";
 import prisma from "@/lib/prisma";
 import { uploadToR2 } from "@/lib/storage/r2-client";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import type { EnhancementTier } from "@/lib/tokens/costs";
-import { getMcpGenerationCost } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, McpJobType } from "@prisma/client";
 import { classifyError as classifyErrorImpl } from "./error-classifier";
@@ -105,21 +105,20 @@ export async function createGenerationJob(
     };
   }
 
-  // Atomic token consumption - handles balance check within transaction
+  // Atomic credit consumption - handles balance check within transaction
   // This prevents race conditions where two requests could both pass a separate balance check
-  const consumeResult = await TokenBalanceManager.consumeTokens({
+  const consumeResult = await WorkspaceCreditManager.consumeCredits({
     userId,
     amount: tokensCost,
     source: "mcp_generation",
     sourceId: "pending", // Will be job ID
-    metadata: { tier, type: "GENERATE" },
   });
 
   if (!consumeResult.success) {
     return {
       success: false,
       error: consumeResult.error ||
-        `Insufficient token balance. Required: ${tokensCost} tokens`,
+        `Insufficient AI credits. Required: ${tokensCost} credits`,
     };
   }
 
@@ -176,21 +175,20 @@ export async function createModificationJob(
     };
   }
 
-  // Atomic token consumption - handles balance check within transaction
+  // Atomic credit consumption - handles balance check within transaction
   // This prevents race conditions where two requests could both pass a separate balance check
-  const consumeResult = await TokenBalanceManager.consumeTokens({
+  const consumeResult = await WorkspaceCreditManager.consumeCredits({
     userId,
     amount: tokensCost,
     source: "mcp_generation",
     sourceId: "pending",
-    metadata: { tier, type: "MODIFY" },
   });
 
   if (!consumeResult.success) {
     return {
       success: false,
       error: consumeResult.error ||
-        `Insufficient token balance. Required: ${tokensCost} tokens`,
+        `Insufficient AI credits. Required: ${tokensCost} credits`,
     };
   }
 
@@ -331,12 +329,7 @@ async function handleGenerationJobFailure(
   );
 
   if (job) {
-    await TokenBalanceManager.refundTokens(
-      job.userId,
-      job.tokensCost,
-      jobId,
-      `Generation job failed: ${classifiedError.code}`,
-    );
+    await WorkspaceCreditManager.refundCredits(job.userId, job.tokensCost);
 
     await tryCatch(
       prisma.mcpGenerationJob.update({
@@ -500,12 +493,7 @@ async function handleModificationJobFailure(
   );
 
   if (job) {
-    await TokenBalanceManager.refundTokens(
-      job.userId,
-      job.tokensCost,
-      jobId,
-      `Modification job failed: ${classifiedError.code}`,
-    );
+    await WorkspaceCreditManager.refundCredits(job.userId, job.tokensCost);
 
     await tryCatch(
       prisma.mcpGenerationJob.update({
@@ -645,13 +633,8 @@ export async function cancelMcpJob(
     },
   });
 
-  // Refund tokens
-  await TokenBalanceManager.refundTokens(
-    job.userId,
-    job.tokensCost,
-    jobId,
-    "Admin cancelled job",
-  );
+  // Refund credits
+  await WorkspaceCreditManager.refundCredits(job.userId, job.tokensCost);
 
   return { success: true, tokensRefunded: job.tokensCost };
 }
@@ -681,20 +664,19 @@ export async function rerunMcpJob(
     };
   }
 
-  // Consume tokens for new job
-  const consumeResult = await TokenBalanceManager.consumeTokens({
+  // Consume credits for new job
+  const consumeResult = await WorkspaceCreditManager.consumeCredits({
     userId: job.userId,
     amount: job.tokensCost,
     source: "mcp_generation",
     sourceId: "pending",
-    metadata: { tier: job.tier, type: job.type, rerunOf: jobId },
   });
 
   if (!consumeResult.success) {
     return {
       success: false,
       error: consumeResult.error ||
-        `Insufficient token balance. Required: ${job.tokensCost} tokens`,
+        `Insufficient AI credits. Required: ${job.tokensCost} credits`,
     };
   }
 

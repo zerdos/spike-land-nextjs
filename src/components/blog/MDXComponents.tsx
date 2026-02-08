@@ -265,6 +265,65 @@ function CustomImage({ src, alt }: { src?: string; alt?: string; }) {
 }
 
 /**
+ * PDFViewer component for embedding PDF documents with an iframe.
+ * Browsers handle PDF rendering natively; includes a download link as fallback.
+ *
+ * @param src - The path to the PDF file (relative to public directory)
+ * @param title - Optional title to display above the viewer
+ * @param height - Optional height for the iframe (default "800px")
+ *
+ * @example
+ * ```mdx
+ * <PDFViewer src="/docs/contract.pdf" title="Contract Extension" />
+ * ```
+ */
+function PDFViewer({
+  src,
+  title,
+  height = "800px",
+}: {
+  src: string;
+  title?: string;
+  height?: string;
+}) {
+  return (
+    <div className="my-8 rounded-xl border border-border overflow-hidden">
+      {title && (
+        <div className="flex items-center justify-between px-6 py-3 bg-muted/50 border-b border-border">
+          <h4 className="font-heading text-lg font-semibold text-foreground">
+            {title}
+          </h4>
+          <a
+            href={src}
+            download
+            className="text-sm text-primary hover:underline transition-colors"
+          >
+            Download PDF
+          </a>
+        </div>
+      )}
+      <iframe
+        src={src}
+        title={title || "PDF document"}
+        style={{ height }}
+        className="w-full border-0"
+      />
+      {!title && (
+        <div className="px-6 py-3 bg-muted/50 border-t border-border">
+          <a
+            href={src}
+            download
+            className="text-sm text-primary hover:underline transition-colors"
+          >
+            Download PDF
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * Custom components available in MDX blog posts
  * These override default HTML elements with styled versions
  */
@@ -430,6 +489,7 @@ export const mdxComponents: MDXComponents = {
   ImagePlaceholder,
   AudioPlayer,
   YouTubeEmbed,
+  PDFViewer,
 };
 
 /**

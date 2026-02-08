@@ -87,6 +87,7 @@ function createSocialClient(
   platform: SocialPlatform,
   accessToken: string,
   organizationId?: string,
+  accountId?: string,
 ): ISocialClient | null {
   switch (platform) {
     case "LINKEDIN":
@@ -99,7 +100,7 @@ function createSocialClient(
     case "INSTAGRAM":
       return new InstagramClient({ accessToken });
     case "FACEBOOK":
-      return new FacebookClient({ accessToken });
+      return new FacebookClient({ accessToken, accountId });
     case "TWITTER":
       return new TwitterClient({ accessToken });
     case "YOUTUBE":
@@ -139,7 +140,7 @@ async function collectAccountMetrics(
     : undefined;
 
   // Create the appropriate client
-  const client = createSocialClient(platform, accessToken, organizationId);
+  const client = createSocialClient(platform, accessToken, organizationId, account.accountId);
 
   if (!client) {
     return {

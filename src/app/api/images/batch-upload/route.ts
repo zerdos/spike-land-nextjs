@@ -6,8 +6,8 @@ import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { deleteFromR2 } from "@/lib/storage/r2-client";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import type { EnhancementTier } from "@/lib/tokens/costs";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import type { EnhancementTier } from "@/lib/credits/costs";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { isSecureFilename } from "@/lib/upload/validation";
 import type { NextRequest } from "next/server";
@@ -283,9 +283,8 @@ async function handleBatchUpload(
       {
         error: errorMessage.message,
         title: errorMessage.title,
-        suggestion: `Total batch size exceeds maximum of 50MB (current: ${
-          Math.round(totalSize / 1024 / 1024)
-        }MB).`,
+        suggestion: `Total batch size exceeds maximum of 50MB (current: ${Math.round(totalSize / 1024 / 1024)
+          }MB).`,
       },
       { status: 400, headers: { "X-Request-ID": requestId } },
     );

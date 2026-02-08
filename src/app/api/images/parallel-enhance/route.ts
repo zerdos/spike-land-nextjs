@@ -4,7 +4,7 @@ import { generateRequestId, logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
 import type { EnhancementTier } from "@prisma/client";

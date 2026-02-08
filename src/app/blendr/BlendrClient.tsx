@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useMixHistory } from "@/hooks/useMixHistory";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { cn } from "@/lib/utils";
 import type { EnhancementTier } from "@prisma/client";
 import { AlertTriangle, ArrowLeft, Coins, Menu, Sparkles } from "lucide-react";
@@ -495,8 +495,8 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
           excludeImageId={selectorTarget === "image1"
             ? image2?.type === "gallery" ? image2.id : undefined
             : image1?.type === "gallery"
-            ? image1.id
-            : undefined}
+              ? image1.id
+              : undefined}
           title={selectorTarget === "image1"
             ? "Select Input Photo 1"
             : "Select Input Photo 2"}

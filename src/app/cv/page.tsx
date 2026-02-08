@@ -216,7 +216,7 @@ const skills = {
   devops: ["Docker", "Kubernetes", "AWS", "GCP", "Azure", "Cloudflare Workers"],
   testing: ["Vitest", "Playwright", "Cucumber", "TDD", "100% Coverage"],
   ai: [
-    "Claude Opus 4.5",
+    "Claude Opus 4.6",
     "MCP Servers",
     "Context Engineering",
     "Coding Agents",
@@ -225,7 +225,7 @@ const skills = {
 
 const experience = [
   {
-    period: "2023 - Present",
+    period: "2023 - 2026",
     role: "Frontend Developer",
     company: "Virgin Media O2 Limited",
     type: "Contractor",
@@ -480,7 +480,7 @@ export default function CSPage() {
                 </p>
                 <p>
                   In 2025, I discovered something that changed everything: with AI tools like Claude
-                  Code and Opus 4.5, developers can be 50x more productive. But only if they
+                  Code and Opus 4.6, developers can be 50x more productive. But only if they
                   understand context engineering.
                 </p>
                 <blockquote className="border-l-4 border-aurora-teal pl-4 italic text-white/80 my-4">
@@ -549,7 +549,6 @@ export default function CSPage() {
                 company={job.company}
                 description={job.type}
                 achievements={job.achievements}
-                current={index === 0}
               />
             ))}
           </div>
@@ -574,7 +573,7 @@ export default function CSPage() {
           <div className="max-w-2xl mx-auto">
             <ProjectCard
               title="Spike Land"
-              description="AI-powered platform for creating, modifying, and deploying applications in under 30 seconds. Send a message and a Cloud Run devcontainer spins up with your code and dependencies. Claude Code makes changes that appear instantly via hot reload. On your final message, it builds, deploys, and the container shuts down. Cost-efficient, fast, and apps can import each other like components. Started 5 years ago, wrapped up with AI in a weekend."
+              description="Open-source, AI-powered development platform. Send a message and a Cloud Run devcontainer spins up with your code and dependencies. Claude Code makes changes that appear instantly via hot reload. On your final message, it builds, deploys, and the container shuts down. Recursive agent workflows, 100% test coverage, fast CI. The source code is on GitHub — clone it, run it locally, see what AI-assisted development looks like in practice."
               tags={[
                 "Next.js 15",
                 "Cloudflare Workers",
