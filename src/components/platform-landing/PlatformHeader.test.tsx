@@ -124,6 +124,14 @@ describe("PlatformHeader Component", () => {
       expect(header).toHaveClass("backdrop-blur-md");
     });
 
+    it("should not show mobile menu overlay on initial render", () => {
+      render(<PlatformHeader />);
+      // The Sheet should be closed by default - no dialog role should be present
+      // This is a regression test for a bug where the mounted state guard
+      // caused the Sheet to appear open on mobile during hydration
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
     it("should render mobile menu trigger button", () => {
       render(<PlatformHeader />);
       const menuButton = screen.getByRole("button", { name: /open menu/i });

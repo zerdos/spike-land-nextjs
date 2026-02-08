@@ -43,7 +43,7 @@ function AnimatedBar({
   const isInView = useInView(ref, { once: true, margin: "-50px" });
 
   return (
-    <div ref={ref} className="relative h-32 flex items-end justify-center">
+    <div ref={ref} className="relative h-32 flex flex-1 items-end justify-center">
       <motion.div
         className={cn(
           "w-full rounded-t-sm",

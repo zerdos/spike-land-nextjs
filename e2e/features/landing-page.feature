@@ -97,6 +97,13 @@ Feature: Landing Page - CTA and Feature Cards
     Then the page should load successfully
     And the layout should be responsive
 
+  @fast
+  Scenario: Mobile menu sheet should not auto-open on page load
+    When I visit "/" on a mobile viewport
+    Then the page should load successfully
+    And the mobile menu sheet should not be visible
+    And I should see the mobile menu button
+
   # Scroll Navigation Tests
   @fast
   # SKIP REASON: failing - needs to investigate
