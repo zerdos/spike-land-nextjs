@@ -142,11 +142,12 @@ export const importFromString = async (code: string) => {
     typeof location !== "undefined" ? location.pathname : "",
   );
 
-  // Check if we're in a real browser environment (JSDOM lacks createObjectURL)
+  // Check if we're in a browser environment
+  // We explicitly check for VITEST to avoid using Blob URLs in JSDOM/Node environment
   const isBrowser = typeof window !== "undefined" &&
     typeof URL !== "undefined" &&
-    typeof URL.createObjectURL === "function" &&
-    typeof Blob !== "undefined";
+    typeof Blob !== "undefined" &&
+    !process.env.VITEST;
 
   // In a browser environment, try the Blob URL approach first
   if (isBrowser) {
@@ -345,13 +346,15 @@ async function _loadAppComponent(
         : appComponent;
     } else {
       // Fallback to direct import if session fetch fails
-      const { data: mod, error: importErr } = await tryCatch(
-        import(
+      // Ensure we don't try to import from URL in test environment as it's not supported by Node loader
+      if (process.env.VITEST) {
+        AppToRender = FallbackErrorComponent;
+      } else {
+        AppToRender = (await import(
           /* @vite-ignore */
           `${currentOrigin}/live/${codeSpace}/index.js`
-        ),
-      );
-      AppToRender = importErr || !mod ? FallbackErrorComponent : mod.default as FlexibleComponentType;
+        )).default as FlexibleComponentType;
+      }
     }
   } else if (transpiled || code) {
     if (

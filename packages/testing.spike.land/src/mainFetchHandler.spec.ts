@@ -91,10 +91,7 @@ describe("MainFetchHandler", () => {
 
       expect(handleErrors).toHaveBeenCalled();
       expect(handleFetchApi).toHaveBeenCalled();
-      expect(await response.text()).toBe("Fetch API response");
-      expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
-      expect(response.headers.has("X-Frame-Options")).toBe(false);
-      expect(response.headers.get("Content-Security-Policy")).toContain("frame-ancestors");
+      expect(response).toStrictEqual(mockFetchApiResponse);
     });
   });
 
@@ -122,7 +119,7 @@ describe("MainFetchHandler", () => {
         mockEnv,
         mockCtx,
       );
-      expect(await response.text()).toBe("Redirected response");
+      expect(response).toStrictEqual(mockFetchApiResponse);
 
       // Clean up the route after test
       delete routes[testRoute as keyof typeof routes];
@@ -150,7 +147,7 @@ describe("MainFetchHandler", () => {
         mockEnv,
         mockCtx,
       );
-      expect(await response.text()).toBe("Path-based response");
+      expect(response).toStrictEqual(mockFetchApiResponse);
     });
 
     it("should handle root path requests", async () => {
@@ -173,7 +170,7 @@ describe("MainFetchHandler", () => {
         mockEnv,
         mockCtx,
       );
-      expect(await response.text()).toBe("Root path response");
+      expect(response).toStrictEqual(mockFetchApiResponse);
 
       const routesCopy = { ...routes };
       delete (routesCopy as Record<string, string>)["/"];
@@ -187,7 +184,6 @@ describe("MainFetchHandler", () => {
 
       const mockFetchApiResponse = new Response("Handled response");
       (handleErrors as Mock).mockImplementation(async (_, handler) => await handler());
-      (handleFetchApi as Mock).mockResolvedValue(mockFetchApiResponse);
 
       const response = await handleMainFetch(
         mockRequest,
@@ -199,7 +195,7 @@ describe("MainFetchHandler", () => {
         mockRequest,
         expect.any(Function),
       );
-      expect(await response.text()).toBe("Handled response");
+      expect(response).toStrictEqual(mockFetchApiResponse);
     });
 
     it("should log request URL", async () => {

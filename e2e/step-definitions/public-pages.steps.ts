@@ -157,10 +157,7 @@ Then("the mobile menu sheet should not be visible", async function(this: CustomW
   await expect(dialog).not.toBeVisible({ timeout: 3000 });
 });
 
-Then("I should see the mobile menu button", async function(this: CustomWorld) {
-  const menuButton = this.page.getByRole("button", { name: /open menu/i });
-  await expect(menuButton).toBeVisible({ timeout: 5000 });
-});
+// REMOVED: "I should see the mobile menu button" - Defined in storybook-layout.steps.ts to handle both "Toggle menu" and "Open menu"
 
 Then("the apps section should be visible", async function(this: CustomWorld) {
   const appsSection = this.page.locator("#apps");
