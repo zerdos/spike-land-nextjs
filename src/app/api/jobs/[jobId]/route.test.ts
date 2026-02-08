@@ -107,7 +107,7 @@ describe("/api/jobs/[jobId] - GET", () => {
       userId: mockUserId,
       status: JobStatus.COMPLETED,
       tier: "TIER_2K",
-      tokensCost: 20,
+      creditsCost: 20,
       enhancedUrl: "http://example.com/enhanced.jpg",
       enhancedWidth: 2048,
       enhancedHeight: 1536,
@@ -140,7 +140,7 @@ describe("/api/jobs/[jobId] - GET", () => {
     expect(json.id).toBe(mockJobId);
     expect(json.status).toBe(JobStatus.COMPLETED);
     expect(json.tier).toBe("TIER_2K");
-    expect(json.tokensCost).toBe(20);
+    expect(json.creditsCost).toBe(20);
     expect(json.image.id).toBe("image-id");
   });
 

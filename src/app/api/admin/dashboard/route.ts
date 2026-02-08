@@ -64,21 +64,13 @@ export async function GET() {
       prisma.imageEnhancementJob.count({
         where: { status: JobStatus.FAILED },
       }),
-      prisma.tokenTransaction.aggregate({
-        where: {
-          type: {
-            in: ["EARN_PURCHASE", "EARN_BONUS", "EARN_REGENERATION"],
-          },
-        },
-        _sum: { amount: true },
+      prisma.workspace.aggregate({
+        _sum: { monthlyAiCredits: true },
       }),
-      prisma.tokenTransaction.aggregate({
-        where: { type: "SPEND_ENHANCEMENT" },
-        _sum: { amount: true },
+      prisma.workspace.aggregate({
+        _sum: { usedAiCredits: true },
       }),
-      prisma.voucher.count({
-        where: { status: "ACTIVE" },
-      }),
+      prisma.workspace.count(),
     ]),
   );
 
@@ -98,9 +90,9 @@ export async function GET() {
     processingJobs,
     completedJobs,
     failedJobs,
-    totalTokensPurchased,
-    totalTokensSpent,
-    activeVouchers,
+    creditsAllocated,
+    creditsUsed,
+    totalWorkspaces,
   ] = metricsData;
 
   return NextResponse.json({
@@ -114,9 +106,9 @@ export async function GET() {
       failed: failedJobs,
       active: pendingJobs + processingJobs,
     },
-    totalTokensPurchased: totalTokensPurchased._sum.amount || 0,
-    totalTokensSpent: Math.abs(totalTokensSpent._sum.amount || 0),
-    activeVouchers,
+    totalCreditsAllocated: creditsAllocated._sum.monthlyAiCredits || 0,
+    totalCreditsUsed: creditsUsed._sum.usedAiCredits || 0,
+    totalWorkspaces,
     timestamp: new Date().toISOString(),
   });
 }

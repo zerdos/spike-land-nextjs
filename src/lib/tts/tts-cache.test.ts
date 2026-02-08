@@ -219,11 +219,11 @@ describe("tts-cache", () => {
       await cacheTTSAudio(text, buffer);
 
       const call = vi.mocked(uploadAudioToR2).mock.calls[0]![0];
-      expect(call.metadata!.source).toBe("elevenlabs");
-      expect(call.metadata!.textLength).toBe(String(text.length));
+      expect(call.metadata!["source"]).toBe("elevenlabs");
+      expect(call.metadata!["textLength"]).toBe(String(text.length));
       // generatedAt should be a valid ISO date string
-      expect(new Date(call.metadata!.generatedAt).toISOString()).toBe(
-        call.metadata!.generatedAt,
+      expect(new Date(call.metadata!["generatedAt"]!).toISOString()).toBe(
+        call.metadata!["generatedAt"],
       );
     });
 

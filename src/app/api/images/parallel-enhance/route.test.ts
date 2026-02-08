@@ -173,7 +173,7 @@ describe("POST /api/images/parallel-enhance", () => {
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
       });
 
       const req = createMockRequest({
@@ -243,7 +243,7 @@ describe("POST /api/images/parallel-enhance", () => {
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
       });
 
       const req = createMockRequest({
@@ -417,7 +417,7 @@ describe("POST /api/images/parallel-enhance", () => {
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
       });
 
       const req = createMockRequest({
@@ -460,7 +460,7 @@ describe("POST /api/images/parallel-enhance", () => {
         return Promise.resolve({
           id: `job-${callCount}`,
           tier: tiers[callCount - 1],
-          tokensCost: costs[callCount - 1],
+          creditsCost: costs[callCount - 1],
         });
       });
 
@@ -489,7 +489,7 @@ describe("POST /api/images/parallel-enhance", () => {
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_4K",
-        tokensCost: 10,
+        creditsCost: 10,
       });
 
       const req = createMockRequest({
@@ -578,7 +578,7 @@ describe("POST /api/images/parallel-enhance", () => {
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
       });
 
       const req = createMockRequest({
@@ -625,7 +625,7 @@ describe("POST /api/images/parallel-enhance", () => {
         return Promise.resolve({
           id: `job-${callCount}`,
           tier: tiers[callCount - 1],
-          tokensCost: costs[callCount - 1],
+          creditsCost: costs[callCount - 1],
         });
       });
 
@@ -662,7 +662,7 @@ describe("POST /api/images/parallel-enhance", () => {
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
       });
 
       const req = createMockRequest({
@@ -749,7 +749,7 @@ describe("POST /api/images/parallel-enhance", () => {
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
       });
 
       const req = createMockRequest({
@@ -799,7 +799,7 @@ describe("POST /api/images/parallel-enhance", () => {
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
       });
 
       const req = createMockRequest({
@@ -841,7 +841,7 @@ describe("POST /api/images/parallel-enhance", () => {
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
       });
 
       const req = createMockRequest({
@@ -887,7 +887,7 @@ describe("POST /api/images/parallel-enhance", () => {
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
       });
 
       const req = createMockRequest({
@@ -934,7 +934,7 @@ describe("POST /api/images/parallel-enhance", () => {
         return Promise.resolve({
           id: `job-${callCount}`,
           tier: tiers[callCount - 1],
-          tokensCost: costs[callCount - 1],
+          creditsCost: costs[callCount - 1],
         });
       });
 
@@ -990,7 +990,7 @@ describe("POST /api/images/parallel-enhance", () => {
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
       });
 
       const req = createMockRequest({

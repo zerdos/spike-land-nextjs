@@ -21,7 +21,7 @@ export interface UnifiedJob {
   source: JobSource;
   status: JobStatus;
   tier: EnhancementTier;
-  tokensCost: number;
+  creditsCost: number;
 
   // Content
   prompt: string | null;

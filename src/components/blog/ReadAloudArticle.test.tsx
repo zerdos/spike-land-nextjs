@@ -46,7 +46,7 @@ function renderWithArticle(paragraphs: string[]) {
 
 // Helper to get last audio instance
 function getLastAudio(): MockAudioClass {
-  return audioInstances[audioInstances.length - 1];
+  return audioInstances[audioInstances.length - 1]!;
 }
 
 describe("ReadAloudArticle", () => {

@@ -84,7 +84,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       id: mockJobId,
       userId: "different-user-id",
       status: JobStatus.PENDING,
-      tokensCost: 10,
+      creditsCost: 10,
     } as any);
 
     const request = new NextRequest(
@@ -108,7 +108,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       id: mockJobId,
       userId: mockUserId,
       status: JobStatus.COMPLETED,
-      tokensCost: 10,
+      creditsCost: 10,
     } as any);
 
     const request = new NextRequest(
@@ -132,7 +132,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       id: mockJobId,
       userId: mockUserId,
       status: JobStatus.PENDING,
-      tokensCost: 10,
+      creditsCost: 10,
     };
 
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue(
@@ -174,7 +174,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       id: mockJobId,
       userId: mockUserId,
       status: JobStatus.PROCESSING,
-      tokensCost: 20,
+      creditsCost: 20,
     };
 
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue(
@@ -210,7 +210,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       id: mockJobId,
       userId: mockUserId,
       status: JobStatus.PENDING,
-      tokensCost: 10,
+      creditsCost: 10,
     };
 
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue(

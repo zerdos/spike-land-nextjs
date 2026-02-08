@@ -80,7 +80,7 @@ function detectMimeType(url: string, contentType: string | null): string {
  *   {
  *     success: true,
  *     jobId: string,
- *     tokensCost: number
+ *     creditsCost: number
  *   }
  */
 export async function POST(request: NextRequest) {
@@ -274,7 +274,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     success: true,
     jobId: result.jobId,
-    tokensCost: result.tokensCost,
+    creditsCost: result.creditsCost,
     message: "Modification started. Poll /api/mcp/jobs/{jobId} for status.",
   });
 }

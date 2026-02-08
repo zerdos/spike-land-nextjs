@@ -458,7 +458,7 @@ async function handleBatchUpload(
             imageId: img.id,
             tier: defaultTier,
             status: "PENDING",
-            tokensCost: costPerImage,
+            creditsCost: costPerImage,
           },
         });
 

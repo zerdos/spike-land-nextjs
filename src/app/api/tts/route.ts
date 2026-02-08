@@ -82,7 +82,7 @@ export async function POST(request: Request) {
   }
 
   // Fallback: return audio directly if R2 upload failed
-  return new NextResponse(audioBuffer, {
+  return new NextResponse(new Uint8Array(audioBuffer), {
     headers: {
       "Content-Type": "audio/mpeg",
       "Cache-Control": "public, max-age=86400",

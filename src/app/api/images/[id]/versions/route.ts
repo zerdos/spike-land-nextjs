@@ -10,7 +10,7 @@ type EnhancementJob = {
   id: string;
   tier: EnhancementTier;
   status: JobStatus;
-  tokensCost: number;
+  creditsCost: number;
   enhancedUrl: string | null;
   enhancedWidth: number | null;
   enhancedHeight: number | null;
@@ -139,7 +139,7 @@ export async function GET(
         tier: job.tier,
         status: job.status,
         resultUrl: job.enhancedUrl,
-        tokensSpent: job.tokensCost,
+        creditsSpent: job.creditsCost,
         createdAt: job.createdAt,
         processingTimeMs,
         width: job.enhancedWidth,

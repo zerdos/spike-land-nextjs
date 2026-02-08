@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         tier,
         enhancementType,
-        tokensCost: creditCost,
+        creditsCost: creditCost,
         status: JobStatus.PROCESSING,
         processingStartedAt: new Date(),
         sourceImageId,

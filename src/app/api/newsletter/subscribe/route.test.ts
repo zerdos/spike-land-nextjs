@@ -39,7 +39,7 @@ describe("/api/newsletter/subscribe", () => {
     vi.mocked(checkRateLimit).mockResolvedValue({
       isLimited: false,
       remaining: 5,
-      retryAfter: 0,
+      resetAt: Date.now() + 3600000,
     });
     vi.mocked(prisma.newsletterSubscriber.upsert).mockResolvedValue({
       id: "sub-1",
@@ -125,7 +125,7 @@ describe("/api/newsletter/subscribe", () => {
     vi.mocked(checkRateLimit).mockResolvedValue({
       isLimited: true,
       remaining: 0,
-      retryAfter: 3600,
+      resetAt: Date.now() + 3600000,
     });
 
     const response = await POST(makeRequest({ email: "user@example.com" }));

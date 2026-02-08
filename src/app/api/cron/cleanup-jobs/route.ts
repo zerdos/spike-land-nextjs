@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       totalFound: result.totalFound,
       cleanedUp: result.cleanedUp,
       failed: result.failed,
-      tokensRefunded: result.tokensRefunded,
+      creditsRefunded: result.creditsRefunded,
       errorCount: result.errors.length,
     },
   });

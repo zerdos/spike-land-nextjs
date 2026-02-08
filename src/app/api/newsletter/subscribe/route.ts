@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       const resend = getResend();
       await resend.contacts.create({
         email,
-        audienceId: process.env.RESEND_AUDIENCE_ID || "",
+        audienceId: process.env["RESEND_AUDIENCE_ID"] || "",
       });
     })(),
   );

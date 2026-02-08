@@ -79,7 +79,7 @@ function createMockEnhancementJob(
     imageId: "img_12345678901234567890123",
     userId: VALID_USER_ID,
     tier: "TIER_4K" as EnhancementTier,
-    tokensCost: 10,
+    creditsCost: 10,
     status: "COMPLETED" as JobStatus,
     currentStage: null,
     enhancedUrl: "https://example.com/enhanced.jpg",

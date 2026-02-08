@@ -108,7 +108,7 @@ async function handleGetUserEnhancements(
       id: job.id,
       tier: job.tier,
       status: job.status,
-      tokenCost: job.tokensCost,
+      creditsCost: job.creditsCost,
       errorMessage: job.errorMessage,
       createdAt: job.createdAt.toISOString(),
       processingStartedAt: job.processingStartedAt?.toISOString(),

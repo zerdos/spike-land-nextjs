@@ -45,7 +45,7 @@ async function cancelJob(
 
   const refundSuccess = await WorkspaceCreditManager.refundCredits(
     session.user.id,
-    job.tokensCost,
+    job.creditsCost,
   );
 
   if (!refundSuccess) {
@@ -64,7 +64,7 @@ async function cancelJob(
   return NextResponse.json({
     success: true,
     job: updatedJob,
-    creditsRefunded: job.tokensCost,
+    creditsRefunded: job.creditsCost,
     newBalance: newBalance?.remaining ?? 0,
   });
 }

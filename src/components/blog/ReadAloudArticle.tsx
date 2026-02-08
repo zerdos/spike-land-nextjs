@@ -85,12 +85,12 @@ export function ReadAloudArticle() {
     try {
       // Pre-fetch next paragraph while current one loads
       if (index + 1 < texts.length) {
-        fetchTTSUrl(texts[index + 1]).catch(() => {
+        fetchTTSUrl(texts[index + 1]!).catch(() => {
           // Silently ignore prefetch failures
         });
       }
 
-      const url = await fetchTTSUrl(texts[index]);
+      const url = await fetchTTSUrl(texts[index]!);
       if (!mountedRef.current) return;
 
       const audio = new Audio(url);

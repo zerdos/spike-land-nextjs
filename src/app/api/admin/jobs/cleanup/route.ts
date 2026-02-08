@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     success: true,
     result,
     message: result.cleanedUp > 0
-      ? `Successfully cleaned up ${result.cleanedUp} stuck jobs and refunded ${result.tokensRefunded} tokens`
+      ? `Successfully cleaned up ${result.cleanedUp} stuck jobs and refunded ${result.creditsRefunded} credits`
       : result.totalFound > 0 && options.dryRun
       ? `Dry run: Found ${result.totalFound} stuck jobs (no changes made)`
       : "No stuck jobs found",

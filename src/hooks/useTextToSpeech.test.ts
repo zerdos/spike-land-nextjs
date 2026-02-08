@@ -46,7 +46,7 @@ describe("useTextToSpeech", () => {
   });
 
   function getLastAudio(): MockAudioClass {
-    return audioInstances[audioInstances.length - 1];
+    return audioInstances[audioInstances.length - 1]!;
   }
 
   function mockFetchJson(url: string) {

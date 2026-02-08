@@ -35,7 +35,7 @@ const mockJob = {
   userEmail: "test@example.com",
   userName: "Test User",
   tier: "TIER_4K" as const,
-  tokensCost: 10,
+  creditsCost: 10,
   status: "COMPLETED" as const,
   prompt: "Enhance this image to high resolution",
   inputUrl: "https://example.com/original.jpg",

@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
               imageId,
               userId: session.user.id,
               tier,
-              tokensCost: ENHANCEMENT_COSTS[tier],
+              creditsCost: ENHANCEMENT_COSTS[tier],
               status: JobStatus.PROCESSING,
               processingStartedAt: new Date(),
             },
@@ -317,7 +317,7 @@ export async function POST(request: NextRequest) {
       userId: session.user.id,
       originalR2Key: image.originalR2Key,
       tier: job.tier,
-      tokensCost: job.tokensCost,
+      tokensCost: job.creditsCost,
     };
 
     requestLogger.info("Starting enhancement (direct mode with after())", {
@@ -337,7 +337,7 @@ export async function POST(request: NextRequest) {
   const jobsResponse: JobResponse[] = jobs.map((job) => ({
     jobId: job.id,
     tier: job.tier,
-    tokenCost: job.tokensCost,
+    tokenCost: job.creditsCost,
     status: "PROCESSING" as const,
   }));
 

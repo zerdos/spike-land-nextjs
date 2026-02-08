@@ -284,7 +284,7 @@ async function handleUpload(
       imageId: enhancedImage.id,
       userId: session.user.id,
       tier: defaultTier,
-      tokensCost: tokenCost,
+      creditsCost: tokenCost,
       status: JobStatus.PROCESSING,
       processingStartedAt: new Date(),
       pipelineId: pipelineId,

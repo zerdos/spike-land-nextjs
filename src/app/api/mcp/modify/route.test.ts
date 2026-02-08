@@ -268,7 +268,7 @@ describe("POST /api/mcp/modify", () => {
       mockCreateModificationJob.mockResolvedValue({
         success: true,
         jobId: testJobId,
-        tokensCost: 2,
+        creditsCost: 2,
       });
 
       const request = createMockRequest(
@@ -286,7 +286,7 @@ describe("POST /api/mcp/modify", () => {
       expect(response.status).toBe(200);
       expect(body.success).toBe(true);
       expect(body.jobId).toBe(testJobId);
-      expect(body.tokensCost).toBe(2);
+      expect(body.creditsCost).toBe(2);
       expect(body.message).toContain("Poll /api/mcp/jobs/");
 
       expect(mockCreateModificationJob).toHaveBeenCalledWith({
@@ -303,7 +303,7 @@ describe("POST /api/mcp/modify", () => {
       mockCreateModificationJob.mockResolvedValue({
         success: true,
         jobId: testJobId,
-        tokensCost: 5,
+        creditsCost: 5,
       });
 
       for (

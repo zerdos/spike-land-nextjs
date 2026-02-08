@@ -1,7 +1,7 @@
 /**
  * User Management API Route
  *
- * Search users, view details, grant/revoke admin role, adjust tokens.
+ * Search users, view details, grant/revoke admin role.
  */
 
 import { auth } from "@/auth";
@@ -14,8 +14,6 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 // Validation constants
-const MAX_TOKEN_ADJUSTMENT = 10000;
-const MIN_TOKEN_ADJUSTMENT = -1000;
 const MAX_SEARCH_LENGTH = 100;
 // User ID pattern: accepts CUIDs and user_ prefixed IDs (stable IDs)
 const CUID_PATTERN = /^(c[a-z0-9]{24}|user_[a-f0-9]+)$/;
@@ -70,13 +68,8 @@ async function handleGetUsers(request: NextRequest): Promise<NextResponse> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        tokenBalance: true,
-        tokenTransactions: {
-          take: 10,
-          orderBy: { createdAt: "desc" },
-        },
         enhancedImages: {
-          select: { _count: true },
+          select: { id: true },
         },
         accounts: {
           select: { provider: true },
@@ -95,18 +88,9 @@ async function handleGetUsers(request: NextRequest): Promise<NextResponse> {
         name: user.name,
         image: user.image,
         role: user.role,
-        tokenBalance: user.tokenBalance?.balance || 0,
         imageCount: user.enhancedImages.length,
         authProviders: user.accounts.map((a: { provider: string; }) => a.provider),
         createdAt: user.createdAt.toISOString(),
-        recentTransactions: user.tokenTransactions.map((
-          t: { id: string; type: string; amount: number; createdAt: Date; },
-        ) => ({
-          id: t.id,
-          type: t.type,
-          amount: t.amount,
-          createdAt: t.createdAt.toISOString(),
-        })),
       },
     });
   }
@@ -124,9 +108,6 @@ async function handleGetUsers(request: NextRequest): Promise<NextResponse> {
   const users = await prisma.user.findMany({
     where,
     include: {
-      tokenBalance: {
-        select: { balance: true },
-      },
       _count: {
         select: {
           enhancedImages: true,
@@ -143,7 +124,6 @@ async function handleGetUsers(request: NextRequest): Promise<NextResponse> {
     name: string | null;
     image: string | null;
     role: UserRole;
-    tokenBalance: { balance: number; } | null;
     _count: { enhancedImages: number; };
     createdAt: Date;
   };
@@ -154,7 +134,6 @@ async function handleGetUsers(request: NextRequest): Promise<NextResponse> {
       name: u.name,
       image: u.image,
       role: u.role,
-      tokenBalance: u.tokenBalance?.balance || 0,
       imageCount: u._count.enhancedImages,
       createdAt: u.createdAt.toISOString(),
     })),
@@ -293,82 +272,6 @@ async function handlePatchUser(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ success: true, role: value });
   }
 
-  // Handle token adjustment
-  if (action === "adjustTokens") {
-    const amount = parseInt(value);
-    if (isNaN(amount)) {
-      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
-    }
-
-    // Validate token adjustment bounds
-    if (amount > MAX_TOKEN_ADJUSTMENT) {
-      return NextResponse.json(
-        {
-          error: `Cannot add more than ${MAX_TOKEN_ADJUSTMENT} tokens at once`,
-        },
-        { status: 400 },
-      );
-    }
-    if (amount < MIN_TOKEN_ADJUSTMENT) {
-      return NextResponse.json(
-        {
-          error: `Cannot remove more than ${Math.abs(MIN_TOKEN_ADJUSTMENT)} tokens at once`,
-        },
-        { status: 400 },
-      );
-    }
-
-    // Get or create token balance
-    const tokenBalance = await prisma.userTokenBalance.upsert({
-      where: { userId },
-      update: {
-        balance: {
-          increment: amount,
-        },
-      },
-      create: {
-        userId,
-        balance: Math.max(0, amount),
-      },
-    });
-
-    const newBalance = tokenBalance.balance + amount;
-
-    // Create transaction record
-    await prisma.tokenTransaction.create({
-      data: {
-        userId,
-        amount,
-        type: amount > 0 ? "EARN_BONUS" : "SPEND_ENHANCEMENT",
-        source: "admin_adjustment",
-        sourceId: session.user.id,
-        balanceAfter: newBalance,
-        metadata: {
-          adjustedBy: session.user.id,
-          reason: "Manual admin adjustment",
-        },
-      },
-    });
-
-    // Log token adjustment
-    const forwarded = request.headers.get("x-forwarded-for");
-    const ipAddress = forwarded?.split(",")[0] ??
-      request.headers.get("x-real-ip") ?? undefined;
-    await AuditLogger.logTokenAdjustment(
-      session.user.id,
-      userId,
-      amount,
-      newBalance,
-      "Manual admin adjustment",
-      ipAddress,
-    );
-
-    return NextResponse.json({
-      success: true,
-      newBalance,
-    });
-  }
-
   return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 }
 
@@ -453,9 +356,6 @@ async function handleDeleteUser(request: NextRequest): Promise<NextResponse> {
           enhancementJobs: true,
         },
       },
-      tokenBalance: {
-        select: { balance: true },
-      },
     },
   });
 
@@ -482,7 +382,6 @@ async function handleDeleteUser(request: NextRequest): Promise<NextResponse> {
     albums: targetUser._count.albums,
     images: targetUser._count.enhancedImages,
     enhancementJobs: targetUser._count.enhancementJobs,
-    tokenBalance: targetUser.tokenBalance?.balance || 0,
   };
 
   // Delete user (cascade delete will handle related records)

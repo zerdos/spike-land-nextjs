@@ -147,7 +147,7 @@ async function rerunEnhancementJob(
         userId: job.userId,
         imageId: job.imageId,
         tier: job.tier,
-        tokensCost,
+        creditsCost: tokensCost,
         status: JobStatus.PROCESSING,
         geminiPrompt: job.geminiPrompt,
         processingStartedAt: new Date(),
@@ -185,6 +185,6 @@ async function rerunEnhancementJob(
     success: true,
     newJobId: newJob.id,
     source: "enhancement",
-    tokensCost,
+    creditsCost: tokensCost,
   });
 }

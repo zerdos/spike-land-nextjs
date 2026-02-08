@@ -128,7 +128,7 @@ describe("GET /api/images/[id]", () => {
           imageId: "img-1",
           userId: "user-1",
           tier: "TIER_1K",
-          tokensCost: 10,
+          creditsCost: 10,
           status: "COMPLETED",
           enhancedUrl: "https://example.com/enhanced.jpg",
           enhancedR2Key: "enhanced.jpg",

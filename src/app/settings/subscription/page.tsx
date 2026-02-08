@@ -48,11 +48,19 @@ const TIER_INFO: Record<
   FREE: { label: "Free", priceGBP: 0, wellCapacity: 0, variant: "outline" },
 };
 
-const DEFAULT_TIER = TIER_INFO.FREE;
+const DEFAULT_TIER = TIER_INFO["FREE"]!;
 
-function getTierInfo(tier: string | null) {
+function getTierInfo(tier: string | null): {
+  label: string;
+  priceGBP: number;
+  wellCapacity: number;
+  variant: "default" | "secondary" | "destructive" | "outline";
+} {
   const key = tier?.toUpperCase();
-  return (key && TIER_INFO[key]) || DEFAULT_TIER;
+  if (key && TIER_INFO[key]) {
+    return TIER_INFO[key];
+  }
+  return DEFAULT_TIER;
 }
 
 export default function SubscriptionPage() {
@@ -344,8 +352,8 @@ export default function SubscriptionPage() {
                 <div>
                   <p className="font-medium">Basic</p>
                   <p className="text-sm text-muted-foreground">
-                    {TIER_INFO.BASIC.wellCapacity} token well capacity
-                    - {"\u00a3"}{TIER_INFO.BASIC.priceGBP}/mo
+                    {TIER_INFO["BASIC"]?.wellCapacity} token well capacity
+                    - {"\u00a3"}{TIER_INFO["BASIC"]?.priceGBP}/mo
                   </p>
                 </div>
                 <Button

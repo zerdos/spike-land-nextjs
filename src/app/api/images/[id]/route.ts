@@ -83,7 +83,7 @@ export async function GET(
         id: string;
         tier: EnhancementTier;
         status: JobStatus;
-        tokensCost: number;
+        creditsCost: number;
         enhancedUrl: string | null;
         enhancedWidth: number | null;
         enhancedHeight: number | null;
@@ -96,7 +96,7 @@ export async function GET(
         id: job.id,
         tier: job.tier,
         status: job.status,
-        tokensCost: job.tokensCost,
+        creditsCost: job.creditsCost,
         enhancedUrl: job.enhancedUrl,
         enhancedWidth: job.enhancedWidth,
         enhancedHeight: job.enhancedHeight,

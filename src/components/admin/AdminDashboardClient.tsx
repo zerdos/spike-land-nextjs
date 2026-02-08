@@ -23,9 +23,9 @@ interface DashboardMetrics {
     failed: number;
     active: number;
   };
-  totalTokensPurchased: number;
-  totalTokensSpent: number;
-  activeVouchers: number;
+  totalCreditsAllocated: number;
+  totalCreditsUsed: number;
+  totalWorkspaces: number;
   timestamp: string;
 }
 
@@ -265,10 +265,10 @@ export function AdminDashboardClient(
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-neutral-400">
-                Tokens Purchased
+                Credits Allocated
               </p>
               <p className="mt-2 text-3xl font-bold">
-                {metrics.totalTokensPurchased.toLocaleString()}
+                {metrics.totalCreditsAllocated.toLocaleString()}
               </p>
             </div>
             <div className="text-4xl" aria-hidden="true">
@@ -292,7 +292,7 @@ export function AdminDashboardClient(
             </div>
           </div>
           <p className="mt-2 text-xs text-neutral-400">
-            {metrics.totalTokensSpent.toLocaleString()} spent
+            {metrics.totalCreditsUsed.toLocaleString()} used
           </p>
         </Card>
 
@@ -300,10 +300,10 @@ export function AdminDashboardClient(
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-neutral-400">
-                Active Vouchers
+                Workspaces
               </p>
               <p className="mt-2 text-3xl font-bold">
-                {metrics.activeVouchers}
+                {metrics.totalWorkspaces}
               </p>
             </div>
             <div className="text-4xl" aria-hidden="true">
@@ -327,7 +327,7 @@ export function AdminDashboardClient(
             </div>
           </div>
           <p className="mt-2 text-xs text-neutral-400">
-            Promotional campaigns
+            Active workspaces
           </p>
         </Card>
       </div>
