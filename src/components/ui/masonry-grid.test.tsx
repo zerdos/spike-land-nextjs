@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
+import { useEffect } from "react";
 import {
   clampZoomLevel,
   isValidZoomLevel,
@@ -206,5 +207,51 @@ describe("clampZoomLevel", () => {
     expect(clampZoomLevel(2.6)).toBe(3);
     expect(clampZoomLevel(0.5)).toBe(1); // rounds to 1, which is MIN
     expect(clampZoomLevel(5.5)).toBe(5); // rounds to 6, clamped to MAX
+  });
+});
+
+const lifecycleEvents: string[] = [];
+
+const TrackedItem = ({ id }: { id: string }) => {
+  useEffect(() => {
+    lifecycleEvents.push(`mount:${id}`);
+    return () => {
+      lifecycleEvents.push(`unmount:${id}`);
+    };
+  }, [id]);
+  return <div>{id}</div>;
+};
+
+describe("MasonryGrid Performance", () => {
+  beforeEach(() => {
+    lifecycleEvents.length = 0;
+  });
+
+  it("should not remount items when order changes", () => {
+    const { rerender } = render(
+      <MasonryGrid>
+        <TrackedItem key="A" id="A" />
+        <TrackedItem key="B" id="B" />
+        <TrackedItem key="C" id="C" />
+      </MasonryGrid>
+    );
+
+    // Initial mount
+    expect(lifecycleEvents).toEqual(expect.arrayContaining(["mount:A", "mount:B", "mount:C"]));
+
+    // Clear events
+    lifecycleEvents.length = 0;
+
+    // Remove A
+    rerender(
+      <MasonryGrid>
+        <TrackedItem key="B" id="B" />
+        <TrackedItem key="C" id="C" />
+      </MasonryGrid>
+    );
+
+    // Expectation: Only A unmounts. B and C should remain mounted.
+    expect(lifecycleEvents).not.toContain("mount:B");
+    expect(lifecycleEvents).not.toContain("mount:C");
   });
 });
