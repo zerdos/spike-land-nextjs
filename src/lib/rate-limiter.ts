@@ -398,4 +398,9 @@ export const rateLimitConfigs = {
     maxRequests: 30,
     windowMs: 60 * 1000, // 1 minute
   },
+  /** Newsletter subscription: 5 attempts per hour per IP */
+  newsletterSubscribe: {
+    maxRequests: 5,
+    windowMs: 60 * 60 * 1000, // 1 hour
+  },
 } as const;

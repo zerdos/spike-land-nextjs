@@ -34,10 +34,26 @@ export function Footer() {
     return null;
   }
 
-  function onSubmit(_values: z.infer<typeof formSchema>) {
-    // TODO: Wire up to newsletter API endpoint
-    toast.success("Thanks for subscribing!");
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Failed to subscribe");
+        return;
+      }
+
+      toast.success("Thanks for subscribing!");
+      form.reset();
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    }
   }
 
   return (
@@ -82,7 +98,9 @@ export function Footer() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit">Subscribe</Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? "Subscribing..." : "Subscribe"}
+                </Button>
               </form>
             </Form>
           </div>
