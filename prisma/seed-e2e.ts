@@ -398,7 +398,7 @@ async function main() {
         imageId: "e2e-test-image-1",
         userId: TEST_USER_ID,
         tier: jobConfig.tier,
-        tokensCost: jobConfig.tier === EnhancementTier.TIER_1K
+        creditsCost: jobConfig.tier === EnhancementTier.TIER_1K
           ? 2
           : jobConfig.tier === EnhancementTier.TIER_2K
           ? 5

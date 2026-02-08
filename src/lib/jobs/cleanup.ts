@@ -2,7 +2,7 @@
  * Job Cleanup Utilities
  *
  * Provides automatic cleanup for stuck enhancement jobs that exceed timeout thresholds.
- * Handles refunding tokens and updating job status to prevent indefinite PROCESSING state.
+ * Handles refunding credits and updating job status to prevent indefinite PROCESSING state.
  */
 
 import { logger } from "@/lib/errors/structured-logger";
@@ -85,7 +85,7 @@ export async function findStuckJobs(
   Array<{
     id: string;
     userId: string;
-    tokensCost: number;
+    creditsCost: number;
     processingStartedAt: Date | null;
     updatedAt: Date;
   }>
@@ -122,7 +122,7 @@ export async function findStuckJobs(
     select: {
       id: true,
       userId: true,
-      tokensCost: true,
+      creditsCost: true,
       processingStartedAt: true,
       updatedAt: true,
     },
@@ -150,7 +150,7 @@ async function cleanupSingleJob(
   job: {
     id: string;
     userId: string;
-    tokensCost: number;
+    creditsCost: number;
     processingStartedAt: Date | null;
     updatedAt: Date;
   },
@@ -166,7 +166,7 @@ async function cleanupSingleJob(
   });
 
   jobLogger.info("Cleaning up stuck job", {
-    tokensCost: job.tokensCost,
+    creditsCost: job.creditsCost,
     processingStartedAt: job.processingStartedAt?.toISOString(),
   });
 
@@ -183,7 +183,7 @@ async function cleanupSingleJob(
         data: {
           status: JobStatus.FAILED,
           errorMessage: `Job timed out after ${Math.round(processingDuration / 1000)
-            }s. Automatically cleaned up and tokens refunded.`,
+            }s. Automatically cleaned up and credits refunded.`,
           processingCompletedAt: new Date(),
         },
       });
@@ -205,7 +205,7 @@ async function cleanupSingleJob(
 
     return {
       success: false,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       processingDuration: 0,
       error: errorMessage,
     };
@@ -214,7 +214,7 @@ async function cleanupSingleJob(
   // Refund credits outside transaction to avoid nested transaction issues
   const refundSuccess = await WorkspaceCreditManager.refundCredits(
     job.userId,
-    job.tokensCost,
+    job.creditsCost,
   );
 
   if (!refundSuccess) {
@@ -230,13 +230,13 @@ async function cleanupSingleJob(
   }
 
   jobLogger.info("Job cleaned up successfully", {
-    creditsRefunded: job.tokensCost,
+    creditsRefunded: job.creditsCost,
     processingDuration: Math.round(processingDuration / 1000),
   });
 
   return {
     success: true,
-    creditsRefunded: job.tokensCost,
+    creditsRefunded: job.creditsCost,
     processingDuration,
   };
 }
@@ -247,7 +247,7 @@ async function cleanupSingleJob(
  * This function:
  * 1. Finds jobs stuck in PROCESSING state
  * 2. Marks them as FAILED with timeout error message
- * 3. Refunds tokens to the user
+ * 3. Refunds credits to the user
  * 4. Returns detailed cleanup results
  *
  * @param options - Cleanup configuration options

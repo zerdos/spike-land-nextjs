@@ -68,7 +68,7 @@ interface CreateModificationJobParams {
 interface JobResult {
   success: boolean;
   jobId?: string;
-  tokensCost?: number;
+  creditsCost?: number;
   error?: string;
 }
 
@@ -129,7 +129,7 @@ export async function createGenerationJob(
       apiKeyId: apiKeyId || null,
       type: McpJobType.GENERATE,
       tier,
-      tokensCost,
+      creditsCost: tokensCost,
       status: JobStatus.PROCESSING,
       prompt,
       geminiModel: DEFAULT_MODEL,
@@ -151,7 +151,7 @@ export async function createGenerationJob(
   return {
     success: true,
     jobId: job.id,
-    tokensCost,
+    creditsCost: tokensCost,
   };
 }
 
@@ -199,7 +199,7 @@ export async function createModificationJob(
       apiKeyId: apiKeyId || null,
       type: McpJobType.MODIFY,
       tier,
-      tokensCost,
+      creditsCost: tokensCost,
       status: JobStatus.PROCESSING,
       prompt,
       geminiModel: DEFAULT_MODEL,
@@ -221,7 +221,7 @@ export async function createModificationJob(
   return {
     success: true,
     jobId: job.id,
-    tokensCost,
+    creditsCost: tokensCost,
   };
 }
 
@@ -329,7 +329,7 @@ async function handleGenerationJobFailure(
   );
 
   if (job) {
-    await WorkspaceCreditManager.refundCredits(job.userId, job.tokensCost);
+    await WorkspaceCreditManager.refundCredits(job.userId, job.creditsCost);
 
     await tryCatch(
       prisma.mcpGenerationJob.update({
@@ -493,7 +493,7 @@ async function handleModificationJobFailure(
   );
 
   if (job) {
-    await WorkspaceCreditManager.refundCredits(job.userId, job.tokensCost);
+    await WorkspaceCreditManager.refundCredits(job.userId, job.creditsCost);
 
     await tryCatch(
       prisma.mcpGenerationJob.update({
@@ -516,7 +516,7 @@ export async function getJob(jobId: string, userId?: string) {
       id: true,
       type: true,
       tier: true,
-      tokensCost: true,
+      creditsCost: true,
       status: true,
       prompt: true,
       inputImageUrl: true,
@@ -556,7 +556,7 @@ export async function getJobHistory(
         id: true,
         type: true,
         tier: true,
-        tokensCost: true,
+        creditsCost: true,
         status: true,
         prompt: true,
         inputImageUrl: true,
@@ -583,7 +583,7 @@ export async function getJobHistory(
       id: job.id,
       type: job.type,
       tier: job.tier,
-      tokensCost: job.tokensCost,
+      creditsCost: job.creditsCost,
       status: job.status,
       prompt: job.prompt,
       inputImageUrl: job.inputImageUrl,
@@ -606,7 +606,7 @@ export async function getJobHistory(
  */
 export async function cancelMcpJob(
   jobId: string,
-): Promise<{ success: boolean; error?: string; tokensRefunded?: number; }> {
+): Promise<{ success: boolean; error?: string; creditsRefunded?: number; }> {
   const job = await prisma.mcpGenerationJob.findUnique({
     where: { id: jobId },
   });
@@ -634,9 +634,9 @@ export async function cancelMcpJob(
   });
 
   // Refund credits
-  await WorkspaceCreditManager.refundCredits(job.userId, job.tokensCost);
+  await WorkspaceCreditManager.refundCredits(job.userId, job.creditsCost);
 
-  return { success: true, tokensRefunded: job.tokensCost };
+  return { success: true, creditsRefunded: job.creditsCost };
 }
 
 /**
@@ -667,7 +667,7 @@ export async function rerunMcpJob(
   // Consume credits for new job
   const consumeResult = await WorkspaceCreditManager.consumeCredits({
     userId: job.userId,
-    amount: job.tokensCost,
+    amount: job.creditsCost,
     source: "mcp_generation",
     sourceId: "pending",
   });
@@ -676,7 +676,7 @@ export async function rerunMcpJob(
     return {
       success: false,
       error: consumeResult.error ||
-        `Insufficient AI credits. Required: ${job.tokensCost} credits`,
+        `Insufficient AI credits. Required: ${job.creditsCost} credits`,
     };
   }
 
@@ -687,7 +687,7 @@ export async function rerunMcpJob(
       apiKeyId: job.apiKeyId,
       type: job.type,
       tier: job.tier,
-      tokensCost: job.tokensCost,
+      creditsCost: job.creditsCost,
       status: JobStatus.PROCESSING,
       prompt: job.prompt,
       inputImageUrl: job.inputImageUrl,

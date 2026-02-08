@@ -49,6 +49,7 @@ export function ReadAloudParagraph({ children }: ReadAloudParagraphProps) {
       return () => clearTimeout(timer);
     }
     setShowError(false);
+    return undefined;
   }, [state]);
 
   const icon = state === "loading"

@@ -40,9 +40,9 @@ describe("System Report Types", () => {
           failed: 85,
           active: 15,
         },
-        tokensInCirculation: 50000,
-        tokensSpent: 25000,
-        activeVouchers: 3,
+        totalAiCreditsAllocated: 50000,
+        totalAiCreditsUsed: 25000,
+        totalWorkspaces: 3,
       };
 
       expect(metrics.totalUsers).toBe(1000);
@@ -71,19 +71,19 @@ describe("System Report Types", () => {
   });
 
   describe("TokenMetrics", () => {
-    it("should define token metrics structure", () => {
+    it("should define credit metrics structure", () => {
       const metrics: TokenMetrics = {
-        totalRevenue: 10000,
-        tokensInCirculation: 50000,
-        averageTokensPerUser: 50,
-        packageSales: [
-          { name: "Starter", tokens: 10, sales: 100 },
-          { name: "Pro", tokens: 50, sales: 50 },
+        totalCreditsAllocated: 10000,
+        totalCreditsUsed: 5000,
+        averageCreditsPerWorkspace: 50,
+        tierDistribution: [
+          { tier: "FREE", count: 100 },
+          { tier: "PRO", count: 50 },
         ],
       };
 
-      expect(metrics.packageSales).toHaveLength(2);
-      expect(metrics.totalRevenue).toBe(10000);
+      expect(metrics.tierDistribution).toHaveLength(2);
+      expect(metrics.totalCreditsAllocated).toBe(10000);
     });
   });
 
@@ -221,9 +221,9 @@ describe("System Report Types", () => {
             failed: 85,
             active: 15,
           },
-          tokensInCirculation: 50000,
-          tokensSpent: 25000,
-          activeVouchers: 3,
+          totalAiCreditsAllocated: 50000,
+          totalAiCreditsUsed: 25000,
+          totalWorkspaces: 3,
         },
         users: {
           totalUsers: 1000,
@@ -234,10 +234,10 @@ describe("System Report Types", () => {
           authProviderBreakdown: [],
         },
         tokens: {
-          totalRevenue: 10000,
-          tokensInCirculation: 50000,
-          averageTokensPerUser: 50,
-          packageSales: [],
+          totalCreditsAllocated: 10000,
+          totalCreditsUsed: 5000,
+          averageCreditsPerWorkspace: 50,
+          tierDistribution: [],
         },
         health: {
           queueDepth: 15,
@@ -298,9 +298,9 @@ describe("System Report Types", () => {
             failed: 85,
             active: 15,
           },
-          tokensInCirculation: 50000,
-          tokensSpent: 25000,
-          activeVouchers: 3,
+          totalAiCreditsAllocated: 50000,
+          totalAiCreditsUsed: 25000,
+          totalWorkspaces: 3,
         },
         // Other sections omitted
       };
@@ -358,7 +358,7 @@ describe("System Report Types", () => {
           totalEnhancements: 5000,
           pendingJobs: 10,
           failedJobs: 5,
-          tokensInCirculation: 50000,
+          totalAiCreditsUsed: 50000,
           errorsLast24Hours: 25,
           conversionRate: 2.0,
         },

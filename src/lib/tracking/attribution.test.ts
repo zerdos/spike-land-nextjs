@@ -533,7 +533,6 @@ describe("attribution", () => {
         emailVerified: null,
         image: null,
         role: "USER",
-        referralCode: null,
         referredById: null,
         referralCount: 0,
         stripeCustomerId: null,

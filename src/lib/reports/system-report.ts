@@ -20,7 +20,6 @@ import type {
   FailureRateByTier,
   HealthMetrics,
   MarketingMetrics,
-  PackageSales,
   PartialSystemReport,
   PlatformMetrics,
   ProcessingTimeByTier,
@@ -29,6 +28,7 @@ import type {
   ReportSection,
   SystemReport,
   SystemReportSummary,
+  TierDistribution,
   TokenMetrics,
   TrafficSource,
   UserMetrics,
@@ -91,9 +91,8 @@ async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
     processingJobs,
     completedJobs,
     failedJobs,
-    totalTokensPurchased,
-    totalTokensSpent,
-    activeVouchers,
+    creditAggregation,
+    totalWorkspaces,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({
@@ -110,17 +109,10 @@ async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
       where: { status: JobStatus.COMPLETED },
     }),
     prisma.imageEnhancementJob.count({ where: { status: JobStatus.FAILED } }),
-    prisma.tokenTransaction.aggregate({
-      where: {
-        type: { in: ["EARN_PURCHASE", "EARN_BONUS", "EARN_REGENERATION"] },
-      },
-      _sum: { amount: true },
+    prisma.workspace.aggregate({
+      _sum: { monthlyAiCredits: true, usedAiCredits: true },
     }),
-    prisma.tokenTransaction.aggregate({
-      where: { type: "SPEND_ENHANCEMENT" },
-      _sum: { amount: true },
-    }),
-    prisma.voucher.count({ where: { status: "ACTIVE" } }),
+    prisma.workspace.count(),
   ]);
 
   return {
@@ -134,9 +126,9 @@ async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
       failed: failedJobs,
       active: pendingJobs + processingJobs,
     },
-    tokensInCirculation: totalTokensPurchased._sum.amount ?? 0,
-    tokensSpent: Math.abs(totalTokensSpent._sum.amount ?? 0),
-    activeVouchers,
+    totalAiCreditsAllocated: creditAggregation._sum.monthlyAiCredits ?? 0,
+    totalAiCreditsUsed: creditAggregation._sum.usedAiCredits ?? 0,
+    totalWorkspaces,
   };
 }
 
@@ -205,44 +197,33 @@ async function fetchUserMetrics(
  * Fetch token economics from database
  */
 async function fetchTokenMetrics(): Promise<TokenMetrics> {
-  const [purchaseTransactions, tokenBalances, userCount] = await Promise.all([
-    prisma.tokenTransaction.groupBy({
-      by: ["type"],
-      where: {
-        type: { in: ["EARN_REGENERATION", "EARN_PURCHASE", "EARN_BONUS"] },
-      },
-      _sum: { amount: true },
+  const [creditAggregation, workspaceCount, tierGroups] = await Promise.all([
+    prisma.workspace.aggregate({
+      _sum: { monthlyAiCredits: true, usedAiCredits: true },
+    }),
+    prisma.workspace.count(),
+    prisma.workspace.groupBy({
+      by: ["subscriptionTier"],
       _count: { _all: true },
     }),
-    prisma.userTokenBalance.aggregate({
-      _sum: { balance: true },
-    }),
-    prisma.user.count(),
   ]);
 
-  // Calculate total revenue (from purchases)
-  const purchaseSum = purchaseTransactions.find((t) => t.type === "EARN_PURCHASE")?._sum.amount ??
-    0;
-
-  // Estimate revenue from token purchases (simplified)
-  // In real implementation, this would come from Stripe data
-  const tokensInCirculation = tokenBalances._sum.balance ?? 0;
-  const averageTokensPerUser = userCount > 0
-    ? Math.round(tokensInCirculation / userCount)
+  const totalCreditsAllocated = creditAggregation._sum.monthlyAiCredits ?? 0;
+  const totalCreditsUsed = creditAggregation._sum.usedAiCredits ?? 0;
+  const averageCreditsPerWorkspace = workspaceCount > 0
+    ? Math.round(totalCreditsAllocated / workspaceCount)
     : 0;
 
-  // Package sales (simplified - would need actual package tracking)
-  const packageSales: PackageSales[] = [
-    { name: "Starter", tokens: 10, sales: Math.floor(purchaseSum / 100) },
-    { name: "Pro", tokens: 50, sales: Math.floor(purchaseSum / 500) },
-    { name: "Enterprise", tokens: 200, sales: Math.floor(purchaseSum / 2000) },
-  ];
+  const tierDistribution: TierDistribution[] = tierGroups.map((g) => ({
+    tier: g.subscriptionTier,
+    count: g._count._all,
+  }));
 
   return {
-    totalRevenue: purchaseSum,
-    tokensInCirculation,
-    averageTokensPerUser,
-    packageSales,
+    totalCreditsAllocated,
+    totalCreditsUsed,
+    averageCreditsPerWorkspace,
+    tierDistribution,
   };
 }
 
@@ -316,7 +297,7 @@ async function fetchMarketingMetrics(
     currentSignups,
     previousSignups,
     trafficBySource,
-    revenue,
+    paidWorkspaces,
   ] = await Promise.all([
     prisma.visitorSession.count({
       where: { sessionStart: { gte: startDate, lte: endDate } },
@@ -338,12 +319,11 @@ async function fetchMarketingMetrics(
       },
       _count: { _all: true },
     }),
-    prisma.tokenTransaction.aggregate({
+    prisma.workspace.count({
       where: {
-        type: "EARN_PURCHASE",
+        subscriptionTier: { not: "FREE" },
         createdAt: { gte: startDate, lte: endDate },
       },
-      _sum: { amount: true },
     }),
   ]);
 
@@ -386,7 +366,7 @@ async function fetchMarketingMetrics(
     signups: currentSignups,
     signupsChange,
     conversionRate,
-    revenue: revenue._sum.amount ?? 0,
+    revenue: paidWorkspaces,
     trafficSources,
   };
 }
@@ -579,7 +559,7 @@ export async function generateSystemReportSummary(
       totalEnhancements: report.platform?.totalEnhancements ?? 0,
       pendingJobs: report.platform?.jobStatus.pending ?? 0,
       failedJobs: report.platform?.jobStatus.failed ?? 0,
-      tokensInCirculation: report.platform?.tokensInCirculation ?? 0,
+      totalAiCreditsUsed: report.platform?.totalAiCreditsUsed ?? 0,
       errorsLast24Hours: report.errors?.last24Hours ?? 0,
       conversionRate: report.marketing?.conversionRate ?? 0,
     },

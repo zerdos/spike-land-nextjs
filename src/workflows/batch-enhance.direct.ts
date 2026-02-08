@@ -107,7 +107,7 @@ export async function batchEnhanceImagesDirect(
           imageId: image.imageId,
           userId,
           tier,
-          tokensCost: tokenCost,
+          creditsCost: tokenCost,
           status: JobStatus.PROCESSING,
           processingStartedAt: new Date(),
         },

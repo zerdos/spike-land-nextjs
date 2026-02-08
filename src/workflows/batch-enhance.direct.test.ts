@@ -156,7 +156,7 @@ describe("batch-enhance.direct", () => {
         data: expect.objectContaining({
           userId: "user-789",
           tier: "TIER_1K",
-          tokensCost: 10,
+          creditsCost: 10,
           status: JobStatus.PROCESSING,
         }),
       });
@@ -392,7 +392,7 @@ describe("batch-enhance.direct", () => {
 
       expect(mockPrismaCreate).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          tokensCost: 20,
+          creditsCost: 20,
         }),
       });
     });
@@ -405,7 +405,7 @@ describe("batch-enhance.direct", () => {
 
       expect(mockPrismaCreate).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          tokensCost: 40,
+          creditsCost: 40,
         }),
       });
     });

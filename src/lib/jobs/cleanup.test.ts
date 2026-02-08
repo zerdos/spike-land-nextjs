@@ -50,7 +50,7 @@ function createMockJob(
   overrides: Partial<ImageEnhancementJob> & {
     id: string;
     userId: string;
-    tokensCost: number;
+    creditsCost: number;
   },
 ): ImageEnhancementJob {
   const now = new Date();
@@ -104,7 +104,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -136,7 +136,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job2",
           userId: "user2",
-          tokensCost: 5,
+          creditsCost: 5,
           processingStartedAt: null,
           updatedAt: stuckTime,
         }),
@@ -211,14 +211,14 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
         createMockJob({
           id: "job2",
           userId: "user2",
-          tokensCost: 5,
+          creditsCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -246,7 +246,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: null, // null to trigger updatedAt fallback
           updatedAt: stuckTime,
         }),
@@ -269,7 +269,7 @@ describe("Job Cleanup Utilities", () => {
       expect(WorkspaceCreditManager.refundCredits).not.toHaveBeenCalled();
     });
 
-    it("should clean up stuck jobs and refund tokens", async () => {
+    it("should clean up stuck jobs and refund credits", async () => {
       const now = new Date();
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
@@ -277,7 +277,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           tier: EnhancementTier.TIER_4K,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
@@ -338,21 +338,21 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
         createMockJob({
           id: "job2",
           userId: "user2",
-          tokensCost: 5,
+          creditsCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
         createMockJob({
           id: "job3",
           userId: "user3",
-          tokensCost: 2,
+          creditsCost: 2,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -389,14 +389,14 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
         createMockJob({
           id: "job2",
           userId: "user2",
-          tokensCost: 5,
+          creditsCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -463,7 +463,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: null, // No timestamp
           updatedAt: stuckTime,
         }),
@@ -500,7 +500,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -538,7 +538,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -585,7 +585,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -618,14 +618,14 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
         createMockJob({
           id: "job2",
           userId: "user2",
-          tokensCost: 5,
+          creditsCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
