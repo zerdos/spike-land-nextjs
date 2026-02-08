@@ -7,8 +7,6 @@ import {
   GalleryCategory,
   JobStatus,
   PrismaClient,
-  VoucherStatus,
-  VoucherType,
   WorkspaceRole,
 } from "@prisma/client";
 import { createHash } from "crypto";
@@ -29,7 +27,7 @@ config({ path: ".env.local", quiet: true });
  * - Token balance for test users
  * - Enhancement jobs (PENDING, PROCESSING, COMPLETED, FAILED)
  * - API keys for MCP tests
- * - Vouchers for token/referral tests
+ * - Workspace credits (replaces vouchers/tokens)
  * - Featured gallery items
  *
  * Usage:
@@ -443,49 +441,7 @@ async function main() {
   });
   console.log("Created API key for MCP tests");
 
-  // 10. Create vouchers for token/referral tests
-  await prisma.voucher.upsert({
-    where: { id: "e2e-voucher-active" },
-    update: {},
-    create: {
-      id: "e2e-voucher-active",
-      code: "E2E-ACTIVE-100",
-      type: VoucherType.FIXED_TOKENS,
-      value: 100,
-      maxUses: 10,
-      currentUses: 0,
-      status: VoucherStatus.ACTIVE,
-      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
-    },
-  });
-
-  await prisma.voucher.upsert({
-    where: { id: "e2e-voucher-expired" },
-    update: {},
-    create: {
-      id: "e2e-voucher-expired",
-      code: "E2E-EXPIRED-50",
-      type: VoucherType.FIXED_TOKENS,
-      value: 50,
-      maxUses: 5,
-      currentUses: 5,
-      status: VoucherStatus.EXPIRED,
-      expiresAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-    },
-  });
-
-  await prisma.voucher.upsert({
-    where: { id: "e2e-voucher-bonus" },
-    update: {},
-    create: {
-      id: "e2e-voucher-bonus",
-      code: "E2E-BONUS-20",
-      type: VoucherType.PERCENTAGE_BONUS,
-      value: 20, // 20% bonus
-      status: VoucherStatus.ACTIVE,
-    },
-  });
-  console.log("Created 3 vouchers (active, expired, bonus)");
+  // 10. Voucher model removed — workspace credits are used instead
 
   // 11. Create featured gallery items
   await prisma.featuredGalleryItem.upsert({
@@ -929,7 +885,7 @@ async function main() {
   console.log(`  Workspace Credits: 100`);
   console.log(`  Enhancement Jobs: 4 (PENDING, PROCESSING, COMPLETED, FAILED)`);
   console.log(`  API Keys: 1 (for MCP tests)`);
-  console.log(`  Vouchers: 3 (active, expired, bonus)`);
+  console.log(`  Vouchers: removed (workspace credits used instead)`);
   console.log(`  Featured Gallery Items: 2`);
 }
 

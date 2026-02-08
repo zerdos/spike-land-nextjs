@@ -2,41 +2,9 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTextToSpeech } from "./useTextToSpeech";
 
-// --- Mock Audio class ---
-let audioInstances: MockAudioInstance[] = [];
+// --- Mock Audio class (use a class to avoid vitest warnings) ---
+let audioInstances: MockAudioClass[] = [];
 
-interface MockAudioInstance {
-  src: string;
-  currentTime: number;
-  listeners: Record<string, ((...args: unknown[]) => void)[]>;
-  addEventListener: (event: string, cb: (...args: unknown[]) => void) => void;
-  emit: (event: string) => void;
-  play: ReturnType<typeof vi.fn>;
-  pause: ReturnType<typeof vi.fn>;
-}
-
-function _createMockAudio(): MockAudioInstance {
-  const instance: MockAudioInstance = {
-    src: "",
-    currentTime: 0,
-    listeners: {},
-    addEventListener(event: string, cb: (...args: unknown[]) => void) {
-      if (!instance.listeners[event]) instance.listeners[event] = [];
-      instance.listeners[event].push(cb);
-    },
-    emit(event: string) {
-      (instance.listeners[event] || []).forEach(cb => cb());
-    },
-    play: vi.fn(function() {
-      return Promise.resolve();
-    }),
-    pause: vi.fn(),
-  };
-  audioInstances.push(instance);
-  return instance;
-}
-
-// Use a class to avoid vitest's "mock did not use function or class" warning
 class MockAudioClass {
   src = "";
   currentTime = 0;
@@ -47,7 +15,7 @@ class MockAudioClass {
   constructor() {
     this.play = vi.fn(() => Promise.resolve());
     this.pause = vi.fn();
-    audioInstances.push(this as unknown as MockAudioInstance);
+    audioInstances.push(this);
   }
 
   addEventListener(event: string, cb: (...args: unknown[]) => void) {
@@ -77,10 +45,8 @@ describe("useTextToSpeech", () => {
     vi.stubGlobal("Audio", MockAudioClass);
   });
 
-  function getLastAudio(): MockAudioClass & { emit: (event: string) => void } {
-    return audioInstances[audioInstances.length - 1] as unknown as MockAudioClass & {
-      emit: (event: string) => void;
-    };
+  function getLastAudio(): MockAudioClass {
+    return audioInstances[audioInstances.length - 1];
   }
 
   function mockFetchJson(url: string) {
