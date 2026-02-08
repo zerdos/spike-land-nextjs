@@ -95,6 +95,25 @@ describe("content-service", () => {
         data: expect.objectContaining({ status: CreatedAppStatus.PUBLISHED }),
       }));
     });
+
+    it("should return null when record not found (P2025)", async () => {
+      (prisma.createdApp.update as any).mockRejectedValue(
+        new Error("Record to update not found."),
+      );
+
+      const result = await updateAppStatus("nonexistent", CreatedAppStatus.FAILED);
+
+      expect(result).toBeNull();
+    });
+
+    it("should rethrow non-P2025 errors", async () => {
+      (prisma.createdApp.update as any).mockRejectedValue(
+        new Error("Connection refused"),
+      );
+
+      await expect(updateAppStatus("test", CreatedAppStatus.FAILED))
+        .rejects.toThrow("Connection refused");
+    });
   });
 
   describe("incrementViewCount", () => {

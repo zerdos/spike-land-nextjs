@@ -78,14 +78,26 @@ export async function updateAppStatus(
   slug: string,
   status: CreatedAppStatus,
   outgoingLinks?: string[],
-): Promise<CreatedApp> {
-  return prisma.createdApp.update({
-    where: { slug },
-    data: {
-      status,
-      ...(outgoingLinks ? { outgoingLinks } : {}),
-    },
-  });
+): Promise<CreatedApp | null> {
+  try {
+    return await prisma.createdApp.update({
+      where: { slug },
+      data: {
+        status,
+        ...(outgoingLinks ? { outgoingLinks } : {}),
+      },
+    });
+  } catch (error) {
+    // P2025: Record not found — can happen if markAsGenerating() failed
+    if (
+      error instanceof Error
+      && error.message.includes("Record to update not found")
+    ) {
+      logger.error(`Cannot update status for non-existent app: ${slug}`);
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function incrementViewCount(slug: string): Promise<void> {
