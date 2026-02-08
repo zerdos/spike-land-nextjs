@@ -170,28 +170,19 @@ export class WorkspaceCreditManager {
         const workspaceId = await this.resolveWorkspaceForUser(userId);
         if (!workspaceId) return false;
 
+        // Use raw SQL to atomically clamp at 0 (prevent negative usedAiCredits)
         const { error } = await tryCatch(
-            prisma.workspace.update({
-                where: { id: workspaceId },
-                data: {
-                    usedAiCredits: {
-                        decrement: amount,
-                    },
-                },
-            })
+            prisma.$executeRaw`
+                UPDATE "Workspace"
+                SET "usedAiCredits" = GREATEST(0, "usedAiCredits" - ${amount})
+                WHERE "id" = ${workspaceId}
+            `
         );
 
         if (error) {
             console.error("Failed to refund credits", error);
             return false;
         }
-
-        // Ensure we didn't go below 0 (Prisma decrement doesn't clamp by default, 
-        // but negative usage is technically data corruption. 
-        // We can run a quick fix or just assume the app logic prevents refunding more than used.)
-        // For robustness, we could use set: max(0, current - amount) pattern if we fetched first, 
-        // but decrement is atomic.
-        // Let's rely on atomic decrement for now. Correcting negative usage could be a periodic cleanup task if needed.
 
         return true;
     }

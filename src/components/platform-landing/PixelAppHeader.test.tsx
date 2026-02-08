@@ -1,4 +1,4 @@
-import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useSession } from "next-auth/react";
 import { vi } from "vitest";
@@ -6,7 +6,7 @@ import { PixelAppHeader } from "./PixelAppHeader";
 
 // Mocks
 vi.mock("next-auth/react");
-vi.mock("@/hooks/useTokenBalance");
+vi.mock("@/hooks/useWorkspaceCredits");
 vi.mock("@/components/auth/user-avatar", () => ({
   UserAvatar: () => <div data-testid="user-avatar">Avatar</div>,
 }));
@@ -23,8 +23,8 @@ global.ResizeObserver = class ResizeObserver {
 
 describe("PixelAppHeader", () => {
   beforeEach(() => {
-    (useTokenBalance as any).mockReturnValue({
-      balance: 100,
+    (useWorkspaceCredits as any).mockReturnValue({
+      remaining: 100,
       isLoading: false,
     });
   });
@@ -60,8 +60,8 @@ describe("PixelAppHeader", () => {
       data: { user: { name: "Test User" } },
       status: "authenticated",
     });
-    (useTokenBalance as any).mockReturnValue({
-      balance: null,
+    (useWorkspaceCredits as any).mockReturnValue({
+      remaining: null,
       isLoading: true,
     });
 

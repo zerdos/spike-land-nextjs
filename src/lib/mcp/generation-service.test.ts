@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Mock all external dependencies - CRITICAL: Mock AI APIs to prevent real calls
 const {
   mockMcpGenerationJob,
-  mockTokenBalanceManager,
+  mockWorkspaceCreditManager,
   mockGeminiClient,
   mockUploadToR2,
 } = vi
@@ -17,10 +17,10 @@ const {
       update: vi.fn(),
       count: vi.fn(),
     },
-    mockTokenBalanceManager: {
-      hasEnoughTokens: vi.fn(),
-      consumeTokens: vi.fn(),
-      refundTokens: vi.fn(),
+    mockWorkspaceCreditManager: {
+      hasEnoughCredits: vi.fn(),
+      consumeCredits: vi.fn(),
+      refundCredits: vi.fn(),
     },
     mockGeminiClient: {
       generateImageWithGemini: vi.fn(),
@@ -36,8 +36,8 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: mockTokenBalanceManager,
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: mockWorkspaceCreditManager,
 }));
 
 // CRITICAL: Mock the Gemini client to prevent real AI API calls
@@ -91,9 +91,9 @@ describe("generation-service", () => {
   });
 
   describe("createGenerationJob", () => {
-    it("should create a generation job when user has enough tokens", async () => {
+    it("should create a generation job when user has enough credits", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0); // No concurrent jobs
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -115,12 +115,11 @@ describe("generation-service", () => {
       expect(result.success).toBe(true);
       expect(result.jobId).toBe(testJobId);
       expect(result.tokensCost).toBe(2);
-      expect(mockTokenBalanceManager.consumeTokens).toHaveBeenCalledWith({
+      expect(mockWorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith({
         userId: testUserId,
         amount: 2,
         source: "mcp_generation",
         sourceId: "pending",
-        metadata: { tier: "TIER_1K", type: "GENERATE" },
       });
     });
 
@@ -135,14 +134,14 @@ describe("generation-service", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toContain("Too many concurrent jobs");
-      expect(mockTokenBalanceManager.consumeTokens).not.toHaveBeenCalled();
+      expect(mockWorkspaceCreditManager.consumeCredits).not.toHaveBeenCalled();
     });
 
-    it("should reject when token consumption fails", async () => {
+    it("should reject when credit consumption fails", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: false,
-        error: "Insufficient tokens",
+        error: "Insufficient credits",
       });
 
       const result = await createGenerationJob({
@@ -155,9 +154,9 @@ describe("generation-service", () => {
       expect(result.error).toContain("Insufficient");
     });
 
-    it("should use correct token costs for each tier", async () => {
+    it("should use correct credit costs for each tier", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -171,7 +170,7 @@ describe("generation-service", () => {
         prompt: "test",
         tier: "TIER_1K",
       });
-      expect(mockTokenBalanceManager.consumeTokens).toHaveBeenCalledWith(
+      expect(mockWorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith(
         expect.objectContaining({ amount: 2 }),
       );
 
@@ -179,7 +178,7 @@ describe("generation-service", () => {
 
       // Test TIER_2K = 5 tokens
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -192,7 +191,7 @@ describe("generation-service", () => {
         prompt: "test",
         tier: "TIER_2K",
       });
-      expect(mockTokenBalanceManager.consumeTokens).toHaveBeenCalledWith(
+      expect(mockWorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith(
         expect.objectContaining({ amount: 5 }),
       );
 
@@ -200,7 +199,7 @@ describe("generation-service", () => {
 
       // Test TIER_4K = 10 tokens
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -213,16 +212,16 @@ describe("generation-service", () => {
         prompt: "test",
         tier: "TIER_4K",
       });
-      expect(mockTokenBalanceManager.consumeTokens).toHaveBeenCalledWith(
+      expect(mockWorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith(
         expect.objectContaining({ amount: 10 }),
       );
     });
   });
 
   describe("createModificationJob", () => {
-    it("should create a modification job when user has enough tokens", async () => {
+    it("should create a modification job when user has enough credits", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -245,12 +244,11 @@ describe("generation-service", () => {
 
       expect(result.success).toBe(true);
       expect(result.jobId).toBe(testJobId);
-      expect(mockTokenBalanceManager.consumeTokens).toHaveBeenCalledWith({
+      expect(mockWorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith({
         userId: testUserId,
         amount: 2,
         source: "mcp_generation",
         sourceId: "pending",
-        metadata: { tier: "TIER_1K", type: "MODIFY" },
       });
     });
 
@@ -267,7 +265,7 @@ describe("generation-service", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toContain("Too many concurrent jobs");
-      expect(mockTokenBalanceManager.consumeTokens).not.toHaveBeenCalled();
+      expect(mockWorkspaceCreditManager.consumeCredits).not.toHaveBeenCalled();
     });
   });
 
@@ -392,7 +390,7 @@ describe("generation-service", () => {
     it("should allow job when under concurrent limit", async () => {
       // Test with 2 concurrent jobs (should be allowed)
       mockMcpGenerationJob.count.mockResolvedValue(2);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -415,7 +413,7 @@ describe("generation-service", () => {
       // This test verifies that the mock is in place
       // If the real API was called, we would get actual network errors
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -451,7 +449,7 @@ describe("generation-service", () => {
     it("should process generation job successfully and update job status", async () => {
       const mockImageBuffer = Buffer.from("fake-image-data");
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -522,9 +520,9 @@ describe("generation-service", () => {
       });
     });
 
-    it("should handle generation job failure and refund tokens", async () => {
+    it("should handle generation job failure and refund credits", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -545,7 +543,7 @@ describe("generation-service", () => {
         userId: testUserId,
         tokensCost: 2,
       });
-      mockTokenBalanceManager.refundTokens.mockResolvedValue({ success: true });
+      mockWorkspaceCreditManager.refundCredits.mockResolvedValue({ success: true });
 
       await createGenerationJob({
         userId: testUserId,
@@ -565,12 +563,10 @@ describe("generation-service", () => {
         }),
       });
 
-      // Verify tokens were refunded
-      expect(mockTokenBalanceManager.refundTokens).toHaveBeenCalledWith(
+      // Verify credits were refunded
+      expect(mockWorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
         testUserId,
         2,
-        testJobId,
-        expect.stringContaining("TIMEOUT"),
       );
 
       // Verify job was updated to REFUNDED status
@@ -582,7 +578,7 @@ describe("generation-service", () => {
 
     it("should not refund when job not found after failure", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -618,7 +614,7 @@ describe("generation-service", () => {
       });
 
       // Verify refund was NOT called since job not found
-      expect(mockTokenBalanceManager.refundTokens).not.toHaveBeenCalled();
+      expect(mockWorkspaceCreditManager.refundCredits).not.toHaveBeenCalled();
     });
   });
 
@@ -628,7 +624,7 @@ describe("generation-service", () => {
       const inputBase64 = Buffer.from("original-image").toString("base64");
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -704,11 +700,11 @@ describe("generation-service", () => {
       });
     });
 
-    it("should handle modification job failure and refund tokens", async () => {
+    it("should handle modification job failure and refund credits", async () => {
       const inputBase64 = Buffer.from("original-image").toString("base64");
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -733,7 +729,7 @@ describe("generation-service", () => {
         userId: testUserId,
         tokensCost: 5,
       });
-      mockTokenBalanceManager.refundTokens.mockResolvedValue({ success: true });
+      mockWorkspaceCreditManager.refundCredits.mockResolvedValue({ success: true });
 
       await createModificationJob({
         userId: testUserId,
@@ -755,12 +751,10 @@ describe("generation-service", () => {
         }),
       });
 
-      // Verify tokens were refunded
-      expect(mockTokenBalanceManager.refundTokens).toHaveBeenCalledWith(
+      // Verify credits were refunded
+      expect(mockWorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
         testUserId,
         5,
-        testJobId,
-        expect.stringContaining("CONTENT_POLICY"),
       );
 
       // Verify job was updated to REFUNDED status
@@ -775,7 +769,7 @@ describe("generation-service", () => {
       const inputBase64 = Buffer.from("original-image").toString("base64");
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -819,7 +813,7 @@ describe("generation-service", () => {
       );
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -866,7 +860,7 @@ describe("generation-service", () => {
       const inputBase64 = Buffer.from("original-image").toString("base64");
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -929,10 +923,10 @@ describe("generation-service", () => {
     });
   });
 
-  describe("token consumption edge cases", () => {
-    it("should use default error message when consumeTokens returns no error", async () => {
+  describe("credit consumption edge cases", () => {
+    it("should use default error message when consumeCredits returns no error", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: false,
         // No error property
       });
@@ -945,13 +939,13 @@ describe("generation-service", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe(
-        "Insufficient token balance. Required: 5 tokens",
+        "Insufficient AI credits. Required: 5 credits",
       );
     });
 
-    it("should use default error for modification when consumeTokens returns no error", async () => {
+    it("should use default error for modification when consumeCredits returns no error", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: false,
         // No error property
       });
@@ -966,7 +960,7 @@ describe("generation-service", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe(
-        "Insufficient token balance. Required: 10 tokens",
+        "Insufficient AI credits. Required: 10 credits",
       );
     });
   });
@@ -974,7 +968,7 @@ describe("generation-service", () => {
   describe("job creation without apiKeyId", () => {
     it("should create generation job with null apiKeyId when not provided", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({
@@ -1002,7 +996,7 @@ describe("generation-service", () => {
 
     it("should create modification job with null apiKeyId when not provided", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
         success: true,
       });
       mockMcpGenerationJob.create.mockResolvedValue({

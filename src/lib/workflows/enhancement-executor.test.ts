@@ -17,9 +17,9 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: {
-    refundTokens: vi.fn().mockResolvedValue({ success: true }),
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: {
+    refundCredits: vi.fn().mockResolvedValue(true),
   },
 }));
 
@@ -169,24 +169,22 @@ describe("handleEnhancementFailure", () => {
     });
   });
 
-  it("should refund tokens when tokens were consumed", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should refund credits when tokens were consumed", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
 
     await handleEnhancementFailure(mockContext, "Test error");
 
-    expect(TokenBalanceManager.refundTokens).toHaveBeenCalledWith(
+    expect(WorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
       "user-1",
       5,
-      "job-1",
-      "Test error",
     );
   });
 
-  it("should not refund tokens when no tokens were consumed", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should not refund credits when no tokens were consumed", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
 
     await handleEnhancementFailure(
@@ -194,6 +192,6 @@ describe("handleEnhancementFailure", () => {
       "Test error",
     );
 
-    expect(TokenBalanceManager.refundTokens).not.toHaveBeenCalled();
+    expect(WorkspaceCreditManager.refundCredits).not.toHaveBeenCalled();
   });
 });

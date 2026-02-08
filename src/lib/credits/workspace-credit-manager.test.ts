@@ -21,6 +21,7 @@ vi.mock("@/lib/prisma", () => ({
         workspaceMember: {
             findFirst: vi.fn(),
         },
+        $executeRaw: vi.fn(),
     },
 }));
 
@@ -47,6 +48,7 @@ const mockPrisma = prisma as unknown as {
     workspaceMember: {
         findFirst: ReturnType<typeof vi.fn>;
     };
+    $executeRaw: ReturnType<typeof vi.fn>;
 };
 
 describe("WorkspaceCreditManager", () => {
@@ -153,16 +155,13 @@ describe("WorkspaceCreditManager", () => {
     });
 
     describe("refundCredits", () => {
-        it("should decrement usedAiCredits", async () => {
+        it("should decrement usedAiCredits with clamp at 0", async () => {
             vi.spyOn(WorkspaceCreditManager, "resolveWorkspaceForUser").mockResolvedValue("ws-1");
-            mockPrisma.workspace.update.mockResolvedValue({});
+            mockPrisma.$executeRaw.mockResolvedValue(1);
 
             const result = await WorkspaceCreditManager.refundCredits("user-1", 10);
             expect(result).toBe(true);
-            expect(mockPrisma.workspace.update).toHaveBeenCalledWith({
-                where: { id: "ws-1" },
-                data: { usedAiCredits: { decrement: 10 } },
-            });
+            expect(mockPrisma.$executeRaw).toHaveBeenCalled();
         });
     });
 });

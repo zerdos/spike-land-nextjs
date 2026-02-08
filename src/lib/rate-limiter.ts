@@ -403,4 +403,9 @@ export const rateLimitConfigs = {
     maxRequests: 5,
     windowMs: 60 * 60 * 1000, // 1 hour
   },
+  /** Text-to-speech: 20 requests per minute per IP */
+  tts: {
+    maxRequests: 20,
+    windowMs: 60 * 1000, // 1 minute
+  },
 } as const;

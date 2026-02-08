@@ -196,17 +196,15 @@ async function main() {
   ]);
   console.log(`Created ${testApps.length} test apps for my-apps tests`);
 
-  // 2. Ensure test user has token balance
-  await prisma.userTokenBalance.upsert({
-    where: { userId: TEST_USER_ID },
-    update: { balance: 100 },
-    create: {
-      userId: TEST_USER_ID,
-      balance: 100,
-      lastRegeneration: new Date(),
+  // 2. Ensure test workspace has credits
+  await prisma.workspace.update({
+    where: { slug: "orbit-test-workspace" },
+    data: {
+      monthlyAiCredits: 100,
+      usedAiCredits: 0,
     },
   });
-  console.log("Set token balance: 100");
+  console.log("Set workspace credits: 100");
 
   // 3. Create test images (using placeholder URLs)
   // First image has shareToken for share page tests
@@ -928,7 +926,7 @@ async function main() {
     `  Unlisted Album: /canvas/${unlistedAlbum.id}?token=${unlistedAlbum.shareToken}`,
   );
   console.log(`  Private Album: /albums/${privateAlbum.id}`);
-  console.log(`  Token Balance: 100`);
+  console.log(`  Workspace Credits: 100`);
   console.log(`  Enhancement Jobs: 4 (PENDING, PROCESSING, COMPLETED, FAILED)`);
   console.log(`  API Keys: 1 (for MCP tests)`);
   console.log(`  Vouchers: 3 (active, expired, bonus)`);

@@ -12,7 +12,7 @@ vi.mock("@/lib/ai/gemini-client", () => ({
   },
 }));
 vi.mock("@/lib/logger", () => ({
-  default: { error: vi.fn() },
+  default: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
 describe("GET /api/create/generate", () => {

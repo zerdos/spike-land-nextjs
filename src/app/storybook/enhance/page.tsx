@@ -8,7 +8,7 @@ import {
   type EnhancementTierType,
   TierSelectionCheckboxes,
 } from "@/components/enhance/TierSelectionCheckboxes";
-import { TokenBalanceDisplay } from "@/components/enhance/TokenBalanceDisplay";
+import { CreditBalanceDisplay } from "@/components/enhance/CreditBalanceDisplay";
 import { Section } from "@/components/storybook";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
@@ -170,17 +170,17 @@ export default function EnhancePage() {
           </CardContent>
         </Card>
 
-        {/* TokenBalanceDisplay */}
+        {/* CreditBalanceDisplay */}
         <Card>
           <CardHeader>
-            <CardTitle>Token Balance Display</CardTitle>
+            <CardTitle>Credit Balance Display</CardTitle>
             <CardDescription>
-              Display user token balance and stats
+              Display workspace credit balance and estimates
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="max-w-md">
-              <TokenBalanceDisplay showAnalytics={true} />
+              <CreditBalanceDisplay showEstimates={true} />
             </div>
           </CardContent>
         </Card>

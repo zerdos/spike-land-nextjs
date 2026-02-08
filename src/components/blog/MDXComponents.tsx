@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { ImagePlaceholder } from "./ImagePlaceholder";
+import { ReadAloudParagraph } from "./ReadAloudButton";
 
 // Dynamic imports with SSR disabled to prevent React hooks errors during static generation
 const ImageComparisonSlider = dynamic(
@@ -410,11 +411,13 @@ export const mdxComponents: MDXComponents = {
     </h4>
   ),
 
-  // Paragraphs with proper line height
+  // Paragraphs with proper line height and read-aloud button
   p: ({ children, ...props }: ComponentPropsWithoutRef<"p">) => (
-    <p className="text-foreground leading-relaxed mb-6" {...props}>
-      {children}
-    </p>
+    <ReadAloudParagraph>
+      <p className="text-foreground leading-relaxed mb-6" {...props}>
+        {children}
+      </p>
+    </ReadAloudParagraph>
   ),
 
   // Links with Pixel Cyan color

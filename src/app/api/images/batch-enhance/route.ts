@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
+import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
 import { batchEnhanceImagesDirect, type BatchEnhanceInput } from "@/workflows/batch-enhance.direct";
 import type { EnhancementTier } from "@prisma/client";
@@ -29,6 +30,29 @@ export async function POST(request: NextRequest) {
 
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limiting
+  const rateLimitResult = await checkRateLimit(
+    `batch-enhance:${session.user.id}`,
+    rateLimitConfigs.albumBatchEnhancement,
+  );
+
+  if (rateLimitResult.isLimited) {
+    const retryAfter = Math.ceil(
+      (rateLimitResult.resetAt - Date.now()) / 1000,
+    );
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(retryAfter),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": String(rateLimitResult.resetAt),
+        },
+      },
+    );
   }
 
   const { data: body, error: bodyError } = await tryCatch(request.json());

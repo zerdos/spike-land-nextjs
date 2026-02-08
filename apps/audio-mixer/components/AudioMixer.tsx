@@ -240,7 +240,7 @@ export function AudioMixer() {
         fileInputRef.current.value = "";
       }
     },
-    [handleInitialize, audioContext, trackManager, audioStorage],
+    [handleInitialize, audioContext, trackManager, audioStorage, persistenceState.projectId],
   );
 
   // Handle recording
@@ -287,7 +287,7 @@ export function AudioMixer() {
         recordingStartTimeRef.current,
       );
     }
-  }, [audioContext, recording, trackManager, audioStorage]);
+  }, [audioContext, recording, trackManager, audioStorage, persistenceState.projectId]);
 
   // Play all tracks
   const handlePlayAll = useCallback(async () => {

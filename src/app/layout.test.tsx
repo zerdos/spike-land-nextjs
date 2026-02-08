@@ -155,10 +155,10 @@ describe("metadata", () => {
   it("should export correct metadata object", () => {
     expect(metadata).toBeDefined();
     expect(metadata.title).toBe(
-      "Spike Land - AI-Powered Social Media Command Center",
+      "Spike Land - Open-Source AI-Powered Development Platform",
     );
-    expect(metadata.description).toContain("social accounts");
     expect(metadata.description).toContain("AI agents");
+    expect(metadata.description).toContain("Open source");
   });
 
   it("should have title property", () => {
@@ -172,7 +172,7 @@ describe("metadata", () => {
   it("should have keywords for SEO", () => {
     expect(metadata).toHaveProperty("keywords");
     expect(metadata.keywords).toContain("Spike Land");
-    expect(metadata.keywords).toContain("social media management");
+    expect(metadata.keywords).toContain("AI development platform");
   });
 
   it("should have authors metadata", () => {

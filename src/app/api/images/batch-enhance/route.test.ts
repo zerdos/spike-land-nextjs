@@ -16,6 +16,11 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(() => Promise.resolve(mockSession)),
 }));
 
+vi.mock("@/lib/rate-limiter", () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ isLimited: false }),
+  rateLimitConfigs: { albumBatchEnhancement: {} },
+}));
+
 vi.mock("@/lib/credits/workspace-credit-manager", () => ({
   WorkspaceCreditManager: {
     hasEnoughCredits: vi.fn().mockResolvedValue(true),

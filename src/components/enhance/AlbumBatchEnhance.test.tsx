@@ -145,7 +145,7 @@ describe("AlbumBatchEnhance", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("user-balance")).toHaveTextContent(
-        "100 tokens",
+        "100 credits",
       );
     });
   });
@@ -244,7 +244,7 @@ describe("AlbumBatchEnhance", () => {
     fireEvent.click(screen.getByTestId("enhance-all-button"));
 
     await waitFor(() => {
-      expect(screen.getByTestId("total-cost")).toHaveTextContent("15 tokens");
+      expect(screen.getByTestId("total-cost")).toHaveTextContent("15 credits");
     });
   });
 
@@ -265,7 +265,7 @@ describe("AlbumBatchEnhance", () => {
     const tier1kRadio = screen.getByRole("radio", { name: /1K \(1024px\)/i });
     fireEvent.click(tier1kRadio);
 
-    expect(screen.getByTestId("total-cost")).toHaveTextContent("6 tokens");
+    expect(screen.getByTestId("total-cost")).toHaveTextContent("6 credits");
   });
 
   it("should show insufficient balance warning", async () => {
@@ -689,7 +689,7 @@ describe("AlbumBatchEnhance", () => {
     fireEvent.click(screen.getByTestId("enhance-all-button"));
 
     await waitFor(() => {
-      expect(screen.getByTestId("total-cost")).toHaveTextContent("5 tokens");
+      expect(screen.getByTestId("total-cost")).toHaveTextContent("5 credits");
     });
 
     expect(screen.getByText("Images to enhance:")).toBeInTheDocument();
@@ -758,7 +758,7 @@ describe("AlbumBatchEnhance", () => {
     fireEvent.click(screen.getByTestId("enhance-all-button"));
 
     await waitFor(() => {
-      expect(screen.getByTestId("user-balance")).toHaveTextContent("0 tokens");
+      expect(screen.getByTestId("user-balance")).toHaveTextContent("0 credits");
     });
   });
 
