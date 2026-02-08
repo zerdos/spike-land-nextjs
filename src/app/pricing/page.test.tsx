@@ -32,10 +32,10 @@ function setupAuthenticatedFetchMock(
   checkoutResponse?: { url?: string; error?: string; },
 ) {
   mockFetch.mockImplementation((url: string) => {
-    if (url === "/api/tokens/balance") {
+    if (url === "/api/credits/balance") {
       return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({ balance: 5, timeUntilNextRegenMs: 300000 }),
+        json: () => Promise.resolve({ remaining: 5 }),
       });
     }
     if (url === "/api/stripe/checkout") {
@@ -70,7 +70,7 @@ describe("PricingPage", () => {
 
     expect(screen.getByText("Pricing")).toBeDefined();
     expect(
-      screen.getByText(/Get tokens to enhance your images with AI/),
+      screen.getByText(/Get credits to enhance your images with AI/),
     ).toBeDefined();
   });
 
@@ -82,7 +82,7 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Token Usage Guide")).toBeDefined();
+    expect(screen.getByText("AI Credits Usage Guide")).toBeDefined();
     expect(screen.getByText("1K Enhancement")).toBeDefined();
     expect(screen.getByText("2K Enhancement")).toBeDefined();
     expect(screen.getByText("4K Enhancement")).toBeDefined();
@@ -209,7 +209,7 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    expect(screen.getByText(/Tokens never expire!/)).toBeDefined();
+    expect(screen.getByText(/Credits never expire!/)).toBeDefined();
   });
 
   it("hides Buy Now buttons for unauthenticated users", () => {
@@ -226,7 +226,7 @@ describe("PricingPage", () => {
     expect(screen.queryByTestId("buy-button-power")).toBeNull();
   });
 
-  it("shows Sign in to get free tokens button for unauthenticated users", () => {
+  it("shows Sign in to get free credits button for unauthenticated users", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
@@ -234,7 +234,7 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Sign in to get free tokens")).toBeDefined();
+    expect(screen.getByText("Sign in to get free credits")).toBeDefined();
   });
 
   it("calls checkout API when authenticated user clicks Buy Now", async () => {
@@ -327,10 +327,10 @@ describe("PricingPage", () => {
 
     // Mock that throws on checkout
     mockFetch.mockImplementation((url: string) => {
-      if (url === "/api/tokens/balance") {
+      if (url === "/api/credits/balance") {
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ balance: 5, timeUntilNextRegenMs: 300000 }),
+          json: () => Promise.resolve({ remaining: 5 }),
         });
       }
       if (url === "/api/stripe/checkout") {
@@ -365,8 +365,8 @@ describe("PricingPage", () => {
     render(<PricingPage />);
 
     expect(screen.getByText("Frequently Asked Questions")).toBeDefined();
-    expect(screen.getByText("What are tokens used for?")).toBeDefined();
-    expect(screen.getByText("Do tokens expire?")).toBeDefined();
+    expect(screen.getByText("What are credits used for?")).toBeDefined();
+    expect(screen.getByText("Do credits expire?")).toBeDefined();
     expect(screen.getByText("Which pack should I choose?")).toBeDefined();
     expect(screen.getByText("Can I get a refund?")).toBeDefined();
   });
@@ -411,10 +411,10 @@ describe("PricingPage", () => {
 
     // Mock that keeps checkout pending
     mockFetch.mockImplementation((url: string) => {
-      if (url === "/api/tokens/balance") {
+      if (url === "/api/credits/balance") {
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ balance: 5, timeUntilNextRegenMs: 300000 }),
+          json: () => Promise.resolve({ remaining: 5 }),
         });
       }
       if (url === "/api/stripe/checkout") {
@@ -445,7 +445,7 @@ describe("PricingPage", () => {
     render(<PricingPage />);
 
     // Sign in button is hidden during loading to avoid flash
-    expect(screen.queryByText("Sign in to get free tokens")).toBeNull();
+    expect(screen.queryByText("Sign in to get free credits")).toBeNull();
   });
 
   it("renders token packages grid with data-testid", () => {
@@ -481,9 +481,9 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Free Tokens Every 15 Minutes!")).toBeDefined();
-    expect(screen.getByText("+1 Token Every 15 Min")).toBeDefined();
-    expect(screen.getByText("Up to 10 Free Tokens")).toBeDefined();
-    expect(screen.getByText("2 Tokens = 1 Image")).toBeDefined();
+    expect(screen.getByText("Free Credits Every Month!")).toBeDefined();
+    expect(screen.getByText("Refill Every Month")).toBeDefined();
+    expect(screen.getByText("Credits for your plan")).toBeDefined();
+    expect(screen.getByText("2 Credits = 1 Image")).toBeDefined();
   });
 });

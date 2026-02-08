@@ -29,7 +29,7 @@ export default function TestEnhancementPage() {
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
     null,
   );
-  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [enhancing, setEnhancing] = useState(false);
   const [job, setJob] = useState<Job | null>(null);
   const [selectedTier, setSelectedTier] = useState<
@@ -50,15 +50,15 @@ export default function TestEnhancementPage() {
     }
   };
 
-  const fetchTokenBalance = async () => {
+  const fetchCreditBalance = async () => {
     try {
-      const response = await fetch("/api/tokens/balance");
+      const response = await fetch("/api/credits/balance");
       if (response.ok) {
         const data = await response.json();
-        setTokenBalance(data.balance);
+        setCreditBalance(data.remaining);
       }
     } catch (error) {
-      console.error("Error fetching token balance:", error);
+      console.error("Error fetching credit balance:", error);
     }
   };
 
@@ -78,7 +78,7 @@ export default function TestEnhancementPage() {
       if (response.ok) {
         const data = await response.json();
         setUploadedImage(data.image);
-        await fetchTokenBalance();
+        await fetchCreditBalance();
       } else {
         const error = await response.json();
         alert(`Upload failed: ${error.error}`);
@@ -106,7 +106,7 @@ export default function TestEnhancementPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setTokenBalance(data.newBalance);
+        setCreditBalance(data.newBalance);
 
         // Start polling for job status
         pollJobStatus(data.jobId);
@@ -141,7 +141,7 @@ export default function TestEnhancementPage() {
           if (jobData.status === "COMPLETED" || jobData.status === "FAILED") {
             setEnhancing(false);
             if (jobData.status === "COMPLETED") {
-              await fetchTokenBalance();
+              await fetchCreditBalance();
             }
           } else {
             attempts++;
@@ -159,7 +159,7 @@ export default function TestEnhancementPage() {
   };
 
   useEffect(() => {
-    fetchTokenBalance();
+    fetchCreditBalance();
   }, []);
 
   const tierCosts = {
@@ -177,13 +177,13 @@ export default function TestEnhancementPage() {
         <div className="flex justify-between items-center">
           <div>
             <p className="font-medium">
-              Token Balance: {tokenBalance ?? "..."}
+              Credit Balance: {creditBalance ?? "..." }
             </p>
             <p className="text-sm text-gray-600">
-              +1 token every 15 minutes (max 100)
+              Refill credits in pricing page
             </p>
           </div>
-          <Button onClick={fetchTokenBalance} variant="outline" size="sm">
+          <Button onClick={fetchCreditBalance} variant="outline" size="sm">
             Refresh
           </Button>
         </div>
@@ -250,7 +250,7 @@ export default function TestEnhancementPage() {
                     disabled={!uploadedImage || enhancing}
                   />
                   <span>
-                    {tier.replace("TIER_", "")} - {tierCosts[tier]} tokens
+                    {tier.replace("TIER_", "")} - {tierCosts[tier]} credits
                   </span>
                 </label>
               ))}
@@ -259,17 +259,17 @@ export default function TestEnhancementPage() {
           <Button
             onClick={enhanceImage}
             disabled={!uploadedImage || enhancing ||
-              (tokenBalance !== null && tokenBalance < tierCosts[selectedTier])}
+              (creditBalance !== null && creditBalance < tierCosts[selectedTier])}
             className="w-full"
           >
             {enhancing
               ? "Enhancing..."
-              : `Enhance (${tierCosts[selectedTier]} tokens)`}
+              : `Enhance (${tierCosts[selectedTier]} credits)`}
           </Button>
-          {tokenBalance !== null && tokenBalance < tierCosts[selectedTier] &&
+          {creditBalance !== null && creditBalance < tierCosts[selectedTier] &&
             uploadedImage && (
             <p className="mt-2 text-sm text-red-600">
-              Insufficient tokens. Need {tierCosts[selectedTier]}, have {tokenBalance}
+              Insufficient credits. Need {tierCosts[selectedTier]}, have {creditBalance}
             </p>
           )}
         </Card>
@@ -288,7 +288,7 @@ export default function TestEnhancementPage() {
                 <strong>Tier:</strong> {job.tier}
               </p>
               <p>
-                <strong>Tokens Used:</strong> {tierCosts[job.tier as keyof typeof tierCosts]}
+                <strong>Credits Used:</strong> {tierCosts[job.tier as keyof typeof tierCosts]}
               </p>
             </div>
             {job.status === "COMPLETED" && job.enhancedUrl && (
@@ -310,7 +310,7 @@ export default function TestEnhancementPage() {
                 <p className="text-red-600">
                   Enhancement failed: {job.errorMessage}
                 </p>
-                <p className="text-sm mt-2">Tokens have been refunded.</p>
+                <p className="text-sm mt-2">Credits have been refunded.</p>
               </div>
             )}
             {job.status === "PROCESSING" && (
