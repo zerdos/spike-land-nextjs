@@ -59,7 +59,7 @@ describe("GalleryClient", () => {
   });
 
   it("should handle filters", async () => {
-     const mockImages = [
+    const mockImages = [
       { id: "1", prompt: "Image 1", tags: ["tag1"] },
     ];
     (global.fetch as any).mockResolvedValue({

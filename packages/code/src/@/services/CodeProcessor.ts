@@ -413,7 +413,7 @@ export class CodeProcessor {
           } else {
             signal.addEventListener("abort", () => {
               reject(new DOMException("Aborted", "AbortError"));
-            });
+            }, { once: true });
           }
         });
         promises.push(abortPromise);
