@@ -1,4 +1,6 @@
 @requires-db
+@skip
+# SKIP REASON: /referrals page has been removed from the app
 Feature: Referral System
   As an authenticated user
   I want to share my referral link

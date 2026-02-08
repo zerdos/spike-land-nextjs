@@ -63,6 +63,8 @@ Feature: Smoke Tests
     And I should see "My Apps" heading
 
   @fast @requires-db
+  # SKIP REASON: /referrals page has been removed
+  @skip
   Scenario: Referrals page loads for authenticated user
     Given I am logged in as "Test User" with email "test@example.com"
     When I visit "/referrals"
