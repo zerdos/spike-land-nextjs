@@ -8,11 +8,11 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(() => Promise.resolve(mockSession)),
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: {
-    hasEnoughTokens: vi.fn().mockResolvedValue(true),
-    consumeTokens: vi.fn().mockResolvedValue({ success: true, balance: 100 }),
-    refundTokens: vi.fn().mockResolvedValue(true),
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: {
+    hasEnoughCredits: vi.fn().mockResolvedValue(true),
+    consumeCredits: vi.fn().mockResolvedValue({ success: true, remaining: 100 }),
+    refundCredits: vi.fn().mockResolvedValue(true),
   },
 }));
 
@@ -148,9 +148,9 @@ describe("POST /api/images/enhance", () => {
     expect(res.status).toBe(404);
   });
 
-  it("should return 402 if insufficient tokens", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should return 402 if insufficient credits", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
 
     mockPrisma.enhancedImage.findUnique.mockResolvedValue({
@@ -159,7 +159,7 @@ describe("POST /api/images/enhance", () => {
       originalR2Key: "originals/img-1.jpg",
     });
 
-    vi.mocked(TokenBalanceManager.hasEnoughTokens).mockResolvedValueOnce(false);
+    vi.mocked(WorkspaceCreditManager.hasEnoughCredits).mockResolvedValueOnce(false);
 
     const req = new NextRequest("http://localhost/api/images/enhance", {
       method: "POST",

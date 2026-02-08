@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { batchEnhanceImagesDirect, type BatchEnhanceInput } from "@/workflows/batch-enhance.direct";
@@ -103,9 +103,9 @@ export async function POST(request: NextRequest) {
   const tokenCost = ENHANCEMENT_COSTS[tier];
   const totalCost = tokenCost * imageIds.length;
 
-  // Check if user has enough tokens
+  // Check if user has enough credits
   const { data: hasEnough, error: hasEnoughError } = await tryCatch(
-    TokenBalanceManager.hasEnoughTokens(session.user.id, totalCost),
+    WorkspaceCreditManager.hasEnoughCredits(session.user.id, totalCost),
   );
 
   if (hasEnoughError) {
@@ -122,20 +122,19 @@ export async function POST(request: NextRequest) {
 
   if (!hasEnough) {
     return NextResponse.json(
-      { error: "Insufficient tokens", required: totalCost },
+      { error: "Insufficient credits", required: totalCost },
       { status: 402 },
     );
   }
 
-  // Consume tokens upfront for the entire batch
+  // Consume credits upfront for the entire batch
   const batchId = `batch-${Date.now()}`;
   const { data: consumeResult, error: consumeError } = await tryCatch(
-    TokenBalanceManager.consumeTokens({
+    WorkspaceCreditManager.consumeCredits({
       userId: session.user.id,
       amount: totalCost,
       source: "batch_image_enhancement",
       sourceId: batchId,
-      metadata: { tier, imageCount: imageIds.length },
     }),
   );
 
@@ -153,7 +152,7 @@ export async function POST(request: NextRequest) {
 
   if (!consumeResult.success) {
     return NextResponse.json(
-      { error: consumeResult.error || "Failed to consume tokens" },
+      { error: consumeResult.error || "Failed to consume credits" },
       { status: 500 },
     );
   }
@@ -191,7 +190,7 @@ export async function POST(request: NextRequest) {
     summary: {
       total: imageIds.length,
       totalCost,
-      newBalance: consumeResult.balance,
+      newBalance: consumeResult.remaining,
     },
   });
 }

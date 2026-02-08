@@ -43,36 +43,34 @@ export function LandingPageStructuredData() {
         },
         "priceRange": "$$",
         "description":
-          "AI-powered software development and social media solutions. Based in Brighton, working with businesses across the UK.",
+          "AI-powered app creation platform. Build, share, and deploy live apps instantly. Based in Brighton, UK.",
       },
       {
-        "@type": "Service",
-        "serviceType": "Social Media Management",
+        "@type": "WebApplication",
+        "name": "Spike Land App Builder",
+        "url": "https://spike.land/create",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web",
         "provider": {
           "@id": "https://spike.land/#organization",
         },
-        "name": "Social Media Command Center",
         "description":
-          "Manage all your social accounts with AI agents. Create content, schedule posts, and grow your audience.",
+          "AI-powered app builder that creates live, shareable web apps from natural language descriptions.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "GBP",
+        },
       },
       {
         "@type": "Service",
-        "serviceType": "AI Automation",
+        "serviceType": "AI Image Enhancement",
         "provider": {
           "@id": "https://spike.land/#organization",
         },
-        "name": "AI Automation",
+        "name": "Pixel - AI Image Enhancement",
         "description":
-          "Relay drafts and Allocator autopilot for automated content creation and distribution.",
-      },
-      {
-        "@type": "Service",
-        "serviceType": "A/B Testing",
-        "provider": {
-          "@id": "https://spike.land/#organization",
-        },
-        "name": "A/B Testing & Analytics",
-        "description": "Pulse monitoring and A/B testing to optimize content performance.",
+          "AI-powered image enhancement and photo blending tools for creators.",
       },
     ],
   };

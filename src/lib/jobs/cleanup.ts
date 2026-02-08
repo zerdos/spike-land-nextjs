@@ -7,7 +7,7 @@
 
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus } from "@prisma/client";
 
@@ -48,9 +48,9 @@ interface CleanupResult {
   failed: number;
 
   /**
-   * Total tokens refunded across all jobs
+   * Total credits refunded across all jobs
    */
-  tokensRefunded: number;
+  creditsRefunded: number;
 
   /**
    * Details of cleaned up jobs
@@ -58,7 +58,7 @@ interface CleanupResult {
   jobs: Array<{
     id: string;
     userId: string;
-    tokensRefunded: number;
+    creditsRefunded: number;
     processingDuration: number;
     error?: string;
   }>;
@@ -156,7 +156,7 @@ async function cleanupSingleJob(
   },
 ): Promise<{
   success: boolean;
-  tokensRefunded: number;
+  creditsRefunded: number;
   processingDuration: number;
   error?: string;
 }> {
@@ -182,9 +182,8 @@ async function cleanupSingleJob(
         where: { id: job.id },
         data: {
           status: JobStatus.FAILED,
-          errorMessage: `Job timed out after ${
-            Math.round(processingDuration / 1000)
-          }s. Automatically cleaned up and tokens refunded.`,
+          errorMessage: `Job timed out after ${Math.round(processingDuration / 1000)
+            }s. Automatically cleaned up and tokens refunded.`,
           processingCompletedAt: new Date(),
         },
       });
@@ -212,55 +211,32 @@ async function cleanupSingleJob(
     };
   }
 
-  // Refund tokens outside transaction to avoid nested transaction issues
-  const refundResult = await tryCatch(
-    TokenBalanceManager.refundTokens(
-      job.userId,
-      job.tokensCost,
-      job.id,
-      `Job timeout cleanup - stuck for ${Math.round(processingDuration / 1000)}s`,
-    ),
+  // Refund credits outside transaction to avoid nested transaction issues
+  const refundSuccess = await WorkspaceCreditManager.refundCredits(
+    job.userId,
+    job.tokensCost,
   );
 
-  if (refundResult.error) {
-    const errorMessage = refundResult.error instanceof Error
-      ? refundResult.error.message
-      : String(refundResult.error);
-    jobLogger.error(
-      "Failed to cleanup job",
-      refundResult.error instanceof Error
-        ? refundResult.error
-        : new Error(errorMessage),
-    );
-
-    return {
-      success: false,
-      tokensRefunded: 0,
-      processingDuration: 0,
-      error: errorMessage,
-    };
-  }
-
-  if (!refundResult.data.success) {
-    const errorMessage = `Token refund failed: ${refundResult.data.error}`;
+  if (!refundSuccess) {
+    const errorMessage = "Credit refund failed";
     jobLogger.error("Failed to cleanup job", new Error(errorMessage));
 
     return {
       success: false,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       processingDuration: 0,
       error: errorMessage,
     };
   }
 
   jobLogger.info("Job cleaned up successfully", {
-    tokensRefunded: job.tokensCost,
+    creditsRefunded: job.tokensCost,
     processingDuration: Math.round(processingDuration / 1000),
   });
 
   return {
     success: true,
-    tokensRefunded: job.tokensCost,
+    creditsRefunded: job.tokensCost,
     processingDuration,
   };
 }
@@ -324,7 +300,7 @@ export async function cleanupStuckJobs(
       totalFound: 0,
       cleanedUp: 0,
       failed: 0,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       jobs: [],
       errors: [],
     };
@@ -339,11 +315,11 @@ export async function cleanupStuckJobs(
       totalFound: stuckJobs.length,
       cleanedUp: 0,
       failed: 0,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       jobs: stuckJobs.map((job) => ({
         id: job.id,
         userId: job.userId,
-        tokensRefunded: 0,
+        creditsRefunded: 0,
         processingDuration: Date.now() -
           (job.processingStartedAt || job.updatedAt).getTime(),
       })),
@@ -359,8 +335,8 @@ export async function cleanupStuckJobs(
   // Aggregate results
   const cleanedUp = results.filter((r) => r.success).length;
   const failed = results.filter((r) => !r.success).length;
-  const tokensRefunded = results.reduce(
-    (sum, r) => sum + r.tokensRefunded,
+  const creditsRefunded = results.reduce(
+    (sum, r) => sum + r.creditsRefunded,
     0,
   );
 
@@ -372,7 +348,7 @@ export async function cleanupStuckJobs(
     return {
       id: job.id,
       userId: job.userId,
-      tokensRefunded: result.tokensRefunded,
+      creditsRefunded: result.creditsRefunded,
       processingDuration: result.processingDuration,
       ...(result.error && { error: result.error }),
     };
@@ -392,14 +368,14 @@ export async function cleanupStuckJobs(
     totalFound: stuckJobs.length,
     cleanedUp,
     failed,
-    tokensRefunded,
+    creditsRefunded,
   });
 
   return {
     totalFound: stuckJobs.length,
     cleanedUp,
     failed,
-    tokensRefunded,
+    creditsRefunded,
     jobs: jobDetails,
     errors,
   };

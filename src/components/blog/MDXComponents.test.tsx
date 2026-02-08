@@ -194,6 +194,44 @@ describe("MDXComponents", () => {
     });
   });
 
+  describe("LiveDemo", () => {
+    it("renders iframe with correct src and title", () => {
+      const LiveDemo = mdxComponents["LiveDemo"] as any;
+      render(<LiveDemo src="https://spike.land/create/test-app" title="Test Demo" />);
+
+      const iframe = screen.getByTitle("Test Demo");
+      expect(iframe).toBeInTheDocument();
+      expect(iframe).toHaveAttribute("src", "https://spike.land/create/test-app");
+    });
+
+    it("renders title bar with open-in-new-tab link", () => {
+      const LiveDemo = mdxComponents["LiveDemo"] as any;
+      render(<LiveDemo src="https://spike.land/create/test-app" title="Test Demo" />);
+
+      expect(screen.getByText("Test Demo")).toBeInTheDocument();
+      const link = screen.getByText("Open in new tab");
+      expect(link).toHaveAttribute("href", "https://spike.land/create/test-app");
+      expect(link).toHaveAttribute("target", "_blank");
+    });
+
+    it("uses default title and height", () => {
+      const LiveDemo = mdxComponents["LiveDemo"] as any;
+      render(<LiveDemo src="https://spike.land/create/test-app" />);
+
+      const iframe = screen.getByTitle("Live Demo");
+      expect(iframe).toBeInTheDocument();
+      expect(iframe).toHaveStyle({ height: "600px" });
+    });
+
+    it("accepts custom height", () => {
+      const LiveDemo = mdxComponents["LiveDemo"] as any;
+      render(<LiveDemo src="https://spike.land/create/test-app" title="Tall Demo" height="900px" />);
+
+      const iframe = screen.getByTitle("Tall Demo");
+      expect(iframe).toHaveStyle({ height: "900px" });
+    });
+  });
+
   describe("YouTubeEmbed", () => {
     it("renders iframe with validated src", () => {
       const YouTubeEmbed = mdxComponents["YouTubeEmbed"] as any;

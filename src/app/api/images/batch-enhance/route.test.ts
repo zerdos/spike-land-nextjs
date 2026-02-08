@@ -16,16 +16,14 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(() => Promise.resolve(mockSession)),
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: {
-    hasEnoughTokens: vi.fn().mockResolvedValue(true),
-    consumeTokens: vi.fn().mockResolvedValue({
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: {
+    hasEnoughCredits: vi.fn().mockResolvedValue(true),
+    consumeCredits: vi.fn().mockResolvedValue({
       success: true,
-      balance: 90,
+      remaining: 90,
     }),
-    refundTokens: vi.fn().mockResolvedValue({
-      success: true,
-    }),
+    refundCredits: vi.fn().mockResolvedValue(true),
   },
 }));
 
@@ -182,11 +180,11 @@ describe("POST /api/images/batch-enhance", () => {
     expect(res.status).toBe(404);
   });
 
-  it("should return 402 if insufficient tokens", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should return 402 if insufficient credits", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
-    vi.mocked(TokenBalanceManager.hasEnoughTokens).mockResolvedValueOnce(false);
+    vi.mocked(WorkspaceCreditManager.hasEnoughCredits).mockResolvedValueOnce(false);
 
     const req = createMockRequest({
       imageIds: ["img-1", "img-2"],
@@ -195,16 +193,17 @@ describe("POST /api/images/batch-enhance", () => {
     const res = await POST(req);
     expect(res.status).toBe(402);
     const data = await res.json();
-    expect(data.error).toBe("Insufficient tokens");
-    expect(data.required).toBe(10); // 2 images * 5 tokens
+    expect(data.error).toBe("Insufficient credits");
+    expect(data.required).toBe(10); // 2 images * 5 credits
   });
 
-  it("should return 500 if token consumption fails", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should return 500 if credit consumption fails", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
-    vi.mocked(TokenBalanceManager.consumeTokens).mockResolvedValueOnce({
+    vi.mocked(WorkspaceCreditManager.consumeCredits).mockResolvedValueOnce({
       success: false,
+      remaining: 0,
       error: "Database error",
     });
 
@@ -250,9 +249,9 @@ describe("POST /api/images/batch-enhance", () => {
     );
   });
 
-  it("should consume correct amount of tokens", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should consume correct amount of credits", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
 
     const req = createMockRequest({
@@ -261,12 +260,11 @@ describe("POST /api/images/batch-enhance", () => {
     });
     await POST(req);
 
-    expect(TokenBalanceManager.consumeTokens).toHaveBeenCalledWith({
+    expect(WorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith({
       userId: "user-123",
-      amount: 20, // 2 images * 10 tokens
+      amount: 20, // 2 images * 10 credits
       source: "batch_image_enhancement",
       sourceId: expect.stringContaining("batch-"),
-      metadata: { tier: "TIER_4K", imageCount: 2 },
     });
   });
 
@@ -300,13 +298,13 @@ describe("POST /api/images/batch-enhance", () => {
     expect(data4K.summary.totalCost).toBe(20); // 2 * 10
   });
 
-  it("should return new balance after token consumption", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should return remaining credits after consumption", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
-    vi.mocked(TokenBalanceManager.consumeTokens).mockResolvedValueOnce({
+    vi.mocked(WorkspaceCreditManager.consumeCredits).mockResolvedValueOnce({
       success: true,
-      balance: 85,
+      remaining: 85,
     });
 
     const req = createMockRequest({

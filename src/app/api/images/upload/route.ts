@@ -4,7 +4,7 @@ import { generateRequestId, logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { ENHANCEMENT_COSTS, type EnhancementTier } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { isSecureFilename } from "@/lib/upload/validation";
@@ -155,30 +155,24 @@ async function handleUpload(
     );
   }
 
-  // Consume tokens FIRST (prepay model) to prevent race conditions
-  // If upload fails later, we'll refund the tokens
-  const consumeResult = await TokenBalanceManager.consumeTokens({
+  // Consume credits FIRST (prepay model) to prevent race conditions
+  // If upload fails later, we'll refund the credits
+  const consumeResult = await WorkspaceCreditManager.consumeCredits({
     userId: session.user.id,
     amount: tokenCost,
     source: "image_upload_enhancement",
-    sourceId: `pending-${requestId}`, // Temporary ID until image is created
-    metadata: {
-      tier: defaultTier,
-      requestId,
-      albumId: albumId || null,
-      status: "pending",
-    },
+    sourceId: `pending-${requestId}`,
   });
 
   if (!consumeResult.success) {
-    const { balance } = await TokenBalanceManager.getBalance(session.user.id);
-    requestLogger.warn("Insufficient tokens for upload", {
+    const balance = await WorkspaceCreditManager.getBalance(session.user.id);
+    requestLogger.warn("Insufficient credits for upload", {
       userId: session.user.id,
       required: tokenCost,
-      available: balance,
+      available: balance?.remaining ?? 0,
     });
     const errorMessage = getUserFriendlyError(
-      new Error("Insufficient tokens"),
+      new Error("Insufficient credits"),
       402,
     );
     return NextResponse.json(
@@ -186,17 +180,17 @@ async function handleUpload(
         error: errorMessage.message,
         title: errorMessage.title,
         suggestion:
-          `You need ${tokenCost} tokens to upload and enhance this image. You have ${balance} tokens.`,
+          `You need ${tokenCost} credits to upload and enhance this image. You have ${balance?.remaining ?? 0} credits.`,
         required: tokenCost,
-        balance,
+        balance: balance?.remaining ?? 0,
       },
       { status: 402, headers: { "X-Request-ID": requestId } },
     );
   }
 
-  requestLogger.info("Tokens consumed upfront", {
+  requestLogger.info("Credits consumed upfront", {
     tokenCost,
-    newBalance: consumeResult.balance,
+    newBalance: consumeResult.remaining,
   });
 
   requestLogger.info("Processing file upload", {
@@ -232,14 +226,9 @@ async function handleUpload(
   });
 
   if (!result.success) {
-    // Refund tokens since upload failed
-    await TokenBalanceManager.refundTokens(
-      session.user.id,
-      tokenCost,
-      `failed-upload-${requestId}`,
-      "Upload processing failed",
-    );
-    requestLogger.info("Tokens refunded due to upload failure", { tokenCost });
+    // Refund credits since upload failed
+    await WorkspaceCreditManager.refundCredits(session.user.id, tokenCost);
+    requestLogger.info("Credits refunded due to upload failure", { tokenCost });
 
     requestLogger.error(
       "Upload processing failed",
@@ -352,7 +341,7 @@ async function handleUpload(
         jobId: job.id,
         tier: defaultTier,
         tokenCost,
-        newBalance: consumeResult.balance,
+        newBalance: consumeResult.remaining,
       },
     },
     { headers: { "X-Request-ID": requestId } },

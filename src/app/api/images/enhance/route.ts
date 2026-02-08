@@ -4,7 +4,7 @@ import { generateRequestId, logger } from "@/lib/errors/structured-logger";
 import { getHttpStatusForError, resolveBlendSource } from "@/lib/images/blend-source-resolver";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { attributeConversion } from "@/lib/tracking/attribution";
 import { tryCatch } from "@/lib/try-catch";
@@ -178,58 +178,57 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // 7. Token Balance Check & Consumption
-  const tokenCost = ENHANCEMENT_COSTS[tier];
+  // 7. Credit Balance Check & Consumption
+  const creditCost = ENHANCEMENT_COSTS[tier];
   let resultingBalance = 0;
 
-  if (tokenCost > 0) {
-    const hasEnough = await TokenBalanceManager.hasEnoughTokens(
+  if (creditCost > 0) {
+    const hasEnough = await WorkspaceCreditManager.hasEnoughCredits(
       session.user.id,
-      tokenCost,
+      creditCost,
     );
 
     if (!hasEnough) {
-      requestLogger.warn("Insufficient tokens", {
+      requestLogger.warn("Insufficient credits", {
         userId: session.user.id,
-        required: tokenCost,
+        required: creditCost,
       });
       return NextResponse.json(
         {
-          error: "Insufficient tokens",
+          error: "Insufficient credits",
           title: "Payment required",
-          suggestion: "Please add more tokens to continue.",
-          required: tokenCost,
+          suggestion: "Please upgrade your plan to continue.",
+          required: creditCost,
         },
         { status: 402, headers: { "X-Request-ID": requestId } },
       );
     }
 
-    const consumeResult = await TokenBalanceManager.consumeTokens({
+    const consumeResult = await WorkspaceCreditManager.consumeCredits({
       userId: session.user.id,
-      amount: tokenCost,
+      amount: creditCost,
       source: "image_enhancement",
       sourceId: imageId,
-      metadata: { tier, requestId },
     });
 
     if (!consumeResult.success) {
       requestLogger.error(
-        "Failed to consume tokens",
+        "Failed to consume credits",
         new Error(consumeResult.error),
         { userId: session.user.id },
       );
       return errorResponse(
-        new Error(consumeResult.error || "Failed to consume tokens"),
+        new Error(consumeResult.error || "Failed to consume credits"),
         500,
         requestId,
       );
     }
 
-    resultingBalance = consumeResult.balance ?? 0;
+    resultingBalance = consumeResult.remaining ?? 0;
   } else {
-    const balanceResult = await TokenBalanceManager.getBalance(session.user.id);
-    resultingBalance = balanceResult.balance ?? 0;
-    requestLogger.info("FREE tier - no tokens consumed", {
+    const balanceResult = await WorkspaceCreditManager.getBalance(session.user.id);
+    resultingBalance = balanceResult?.remaining ?? 0;
+    requestLogger.info("FREE tier - no credits consumed", {
       userId: session.user.id,
       tier,
     });
@@ -247,7 +246,7 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         tier,
         enhancementType,
-        tokensCost: tokenCost,
+        tokensCost: creditCost,
         status: JobStatus.PROCESSING,
         processingStartedAt: new Date(),
         sourceImageId,
@@ -262,14 +261,9 @@ export async function POST(request: NextRequest) {
       jobError instanceof Error ? jobError : new Error(String(jobError)),
       { userId: session.user.id, imageId },
     );
-    // Refund tokens if consumed
-    if (tokenCost > 0) {
-      await TokenBalanceManager.refundTokens(
-        session.user.id,
-        tokenCost,
-        "job-creation-failed",
-        "Failed to create enhancement job",
-      );
+    // Refund credits if consumed
+    if (creditCost > 0) {
+      await WorkspaceCreditManager.refundCredits(session.user.id, creditCost);
     }
     return errorResponse(
       new Error("Failed to create job"),
@@ -288,7 +282,7 @@ export async function POST(request: NextRequest) {
   // 9. Attribution Tracking (fire-and-forget)
   void (async () => {
     const { error } = await tryCatch(
-      attributeConversion(session.user.id, "ENHANCEMENT", tokenCost),
+      attributeConversion(session.user.id, "ENHANCEMENT", creditCost),
     );
     if (error) {
       requestLogger.warn("Failed to track enhancement attribution", {
@@ -305,7 +299,7 @@ export async function POST(request: NextRequest) {
     userId: session.user.id,
     originalR2Key: image.originalR2Key,
     tier,
-    tokensCost: tokenCost,
+    tokensCost: creditCost,
     blendSource: resolvedBlendSource,
   };
 
@@ -318,7 +312,7 @@ export async function POST(request: NextRequest) {
       { jobId: job.id },
     );
     await handleEnhancementFailure(
-      { jobId: job.id, userId: session.user.id, tokensCost: tokenCost },
+      { jobId: job.id, userId: session.user.id, tokensCost: creditCost },
       "Failed to start workflow",
     );
     return errorResponse(
@@ -332,7 +326,7 @@ export async function POST(request: NextRequest) {
     {
       success: true,
       jobId: job.id,
-      tokenCost,
+      creditCost,
       newBalance: resultingBalance,
     },
     { headers: { "X-Request-ID": requestId } },

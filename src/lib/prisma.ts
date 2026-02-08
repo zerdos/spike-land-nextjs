@@ -41,7 +41,12 @@ const prismaClientSingleton = () => {
     );
   }
 
-  const adapter = new PrismaPg({ connectionString });
+  const adapter = new PrismaPg({
+    connectionString,
+    ssl: process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : undefined,
+  });
   return new PrismaClient({
     adapter,
     log: ["error", "warn"],

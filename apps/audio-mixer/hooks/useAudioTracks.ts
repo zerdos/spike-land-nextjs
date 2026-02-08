@@ -427,20 +427,24 @@ export function useAudioTracks() {
           } else {
             // We are past the silence period, into the audio
             const audioOffset = transform - silenceDuration;
+            const duration = Math.max(0, effectiveTrimEnd - audioOffset);
+            if (duration <= 0) return;
             source.start(
               context.currentTime,
               audioOffset,
-              effectiveTrimEnd - audioOffset,
+              duration,
             );
           }
         } else {
           // Normal start: we are `transform` seconds into the track
           // So we offset the buffer usage by `track.trimStart + transform`
           const startOffset = track.trimStart + transform;
+          const duration = Math.max(0, effectiveTrimEnd - startOffset);
+          if (duration <= 0) return;
           source.start(
             context.currentTime,
             startOffset,
-            effectiveTrimEnd - startOffset,
+            duration,
           );
         }
       }

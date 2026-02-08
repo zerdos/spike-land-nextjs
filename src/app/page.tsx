@@ -1,46 +1,34 @@
-import {
-  ABTestingSection,
-  AIAutomationSection,
-  BlogPreviewSection,
-  EcosystemOverview,
-  OrbitCTA,
-  OrbitHero,
-  PlatformConnections,
-} from "@/components/orbit-landing";
+import { BlogPreviewSection } from "@/components/orbit-landing";
+import { AppShowcaseSection } from "@/components/landing/AppShowcaseSection";
+import { CreateCTASection } from "@/components/landing/CreateCTASection";
+import { LandingHero } from "@/components/landing/LandingHero";
+import { PhotoMixDemo } from "@/components/landing/PhotoMixDemo";
+import { PublicGallerySection } from "@/components/landing/PublicGallerySection";
 import { LandingPageStructuredData } from "@/components/seo/LandingPageStructuredData";
+import { getRecentPublicPhotos } from "@/lib/gallery/public-photos";
+import { getLatestShowcaseApps } from "@/lib/landing/showcase-feed";
 
-/**
- * Spike Land Landing Page - Orbit Social Media Command Center
- *
- * Redesigned landing page showcasing the Orbit ecosystem
- * with minimalist micro-animations using Framer Motion.
- */
+export default async function Home() {
+  let showcaseApps: Awaited<ReturnType<typeof getLatestShowcaseApps>> = [];
+  let publicPhotos: Awaited<ReturnType<typeof getRecentPublicPhotos>> = [];
+  try {
+    [showcaseApps, publicPhotos] = await Promise.all([
+      getLatestShowcaseApps(10),
+      getRecentPublicPhotos(100),
+    ]);
+  } catch (e) {
+    console.error("Failed to load landing page data:", e);
+  }
 
-export default function Home() {
   return (
     <main className="min-h-screen bg-zinc-950">
       <LandingPageStructuredData />
-
-      {/* Hero Section - "Your Social Command Center" */}
-      <OrbitHero />
-
-      {/* Platform Connections - Show supported platforms */}
-      <PlatformConnections />
-
-      {/* AI Automation - Relay drafts + Allocator autopilot */}
-      <AIAutomationSection />
-
-      {/* A/B Testing & Analytics - Pulse monitoring */}
-      <ABTestingSection />
-
-      {/* Ecosystem Overview - Bento grid of all features */}
-      <EcosystemOverview />
-
-      {/* Blog Preview - Latest updates */}
+      <LandingHero />
+      <AppShowcaseSection apps={showcaseApps} />
+      <PublicGallerySection photos={publicPhotos} />
+      <PhotoMixDemo />
       <BlogPreviewSection />
-
-      {/* Final CTA - Sign up prompt */}
-      <OrbitCTA />
+      <CreateCTASection />
     </main>
   );
 }

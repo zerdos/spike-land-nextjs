@@ -67,7 +67,7 @@ vi.mock("@/lib/errors/structured-logger", () => ({
 }));
 
 // Hoist mocks that need to be referenced before vi.mock
-const { mockTokenBalanceManager, mockPrisma } = vi.hoisted(() => {
+const { mockWorkspaceCreditManager, mockPrisma } = vi.hoisted(() => {
   type CreateData = {
     name: string;
     userId: string;
@@ -81,10 +81,10 @@ const { mockTokenBalanceManager, mockPrisma } = vi.hoisted(() => {
   };
 
   return {
-    mockTokenBalanceManager: {
-      getBalance: vi.fn().mockResolvedValue({ balance: 100 }),
-      consumeTokens: vi.fn().mockResolvedValue({ success: true }),
-      addTokens: vi.fn().mockResolvedValue({ success: true }),
+    mockWorkspaceCreditManager: {
+      getBalance: vi.fn().mockResolvedValue({ remaining: 100, limit: 100, used: 0 }),
+      consumeCredits: vi.fn().mockResolvedValue({ success: true, remaining: 98 }),
+      refundCredits: vi.fn().mockResolvedValue(true),
     },
     mockPrisma: {
       user: {
@@ -166,11 +166,11 @@ const { mockTokenBalanceManager, mockPrisma } = vi.hoisted(() => {
   };
 });
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: mockTokenBalanceManager,
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: mockWorkspaceCreditManager,
 }));
 
-vi.mock("@/lib/tokens/costs", () => ({
+vi.mock("@/lib/credits/costs", () => ({
   ENHANCEMENT_COSTS: {
     TIER_1K: 1,
     TIER_2K: 2,
@@ -226,8 +226,8 @@ function createMockRequest(
 describe("POST /api/images/batch-upload", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockTokenBalanceManager.getBalance.mockResolvedValue({ balance: 100 });
-    mockTokenBalanceManager.consumeTokens.mockResolvedValue({ success: true });
+    mockWorkspaceCreditManager.getBalance.mockResolvedValue({ remaining: 100, limit: 100, used: 0 });
+    mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({ success: true, remaining: 98 });
     mockPrisma.album.findUnique.mockResolvedValue({
       id: "album-123",
       userId: "user-123",
@@ -293,13 +293,13 @@ describe("POST /api/images/batch-upload", () => {
   });
 
   it("should return 402 if insufficient token balance", async () => {
-    mockTokenBalanceManager.getBalance.mockResolvedValueOnce({ balance: 0 });
+    mockWorkspaceCreditManager.getBalance.mockResolvedValueOnce({ remaining: 0, limit: 100, used: 100 });
 
     const req = createMockRequest([createMockFile()]);
     const res = await POST(req);
     expect(res.status).toBe(402);
     const data = await res.json();
-    expect(data.error).toContain("Insufficient tokens");
+    expect(data.error).toContain("Insufficient credits");
   });
 
   it("should return 400 if no files provided", async () => {
@@ -370,12 +370,11 @@ describe("POST /api/images/batch-upload", () => {
     const req = createMockRequest(files);
     await POST(req);
 
-    expect(mockTokenBalanceManager.consumeTokens).toHaveBeenCalledWith({
+    expect(mockWorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith({
       userId: "user-123",
       amount: 2,
       source: "BATCH_UPLOAD",
       sourceId: "test-request-id",
-      metadata: { albumId: "album-123", fileCount: 2, tier: "TIER_1K" },
     });
   });
 
@@ -460,14 +459,10 @@ describe("POST /api/images/batch-upload", () => {
     const req = createMockRequest(files);
     await POST(req);
 
-    expect(mockTokenBalanceManager.addTokens).toHaveBeenCalledWith({
-      userId: "user-123",
-      amount: 2,
-      type: "REFUND",
-      source: "BATCH_UPLOAD_FAIL",
-      sourceId: "test-request-id",
-      metadata: { reason: "All R2 uploads failed" },
-    });
+    expect(mockWorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
+      "user-123",
+      2,
+    );
   });
 
   it("should accept exactly 20 files", async () => {

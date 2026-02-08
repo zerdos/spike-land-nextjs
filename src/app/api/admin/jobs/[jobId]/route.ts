@@ -14,7 +14,7 @@ import { auth } from "@/auth";
 import { isAdminByUserId } from "@/lib/auth/admin-middleware";
 import { cancelMcpJob } from "@/lib/mcp/generation-service";
 import prisma from "@/lib/prisma";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { tryCatch } from "@/lib/try-catch";
 import type { JobSource, UnifiedJob } from "@/types/admin-jobs";
 import { JobStatus } from "@prisma/client";
@@ -288,17 +288,15 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Refund tokens
-    await TokenBalanceManager.refundTokens(
+    // Refund credits
+    await WorkspaceCreditManager.refundCredits(
       enhancementJob.userId,
       enhancementJob.tokensCost,
-      jobId,
-      "Admin cancelled job",
     );
 
     return NextResponse.json({
       success: true,
-      tokensRefunded: enhancementJob.tokensCost,
+      creditsRefunded: enhancementJob.tokensCost,
       source: "enhancement",
     });
   }

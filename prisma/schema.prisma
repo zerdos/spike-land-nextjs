@@ -5408,3 +5408,15 @@ enum CreatedAppStatus {
   PUBLISHED
   FAILED
 }
+
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  subscribedAt   DateTime  @default(now())
+  unsubscribed   Boolean   @default(false)
+  unsubscribedAt DateTime?
+  source         String    @default("footer")
+
+  @@index([email])
+  @@map("newsletter_subscribers")
+}

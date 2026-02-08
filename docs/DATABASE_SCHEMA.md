@@ -2240,6 +2240,14 @@ erDiagram
   String generatedById FK "nullable"
   DateTime generatedAt
 }
+"newsletter_subscribers" {
+  String id PK
+  String email UK
+  DateTime subscribedAt
+  Boolean unsubscribed
+  DateTime unsubscribedAt "nullable"
+  String source
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
@@ -5282,6 +5290,17 @@ Properties as follows:
 - `outgoingLinks`:
 - `generatedById`:
 - `generatedAt`:
+
+### `newsletter_subscribers`
+
+Properties as follows:
+
+- `id`:
+- `email`:
+- `subscribedAt`:
+- `unsubscribed`:
+- `unsubscribedAt`:
+- `source`:
 
 ### `_ConnectionToConnectionTag`
 

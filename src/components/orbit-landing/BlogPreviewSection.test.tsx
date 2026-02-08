@@ -35,7 +35,7 @@ describe("BlogPreviewSection", () => {
 
     expect(screen.getByText("Latest Updates")).toBeInTheDocument();
     expect(screen.getByText(/Insights from the/)).toBeInTheDocument();
-    expect(screen.getByText("Orbit Blog")).toBeInTheDocument();
+    expect(screen.getByText("Spike Land Blog")).toBeInTheDocument();
   });
 
   it("renders all blog posts", () => {

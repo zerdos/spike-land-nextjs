@@ -1,6 +1,6 @@
 import type { LogContext } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { tryCatch } from "@/lib/try-catch";
 import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
 import { JobStatus } from "@prisma/client";
@@ -116,13 +116,8 @@ export async function handleEnhancementFailure(
     }),
   );
 
-  // Refund tokens if any were consumed
+  // Refund credits if any were consumed
   if (context.tokensCost > 0) {
-    await TokenBalanceManager.refundTokens(
-      context.userId,
-      context.tokensCost,
-      context.jobId,
-      errorMessage,
-    );
+    await WorkspaceCreditManager.refundCredits(context.userId, context.tokensCost);
   }
 }

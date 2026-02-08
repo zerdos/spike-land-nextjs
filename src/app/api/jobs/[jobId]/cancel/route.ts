@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus } from "@prisma/client";
 import type { NextRequest } from "next/server";
@@ -43,29 +43,29 @@ async function cancelJob(
     },
   });
 
-  const refundResult = await TokenBalanceManager.refundTokens(
+  const refundSuccess = await WorkspaceCreditManager.refundCredits(
     session.user.id,
     job.tokensCost,
-    jobId,
-    "Job cancelled by user",
   );
 
-  if (!refundResult.success) {
-    console.error("Failed to refund tokens:", refundResult.error);
+  if (!refundSuccess) {
+    console.error("Failed to refund credits");
     return NextResponse.json(
       {
-        error: "Job cancelled but token refund failed. Please contact support.",
+        error: "Job cancelled but credit refund failed. Please contact support.",
         job: updatedJob,
       },
       { status: 500 },
     );
   }
 
+  const newBalance = await WorkspaceCreditManager.getBalance(session.user.id);
+
   return NextResponse.json({
     success: true,
     job: updatedJob,
-    tokensRefunded: job.tokensCost,
-    newBalance: refundResult.balance,
+    creditsRefunded: job.tokensCost,
+    newBalance: newBalance?.remaining ?? 0,
   });
 }
 

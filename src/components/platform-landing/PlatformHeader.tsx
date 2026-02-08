@@ -23,7 +23,7 @@ import {
   LayoutGrid,
   LogOut,
   Menu,
-  Rocket,
+  Sparkles,
   Settings,
   SplitSquareVertical,
   User,
@@ -81,11 +81,11 @@ export function PlatformHeader() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {/* Orbit - Primary CTA */}
+            {/* Create - Primary CTA */}
             <Button asChild variant="default" size="sm" className="font-semibold">
-              <Link href="/orbit" className="flex items-center gap-1.5">
-                <Rocket className="h-4 w-4" />
-                Orbit
+              <Link href="/create" className="flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4" />
+                Create
               </Link>
             </Button>
 
@@ -166,19 +166,19 @@ export function PlatformHeader() {
                 <SheetTitle>Navigation Menu</SheetTitle>
               </VisuallyHidden>
               <nav className="flex flex-col gap-4 px-4 pb-8">
-                {/* Orbit - Primary CTA */}
+                {/* Create - Primary CTA */}
                 <Button
                   asChild
                   variant="default"
                   className="w-full font-semibold h-12"
                 >
                   <Link
-                    href="/orbit"
+                    href="/create"
                     className="flex items-center justify-center gap-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Rocket className="h-5 w-5" />
-                    Orbit - AI Marketing Team
+                    <Sparkles className="h-5 w-5" />
+                    Create - AI App Builder
                   </Link>
                 </Button>
 

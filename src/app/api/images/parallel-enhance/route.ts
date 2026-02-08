@@ -3,7 +3,7 @@ import { getUserFriendlyError } from "@/lib/errors/error-messages";
 import { generateRequestId, logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
@@ -212,19 +212,19 @@ export async function POST(request: NextRequest) {
 
   requestLogger.info("Calculated total cost", { totalCost, tiers });
 
-  // Check if user has enough tokens for ALL tiers
-  const hasEnough = await TokenBalanceManager.hasEnoughTokens(
+  // Check if user has enough credits for ALL tiers
+  const hasEnough = await WorkspaceCreditManager.hasEnoughCredits(
     session.user.id,
     totalCost,
   );
 
   if (!hasEnough) {
-    requestLogger.warn("Insufficient tokens for parallel enhancement", {
+    requestLogger.warn("Insufficient credits for parallel enhancement", {
       userId: session.user.id,
       required: totalCost,
     });
     const errorMessage = getUserFriendlyError(
-      new Error("Insufficient tokens"),
+      new Error("Insufficient credits"),
       402,
     );
     return NextResponse.json(
@@ -238,72 +238,35 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Use transaction to atomically:
-  // 1. Consume tokens
-  // 2. Create all jobs
+  // Consume credits upfront
+  const consumeResult = await WorkspaceCreditManager.consumeCredits({
+    userId: session.user.id,
+    amount: totalCost,
+    source: "parallel_image_enhancement",
+    sourceId: imageId,
+  });
 
-  const { data: result, error: transactionError } = await tryCatch(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    prisma.$transaction(async (tx: any) => {
-      // Consume tokens atomically
-      const tokenBalance = await tx.userTokenBalance.findUnique({
-        where: { userId: session.user.id },
-      });
+  if (!consumeResult.success) {
+    requestLogger.error(
+      "Failed to consume credits",
+      new Error(consumeResult.error || "Unknown error"),
+    );
+    const errorMessage = getUserFriendlyError(new Error(consumeResult.error || "Failed to consume credits"), 500);
+    return NextResponse.json(
+      {
+        error: errorMessage.message,
+        title: errorMessage.title,
+        suggestion: errorMessage.suggestion,
+      },
+      { status: 500, headers: { "X-Request-ID": requestId } },
+    );
+  }
 
-      if (!tokenBalance) {
-        // Ensure User record exists
-        await tx.user.upsert({
-          where: { id: session.user.id },
-          update: {},
-          create: { id: session.user.id },
-        });
-
-        // Create initial balance
-        await tx.userTokenBalance.create({
-          data: {
-            userId: session.user.id,
-            balance: 0,
-            lastRegeneration: new Date(),
-          },
-        });
-      }
-
-      // Re-check balance within transaction
-      const currentBalance = await tx.userTokenBalance.findUnique({
-        where: { userId: session.user.id },
-      });
-
-      if (!currentBalance || currentBalance.balance < totalCost) {
-        throw new Error(
-          `Insufficient tokens. Required: ${totalCost}, Available: ${currentBalance?.balance ?? 0}`,
-        );
-      }
-
-      // Update balance
-      const updatedBalance = await tx.userTokenBalance.update({
-        where: { userId: session.user.id },
-        data: {
-          balance: {
-            decrement: totalCost,
-          },
-        },
-      });
-
-      // Create transaction record
-      await tx.tokenTransaction.create({
-        data: {
-          userId: session.user.id,
-          amount: -totalCost,
-          type: "SPEND_ENHANCEMENT",
-          source: "parallel_image_enhancement",
-          sourceId: imageId,
-          balanceAfter: updatedBalance.balance,
-          metadata: { tiers, requestId },
-        },
-      });
-
+  // Create all jobs in a transaction
+  const { data: jobs, error: transactionError } = await tryCatch(
+    prisma.$transaction(async (tx) => {
       // Create all jobs
-      const jobs = await Promise.all(
+      const createdJobs = await Promise.all(
         tiers.map(async (tier) => {
           const job = await tx.imageEnhancementJob.create({
             data: {
@@ -319,11 +282,13 @@ export async function POST(request: NextRequest) {
         }),
       );
 
-      return { jobs, newBalance: updatedBalance.balance };
+      return createdJobs;
     }),
   );
 
   if (transactionError) {
+    // Refund credits if job creation failed
+    await WorkspaceCreditManager.refundCredits(session.user.id, totalCost);
     requestLogger.error(
       "Unexpected error in parallel enhance API",
       transactionError,
@@ -340,12 +305,12 @@ export async function POST(request: NextRequest) {
   }
 
   requestLogger.info("Parallel enhancement jobs created", {
-    jobCount: result.jobs.length,
-    jobIds: result.jobs.map((j) => j.id),
+    jobCount: jobs.length,
+    jobIds: jobs.map((j) => j.id),
   });
 
   // Start all enhancement jobs using Next.js after() for background processing
-  for (const job of result.jobs) {
+  for (const job of jobs) {
     const enhancementInput: EnhanceImageInput = {
       jobId: job.id,
       imageId: image.id,
@@ -369,7 +334,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Build response
-  const jobsResponse: JobResponse[] = result.jobs.map((job) => ({
+  const jobsResponse: JobResponse[] = jobs.map((job) => ({
     jobId: job.id,
     tier: job.tier,
     tokenCost: job.tokensCost,
@@ -381,7 +346,7 @@ export async function POST(request: NextRequest) {
       success: true,
       jobs: jobsResponse,
       totalCost,
-      newBalance: result.newBalance,
+      newBalance: consumeResult.remaining,
     },
     { headers: { "X-Request-ID": requestId } },
   );

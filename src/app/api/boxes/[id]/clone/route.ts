@@ -66,43 +66,39 @@ export async function POST(
     return new NextResponse("Cannot clone deleted box", { status: 400 });
   }
 
-  // Lazy import TokenBalanceManager
-  const { TokenBalanceManager } = await import(
-    "@/lib/tokens/balance-manager"
+  // Lazy import WorkspaceCreditManager
+  const { WorkspaceCreditManager } = await import(
+    "@/lib/credits/workspace-credit-manager"
   );
 
   // Cost: Same as new box creation (1 hour of tier price)
   const cost = sourceBox.tier.pricePerHour;
 
   const { data: hasBalance, error: balanceError } = await tryCatch(
-    TokenBalanceManager.hasEnoughTokens(session.user.id, cost),
+    WorkspaceCreditManager.hasEnoughCredits(session.user.id, cost),
   );
 
   if (balanceError) {
-    console.error("Token balance check error:", balanceError);
+    console.error("Credit balance check error:", balanceError);
     return new NextResponse("Internal Error", { status: 500 });
   }
 
   if (!hasBalance) {
-    return new NextResponse("Insufficient Tokens", { status: 402 });
+    return new NextResponse("Insufficient Credits", { status: 402 });
   }
 
-  // Consume tokens
-  const { data: tokenResult, error: tokenError } = await tryCatch(
-    TokenBalanceManager.consumeTokens({
+  // Consume credits
+  const { data: creditResult, error: creditError } = await tryCatch(
+    WorkspaceCreditManager.consumeCredits({
       userId: session.user.id,
       amount: cost,
       source: "box_clone",
       sourceId: sourceBox.id,
-      metadata: {
-        sourceBoxId: sourceBox.id,
-        tierId: sourceBox.tierId,
-      },
     }),
   );
 
-  if (tokenError || !tokenResult?.success) {
-    console.error("Token consumption error:", tokenError);
+  if (creditError || !creditResult?.success) {
+    console.error("Credit consumption error:", creditError);
     return new NextResponse("Failed to process payment", { status: 500 });
   }
 
@@ -122,14 +118,9 @@ export async function POST(
   );
 
   if (createError) {
-    // Refund tokens
+    // Refund credits
     await tryCatch(
-      TokenBalanceManager.refundTokens(
-        session.user.id,
-        cost,
-        sourceBox.id,
-        "Box clone failed",
-      ),
+      WorkspaceCreditManager.refundCredits(session.user.id, cost),
     );
     console.error("Box creation error:", createError);
     return new NextResponse("Failed to create cloned box", { status: 500 });

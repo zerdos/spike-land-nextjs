@@ -8,7 +8,7 @@ const {
   mockRateLimit,
   mockEnhanceImageDirect,
   mockLogger,
-  mockTokenBalanceManager,
+  mockWorkspaceCreditManager,
 } = vi.hoisted(() => {
   return {
     mockPrisma: {
@@ -42,8 +42,10 @@ const {
         error: vi.fn(),
       })),
     },
-    mockTokenBalanceManager: {
-      hasEnoughTokens: vi.fn(),
+    mockWorkspaceCreditManager: {
+      hasEnoughCredits: vi.fn(),
+      consumeCredits: vi.fn(),
+      refundCredits: vi.fn(),
     },
   };
 });
@@ -84,8 +86,8 @@ vi.mock("@/lib/errors/structured-logger", () => ({
   logger: mockLogger,
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: mockTokenBalanceManager,
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: mockWorkspaceCreditManager,
 }));
 
 // Import the route AFTER mocks are set up
@@ -107,7 +109,12 @@ describe("POST /api/images/parallel-enhance", () => {
     // Set default mock return values
     mockAuth.mockResolvedValue({ user: { id: "user-123" } });
     mockRateLimit.mockResolvedValue({ isLimited: false });
-    mockTokenBalanceManager.hasEnoughTokens.mockResolvedValue(true);
+    mockWorkspaceCreditManager.hasEnoughCredits.mockResolvedValue(true);
+    mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+      success: true,
+      remaining: 90,
+    });
+    mockWorkspaceCreditManager.refundCredits.mockResolvedValue(true);
     mockEnhanceImageDirect.mockResolvedValue(undefined);
   });
 
@@ -362,12 +369,12 @@ describe("POST /api/images/parallel-enhance", () => {
   });
 
   // ========================================
-  // 5. Token Management Tests (4 tests)
+  // 5. Credit Management Tests (4 tests)
   // ========================================
 
-  describe("Token Management", () => {
-    it("should return 402 when insufficient tokens", async () => {
-      mockTokenBalanceManager.hasEnoughTokens.mockResolvedValueOnce(false);
+  describe("Credit Management", () => {
+    it("should return 402 when insufficient credits", async () => {
+      mockWorkspaceCreditManager.hasEnoughCredits.mockResolvedValueOnce(false);
 
       mockPrisma.enhancedImage.findUnique.mockResolvedValue({
         id: "img-1",
@@ -468,7 +475,7 @@ describe("POST /api/images/parallel-enhance", () => {
       expect(data.totalCost).toBe(17); // 2 + 5 + 10
     });
 
-    it("should deduct tokens correctly in transaction", async () => {
+    it("should verify credits before processing", async () => {
       mockPrisma.enhancedImage.findUnique.mockResolvedValue({
         id: "img-1",
         userId: "user-123",
@@ -477,16 +484,6 @@ describe("POST /api/images/parallel-enhance", () => {
 
       mockPrisma.$transaction.mockImplementation(async (callback) => {
         return callback(mockPrisma);
-      });
-
-      mockPrisma.userTokenBalance.findUnique.mockResolvedValue({
-        userId: "user-123",
-        balance: 100,
-      });
-
-      mockPrisma.userTokenBalance.update.mockResolvedValue({
-        userId: "user-123",
-        balance: 90,
       });
 
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
@@ -501,13 +498,18 @@ describe("POST /api/images/parallel-enhance", () => {
       });
       await POST(req);
 
-      expect(mockPrisma.userTokenBalance.update).toHaveBeenCalledWith({
-        where: { userId: "user-123" },
-        data: {
-          balance: {
-            decrement: 10,
-          },
-        },
+      // Verify credit check happened with correct amount
+      expect(mockWorkspaceCreditManager.hasEnoughCredits).toHaveBeenCalledWith(
+        "user-123",
+        10, // TIER_4K cost
+      );
+
+      // Verify credits were consumed
+      expect(mockWorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith({
+        userId: "user-123",
+        amount: 10,
+        source: "parallel_image_enhancement",
+        sourceId: "img-1",
       });
     });
   });
@@ -551,28 +553,18 @@ describe("POST /api/images/parallel-enhance", () => {
         tiers: ["TIER_2K"],
       });
 
-      // This should fail with insufficient tokens since balance is 0
-      const res = await POST(req);
+      await POST(req);
 
-      expect(mockPrisma.user.upsert).toHaveBeenCalledWith({
-        where: { id: "user-123" },
-        update: {},
-        create: { id: "user-123" },
+      // Verify WorkspaceCreditManager.consumeCredits was called with correct parameters
+      expect(mockWorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith({
+        userId: "user-123",
+        amount: 5, // TIER_2K cost
+        source: "parallel_image_enhancement",
+        sourceId: "img-1",
       });
-
-      expect(mockPrisma.userTokenBalance.create).toHaveBeenCalledWith({
-        data: {
-          userId: "user-123",
-          balance: 0,
-          lastRegeneration: expect.any(Date),
-        },
-      });
-
-      // Should fail due to insufficient balance
-      expect(res.status).toBe(500); // Transaction throws error
     });
 
-    it("should create token transaction record", async () => {
+    it("should consume credits for multiple tiers", async () => {
       mockPrisma.enhancedImage.findUnique.mockResolvedValue({
         id: "img-1",
         userId: "user-123",
@@ -583,26 +575,6 @@ describe("POST /api/images/parallel-enhance", () => {
         return callback(mockPrisma);
       });
 
-      mockPrisma.userTokenBalance.findUnique.mockResolvedValue({
-        userId: "user-123",
-        balance: 100,
-      });
-
-      mockPrisma.userTokenBalance.update.mockResolvedValue({
-        userId: "user-123",
-        balance: 95,
-      });
-
-      mockPrisma.tokenTransaction.create.mockResolvedValue({
-        id: "txn-1",
-        userId: "user-123",
-        amount: -5,
-        type: "SPEND_ENHANCEMENT",
-        source: "parallel_image_enhancement",
-        sourceId: "img-1",
-        balanceAfter: 95,
-      });
-
       mockPrisma.imageEnhancementJob.create.mockResolvedValue({
         id: "job-1",
         tier: "TIER_2K",
@@ -611,23 +583,16 @@ describe("POST /api/images/parallel-enhance", () => {
 
       const req = createMockRequest({
         imageId: "img-1",
-        tiers: ["TIER_2K"],
+        tiers: ["TIER_2K", "TIER_4K"], // 5 + 10 = 15 total cost
       });
       await POST(req);
 
-      expect(mockPrisma.tokenTransaction.create).toHaveBeenCalledWith({
-        data: {
-          userId: "user-123",
-          amount: -5,
-          type: "SPEND_ENHANCEMENT",
-          source: "parallel_image_enhancement",
-          sourceId: "img-1",
-          balanceAfter: 95,
-          metadata: {
-            tiers: ["TIER_2K"],
-            requestId: "test-request-id",
-          },
-        },
+      // Verify consumeCredits was called with total cost for all tiers
+      expect(mockWorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith({
+        userId: "user-123",
+        amount: 15, // TIER_2K (5) + TIER_4K (10)
+        source: "parallel_image_enhancement",
+        sourceId: "img-1",
       });
     });
 
@@ -707,24 +672,22 @@ describe("POST /api/images/parallel-enhance", () => {
       const res = await POST(req);
       const data = await res.json();
 
-      expect(data.newBalance).toBe(95);
+      expect(data.newBalance).toBe(90);
     });
 
-    it("should handle transaction failure when insufficient balance in transaction", async () => {
+    it("should handle consumeCredits failure", async () => {
       mockPrisma.enhancedImage.findUnique.mockResolvedValue({
         id: "img-1",
         userId: "user-123",
         originalR2Key: "originals/img-1.jpg",
       });
 
-      mockPrisma.$transaction.mockImplementation(async (callback) => {
-        // Mock the transaction to throw error due to insufficient balance
-        mockPrisma.userTokenBalance.findUnique.mockResolvedValue({
-          userId: "user-123",
-          balance: 3, // Less than required 5
-        });
-
-        return callback(mockPrisma);
+      // Mock hasEnoughCredits to return true but consumeCredits to fail
+      mockWorkspaceCreditManager.hasEnoughCredits.mockResolvedValueOnce(true);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValueOnce({
+        success: false,
+        remaining: 0,
+        error: "Failed to consume credits",
       });
 
       const req = createMockRequest({
@@ -938,7 +901,7 @@ describe("POST /api/images/parallel-enhance", () => {
         success: true,
         jobs: expect.any(Array),
         totalCost: 5,
-        newBalance: 95,
+        newBalance: 90,
       });
     });
 

@@ -12,7 +12,7 @@ describe("LandingPageStructuredData", () => {
     if (script) {
       const json = JSON.parse(script.innerHTML);
       expect(json["@context"]).toBe("https://schema.org");
-      expect(json["@graph"]).toHaveLength(5);
+      expect(json["@graph"]).toHaveLength(4);
 
       const organization = json["@graph"].find((item: any) => item["@type"] === "Organization");
       expect(organization).toBeDefined();
@@ -24,8 +24,13 @@ describe("LandingPageStructuredData", () => {
       expect(localBusiness).toBeDefined();
       expect(localBusiness.address.addressCountry).toBe("GB");
 
+      const webApp = json["@graph"].find((item: any) => item["@type"] === "WebApplication");
+      expect(webApp).toBeDefined();
+      expect(webApp.name).toBe("Spike Land App Builder");
+
       const services = json["@graph"].filter((item: any) => item["@type"] === "Service");
-      expect(services).toHaveLength(3);
+      expect(services).toHaveLength(1);
+      expect(services[0].name).toBe("Pixel - AI Image Enhancement");
     }
   });
 });

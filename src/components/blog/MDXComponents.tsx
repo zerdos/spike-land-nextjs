@@ -265,6 +265,54 @@ function CustomImage({ src, alt }: { src?: string; alt?: string; }) {
 }
 
 /**
+ * LiveDemo component for embedding live spike.land demos in blog posts.
+ * Renders a styled iframe with a title bar and "Open in new tab" link.
+ *
+ * @param src - The full URL to the live demo
+ * @param title - Optional title to display above the iframe
+ * @param height - Optional height for the iframe (default "600px")
+ *
+ * @example
+ * ```mdx
+ * <LiveDemo src="https://spike.land/create/my-app" title="spike.land — Live Demo" />
+ * ```
+ */
+function LiveDemo({
+  src,
+  title = "Live Demo",
+  height = "600px",
+}: {
+  src: string;
+  title?: string;
+  height?: string;
+}) {
+  return (
+    <div className="my-8 rounded-xl border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-6 py-3 bg-muted/50 border-b border-border">
+        <h4 className="font-heading text-lg font-semibold text-foreground">
+          {title}
+        </h4>
+        <a
+          href={src}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-primary hover:underline transition-colors"
+        >
+          Open in new tab
+        </a>
+      </div>
+      <iframe
+        src={src}
+        title={title}
+        style={{ height }}
+        className="w-full border-0"
+        allow="clipboard-write"
+      />
+    </div>
+  );
+}
+
+/**
  * PDFViewer component for embedding PDF documents with an iframe.
  * Browsers handle PDF rendering natively; includes a download link as fallback.
  *
@@ -490,6 +538,7 @@ export const mdxComponents: MDXComponents = {
   AudioPlayer,
   YouTubeEmbed,
   PDFViewer,
+  LiveDemo,
 };
 
 /**
