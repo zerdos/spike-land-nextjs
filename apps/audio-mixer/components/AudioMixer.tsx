@@ -7,21 +7,35 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   Check,
+  ChevronDown,
   Circle,
   Download,
+  FolderPlus,
   HelpCircle,
   Loader2,
+  Music,
   Pause,
   Play,
   Plus,
   SkipBack,
   SkipForward,
   Square,
+  Trash2,
   Volume2,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -30,6 +44,7 @@ import {
   useAudioRecording,
   useAudioStorage,
   useAudioTracks,
+  useProjectManager,
   useProjectPersistence,
   useTimeline,
 } from "../hooks";
@@ -47,6 +62,7 @@ export function AudioMixer() {
   const [isExporting, setIsExporting] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [shortcutToast, setShortcutToast] = useState<string | null>(null);
+  const [soloPreviewTrackId, setSoloPreviewTrackId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recordingStartTimeRef = useRef<number>(0);
@@ -66,6 +82,18 @@ export function AudioMixer() {
     trackManager.tracks,
     masterVolume,
   );
+
+  // Project manager
+  const projectManager = useProjectManager({
+    audioStorage,
+    persistenceState,
+    persistenceActions,
+    trackManager,
+    audioContext,
+    timeline,
+    setMasterVolume,
+    setIsPlaying,
+  });
 
   // Show toast and auto-hide
   const showToast = useCallback((message: string) => {
@@ -191,7 +219,7 @@ export function AudioMixer() {
           if (opfsSupported) {
             try {
               const arrayBuffer = await file.arrayBuffer();
-              opfsPath = `audio-mixer/tracks/${Date.now()}-${file.name}`;
+              opfsPath = `audio-mixer/projects/${persistenceState.projectId}/tracks/${Date.now()}-${file.name}`;
               await audioStorage.saveTrackToPath(
                 opfsPath,
                 new Uint8Array(arrayBuffer),
@@ -237,7 +265,7 @@ export function AudioMixer() {
       if (opfsSupported) {
         try {
           const arrayBuffer = await blob.arrayBuffer();
-          opfsPath = `audio-mixer/recordings/${Date.now()}-${
+          opfsPath = `audio-mixer/projects/${persistenceState.projectId}/recordings/${Date.now()}-${
             recordingName.replace(/\s+/g, "-")
           }.webm`;
           await audioStorage.saveTrackToPath(
@@ -263,6 +291,7 @@ export function AudioMixer() {
 
   // Play all tracks
   const handlePlayAll = useCallback(async () => {
+    setSoloPreviewTrackId(null);
     const { context, masterGain } = await audioContext.initialize();
     trackManager.playAllTracks(
       context,
@@ -379,6 +408,39 @@ export function AudioMixer() {
       });
     },
     [audioContext, trackManager.tracks],
+  );
+
+  // Solo preview — click a track block to play only that track
+  const handleSoloPreview = useCallback(
+    async (trackId: string) => {
+      const track = trackManager.tracks.find((t) => t.id === trackId);
+      if (!track?.buffer) return;
+
+      // Stop any current playback
+      if (isPlaying) {
+        trackManager.stopAllTracks();
+        timeline.stopPlayheadAnimation();
+      }
+
+      const { context, masterGain } = await audioContext.initialize();
+
+      trackManager.playSoloTrack(
+        trackId,
+        context,
+        masterGain,
+        timeline.state.playheadTime,
+        () => {
+          setIsPlaying(false);
+          setSoloPreviewTrackId(null);
+          timeline.stopPlayheadAnimation();
+        },
+      );
+
+      setIsPlaying(true);
+      setSoloPreviewTrackId(trackId);
+      timeline.startPlayheadAnimation(timeline.state.playheadTime, context);
+    },
+    [trackManager, isPlaying, audioContext, timeline],
   );
 
   // Export mix
@@ -692,7 +754,129 @@ export function AudioMixer() {
         {/* Top Bar - 36px */}
         <div className="h-9 flex-shrink-0 flex items-center justify-between px-4 bg-black/40 border-b border-white/5">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-bold text-white/80">Audio Mixer</span>
+            {/* Project Dropdown */}
+            <DropdownMenu onOpenChange={(open) => {
+              if (open) projectManager.loadProjectList();
+            }}>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1.5 text-sm font-bold text-white/80 hover:text-white transition-colors">
+                  {projectManager.projects.find((p) => p.id === projectManager.currentProjectId)?.name
+                    ?? "Audio Mixer"}
+                  <ChevronDown className="w-3 h-3 opacity-60" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-64">
+                {/* Active project */}
+                {projectManager.projects
+                  .filter((p) => p.id === projectManager.currentProjectId)
+                  .map((project) => (
+                    <DropdownMenuItem
+                      key={project.id}
+                      className="bg-primary/10 font-medium"
+                      disabled
+                    >
+                      <Music className="w-4 h-4 mr-2 text-primary" />
+                      {project.name}
+                      <Badge variant="outline" className="ml-auto text-[9px] h-4 px-1.5">
+                        Active
+                      </Badge>
+                    </DropdownMenuItem>
+                  ))}
+
+                {/* Other projects */}
+                {projectManager.projects
+                  .filter((p) => p.id !== projectManager.currentProjectId)
+                  .map((project) => (
+                    <DropdownMenuSub key={project.id}>
+                      <DropdownMenuSubTrigger className="flex items-center">
+                        <Music className="w-4 h-4 mr-2 opacity-60" />
+                        <span className="flex-1 truncate">{project.name}</span>
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent className="w-56">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            if (recording.isRecording) {
+                              showToast("Stop recording first");
+                              return;
+                            }
+                            projectManager.switchProject(project.id);
+                          }}
+                        >
+                          <Play className="w-4 h-4 mr-2" />
+                          Switch to Project
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {/* Track list for cross-project drag */}
+                        {project.tracks.length > 0 && (
+                          <>
+                            <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                              Tracks (drag to timeline)
+                            </div>
+                            {project.tracks.map((track) => (
+                              <DropdownMenuItem
+                                key={track.id}
+                                className="text-xs cursor-grab"
+                                draggable
+                                onDragStart={(e) => {
+                                  e.dataTransfer.setData(
+                                    "application/x-audio-track",
+                                    JSON.stringify({
+                                      sourceProjectId: project.id,
+                                      trackId: track.id,
+                                      trackName: track.name,
+                                    }),
+                                  );
+                                  e.dataTransfer.effectAllowed = "copy";
+                                }}
+                              >
+                                <Music className="w-3 h-3 mr-2 opacity-40" />
+                                <span className="truncate">{track.name}</span>
+                                <span className="ml-auto text-[10px] text-muted-foreground font-mono">
+                                  {Math.floor(track.duration / 60)}:{String(
+                                    Math.floor(track.duration % 60),
+                                  ).padStart(2, "0")}
+                                </span>
+                              </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
+                        <DropdownMenuItem
+                          onClick={() => projectManager.deleteProject(project.id)}
+                          className="text-red-400 focus:text-red-400"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Project
+                        </DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  ))}
+
+                {projectManager.projects.length > 0 && <DropdownMenuSeparator />}
+
+                {/* New Project */}
+                <DropdownMenuItem
+                  onClick={async () => {
+                    if (recording.isRecording) {
+                      showToast("Stop recording first");
+                      return;
+                    }
+                    try {
+                      const newId = await projectManager.createProject(
+                        `Project ${projectManager.projects.length + 1}`,
+                      );
+                      await projectManager.switchProject(newId);
+                      showToast("New project created");
+                    } catch {
+                      showToast("Failed to create project");
+                    }
+                  }}
+                >
+                  <FolderPlus className="w-4 h-4 mr-2" />
+                  New Project
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {/* Save Status */}
             {persistenceState.isSaving && (
               <Badge
@@ -850,6 +1034,16 @@ export function AudioMixer() {
               .padStart(1, "0")}
           </div>
 
+          {/* Solo Preview Indicator */}
+          {soloPreviewTrackId && (
+            <Badge
+              variant="outline"
+              className="h-5 px-2 text-[10px] glass-1 border-yellow-400/30 text-yellow-400"
+            >
+              Solo: {trackManager.tracks.find((t) => t.id === soloPreviewTrackId)?.name ?? "Track"}
+            </Badge>
+          )}
+
           <div className="flex-1" />
 
           {/* Import Button */}
@@ -944,6 +1138,8 @@ export function AudioMixer() {
             onTrimChange={trackManager.setTrim}
             onRemoveTrack={trackManager.removeTrack}
             onScrubAudio={handleScrubAudio}
+            onSoloPreview={handleSoloPreview}
+            onCrossProjectDrop={projectManager.copyTrackToCurrentProject}
             isRecording={recording.isRecording}
             recordingDuration={recording.duration}
             recordingStartPosition={0}

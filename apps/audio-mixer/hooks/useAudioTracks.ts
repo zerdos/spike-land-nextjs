@@ -505,6 +505,26 @@ export function useAudioTracks() {
     [tracks, playTrack],
   );
 
+  const playSoloTrack = useCallback(
+    (
+      id: string,
+      context: AudioContext,
+      masterGain: GainNode,
+      startFromTime: number = 0,
+      onComplete?: () => void,
+    ) => {
+      stopAllTracks();
+      onAllEndedRef.current = onComplete ?? null;
+      playTrack(id, context, masterGain, startFromTime);
+      // If no sources were started (e.g. track already ended), fire completion immediately
+      if (sourceRefs.current.size === 0 && onComplete) {
+        onComplete();
+        onAllEndedRef.current = null;
+      }
+    },
+    [stopAllTracks, playTrack],
+  );
+
   const clearTracks = useCallback(() => {
     stopAllTracks();
     sourceRefs.current.clear();
@@ -527,6 +547,7 @@ export function useAudioTracks() {
     reorderTracks,
     restoreTracks,
     playTrack,
+    playSoloTrack,
     stopTrack,
     playAllTracks,
     stopAllTracks,

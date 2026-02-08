@@ -159,15 +159,12 @@ export function PlatformHeader() {
               </Button>
             </SheetTrigger>
             <SheetContent
-              side="bottom"
-              className="rounded-t-[2rem] border-t border-primary/20 bg-background/95 backdrop-blur-xl h-[60vh] z-[60] overflow-y-auto"
+              side="top"
+              className="border-b border-primary/20 bg-background/95 backdrop-blur-xl h-[100dvh] z-[60] overflow-y-auto"
             >
               <VisuallyHidden>
                 <SheetTitle>Navigation Menu</SheetTitle>
               </VisuallyHidden>
-              <div className="flex justify-center w-full pt-2 pb-6">
-                <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20" />
-              </div>
               <nav className="flex flex-col gap-4 px-4 pb-8">
                 {/* Orbit - Primary CTA */}
                 <Button
