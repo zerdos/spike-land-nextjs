@@ -300,7 +300,7 @@ yarn dev              # Watch mode
 ```bash
 # Code Editor Frontend (packages/code)
 cd packages/code && yarn dev          # Start Vite dev server
-cd packages/code && yarn test:run     # Run tests
+cd packages/code && yarn test          # Run tests
 
 # Backend Worker (packages/testing.spike.land)
 cd packages/testing.spike.land && yarn dev      # Start worker locally
@@ -314,7 +314,7 @@ cd packages/js.spike.land && yarn dev           # Start worker locally
 
 **Web App:**
 
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS 4 + shadcn/ui
 - **Testing**: Vitest + Playwright + Cucumber
@@ -336,7 +336,6 @@ spike-land-nextjs/
 │   │   │   ├── components/   # Editor components
 │   │   │   ├── lib/          # Utilities and AI handlers
 │   │   │   └── workers/      # Web Workers (esbuild, ata)
-│   │   └── src/workflows/    # AI workflow tools
 │   │
 │   ├── js.spike.land/        # Cloudflare Worker transpiler
 │   │   └── src/              # esbuild-based transpilation

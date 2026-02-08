@@ -7,7 +7,7 @@ web and mobile applications.
 
 This package provides cross-platform code sharing between:
 
-- **Web App** (Next.js 15)
+- **Web App** (Next.js 16)
 - **Mobile App** (Expo/React Native)
 
 By extracting common code into this shared package, we ensure type safety and

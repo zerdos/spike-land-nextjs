@@ -5,7 +5,7 @@ Prisma ORM with PostgreSQL.
 
 ## Overview
 
-- **ORM**: Prisma 7.2.x
+- **ORM**: Prisma 7.3.x
 - **Database**: PostgreSQL 14+ (with connection pooling via @prisma/adapter-pg)
 - **Schema Location**: `/prisma/schema.prisma`
 - **Client Location**: `@prisma/client` (standard location)
