@@ -12,6 +12,19 @@ vi.mock("@/services/ServiceWorkerManager", () => ({
   initializeApp: vi.fn().mockResolvedValue(undefined),
 }));
 
+// Mock both relative and absolute paths to ensure the mock is applied
+const appLoaderMock = {
+  loadApp: vi.fn().mockResolvedValue({
+    codeSpace: "test-space",
+    cSess: {},
+    AppComponent: () => <div>App Component</div>,
+  }),
+  initializeSessionSync: vi.fn().mockResolvedValue(() => {}),
+};
+
+vi.mock("../app-loader", () => appLoaderMock);
+vi.mock("@/app-loader", () => appLoaderMock);
+
 vi.mock("@/hooks/use-code-space", () => ({
   getCodeSpace: vi.fn().mockReturnValue("test-space"),
 }));
