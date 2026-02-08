@@ -1,6 +1,6 @@
 "use client";
 
-import { PurchaseModal } from "@/components/tokens";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -13,10 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/components/ui/link";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import type { EnhancementTier } from "@prisma/client";
-import { AlertTriangle, Coins, Loader2, Sparkles } from "lucide-react";
+import { AlertTriangle, Loader2, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -25,7 +26,6 @@ interface EnhancementSettingsProps {
   currentBalance: number;
   isProcessing: boolean;
   completedVersions: Array<{ tier: EnhancementTier; url: string; }>;
-  onBalanceRefresh?: () => void;
   asCard?: boolean;
   // New props for dialog mode
   imageUrl?: string;
@@ -68,7 +68,6 @@ export function EnhancementSettings({
   currentBalance,
   isProcessing,
   completedVersions,
-  onBalanceRefresh,
   asCard = true,
   imageUrl,
   imageName,
@@ -136,10 +135,10 @@ export function EnhancementSettings({
       {asCard && !trigger && (
         <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
           <div className="flex items-center gap-2">
-            <Coins className="h-5 w-5 text-yellow-500" />
+            <Sparkles className="h-5 w-5 text-primary" />
             <span className="text-sm font-medium">Your Balance</span>
           </div>
-          <span className="text-lg font-bold">{currentBalance} tokens</span>
+          <span className="text-lg font-bold">{currentBalance} credits</span>
         </div>
       )}
 
@@ -150,22 +149,19 @@ export function EnhancementSettings({
             <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-medium text-destructive">
-                Insufficient Tokens
+                Insufficient Credits
               </p>
               <p className="text-sm text-muted-foreground">
-                You need {tierCost} tokens but only have {currentBalance}
+                You need {tierCost} credits but only have {currentBalance}
               </p>
             </div>
           </div>
-          <PurchaseModal
-            trigger={
-              <Button size="sm" variant="destructive" className="w-full mt-2">
-                <Coins className="mr-2 h-4 w-4" />
-                Get Tokens
-              </Button>
-            }
-            onPurchaseComplete={onBalanceRefresh}
-          />
+          <Button asChild size="sm" variant="destructive" className="w-full mt-2">
+            <Link href="/pricing">
+              <Sparkles className="mr-2 h-4 w-4" />
+              Upgrade Plan
+            </Link>
+          </Button>
         </div>
       )}
 
@@ -227,7 +223,7 @@ export function EnhancementSettings({
       {versionExists && (
         <p className="text-sm text-muted-foreground">
           Note: A {TIER_DISPLAY_INFO[selectedTier].name}{" "}
-          version already exists. Creating another will use additional tokens.
+          version already exists. Creating another will use additional credits.
         </p>
       )}
 
@@ -254,7 +250,7 @@ export function EnhancementSettings({
               : (
                 <>
                   <Sparkles className="mr-2 h-4 w-4" />
-                  Start Enhancement ({TIER_DISPLAY_INFO[selectedTier].cost} tokens)
+                  Start Enhancement ({TIER_DISPLAY_INFO[selectedTier].cost} credits)
                 </>
               )}
           </Button>

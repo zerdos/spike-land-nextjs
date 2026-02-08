@@ -1,6 +1,5 @@
 "use client";
 
-import { VoucherInput } from "@/components/tokens/VoucherInput";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,9 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { useTokenBalance } from "@/hooks/useTokenBalance";
-import { ENHANCEMENT_COSTS, TOKEN_PACKAGES } from "@/lib/stripe/client";
+import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
+import { TOKEN_PACKAGES } from "@/lib/stripe/client";
 import type { TokenPackageId } from "@/lib/stripe/client";
 import { cn } from "@/lib/utils";
 import { Check, Clock, Coins, RefreshCw, Sparkles, TrendingUp, Zap } from "lucide-react";
@@ -55,13 +56,14 @@ function TokensPageContent() {
   const [loading, setLoading] = useState<string | null>(null);
 
   const {
-    balance,
+    remaining: balance,
     isLoading: balanceLoading,
-    stats,
+    limit,
+    used,
+    usagePercent,
     estimatedEnhancements,
-    timeUntilNextRegeneration,
     refetch,
-  } = useTokenBalance({ autoRefreshOnFocus: true });
+  } = useWorkspaceCredits({ autoRefreshOnFocus: true });
 
   // Show success toast when returning from successful payment
   useEffect(() => {
@@ -70,7 +72,7 @@ function TokensPageContent() {
 
     if (purchaseSuccess === "success") {
       toast.success("Payment successful!", {
-        description: "Your tokens have been added to your account.",
+        description: "Your credits have been added to your account.",
       });
       // Clean up URL without causing a page reload
       window.history.replaceState({}, "", "/tokens");
@@ -78,7 +80,7 @@ function TokensPageContent() {
 
     if (subscriptionSuccess === "success") {
       toast.success("Subscription activated!", {
-        description: "Your subscription is now active. Tokens have been credited.",
+        description: "Your subscription is now active. Credits have been active.",
       });
       // Clean up URL without causing a page reload
       window.history.replaceState({}, "", "/tokens");
@@ -131,11 +133,11 @@ function TokensPageContent() {
       {/* Header */}
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <Coins className="h-8 w-8 text-yellow-500" />
-          <h1 className="text-3xl font-bold">Token Management</h1>
+          <Sparkles className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl font-bold">AI Credits</h1>
         </div>
         <p className="text-muted-foreground max-w-xl mx-auto">
-          View your token balance, purchase more tokens, or redeem voucher codes.
+          View your AI credit balance, usage, and monthly limits.
         </p>
       </div>
 
@@ -145,11 +147,11 @@ function TokensPageContent() {
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Coins className="h-5 w-5 text-yellow-500" />
-              Your Token Balance
+              <Sparkles className="h-5 w-5 text-primary" />
+              Your AI Credits
             </CardTitle>
             <CardDescription>
-              Tokens are used to enhance your images with AI
+              Credits are used for AI-powered image enhancements
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -160,13 +162,7 @@ function TokensPageContent() {
                     ? <RefreshCw className="h-10 w-10 animate-spin" />
                     : balance}
                 </div>
-                <p className="text-muted-foreground mt-1">tokens available</p>
-                {timeUntilNextRegeneration && (
-                  <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    Next free token: {timeUntilNextRegeneration}
-                  </p>
-                )}
+                <p className="text-muted-foreground mt-1">credits available</p>
               </div>
               <Button variant="outline" size="sm" onClick={() => refetch()}>
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -216,43 +212,25 @@ function TokensPageContent() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <TrendingUp className="h-4 w-4" />
-              Token Stats
+              Monthly Usage
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Spent</p>
-              <p className="text-xl font-semibold">
-                {stats?.totalSpent ?? 0} tokens
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Usage</span>
+                <span className="font-medium">{used} / {limit} credits</span>
+              </div>
+              <Progress value={usagePercent} className="h-2" />
+              <p className="text-xs text-muted-foreground text-center">
+                {usagePercent}% of monthly limit used
               </p>
             </div>
+            <Separator />
             <div>
-              <p className="text-sm text-muted-foreground">Total Earned</p>
-              <p className="text-xl font-semibold">
-                {stats?.totalEarned ?? 0} tokens
-              </p>
+              <p className="text-xs text-muted-foreground">Monthly Limit</p>
+              <p className="text-lg font-semibold">{limit} credits</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Transactions</p>
-              <p className="text-xl font-semibold">
-                {stats?.transactionCount ?? 0}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Voucher Redemption Section */}
-      <div className="max-w-md mx-auto mb-12">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Redeem Voucher</CardTitle>
-            <CardDescription>
-              Have a voucher code? Enter it below to add tokens.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <VoucherInput onRedeemed={() => refetch()} />
           </CardContent>
         </Card>
       </div>
@@ -260,7 +238,7 @@ function TokensPageContent() {
       {/* Purchase Section */}
       <div className="mb-12">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold mb-2">Purchase Tokens</h2>
+          <h2 className="text-2xl font-bold mb-2">Purchase Credits</h2>
           {(Object.entries(TOKEN_PACKAGES) as [
             TokenPackageId,
             typeof TOKEN_PACKAGES[TokenPackageId],
@@ -322,7 +300,7 @@ function TokensPageContent() {
                         £{pkg.price.toFixed(2)}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        £{(pkg.price / pkg.tokens).toFixed(3)} per token
+                        £{(pkg.price / pkg.tokens).toFixed(3)} per credit
                       </div>
                     </div>
 
@@ -375,7 +353,7 @@ function TokensPageContent() {
                         : (
                           <>
                             <Zap className="h-4 w-4 mr-1.5" />
-                            Buy Now
+                            Upgrade Now
                           </>
                         )}
                     </Button>
@@ -393,7 +371,7 @@ function TokensPageContent() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Clock className="h-5 w-5 text-primary" />
-              Token Costs per Enhancement
+              AI Credit Costs per Enhancement
             </CardTitle>
           </CardHeader>
           <CardContent>

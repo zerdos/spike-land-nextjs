@@ -12,7 +12,7 @@ import {
   type JobStatus,
   TIER_INFO,
 } from "@/types/enhancement";
-import { AlertTriangle, Coins, Loader2, Sparkles } from "lucide-react";
+import { AlertTriangle, Loader2, Sparkles } from "lucide-react";
 import { useCallback, useState } from "react";
 
 /**
@@ -21,7 +21,7 @@ import { useCallback, useState } from "react";
 export interface MultiTierEnhancementProps {
   /** ID of the image to enhance */
   imageId: string;
-  /** User's current token balance */
+  /** User's current credit balance */
   userBalance: number;
   /** Callback fired when enhancement starts */
   onEnhancementStart?: (tiers: EnhancementTier[]) => void;
@@ -68,7 +68,7 @@ export function MultiTierEnhancement({
   const [isProcessing, setIsProcessing] = useState(false);
 
   const totalCost = calculateTotalCost(Array.from(selectedTiers));
-  const hasEnoughTokens = canAffordTiers(
+  const hasEnoughCredits = canAffordTiers(
     Array.from(selectedTiers),
     userBalance,
   );
@@ -199,7 +199,7 @@ export function MultiTierEnhancement({
    * Start the parallel enhancement process
    */
   const handleEnhance = useCallback(async () => {
-    if (!hasSelectedTiers || !hasEnoughTokens || isProcessing || disabled) {
+    if (!hasSelectedTiers || !hasEnoughCredits || isProcessing || disabled) {
       return;
     }
 
@@ -259,7 +259,7 @@ export function MultiTierEnhancement({
     }
   }, [
     hasSelectedTiers,
-    hasEnoughTokens,
+    hasEnoughCredits,
     isProcessing,
     disabled,
     selectedTiers,
@@ -328,7 +328,7 @@ export function MultiTierEnhancement({
                   </Label>
                 </div>
                 <span className="text-sm font-medium whitespace-nowrap">
-                  {info.cost} tokens
+                  {info.cost} credits
                 </span>
               </div>
             );
@@ -339,33 +339,33 @@ export function MultiTierEnhancement({
         <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Total cost:</span>
-            <span className="font-semibold">{totalCost} tokens</span>
+            <span className="font-semibold">{totalCost} credits</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="flex items-center gap-1.5 text-muted-foreground">
-              <Coins className="h-4 w-4 text-yellow-500" />
+              <Sparkles className="h-4 w-4 text-primary" />
               Your balance:
             </span>
             <span
               className={cn(
                 "font-semibold",
-                !hasEnoughTokens && hasSelectedTiers && "text-destructive",
+                !hasEnoughCredits && hasSelectedTiers && "text-destructive",
               )}
             >
-              {userBalance} tokens
+              {userBalance} credits
             </span>
           </div>
         </div>
 
         {/* Insufficient Balance Warning */}
-        {hasSelectedTiers && !hasEnoughTokens && (
+        {hasSelectedTiers && !hasEnoughCredits && (
           <div
             className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20"
             role="alert"
           >
             <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
             <p className="text-sm text-destructive">
-              Insufficient tokens. You need {totalCost} tokens but only have {userBalance}.
+              Insufficient credits. You need {totalCost} credits but only have {userBalance}.
             </p>
           </div>
         )}
@@ -374,7 +374,7 @@ export function MultiTierEnhancement({
         <Button
           onClick={handleEnhance}
           disabled={disabled || isProcessing || !hasSelectedTiers ||
-            !hasEnoughTokens}
+            !hasEnoughCredits}
           className={cn(
             "w-full transition-all",
             isProcessing && "animate-pulse-cyan",
@@ -392,7 +392,7 @@ export function MultiTierEnhancement({
               <>
                 <Sparkles className="mr-2 h-4 w-4" />
                 Enhance Selected Tiers
-                {hasSelectedTiers && ` (${totalCost} tokens)`}
+                {hasSelectedTiers && ` (${totalCost} credits)`}
               </>
             )}
         </Button>

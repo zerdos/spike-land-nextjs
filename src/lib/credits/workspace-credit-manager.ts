@@ -8,7 +8,7 @@
 import prisma from "@/lib/prisma";
 import { WorkspaceSubscriptionService } from "@/lib/subscription/workspace-subscription";
 import { tryCatch } from "@/lib/try-catch";
-import { WorkspaceSubscriptionTier } from "@/generated/prisma";
+import type { WorkspaceSubscriptionTier } from "@/generated/prisma";
 
 export interface CreditBalance {
     remaining: number;
@@ -144,8 +144,8 @@ export class WorkspaceCreditManager {
     static async consumeCredits({
         userId,
         amount,
-        source,
-        sourceId,
+        source: _source,
+        sourceId: _sourceId,
     }: {
         userId: string;
         amount: number;

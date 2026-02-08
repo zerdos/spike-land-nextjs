@@ -1,8 +1,9 @@
 "use client";
 
-import { PurchaseModal } from "@/components/tokens";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "@/components/ui/link";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +15,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Circle,
-  Coins,
   Download,
   Loader2,
   Sparkles,
@@ -34,7 +34,7 @@ interface EnhancementSidebarProps {
   isBalanceLoading?: boolean;
   hasFetched?: boolean;
   isEnhancing?: boolean;
-  onBalanceRefresh: () => void;
+
 }
 
 export function EnhancementSidebar({
@@ -46,7 +46,6 @@ export function EnhancementSidebar({
   isBalanceLoading = false,
   hasFetched = false,
   isEnhancing = false,
-  onBalanceRefresh,
 }: EnhancementSidebarProps) {
   // --- 1. PREPARE DATA ---
 
@@ -161,13 +160,13 @@ export function EnhancementSidebar({
         {/* HEADER: Balance */}
         <div className="flex items-center justify-between pb-4 border-b border-border/50">
           <div className="flex items-center gap-2">
-            <Coins className="h-5 w-5 text-yellow-500" />
+            <Sparkles className="h-5 w-5 text-primary" />
             <span className="font-medium text-sm text-muted-foreground">
               Your Balance
             </span>
           </div>
           <span className="text-xl font-bold">
-            {isBalanceLoading ? <Skeleton className="h-7 w-16" /> : balance}
+            {isBalanceLoading ? <Skeleton className="h-7 w-16" /> : `${balance} credits`}
           </span>
         </div>
 
@@ -212,7 +211,7 @@ export function EnhancementSidebar({
                       </p>
                     </div>
                     <div className="px-2 py-1 rounded bg-background/50 border border-white/10 text-xs font-medium">
-                      {cost} Tokens
+                      {cost} Credits
                     </div>
                   </div>
 
@@ -235,16 +234,14 @@ export function EnhancementSidebar({
                           className="w-full opacity-50"
                           variant="secondary"
                         >
-                          Insufficient Tokens
+                          Insufficient Credits
                         </Button>
-                        <PurchaseModal
-                          trigger={
-                            <span className="text-xs text-primary underline cursor-pointer block text-center">
-                              Get more tokens
-                            </span>
-                          }
-                          onPurchaseComplete={onBalanceRefresh}
-                        />
+                        <Link 
+                          href="/pricing"
+                          className="text-xs text-primary underline cursor-pointer block text-center"
+                        >
+                          Upgrade your plan
+                        </Link>
                       </div>
                     )}
                 </div>

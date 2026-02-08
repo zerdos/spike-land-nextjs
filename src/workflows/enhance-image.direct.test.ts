@@ -286,17 +286,13 @@ describe("enhance-image.direct", () => {
 
     it("should handle refund failure gracefully", async () => {
       mockDownloadFromR2.mockResolvedValue(null);
-      mockRefundTokens.mockResolvedValue({
-        success: false,
-        error: "Refund failed",
-      });
+      mockRefundTokens.mockResolvedValue(false);
 
       const result = await enhanceImageDirect(validInput);
 
       expect(result.success).toBe(false);
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining("Failed to refund credits"),
-        "Refund failed",
       );
     });
 
