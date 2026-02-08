@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { generateCodespaceId, updateCodespace } from "@/lib/create/codespace-service";
-import { generateAppContent } from "@/lib/create/content-generator";
+import { attemptCodeCorrection, generateAppContent } from "@/lib/create/content-generator";
 import {
   getCreatedApp,
   markAsGenerating,
@@ -115,7 +115,27 @@ async function* generateStream(
     yield { type: "status", message: "Writing code..." };
 
     // 3. Update Codespace with whatever code we have
-    const updateResult = await updateCodespace(codespaceId, codeToPush);
+    let updateResult = await updateCodespace(codespaceId, codeToPush);
+
+    // 3a. If transpilation failed, attempt self-correction
+    if (!updateResult.success && updateResult.error) {
+      yield { type: "status", message: "Fixing transpilation error..." };
+
+      const correctedCode = await attemptCodeCorrection(
+        codeToPush,
+        updateResult.error,
+        slug,
+      );
+
+      if (correctedCode) {
+        updateResult = await updateCodespace(codespaceId, correctedCode);
+
+        // Update content code if correction succeeded
+        if (updateResult.success && content) {
+          content.code = correctedCode;
+        }
+      }
+    }
 
     if (!updateResult.success) {
       throw new Error(updateResult.error || "Failed to update codespace");

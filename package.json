@@ -244,8 +244,6 @@
     "dotenv": "17.2.4",
     "dprint": "0.51.1",
     "eslint": "10.0.0",
-    "eslint-config-next": "16.1.6",
-    "eslint-plugin-import": "2.32.0",
     "eslint-plugin-jsx-a11y": "6.10.2",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "7.0.1",

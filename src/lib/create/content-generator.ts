@@ -74,6 +74,9 @@ export const LUCIDE_ICONS = new Set([
 ]);
 
 const GeneratedAppSchema = z.object({
+  plan: z.string().optional().describe(
+    "Optional 1-2 sentence architecture plan before writing code",
+  ),
   title: z.string().describe("The name of the app"),
   description: z.string().describe("A concise 1-sentence description of what the app does"),
   code: z.string().describe(
@@ -84,7 +87,7 @@ const GeneratedAppSchema = z.object({
   ),
 });
 
-export type GeneratedAppContent = z.infer<typeof GeneratedAppSchema>;
+export type GeneratedAppContent = Omit<z.infer<typeof GeneratedAppSchema>, "plan">;
 
 export type GenerationResult = {
   content: GeneratedAppContent | null;
@@ -105,9 +108,11 @@ const CORE_PROMPT =
 - Component must be DEFAULT EXPORT
 - Light theme by default — use semantic color classes (bg-background, text-foreground, etc.)
 - Design Tokens for Premium Look:
-  - Glass: "bg-background/80 backdrop-blur-md border-border/50"
-  - Shadow: "shadow-xl shadow-primary/5"
-  - Typography: headings use "tracking-tight font-bold", labels "font-medium text-sm"
+  - Glass: "bg-background/80 backdrop-blur-md border-border/50" (MANDATORY for cards/containers)
+  - Shadow: "shadow-xl shadow-primary/5" (Soft, premium elevastion)
+  - Typography: headings use "tracking-tight font-bold", labels "font-medium text-sm text-muted-foreground"
+  - Micro-animations: Use framer-motion for smooth entrance/exit (AnimatePresence) and hover states (whileHover={{ scale: 1.02 }})
+  - Gradients: Use subtle gradients "bg-gradient-to-br from-background to-muted/50" for depth
 
 
 ## SHADCN/UI DESIGN SYSTEM (import from "@/components/ui/...")
@@ -565,6 +570,13 @@ export function getMatchedSkills(topic: string): MatchedSkill[] {
     }
   }
 
+  logger.debug("Skill matching result", {
+    topic,
+    keywords,
+    matchedSkillIds: matched.map((s) => s.id),
+    matchedCategories: [...new Set(matched.map((s) => s.category))],
+  });
+
   return matched;
 }
 
@@ -588,6 +600,7 @@ export function buildSystemPrompt(topic: string): string {
   }
 
   if (categoryOrder.length === 0) {
+    logger.info("System prompt built with fallback", { topic, keywords });
     return CORE_PROMPT + "\n" + FALLBACK_LIBS;
   }
 
@@ -598,6 +611,12 @@ export function buildSystemPrompt(topic: string): string {
     const lines = skills.map((s) => s.promptContent).join("\n");
     sections.push(header + "\n" + lines);
   }
+
+  logger.info("System prompt built with matched categories", {
+    topic,
+    keywords,
+    categories: categoryOrder,
+  });
 
   return CORE_PROMPT + "\n" + sections.join("\n");
 }
@@ -621,8 +640,29 @@ Interpret this path as user intent. Examples:
 - "tools/calculator" → Beautiful scientific calculator
 - "finance/mortgage" → Mortgage calculator with amortization chart
 - "fitness/timer" → Workout interval timer with presets
+
+## EXAMPLE RESPONSES (follow this structure exactly)
+
+Example 1 — Simple counter:
+{
+  "title": "Click Counter",
+  "description": "A satisfying click counter with animations and streak tracking",
+  "plan": "useState for count and streak. Button with motion.div scale animation on click. Badge shows streak. Card layout with semantic colors.",
+  "code": "import { useState } from \"react\";\\nimport { motion } from \"framer-motion\";\\nimport { Button } from \"@/components/ui/button\";\\nimport { Card, CardHeader, CardTitle, CardContent } from \"@/components/ui/card\";\\nimport { Badge } from \"@/components/ui/badge\";\\n\\nexport default function ClickCounter() {\\n  const [count, setCount] = useState(0);\\n  return (\\n    <div className=\\"min-h-screen bg-background flex items-center justify-center p-4\\">\\n      <Card className=\\"w-full max-w-sm\\">\\n        <CardHeader><CardTitle className=\\"tracking-tight\\">Counter</CardTitle></CardHeader>\\n        <CardContent className=\\"flex flex-col items-center gap-4\\">\\n          <motion.div key={count} initial={{ scale: 1.3 }} animate={{ scale: 1 }}>\\n            <span className=\\"text-6xl font-bold text-foreground\\">{count}</span>\\n          </motion.div>\\n          <Badge variant=\\"secondary\\">{count > 10 ? '🔥 On fire!' : 'Keep going'}</Badge>\\n          <div className=\\"flex gap-2\\">\\n            <Button onClick={() => setCount(c => c + 1)}>+1</Button>\\n            <Button variant=\\"outline\\" onClick={() => setCount(0)}>Reset</Button>\\n          </div>\\n        </CardContent>\\n      </Card>\\n    </div>\\n  );\\n}",
+  "relatedApps": ["tools/timer", "games/clicker", "tools/scoreboard"]
+}
+
+Example 2 — Task tracker:
+{
+  "title": "Quick Tasks",
+  "description": "A minimal task tracker with animations and completion effects",
+  "plan": "useState for tasks array and input. AnimatePresence for add/remove animations. Input + Button for adding. Map tasks with Check/Trash2 icons. Filter completed vs pending.",
+  "code": "import { useState } from \"react\";\\nimport { motion, AnimatePresence } from \"framer-motion\";\\nimport { Check, Trash2 } from \"lucide-react\";\\nimport { Button } from \"@/components/ui/button\";\\nimport { Input } from \"@/components/ui/input\";\\nimport { Card, CardHeader, CardTitle, CardContent } from \"@/components/ui/card\";\\n\\nexport default function QuickTasks() {\\n  const [tasks, setTasks] = useState<{ id: number; text: string; done: boolean }[]>([]);\\n  const [input, setInput] = useState('');\\n  const addTask = () => { if (!input.trim()) return; setTasks(t => [...t, { id: Date.now(), text: input.trim(), done: false }]); setInput(''); };\\n  return (\\n    <div className=\\"min-h-screen bg-background flex items-center justify-center p-4\\">\\n      <Card className=\\"w-full max-w-md\\">\\n        <CardHeader><CardTitle className=\\"tracking-tight\\">Tasks</CardTitle></CardHeader>\\n        <CardContent className=\\"space-y-3\\">\\n          <div className=\\"flex gap-2\\"><Input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTask()} placeholder=\\"Add a task...\\" /><Button onClick={addTask}>Add</Button></div>\\n          <div className=\\"divide-y divide-border/30\\">\\n            <AnimatePresence>{tasks.map(task => (\\n              <motion.div key={task.id} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 50 }} className=\\"flex items-center justify-between py-2\\">\\n                <span className={task.done ? 'line-through text-muted-foreground' : 'text-foreground'}>{task.text}</span>\\n                <div className=\\"flex gap-1\\">\\n                  <Button size=\\"icon\\" variant=\\"ghost\\" onClick={() => setTasks(t => t.map(x => x.id === task.id ? { ...x, done: !x.done } : x))}><Check className=\\"h-4 w-4\\" /></Button>\\n                  <Button size=\\"icon\\" variant=\\"ghost\\" onClick={() => setTasks(t => t.filter(x => x.id !== task.id))}><Trash2 className=\\"h-4 w-4\\" /></Button>\\n                </div>\\n              </motion.div>\\n            ))}</AnimatePresence>\\n          </div>\\n          {tasks.length === 0 && <p className=\\"text-center text-muted-foreground text-sm\\">No tasks yet</p>}\\n        </CardContent>\\n      </Card>\\n    </div>\\n  );\\n}",
+  "relatedApps": ["tools/notes", "tools/kanban", "tools/checklist"]
+}
 ${urlParamInstruction}
 Respond with JSON: { title, description, code, relatedApps }
+- Optionally include a "plan" field (1-2 sentences) describing your architecture before writing code
 - code: raw string (no markdown fences), single default-exported React component
 - relatedApps: 3-5 related paths without "/create/" prefix`;
 }
@@ -746,6 +786,50 @@ export function extractCodeFromRawText(text: string): string | null {
   return code || null;
 }
 
+export async function attemptCodeCorrection(
+  code: string,
+  error: string,
+  topic: string,
+): Promise<string | null> {
+  try {
+    logger.info("Attempting code correction", { topic, error: error.slice(0, 200) });
+
+    const result = await generateStructuredResponse<{ code: string; }>({
+      prompt: `The following React component failed transpilation with this error:
+
+ERROR: ${error}
+
+ORIGINAL CODE:
+\`\`\`tsx
+${code}
+\`\`\`
+
+Fix the code so it transpiles successfully. Return JSON: { "code": "<fixed code>" }
+- Only fix the transpilation error, do not redesign the component
+- Preserve all existing functionality
+- code must be a raw string (no markdown fences)`,
+      systemPrompt:
+        "You are a React/TypeScript expert. Fix the transpilation error in the code. Return only the corrected code in JSON format.",
+      maxTokens: 16384,
+      temperature: 0.2,
+      thinkingBudget: 4096,
+    });
+
+    if (result && typeof result.code === "string") {
+      const corrected = cleanCode(result.code);
+      logger.info("Code correction produced result", { topic, codeLength: corrected.length });
+      return corrected || null;
+    }
+
+    return null;
+  } catch (err) {
+    logger.error("Code correction failed", {
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
+    return null;
+  }
+}
+
 export async function generateAppContent(
   path: string[],
 ): Promise<GenerationResult> {
@@ -774,12 +858,49 @@ export async function generateAppContent(
 
     const parsed = GeneratedAppSchema.safeParse(result);
     if (parsed.success) {
-      return { content: parsed.data, rawCode: parsed.data.code, error: null };
+      const { plan, ...content } = parsed.data;
+      if (plan) {
+        logger.info("Generated app plan", { topic, plan });
+      }
+      return { content, rawCode: content.code, error: null };
     }
 
     // Validation failed but we may have raw code
     const errorMsg = parsed.error.issues.map((i) => i.message).join(", ");
-    logger.error("Generated content failed validation:", { error: errorMsg });
+    logger.warn("Generated content failed validation, attempting correction...", {
+      error: errorMsg,
+    });
+
+    if (rawCode) {
+      const correctedCode = await attemptCodeCorrection(rawCode, errorMsg, topic);
+      if (correctedCode) {
+        logger.info("Correction successful, returning fixed code");
+        // If we have other valid fields from the initial parse (even if partial), use them
+        // verification: we know parsing failed, but maybe we can salvage title/desc if they were valid?
+        // For safe fallback, we use the original result properties if they exist and are strings
+        const safeTitle = resultObj && typeof resultObj["title"] === "string"
+          ? resultObj["title"]
+          : topic.split("/").pop() || "App";
+        const safeDesc = resultObj && typeof resultObj["description"] === "string"
+          ? resultObj["description"]
+          : "Generated application";
+        const safeRelated = resultObj && Array.isArray(resultObj["relatedApps"])
+          ? resultObj["relatedApps"]
+          : [];
+
+        return {
+          content: {
+            title: safeTitle,
+            description: safeDesc,
+            code: correctedCode,
+            relatedApps: safeRelated as string[],
+          },
+          rawCode: correctedCode,
+          error: null,
+        };
+      }
+    }
+
     return { content: null, rawCode, error: errorMsg };
   } catch (error) {
     logger.error("Failed to generate app content:", { error });
@@ -788,6 +909,31 @@ export async function generateAppContent(
     let rawCode: string | null = null;
     if (error instanceof StructuredResponseParseError) {
       rawCode = extractCodeFromRawText(error.rawText);
+
+      // Attempt correction on parse errors too if we successfully extracted code
+      if (rawCode) {
+        logger.warn("Attempting correction on content with parse error...");
+        const correctedCode = await attemptCodeCorrection(
+          rawCode,
+          `JSON Parse Error: ${message}`,
+          topic,
+        );
+
+        if (correctedCode) {
+          // Since we failed to parse the JSON, we don't have title/desc.
+          // We'll return the code and synthesized metadata.
+          return {
+            content: {
+              title: topic.split("/").pop() || "Generated App",
+              description: "Automatically corrected application",
+              code: correctedCode,
+              relatedApps: [],
+            },
+            rawCode: correctedCode,
+            error: null,
+          };
+        }
+      }
     }
 
     return { content: null, rawCode, error: message };
