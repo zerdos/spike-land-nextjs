@@ -521,13 +521,15 @@ export async function waitForTokenBalance(
 ): Promise<void> {
   const timeout = options.timeout || TIMEOUTS.DEFAULT;
 
-  // Wait for balance display with numeric value
+  // Wait for balance display with numeric value (supports both tokens and credits)
   await page.waitForFunction(
     () => {
       const balanceEl = document.querySelector('[data-testid="token-balance"]') ||
+        document.querySelector('[data-testid="credit-balance"]') ||
         document.querySelector('[class*="token"]') ||
+        document.querySelector('[class*="credit"]') ||
         Array.from(document.querySelectorAll("*")).find((el) =>
-          /\d+\s*tokens?/i.test(el.textContent || "")
+          /\d+\s*(tokens?|credits)/i.test(el.textContent || "")
         );
 
       if (!balanceEl) return false;
