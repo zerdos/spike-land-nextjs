@@ -41,11 +41,21 @@ dimension extraction uses lightweight header parsing instead.
 - Faster CI/CD builds
 - No platform-specific build issues
 
+**Update (February 2026)**: Extended to cover image enhancement comparison.
+When the slider shows original vs enhanced, both images must be at matching
+standard ARs. Rather than adding sharp for server-side cropping, the browser
+upload now resizes originals to exact standard 1K dimensions (e.g., 1376x768
+for 16:9). This ensures Gemini receives and returns standard dimensions,
+eliminating AR mismatches in the comparison slider.
+
 **Related Files Updated**:
 
 - `src/app/api/orbit/assets/upload/route.ts` - replaced sharp with header parser
 - `package.json` - removed sharp from dependenciesMeta
 - `next.config.ts` - removed sharp from serverExternalPackages
+- `src/lib/ai/aspect-ratio.ts` - added STANDARD_1K_DIMENSIONS map
+- `src/lib/images/browser-image-processor.ts` - uses exact standard 1K dims
+- `src/components/enhance/ImageComparisonSlider.tsx` - simplified to object-cover
 
 ---
 

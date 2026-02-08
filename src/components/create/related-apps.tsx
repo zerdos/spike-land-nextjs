@@ -23,9 +23,37 @@ export function RelatedApps({ links, publishedApps, className }: RelatedAppsProp
         className,
       )}
     >
-      {/* Published apps with live previews — primary */}
-      {hasPublished && (
+      {/* AI-generated related links — primary */}
+      {hasLinks && (
         <div className="p-3">
+          <h3 className="font-semibold mb-3 text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Sparkles className="w-3 h-3" />
+            Generate New
+          </h3>
+          <nav className="space-y-1">
+            {links.map((link, i) => {
+              const cleanLink = link.replace(/^(\/)?create\//, "");
+              const href = `/create/${cleanLink}`;
+
+              return (
+                <Link
+                  key={i}
+                  href={href}
+                  className="block px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm"
+                >
+                  <div className="font-medium truncate">
+                    {cleanLink.split("/").pop()?.replace(/-/g, " ")}
+                  </div>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
+
+      {/* Published apps with live previews — secondary */}
+      {hasPublished && (
+        <div className={cn("p-3", hasLinks && "border-t")}>
           <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">
             More Apps
           </h3>
@@ -54,34 +82,6 @@ export function RelatedApps({ links, publishedApps, className }: RelatedAppsProp
               </Link>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* AI-generated related links — secondary */}
-      {hasLinks && (
-        <div className={cn("p-3", hasPublished && "border-t")}>
-          <h3 className="font-semibold mb-3 text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <Sparkles className="w-3 h-3" />
-            Generate New
-          </h3>
-          <nav className="space-y-1">
-            {links.map((link, i) => {
-              const cleanLink = link.replace(/^(\/)?create\//, "");
-              const href = `/create/${cleanLink}`;
-
-              return (
-                <Link
-                  key={i}
-                  href={href}
-                  className="block px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm"
-                >
-                  <div className="font-medium truncate">
-                    {cleanLink.split("/").pop()?.replace(/-/g, " ")}
-                  </div>
-                </Link>
-              );
-            })}
-          </nav>
         </div>
       )}
 

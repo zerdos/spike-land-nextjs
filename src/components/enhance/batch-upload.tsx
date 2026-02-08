@@ -104,7 +104,7 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
     const filesToProcess = validatedFiles.filter((f) => f.status === "processing");
     for (const fileStatus of filesToProcess) {
       try {
-        const processed = await processImageForUpload(fileStatus.file);
+        const processed = await processImageForUpload(fileStatus.file, { useStandard1K: true });
         // Update thumbnail with processed image
         const processedThumbnail = URL.createObjectURL(processed.blob);
 

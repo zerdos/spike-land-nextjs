@@ -10,7 +10,6 @@ import { useCallback, useEffect, useRef } from "react";
 import type { AudioTrack, SnapGrid } from "../../types";
 import { Playhead } from "./Playhead";
 import { SelectedTrackPanel } from "./SelectedTrackPanel";
-import { ShortcutsBar } from "./ShortcutsBar";
 import { TimelineControls } from "./TimelineControls";
 import { TimelineRuler } from "./TimelineRuler";
 import { TimelineTrack, TRACK_HEIGHT } from "./TimelineTrack";
@@ -35,6 +34,10 @@ interface TimelineProps {
   onTrimChange: (trackId: string, trimStart: number, trimEnd: number) => void;
   onRemoveTrack: (trackId: string) => void;
   onScrubAudio?: (time: number) => void;
+  // Recording preview
+  isRecording?: boolean;
+  recordingDuration?: number;
+  recordingStartPosition?: number;
 }
 
 const TRACK_ROW_HEIGHT = TRACK_HEIGHT + 8; // Track height + margin
@@ -59,13 +62,16 @@ export function Timeline({
   onTrimChange,
   onRemoveTrack,
   onScrubAudio,
+  isRecording = false,
+  recordingDuration = 0,
+  recordingStartPosition = 0,
 }: TimelineProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const isScrubbing = useRef(false);
   const scrubStartX = useRef(0);
   const scrubStartTime = useRef(0);
 
-  // Calculate total duration (including track positions)
+  // Calculate total duration (including track positions and recording preview)
   const totalDuration = Math.max(
     10, // Minimum 10 seconds
     ...tracks.map((t) => {
@@ -73,6 +79,7 @@ export function Timeline({
       const trimmedDuration = effectiveTrimEnd - t.trimStart;
       return (t.position ?? t.delay ?? 0) + trimmedDuration;
     }),
+    isRecording ? recordingStartPosition + recordingDuration + 2 : 0, // Add recording preview
   );
 
   // Content width with some padding
@@ -169,7 +176,7 @@ export function Timeline({
     : null;
 
   return (
-    <div className="glass-1 glass-edge rounded-2xl overflow-hidden border-none shadow-xl">
+    <div className="flex flex-col h-full bg-black/20 backdrop-blur-sm overflow-hidden">
       {/* Controls */}
       <div className="bg-white/5 border-b border-white/5">
         <TimelineControls
@@ -213,7 +220,7 @@ export function Timeline({
       <div
         ref={viewportRef}
         className="relative overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-white/20 transition-all"
-        style={{ height: `${Math.min(tracksHeight, 400)}px` }}
+        style={{ height: "100%", minHeight: "200px" }}
         onMouseDown={handleViewportMouseDown}
         role="application"
         aria-label="Timeline tracks editor"
@@ -263,6 +270,37 @@ export function Timeline({
                 />
               </div>
             ))}
+
+            {/* Recording Preview Track */}
+            {isRecording && recordingDuration > 0 && (
+              <div
+                className="absolute left-0 right-0 group"
+                style={{
+                  top: `${tracks.length * TRACK_ROW_HEIGHT + 12}px`,
+                  height: `${TRACK_HEIGHT}px`,
+                }}
+              >
+                {/* Recording Track Background */}
+                <div className="absolute inset-0 mx-2 rounded-xl bg-red-500/10 border border-red-500/30 animate-pulse" />
+
+                {/* Recording Track Block */}
+                <div
+                  className="absolute h-full bg-gradient-to-r from-red-500/40 to-red-600/40 rounded-md border border-red-500/50 shadow-lg flex items-center gap-2 px-2 overflow-hidden"
+                  style={{
+                    left: `${recordingStartPosition * zoom}px`,
+                    width: `${Math.max(recordingDuration * zoom, 20)}px`,
+                  }}
+                >
+                  {/* Recording indicator dot */}
+                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+                  <span className="text-[10px] font-mono text-white/80 truncate">
+                    Recording...{" "}
+                    {Math.floor(recordingDuration / 60)}:{String(Math.floor(recordingDuration % 60))
+                      .padStart(2, "0")}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Playhead */}
@@ -286,11 +324,6 @@ export function Timeline({
             </div>
           )}
         </div>
-      </div>
-
-      {/* Shortcuts bar */}
-      <div className="bg-black/40 border-t border-white/5">
-        <ShortcutsBar />
       </div>
 
       {/* Selected track panel */}

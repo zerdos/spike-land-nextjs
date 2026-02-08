@@ -272,8 +272,8 @@ export function VersionCompareModal({
             enhancedUrl={getImageUrl(version2)}
             originalLabel={getImageLabel(version1)}
             enhancedLabel={getImageLabel(version2)}
-            width={getImageDimensions(version2).width}
-            height={getImageDimensions(version2).height}
+            width={getImageDimensions(version1).width}
+            height={getImageDimensions(version1).height}
           />
         </div>
       </DialogContent>

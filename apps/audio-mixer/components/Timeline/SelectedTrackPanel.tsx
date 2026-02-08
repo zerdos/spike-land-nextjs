@@ -5,9 +5,17 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Headphones, Scissors, Trash2, Volume2, VolumeX } from "lucide-react";
 import type { AudioTrack } from "../../types";
+
+function formatTime(seconds: number): string {
+  const mins = Math.floor(Math.abs(seconds) / 60);
+  const secs = Math.abs(seconds) % 60;
+  const sign = seconds < 0 ? "-" : "";
+  return `${sign}${mins}:${secs.toFixed(1).padStart(4, "0")}`;
+}
 
 interface SelectedTrackPanelProps {
   track: AudioTrack | null;
@@ -16,12 +24,6 @@ interface SelectedTrackPanelProps {
   onSoloToggle: () => void;
   onTrimChange: (trimStart: number, trimEnd: number) => void;
   onRemove: () => void;
-}
-
-function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = (seconds % 60).toFixed(1);
-  return `${mins}:${secs.padStart(4, "0")}`;
 }
 
 export function SelectedTrackPanel({
@@ -34,8 +36,8 @@ export function SelectedTrackPanel({
 }: SelectedTrackPanelProps) {
   if (!track) {
     return (
-      <div className="px-4 py-3 bg-gray-800 border-t border-gray-700 text-gray-500 text-sm text-center">
-        Select a track to edit its properties
+      <div className="h-8 px-4 flex items-center bg-black/30 border-t border-white/5 text-gray-500 text-xs">
+        Select a track to edit
       </div>
     );
   }
@@ -44,143 +46,125 @@ export function SelectedTrackPanel({
   const trimmedDuration = effectiveTrimEnd - track.trimStart;
 
   return (
-    <div className="px-8 py-6 bg-white/[0.03] backdrop-blur-xl border-t border-white/10 shadow-2xl relative overflow-hidden">
-      {/* Background glow for the selected track */}
-      <div className="absolute top-0 left-0 w-64 h-full bg-primary/5 blur-[40px] -z-10" />
-
-      <div className="flex items-center gap-8 relative z-10">
-        {/* Track name & Metadata */}
-        <div className="flex-shrink-0 min-w-[160px] space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-glow-cyan-sm" />
-            <div className="text-sm font-bold text-white tracking-tight truncate max-w-[140px]">
-              {track.name}
-            </div>
-          </div>
-          <div className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest flex items-center gap-2">
-            <span className="text-primary/60">
-              {formatTime(trimmedDuration)}
-            </span>
-            <span className="opacity-20">/</span>
-            <span>{formatTime(track.duration)}</span>
-          </div>
-        </div>
-
-        {/* Volume Control */}
-        <div className="flex items-center gap-4 bg-white/5 px-4 py-2.5 rounded-2xl border border-white/5">
-          <Volume2 className="w-4 h-4 text-primary/80" />
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={Math.round(track.volume * 100)}
-            onChange={(e) => onVolumeChange(parseInt(e.target.value) / 100)}
-            className="w-32 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
-            aria-label="Track volume"
-          />
-          <span className="text-[10px] font-mono font-bold text-white/60 w-8">
-            {Math.round(track.volume * 100)}%
-          </span>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
-          {/* Mute button */}
-          <button
-            onClick={onMuteToggle}
-            className={cn(
-              "p-2.5 rounded-xl transition-all active:scale-95 border",
-              track.muted
-                ? "bg-red-500/20 text-red-500 border-red-500/30 shadow-glow-red-sm"
-                : "bg-white/5 text-gray-400 border-white/10 hover:text-white",
-            )}
-            title={track.muted ? "Unmute" : "Mute"}
-          >
-            <VolumeX className="w-4 h-4" />
-          </button>
-
-          {/* Solo button */}
-          <button
-            onClick={onSoloToggle}
-            className={cn(
-              "p-2.5 rounded-xl transition-all active:scale-95 border",
-              track.solo
-                ? "bg-yellow-500/20 text-yellow-500 border-yellow-500/30 shadow-glow-yellow-sm"
-                : "bg-white/5 text-gray-400 border-white/10 hover:text-white",
-            )}
-            title={track.solo ? "Unsolo" : "Solo"}
-          >
-            <Headphones className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div className="w-px h-10 bg-white/10" />
-
-        {/* Trim controls */}
-        <div className="flex items-center gap-4 bg-white/5 px-5 py-2.5 rounded-2xl border border-white/5">
-          <Scissors className="w-4 h-4 text-primary/60" />
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[8px] font-bold text-white/30 uppercase tracking-tighter">
-                Start Offset
-              </span>
-              <input
-                type="number"
-                min="-30"
-                max={effectiveTrimEnd - 0.1}
-                step="0.1"
-                value={track.trimStart.toFixed(1)}
-                onChange={(e) =>
-                  onTrimChange(
-                    parseFloat(e.target.value) || 0,
-                    effectiveTrimEnd,
-                  )}
-                className="w-16 h-7 text-xs bg-black/40 text-primary font-mono font-bold rounded-lg border border-white/5 focus:outline-none focus:border-primary/50 text-center"
-              />
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[8px] font-bold text-white/30 uppercase tracking-tighter">
-                End Point
-              </span>
-              <input
-                type="number"
-                min={Math.max(0.1, track.trimStart + 0.1)}
-                max={track.duration}
-                step="0.1"
-                value={effectiveTrimEnd.toFixed(1)}
-                onChange={(e) =>
-                  onTrimChange(
-                    track.trimStart,
-                    parseFloat(e.target.value) || track.duration,
-                  )}
-                className="w-16 h-7 text-xs bg-black/40 text-primary font-mono font-bold rounded-lg border border-white/5 focus:outline-none focus:border-primary/50 text-center"
-              />
-            </div>
-          </div>
-          {track.trimStart < 0 && (
-            <Badge
-              variant="outline"
-              className="text-[9px] bg-primary/10 text-primary border-primary/20 font-mono"
-            >
-              +{Math.abs(track.trimStart).toFixed(1)}s Lead
-            </Badge>
-          )}
-        </div>
-
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Remove button */}
-        <button
-          onClick={onRemove}
-          className="flex items-center gap-2 px-5 py-2.5 bg-red-500/5 hover:bg-red-500/10 text-red-400 hover:text-red-300 rounded-2xl border border-red-500/10 hover:border-red-500/30 transition-all font-bold text-xs active:scale-95"
-          title="Remove track"
-        >
-          <Trash2 className="w-4 h-4" />
-          Delete Track
-        </button>
+    <div className="h-8 px-3 flex items-center gap-3 bg-black/30 border-t border-white/5">
+      {/* Track name */}
+      <div className="flex items-center gap-1.5 min-w-0">
+        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+        <span className="text-xs font-bold text-white truncate max-w-[100px]">
+          {track.name}
+        </span>
+        <span className="text-[9px] font-mono text-white/40">
+          {formatTime(trimmedDuration)}
+        </span>
       </div>
+
+      {/* Volume */}
+      <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded">
+        <Volume2 className="w-3 h-3 text-primary/80" />
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={Math.round(track.volume * 100)}
+          onChange={(e) => onVolumeChange(parseInt(e.target.value) / 100)}
+          className="w-16 h-0.5 bg-white/10 rounded appearance-none cursor-pointer accent-primary"
+          aria-label="Track volume"
+        />
+        <span className="text-[9px] font-mono text-white/60 w-6">
+          {Math.round(track.volume * 100)}%
+        </span>
+      </div>
+
+      {/* Mute/Solo buttons */}
+      <div className="flex items-center gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={onMuteToggle}
+              className={cn(
+                "p-1 rounded transition-all",
+                track.muted
+                  ? "bg-red-500/20 text-red-400"
+                  : "text-gray-400 hover:text-white hover:bg-white/10",
+              )}
+            >
+              <VolumeX className="w-3.5 h-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            {track.muted ? "Unmute (M)" : "Mute (M)"}
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={onSoloToggle}
+              className={cn(
+                "p-1 rounded transition-all",
+                track.solo
+                  ? "bg-yellow-500/20 text-yellow-400"
+                  : "text-gray-400 hover:text-white hover:bg-white/10",
+              )}
+            >
+              <Headphones className="w-3.5 h-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            {track.solo ? "Unsolo (S)" : "Solo (S)"}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+
+      {/* Trim controls */}
+      <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded">
+        <Scissors className="w-3 h-3 text-primary/60" />
+        <input
+          type="number"
+          min="-30"
+          max={effectiveTrimEnd - 0.1}
+          step="0.1"
+          value={track.trimStart.toFixed(1)}
+          onChange={(e) => onTrimChange(parseFloat(e.target.value) || 0, effectiveTrimEnd)}
+          className="w-12 h-5 text-[10px] bg-black/40 text-primary font-mono rounded border border-white/5 text-center"
+          aria-label="Trim start"
+        />
+        <span className="text-[9px] text-white/30">–</span>
+        <input
+          type="number"
+          min={Math.max(0.1, track.trimStart + 0.1)}
+          max={track.duration}
+          step="0.1"
+          value={effectiveTrimEnd.toFixed(1)}
+          onChange={(e) =>
+            onTrimChange(track.trimStart, parseFloat(e.target.value) || track.duration)}
+          className="w-12 h-5 text-[10px] bg-black/40 text-primary font-mono rounded border border-white/5 text-center"
+          aria-label="Trim end"
+        />
+        {track.trimStart < 0 && (
+          <Badge
+            variant="outline"
+            className="h-4 px-1 text-[8px] bg-primary/10 text-primary border-primary/20"
+          >
+            +{Math.abs(track.trimStart).toFixed(1)}s
+          </Badge>
+        )}
+      </div>
+
+      <div className="flex-1" />
+
+      {/* Delete button */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={onRemove}
+            className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top">Delete Track (Del)</TooltipContent>
+      </Tooltip>
     </div>
   );
 }

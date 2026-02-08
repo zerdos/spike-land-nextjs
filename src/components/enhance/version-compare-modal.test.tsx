@@ -422,8 +422,8 @@ describe("VersionCompareModal", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId("width")).toHaveTextContent("2000");
-      expect(screen.getByTestId("height")).toHaveTextContent("1500");
+      expect(screen.getByTestId("width")).toHaveTextContent("1000");
+      expect(screen.getByTestId("height")).toHaveTextContent("750");
     });
   });
 

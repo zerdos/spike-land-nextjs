@@ -56,9 +56,12 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { balance, isLowBalance, isLoading, refetch: refetchBalance } = useTokenBalance({
-    autoRefreshOnFocus: true,
-  });
+  const { balance, isLowBalance, isLoading, hasFetched, refetch: refetchBalance } = useTokenBalance(
+    {
+      autoRefreshOnFocus: true,
+    },
+  );
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -267,6 +270,8 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   );
 
   const handleEnhance = async (tier: EnhancementTier) => {
+    if (isEnhancing) return;
+    setIsEnhancing(true);
     try {
       const response = await fetch("/api/images/enhance", {
         method: "POST",
@@ -348,6 +353,8 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
     } catch (error) {
       console.error("Enhancement request failed:", error);
       alert(error instanceof Error ? error.message : "Enhancement failed");
+    } finally {
+      setIsEnhancing(false);
     }
   };
 
@@ -633,6 +640,8 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               onEnhance={handleEnhance}
               balance={balance}
               isBalanceLoading={isLoading}
+              hasFetched={hasFetched}
+              isEnhancing={isEnhancing}
               onBalanceRefresh={refetchBalance}
             />
           </div>

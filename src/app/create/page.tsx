@@ -100,6 +100,7 @@ export default async function CreateLanding() {
                 description={app.description}
                 slug={app.slug}
                 codespaceId={app.codespaceId}
+                viewCount={app.viewCount}
               />
             ))}
           </div>

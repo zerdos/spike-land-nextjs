@@ -76,8 +76,8 @@ export async function getSuperAdminPublicPhotos(
           title: albumImage.image.name,
           originalUrl: albumImage.image.originalUrl,
           enhancedUrl: latestJob.enhancedUrl,
-          width: latestJob.enhancedWidth,
-          height: latestJob.enhancedHeight,
+          width: albumImage.image.originalWidth,
+          height: albumImage.image.originalHeight,
           albumName: album.name,
           tier: latestJob.tier,
         });

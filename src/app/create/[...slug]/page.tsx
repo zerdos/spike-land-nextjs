@@ -3,7 +3,11 @@ import { FeedbackTimer } from "@/components/create/feedback-timer";
 import { LiveAppDisplay } from "@/components/create/live-app-display";
 import { RelatedApps } from "@/components/create/related-apps";
 import { StreamingApp } from "@/components/create/streaming-app";
-import { getCreatedApp, getRelatedPublishedApps } from "@/lib/create/content-service";
+import {
+  getCreatedApp,
+  getRelatedPublishedApps,
+  incrementViewCount,
+} from "@/lib/create/content-service";
 import { CreatedAppStatus } from "@prisma/client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -53,6 +57,8 @@ export default async function CreatePage({ params }: PageProps) {
 
   // If app is published, show it
   if (app && app.status === CreatedAppStatus.PUBLISHED && app.codespaceId && app.codespaceUrl) {
+    // Fire-and-forget view count increment
+    void incrementViewCount(slug);
     return (
       <div className="flex h-[calc(100vh-4rem)] bg-background overflow-hidden">
         <div className="flex-1 flex flex-col min-w-0">
