@@ -150,6 +150,18 @@ Then("the layout should be responsive", async function(this: CustomWorld) {
   expect(bodyBox!.width).toBeLessThanOrEqual(400);
 });
 
+Then("the mobile menu sheet should not be visible", async function(this: CustomWorld) {
+  // Verify no dialog/sheet overlay is open on page load
+  // This is a regression test for a bug where the Sheet appeared open on mobile
+  const dialog = this.page.getByRole("dialog");
+  await expect(dialog).not.toBeVisible({ timeout: 3000 });
+});
+
+Then("I should see the mobile menu button", async function(this: CustomWorld) {
+  const menuButton = this.page.getByRole("button", { name: /open menu/i });
+  await expect(menuButton).toBeVisible({ timeout: 5000 });
+});
+
 Then("the apps section should be visible", async function(this: CustomWorld) {
   const appsSection = this.page.locator("#apps");
   await expect(appsSection).toBeVisible({ timeout: 10000 });

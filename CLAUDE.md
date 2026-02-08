@@ -372,6 +372,34 @@ See [README.md](./README.md) for full development setup.
 
 ---
 
+## 🐛 Bug-Fixing Workflow (BLOCKING REQUIREMENT)
+
+**CRITICAL**: When fixing styling or UI bugs, agents MUST follow this test-driven process:
+
+### Step 1: Reproduce the Bug
+
+- Visually confirm the bug exists (use Playwright MCP browser tools for UI bugs)
+- Document the reproduction steps
+
+### Step 2: Write a Failing Test
+
+- **Unit test** (preferred for logic/state bugs): Write a test in the component's `.test.tsx` that fails with the current buggy code
+- **E2E test** (preferred for styling/hydration/browser-specific bugs): Write a `.feature` scenario + step definitions that fails with the buggy code
+- **Verify the test fails** before proceeding to the fix
+
+### Step 3: Fix the Bug
+
+- Implement the minimal fix
+- The test from Step 2 must now pass
+
+### Step 4: Verify
+
+- Run `yarn test:coverage` — all tests pass
+- Run `yarn lint` — no lint errors
+- For UI bugs: visually confirm the fix in the browser
+
+---
+
 ## 📝 Documentation Guidelines
 
 **CRITICAL**: Agents must follow these rules:

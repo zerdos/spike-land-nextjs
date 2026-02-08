@@ -29,7 +29,7 @@ import {
   User,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 // Feature dropdown items for the Features menu
 const featureItems = [
@@ -67,14 +67,8 @@ const navLinks = [
 
 export function PlatformHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const { data: session, status } = useSession();
   const isAuthenticated = status === "authenticated" && session?.user;
-
-  // Only render Sheet after hydration to avoid ID mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
@@ -157,189 +151,175 @@ export function PlatformHeader() {
             )}
           </nav>
 
-          {/* Mobile Menu - Only render Sheet after hydration to prevent ID mismatch */}
-          {mounted
-            ? (
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <SheetTrigger asChild className="md:hidden">
-                  <Button variant="ghost" size="icon" aria-label="Open menu">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent
-                  side="bottom"
-                  className="rounded-t-[2rem] border-t border-primary/20 bg-background/95 backdrop-blur-xl h-[60vh] z-[60] overflow-y-auto"
-                >
-                  <VisuallyHidden>
-                    <SheetTitle>Navigation Menu</SheetTitle>
-                  </VisuallyHidden>
-                  <div className="flex justify-center w-full pt-2 pb-6">
-                    <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20" />
-                  </div>
-                  <nav className="flex flex-col gap-4 px-4 pb-8">
-                    {/* Orbit - Primary CTA */}
-                    <Button
-                      asChild
-                      variant="default"
-                      className="w-full font-semibold h-12"
-                    >
-                      <Link
-                        href="/orbit"
-                        className="flex items-center justify-center gap-2"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <Rocket className="h-5 w-5" />
-                        Orbit - AI Marketing Team
-                      </Link>
-                    </Button>
-
-                    {/* Features Section */}
-                    <div className="space-y-2">
-                      <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                        Features
-                      </span>
-                      {featureItems.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className="flex items-center gap-3 py-2 text-foreground hover:text-primary transition-colors"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <item.icon className="h-5 w-5 text-primary" />
-                          <div className="flex flex-col">
-                            <span className="font-medium">{item.label}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {item.description}
-                            </span>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-
-                    <Separator />
-
-                    {/* Standard nav links */}
-                    {navLinks.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary flex items-center py-2"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
-
-                    {/* My Apps - De-emphasized */}
-                    <Link
-                      href="/my-apps"
-                      className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors py-2"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <LayoutGrid className="h-5 w-5" />
-                      <span>My Apps</span>
-                    </Link>
-
-                    {!isAuthenticated && (
-                      <Link
-                        href="/auth/signin"
-                        className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Sign In
-                      </Link>
-                    )}
-                    {isAuthenticated && session?.user
-                      ? (
-                        <div className="flex flex-col gap-2 mt-2">
-                          <Separator className="my-2" />
-                          <div className="flex items-center gap-3 py-2">
-                            <Avatar>
-                              <AvatarImage
-                                src={session.user.image || undefined}
-                                alt={session.user.name || "User"}
-                              />
-                              <AvatarFallback>
-                                {session.user.name
-                                  ?.split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .toUpperCase()
-                                  .slice(0, 2) || "U"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium">
-                                {session.user.name || "User"}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {session.user.email || "No email"}
-                              </span>
-                            </div>
-                          </div>
-
-                          <Link
-                            href="/tokens"
-                            className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
-                            onClick={() =>
-                              setMobileMenuOpen(false)}
-                          >
-                            <Coins className="mr-3 h-5 w-5" />
-                            <span>Token Management</span>
-                          </Link>
-
-                          <Link
-                            href="/profile"
-                            className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            <User className="mr-3 h-5 w-5" />
-                            <span>Profile</span>
-                          </Link>
-
-                          <Link
-                            href="/settings"
-                            className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            <Settings className="mr-3 h-5 w-5" />
-                            <span>Settings</span>
-                          </Link>
-
-                          <button
-                            onClick={() => signOut()}
-                            className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2 text-left"
-                          >
-                            <LogOut className="mr-3 h-5 w-5" />
-                            <span>Log out</span>
-                          </button>
-                        </div>
-                      )
-                      : (
-                        <Button asChild variant="outline" className="mt-4">
-                          <Link
-                            href="/auth/signin"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            Get Started
-                          </Link>
-                        </Button>
-                      )}
-                  </nav>
-                </SheetContent>
-              </Sheet>
-            )
-            : (
-              // SSR placeholder - matches visual appearance without Radix IDs
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Open menu"
-                className="md:hidden"
-              >
+          {/* Mobile Menu */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon" aria-label="Open menu">
                 <Menu className="h-5 w-5" />
               </Button>
-            )}
+            </SheetTrigger>
+            <SheetContent
+              side="bottom"
+              className="rounded-t-[2rem] border-t border-primary/20 bg-background/95 backdrop-blur-xl h-[60vh] z-[60] overflow-y-auto"
+            >
+              <VisuallyHidden>
+                <SheetTitle>Navigation Menu</SheetTitle>
+              </VisuallyHidden>
+              <div className="flex justify-center w-full pt-2 pb-6">
+                <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20" />
+              </div>
+              <nav className="flex flex-col gap-4 px-4 pb-8">
+                {/* Orbit - Primary CTA */}
+                <Button
+                  asChild
+                  variant="default"
+                  className="w-full font-semibold h-12"
+                >
+                  <Link
+                    href="/orbit"
+                    className="flex items-center justify-center gap-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Rocket className="h-5 w-5" />
+                    Orbit - AI Marketing Team
+                  </Link>
+                </Button>
+
+                {/* Features Section */}
+                <div className="space-y-2">
+                  <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    Features
+                  </span>
+                  {featureItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="flex items-center gap-3 py-2 text-foreground hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <item.icon className="h-5 w-5 text-primary" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">{item.label}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {item.description}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                <Separator />
+
+                {/* Standard nav links */}
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary flex items-center py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+
+                {/* My Apps - De-emphasized */}
+                <Link
+                  href="/my-apps"
+                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <LayoutGrid className="h-5 w-5" />
+                  <span>My Apps</span>
+                </Link>
+
+                {!isAuthenticated && (
+                  <Link
+                    href="/auth/signin"
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                )}
+                {isAuthenticated && session?.user
+                  ? (
+                    <div className="flex flex-col gap-2 mt-2">
+                      <Separator className="my-2" />
+                      <div className="flex items-center gap-3 py-2">
+                        <Avatar>
+                          <AvatarImage
+                            src={session.user.image || undefined}
+                            alt={session.user.name || "User"}
+                          />
+                          <AvatarFallback>
+                            {session.user.name
+                              ?.split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .toUpperCase()
+                              .slice(0, 2) || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">
+                            {session.user.name || "User"}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {session.user.email || "No email"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <Link
+                        href="/tokens"
+                        className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
+                        onClick={() =>
+                          setMobileMenuOpen(false)}
+                      >
+                        <Coins className="mr-3 h-5 w-5" />
+                        <span>Token Management</span>
+                      </Link>
+
+                      <Link
+                        href="/profile"
+                        className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <User className="mr-3 h-5 w-5" />
+                        <span>Profile</span>
+                      </Link>
+
+                      <Link
+                        href="/settings"
+                        className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Settings className="mr-3 h-5 w-5" />
+                        <span>Settings</span>
+                      </Link>
+
+                      <button
+                        onClick={() => signOut()}
+                        className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2 text-left"
+                      >
+                        <LogOut className="mr-3 h-5 w-5" />
+                        <span>Log out</span>
+                      </button>
+                    </div>
+                  )
+                  : (
+                    <Button asChild variant="outline" className="mt-4">
+                      <Link
+                        href="/auth/signin"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Get Started
+                      </Link>
+                    </Button>
+                  )}
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
