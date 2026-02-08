@@ -24,8 +24,8 @@ Feature: Admin Dashboard
     When I visit "/admin"
     Then I should see "Total Users" metric card
     And I should see "Enhancements" metric card
-    And I should see "Tokens Purchased" metric card
-    And I should see "Active Vouchers" metric card
+    And I should see "Credits Allocated" metric card
+    And I should see "Workspaces" metric card
 
   Scenario: Admin dashboard displays user count
     Given the user is an admin
@@ -39,11 +39,11 @@ Feature: Admin Dashboard
     Then the "Enhancements" metric should display total count
     And I should see active jobs count
 
-  Scenario: Admin dashboard displays token statistics
+  Scenario: Admin dashboard displays credit statistics
     Given the user is an admin
     When I visit "/admin"
-    Then the "Tokens Purchased" metric should display total
-    And I should see tokens spent count
+    Then the "Credits Allocated" metric should display total
+    And I should see credits used count
 
   Scenario: Admin dashboard displays quick links
     Given the user is an admin

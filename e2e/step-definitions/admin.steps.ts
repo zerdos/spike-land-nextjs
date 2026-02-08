@@ -481,6 +481,14 @@ Then("I should see tokens spent count", async function(this: CustomWorld) {
   );
 });
 
+Then("I should see credits used count", async function(this: CustomWorld) {
+  await waitForTextWithRetry(
+    this.page,
+    /\d+ used/,
+    { timeout: TIMEOUTS.DEFAULT },
+  );
+});
+
 Then(
   "I should see {string} quick link",
   async function(this: CustomWorld, linkText: string) {
