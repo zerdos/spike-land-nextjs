@@ -246,7 +246,7 @@ describe("enhance-image.direct", () => {
       expect(result.error).toContain("Failed to upload");
     });
 
-    it("should refund tokens on failure", async () => {
+    it("should refund credits on failure", async () => {
       mockDownloadFromR2.mockResolvedValue(null);
 
       await enhanceImageDirect(validInput);
@@ -254,8 +254,6 @@ describe("enhance-image.direct", () => {
       expect(mockRefundTokens).toHaveBeenCalledWith(
         "user-789",
         10,
-        "job-123",
-        expect.any(String),
       );
     });
 
