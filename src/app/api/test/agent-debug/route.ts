@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import {
   CODESPACE_TOOL_NAMES,
   createCodespaceServer,
@@ -16,6 +17,15 @@ export const maxDuration = 120;
  * - prompt: string - The prompt to send to the agent
  */
 export async function POST(request: Request) {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { codespaceId, prompt } = await request.json();
 
@@ -117,6 +127,15 @@ export async function POST(request: Request) {
  * GET /api/test/agent-debug?codespaceId=xxx&code=xxx
  */
 export async function GET(request: Request) {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const url = new URL(request.url);
   const codespaceId = url.searchParams.get("codespaceId");
   const code = url.searchParams.get("code");
