@@ -120,7 +120,7 @@ describe("AlbumBatchEnhance", () => {
   it("should open dialog when button is clicked", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ balance: 50 }),
+      json: async () => ({ remaining: 50 }),
     });
 
     render(<AlbumBatchEnhance {...defaultProps} />);
@@ -136,7 +136,7 @@ describe("AlbumBatchEnhance", () => {
   it("should fetch and display user balance when dialog opens", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ balance: 100 }),
+      json: async () => ({ remaining: 100 }),
     });
 
     render(<AlbumBatchEnhance {...defaultProps} />);
@@ -159,7 +159,7 @@ describe("AlbumBatchEnhance", () => {
     mockFetch.mockImplementationOnce(() =>
       balancePromise.then(() => ({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       }))
     );
 
@@ -179,7 +179,7 @@ describe("AlbumBatchEnhance", () => {
   it("should display enhanced counts for each tier", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ balance: 50 }),
+      json: async () => ({ remaining: 50 }),
     });
 
     const imagesWithEnhancements = [
@@ -219,7 +219,7 @@ describe("AlbumBatchEnhance", () => {
   it("should show tier selection with costs", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ balance: 50 }),
+      json: async () => ({ remaining: 50 }),
     });
 
     render(<AlbumBatchEnhance {...defaultProps} />);
@@ -236,7 +236,7 @@ describe("AlbumBatchEnhance", () => {
   it("should calculate total cost correctly", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ balance: 50 }),
+      json: async () => ({ remaining: 50 }),
     });
 
     render(<AlbumBatchEnhance {...defaultProps} />);
@@ -251,7 +251,7 @@ describe("AlbumBatchEnhance", () => {
   it("should update cost when tier changes", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ balance: 50 }),
+      json: async () => ({ remaining: 50 }),
     });
 
     render(<AlbumBatchEnhance {...defaultProps} />);
@@ -271,7 +271,7 @@ describe("AlbumBatchEnhance", () => {
   it("should show insufficient balance warning", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ balance: 5 }),
+      json: async () => ({ remaining: 5 }),
     });
 
     render(<AlbumBatchEnhance {...defaultProps} />);
@@ -288,7 +288,7 @@ describe("AlbumBatchEnhance", () => {
   it("should disable confirm button when balance is insufficient", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ balance: 5 }),
+      json: async () => ({ remaining: 5 }),
     });
 
     render(<AlbumBatchEnhance {...defaultProps} />);
@@ -303,7 +303,7 @@ describe("AlbumBatchEnhance", () => {
   it("should show message when all images are already enhanced at selected tier", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ balance: 50 }),
+      json: async () => ({ remaining: 50 }),
     });
 
     const fullyEnhancedImages = [
@@ -332,7 +332,7 @@ describe("AlbumBatchEnhance", () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -346,7 +346,7 @@ describe("AlbumBatchEnhance", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 35 }),
+        json: async () => ({ remaining: 35 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -378,7 +378,7 @@ describe("AlbumBatchEnhance", () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -391,7 +391,7 @@ describe("AlbumBatchEnhance", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 40 }),
+        json: async () => ({ remaining: 40 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -427,7 +427,7 @@ describe("AlbumBatchEnhance", () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       })
       .mockResolvedValueOnce({
         ok: false,
@@ -455,7 +455,7 @@ describe("AlbumBatchEnhance", () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -465,7 +465,7 @@ describe("AlbumBatchEnhance", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 45 }),
+        json: async () => ({ remaining: 45 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -497,7 +497,7 @@ describe("AlbumBatchEnhance", () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -510,7 +510,7 @@ describe("AlbumBatchEnhance", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 40 }),
+        json: async () => ({ remaining: 40 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -550,7 +550,7 @@ describe("AlbumBatchEnhance", () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -560,7 +560,7 @@ describe("AlbumBatchEnhance", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 45 }),
+        json: async () => ({ remaining: 45 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -609,7 +609,7 @@ describe("AlbumBatchEnhance", () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -619,7 +619,7 @@ describe("AlbumBatchEnhance", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 45 }),
+        json: async () => ({ remaining: 45 }),
       })
       .mockImplementationOnce(() =>
         jobsPromise.then(() => ({
@@ -657,7 +657,7 @@ describe("AlbumBatchEnhance", () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -667,7 +667,7 @@ describe("AlbumBatchEnhance", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 45 }),
+        json: async () => ({ remaining: 45 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -700,7 +700,7 @@ describe("AlbumBatchEnhance", () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -713,7 +713,7 @@ describe("AlbumBatchEnhance", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 45 }),
+        json: async () => ({ remaining: 45 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -766,7 +766,7 @@ describe("AlbumBatchEnhance", () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -779,7 +779,7 @@ describe("AlbumBatchEnhance", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ balance: 50 }),
+        json: async () => ({ remaining: 50 }),
       });
 
     const twoImages = [

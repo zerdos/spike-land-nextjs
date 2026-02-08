@@ -245,7 +245,6 @@ describe("MetaPixel", () => {
             key: "cookie-consent",
             newValue: "accepted",
             oldValue: null,
-            storageArea: localStorage,
           });
           window.dispatchEvent(storageEvent);
         });
@@ -266,7 +265,6 @@ describe("MetaPixel", () => {
           const storageEvent = new StorageEvent("storage", {
             key: "other-key",
             newValue: "some-value",
-            storageArea: localStorage,
           });
           window.dispatchEvent(storageEvent);
         });

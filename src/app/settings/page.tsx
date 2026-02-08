@@ -206,17 +206,17 @@ export default function SettingsPage() {
                     <span className="text-sm text-muted-foreground">
                       Current plan:
                     </span>
-                    {isTierLoading
-                      ? (
-                        <span className="text-sm text-muted-foreground">
-                          Loading...
-                        </span>
-                      )
-                      : (
-                        <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                          {currentTier || "FREE"}
-                        </span>
-                      )}
+                    <span
+                      className={`px-2 py-1 rounded-full text-sm font-medium ${
+                        isTierLoading
+                          ? "text-muted-foreground"
+                          : "bg-primary/10 text-primary"
+                      }`}
+                      data-testid="tier-badge"
+                      data-tier={isTierLoading ? undefined : (currentTier || "FREE")}
+                    >
+                      {isTierLoading ? "Loading..." : (currentTier || "FREE")}
+                    </span>
                   </div>
                   <Button
                     asChild
