@@ -534,4 +534,103 @@ describe("ReadAloudArticle", () => {
 
     expect(screen.queryByRole("button", { name: "Stop reading" })).not.toBeInTheDocument();
   });
+
+  it("filters out paragraphs with empty or null textContent", async () => {
+    const user = userEvent.setup();
+
+    // Include a mix: empty <p>, short <p>, and one long enough
+    render(
+      <div>
+        <ReadAloudArticle />
+        <div data-article-content>
+          <p></p>
+          <p>Short</p>
+          <p>This is the only paragraph long enough to trigger playback.</p>
+        </div>
+      </div>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Listen to article" }));
+
+    await waitFor(() => {
+      // Only 1 paragraph should qualify (>= 20 chars)
+      expect(screen.getByText(/1 \/ 1/)).toBeInTheDocument();
+    });
+  });
+
+  it("handles unmount during playParagraph async operation", async () => {
+    let resolveFirstFetch!: (value: unknown) => void;
+    const deferredFetch = new Promise(resolve => {
+      resolveFirstFetch = resolve;
+    });
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(deferredFetch));
+
+    const user = userEvent.setup();
+
+    const { unmount } = renderWithArticle([
+      "This paragraph is long enough to test unmount during async.",
+    ]);
+
+    await user.click(screen.getByRole("button", { name: "Listen to article" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Loading...")).toBeInTheDocument();
+    });
+
+    // Unmount while fetch is pending
+    unmount();
+
+    // Resolve the fetch after unmount
+    await act(async () => {
+      resolveFirstFetch({
+        ok: true,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: () => Promise.resolve({ url: "https://example.com/unmount-async.mp3" }),
+      });
+    });
+
+    // Should not throw - mountedRef guards prevent state updates
+  });
+
+  it("handles audio ended event after unmount", async () => {
+    const user = userEvent.setup();
+
+    const { unmount } = renderWithArticle([
+      "First paragraph long enough for unmount-ended test.",
+      "Second paragraph long enough for unmount-ended test.",
+    ]);
+
+    await user.click(screen.getByRole("button", { name: "Listen to article" }));
+
+    await waitFor(() => {
+      expect(audioInstances.length).toBeGreaterThan(0);
+    });
+
+    const audio = getLastAudio();
+    unmount();
+
+    // Emit ended after unmount - should not throw
+    audio.emit("ended");
+  });
+
+  it("handles audio error event after unmount", async () => {
+    const user = userEvent.setup();
+
+    const { unmount } = renderWithArticle([
+      "First paragraph long enough for unmount-error test.",
+      "Second paragraph long enough for unmount-error test.",
+    ]);
+
+    await user.click(screen.getByRole("button", { name: "Listen to article" }));
+
+    await waitFor(() => {
+      expect(audioInstances.length).toBeGreaterThan(0);
+    });
+
+    const audio = getLastAudio();
+    unmount();
+
+    // Emit error after unmount - should not throw
+    audio.emit("error");
+  });
 });

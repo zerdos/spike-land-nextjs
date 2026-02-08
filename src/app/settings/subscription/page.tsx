@@ -14,7 +14,7 @@ import type { TierInfo } from "@/hooks/useTier";
 import { useTier } from "@/hooks/useTier";
 import type { UpgradeTierId } from "@/hooks/useTierUpgrade";
 import { useTierUpgrade } from "@/hooks/useTierUpgrade";
-import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
 import { useTokenPackPurchase } from "@/hooks/useTokenPackPurchase";
 import type { TokenPackageId } from "@/lib/stripe/client";
 import { ArrowLeft, Calendar, RefreshCw, X } from "lucide-react";
@@ -41,7 +41,7 @@ export default function SubscriptionPage() {
     refetch: refetchTiers,
   } = useTier();
 
-  const { balance, isLoading: isBalanceLoading, refetch: refetchBalance } = useTokenBalance();
+  const { remaining, isLoading: isBalanceLoading, refetch: refetchBalance } = useWorkspaceCredits();
   const { upgradeAndRedirect, isUpgrading, error: upgradeError } = useTierUpgrade();
   const { purchaseAndRedirect, isPurchasing, error: purchaseError } = useTokenPackPurchase();
   const {
@@ -190,7 +190,7 @@ export default function SubscriptionPage() {
                 Token Balance
               </span>
               <p className="text-2xl font-bold" data-testid="token-balance">
-                {balance ?? 0}
+                {remaining ?? 0}
               </p>
             </div>
             <div className="p-4 rounded-lg bg-muted/50">

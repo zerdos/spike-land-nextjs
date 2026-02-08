@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useMixHistory } from "@/hooks/useMixHistory";
-import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
 import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { cn } from "@/lib/utils";
 import type { EnhancementTier } from "@prisma/client";
@@ -29,12 +29,12 @@ interface BlendrClientProps {
 
 export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
   const router = useRouter();
-  // Only fetch token balance for authenticated users
+  // Only fetch credits for authenticated users
   const {
-    balance,
+    remaining,
     isLoading: isBalanceLoading,
     refetch: refetchBalance,
-  } = useTokenBalance({
+  } = useWorkspaceCredits({
     autoRefreshOnFocus: !isAnonymous,
   });
   // Only fetch history for authenticated users
@@ -59,7 +59,7 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
   const canCreateMix = image1 !== null && image2 !== null && !activeJobId &&
     !isCreatingMix;
   const hasEnoughTokens = isAnonymous || tokenCost === 0 ||
-    balance >= tokenCost;
+    remaining >= tokenCost;
 
   // Check if we need to upload images first (both must be gallery images OR we handle uploads)
   const hasUploadedImages = isAnonymous || image1?.type === "upload" ||
@@ -441,7 +441,7 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
                 <Coins className="h-3.5 w-3.5 text-yellow-500" />
                 <span className="text-sm font-medium text-white">
-                  {isBalanceLoading ? "..." : balance} tokens
+                  {isBalanceLoading ? "..." : remaining} tokens
                 </span>
               </div>
             )}

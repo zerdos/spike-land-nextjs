@@ -9,17 +9,17 @@ import {
   MixResultCard,
   type SelectedImage,
 } from "@/components/mix";
-import { PurchaseModal } from "@/components/tokens";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "@/components/ui/link";
 import { Separator } from "@/components/ui/separator";
 import { type MixHistoryItem, useMixHistory } from "@/hooks/useMixHistory";
-import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
 import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { cn } from "@/lib/utils";
 import type { EnhancementTier } from "@prisma/client";
-import { AlertTriangle, ArrowLeft, Check, Coins, Crown, Sparkles, Upload } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, Crown, Sparkles, Upload } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useCallback, useState } from "react";
 
@@ -32,13 +32,13 @@ interface PhotoMixClientProps {
 
 export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
   const router = useRouter();
-  // Only fetch token balance for authenticated users
+  // Only fetch credit balance for authenticated users
   const {
-    balance,
-    isLowBalance,
+    remaining,
+    isLowCredits,
     isLoading: isBalanceLoading,
     refetch: refetchBalance,
-  } = useTokenBalance({
+  } = useWorkspaceCredits({
     autoRefreshOnFocus: !isAnonymous,
   });
   // Only fetch history for authenticated users
@@ -64,7 +64,7 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
     !isCreatingMix;
   // FREE tier always has enough tokens (costs 0), anonymous users always have enough
   const hasEnoughTokens = isAnonymous || tokenCost === 0 ||
-    balance >= tokenCost;
+    remaining >= tokenCost;
 
   // Check if we need to upload images first (both must be gallery images OR we handle uploads)
   // For anonymous users, we always need to upload

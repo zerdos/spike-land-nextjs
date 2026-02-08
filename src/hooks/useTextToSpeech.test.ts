@@ -479,4 +479,50 @@ describe("useTextToSpeech", () => {
     // Now it should succeed since we provided a valid URL
     expect(result.current.state).toBe("playing");
   });
+
+  it("stop after unmount does not call setState", async () => {
+    mockFetchJson("https://example.com/stop-unmount.mp3");
+
+    const { result, unmount } = renderHook(() => useTextToSpeech());
+
+    await act(async () => {
+      await result.current.play("unique-text-stop-unmount-020");
+    });
+
+    unmount();
+
+    // Calling stop after unmount should not throw
+    result.current.stop();
+  });
+
+  it("handles unmount during fetch when url is valid but component gone", async () => {
+    // This covers the guard at line 104: if (!mountedRef.current) return;
+    // after audio is created but before setState("playing")
+    let resolveResponse!: (value: unknown) => void;
+    const fetchPromise = new Promise(resolve => {
+      resolveResponse = resolve;
+    });
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(fetchPromise));
+
+    const { result, unmount } = renderHook(() => useTextToSpeech());
+
+    let playPromise: Promise<void>;
+    act(() => {
+      playPromise = result.current.play("unique-text-unmount-mid-audio-021");
+    });
+
+    // Resolve fetch and immediately unmount before Audio is used
+    unmount();
+
+    await act(async () => {
+      resolveResponse({
+        ok: true,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: () => Promise.resolve({ url: "https://example.com/mid-audio.mp3" }),
+      });
+      await playPromise!;
+    });
+
+    // Should not throw - audio creation and state updates are guarded
+  });
 });
