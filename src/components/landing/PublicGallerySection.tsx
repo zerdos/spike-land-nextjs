@@ -1,11 +1,11 @@
 "use client";
 
-import { ScrollReveal } from "@/components/orbit-landing/ScrollReveal";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
 import type { PublicPhoto } from "@/lib/gallery/public-photos";
 import { ArrowRight, ImageIcon } from "lucide-react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 interface PublicGallerySectionProps {
   photos: PublicPhoto[];
@@ -15,76 +15,94 @@ export function PublicGallerySection({ photos }: PublicGallerySectionProps) {
   if (photos.length === 0) return null;
 
   return (
-    <section className="relative py-24 sm:py-32 overflow-hidden">
+    <section className="relative py-32 overflow-hidden">
       <div className="container mx-auto px-4">
-        <ScrollReveal>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="p-2 rounded-lg bg-white/5 border border-white/10 text-fuchsia-400">
-              <ImageIcon className="w-5 h-5" />
-            </span>
-            <span className="text-sm font-medium text-fuchsia-400">
-              Pixel Gallery
-            </span>
-          </div>
-        </ScrollReveal>
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center gap-2 mb-6"
+        >
+          <span className="p-2 rounded-xl bg-fuchsia-400/10 border border-fuchsia-400/20 text-fuchsia-400">
+            <ImageIcon className="w-5 h-5" />
+          </span>
+          <span className="text-sm font-semibold tracking-widest uppercase text-fuchsia-400">
+            The Pixel Dimension
+          </span>
+        </motion.div>
 
-        <ScrollReveal delay={0.1}>
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-            Enhanced with{" "}
-            <span className="bg-gradient-to-r from-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
-              Pixel
-            </span>
-          </h2>
-        </ScrollReveal>
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-4xl md:text-6xl font-bold text-white mb-8 tracking-tight"
+        >
+          Reality,{" "}
+          <span className="bg-gradient-to-r from-fuchsia-400 to-pink-500 bg-clip-text text-transparent">
+            Refined
+          </span>
+        </motion.h2>
 
-        <ScrollReveal delay={0.2}>
-          <p className="text-lg text-white/60 mb-12 max-w-2xl">
-            AI-powered image enhancement that brings your photos to life.
-          </p>
-        </ScrollReveal>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-xl text-zinc-500 mb-16 max-w-2xl font-light"
+        >
+          Our neural network reconstructs lost details with haunting precision. 
+          See the invisible.
+        </motion.p>
 
-        <ScrollReveal delay={0.3}>
-          <div className="relative">
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
-              {photos.map((photo) => (
-                <div
-                  key={photo.id}
-                  className="flex-shrink-0 w-64 h-64 relative rounded-xl overflow-hidden snap-start group"
-                >
-                  <Image
-                    src={photo.enhancedUrl ?? photo.originalUrl}
-                    alt={photo.name}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    sizes="256px"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <p className="text-white text-sm font-medium truncate">
-                      {photo.name}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </ScrollReveal>
-
-        <ScrollReveal delay={0.4}>
-          <div className="mt-12 text-center">
-            <Button
-              asChild
-              variant="outline"
-              className="border-white/10 hover:bg-white/5 text-white gap-2 group"
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {photos.slice(0, 10).map((photo, index) => (
+            <motion.div
+              key={photo.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.05 }}
+              whileHover={{ scale: 1.05, zIndex: 10 }}
+              className="relative aspect-square rounded-2xl overflow-hidden group shadow-2xl shadow-black/50"
             >
-              <Link href="/pixel">
-                Try Pixel
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-          </div>
-        </ScrollReveal>
+              <Image
+                src={photo.enhancedUrl ?? photo.originalUrl}
+                alt={photo.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 20vw"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                <p className="text-white text-xs font-semibold tracking-wider uppercase truncate">
+                  {photo.name || "Refined Entity"}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-20 text-center"
+        >
+          <Button
+            asChild
+            variant="ghost"
+            className="text-zinc-400 hover:text-white gap-2 transition-all duration-300"
+          >
+            <Link href="/pixel">
+              Enter the Gallery
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </Button>
+        </motion.div>
       </div>
     </section>
   );

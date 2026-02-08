@@ -33,11 +33,19 @@ const mockPhotos: PublicPhoto[] = [
   },
 ];
 
+// Mock IntersectionObserver
+class IntersectionObserverMock {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+vi.stubGlobal("IntersectionObserver", IntersectionObserverMock);
+
 describe("PublicGallerySection", () => {
   it("renders the section heading", () => {
     render(<PublicGallerySection photos={mockPhotos} />);
-    expect(screen.getByText(/Enhanced with/)).toBeInTheDocument();
-    expect(screen.getByText("Pixel")).toBeInTheDocument();
+    expect(screen.getByText(/Reality,/)).toBeInTheDocument();
+    expect(screen.getByText("Refined")).toBeInTheDocument();
   });
 
   it("renders images using enhanced URL when available", () => {
@@ -64,9 +72,16 @@ describe("PublicGallerySection", () => {
     expect(screen.getByText("Mountain")).toBeInTheDocument();
   });
 
-  it("renders Try Pixel link", () => {
+  it("renders the subheading", () => {
     render(<PublicGallerySection photos={mockPhotos} />);
-    const link = screen.getByRole("link", { name: /try pixel/i });
+    expect(
+      screen.getByText(/Our neural network reconstructs lost details/),
+    ).toBeInTheDocument();
+  });
+
+  it("renders Enter the Gallery link", () => {
+    render(<PublicGallerySection photos={mockPhotos} />);
+    const link = screen.getByRole("link", { name: /enter the gallery/i });
     expect(link).toHaveAttribute("href", "/pixel");
   });
 
@@ -75,8 +90,8 @@ describe("PublicGallerySection", () => {
     expect(container.innerHTML).toBe("");
   });
 
-  it("renders the Pixel Gallery badge", () => {
+  it("renders the badge", () => {
     render(<PublicGallerySection photos={mockPhotos} />);
-    expect(screen.getByText("Pixel Gallery")).toBeInTheDocument();
+    expect(screen.getByText("The Pixel Dimension")).toBeInTheDocument();
   });
 });

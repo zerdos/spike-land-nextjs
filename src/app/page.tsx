@@ -7,6 +7,7 @@ import { PublicGallerySection } from "@/components/landing/PublicGallerySection"
 import { LandingPageStructuredData } from "@/components/seo/LandingPageStructuredData";
 import { getRecentPublicPhotos } from "@/lib/gallery/public-photos";
 import { getLatestShowcaseApps } from "@/lib/landing/showcase-feed";
+import { PhysicsBackground } from "@/components/landing/PhysicsBackground";
 
 export default async function Home() {
   let showcaseApps: Awaited<ReturnType<typeof getLatestShowcaseApps>> = [];
@@ -21,14 +22,17 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950">
+    <main className="relative min-h-screen bg-zinc-950">
       <LandingPageStructuredData />
-      <LandingHero />
-      <AppShowcaseSection apps={showcaseApps} />
-      <PublicGallerySection photos={publicPhotos} />
-      <PhotoMixDemo />
-      <BlogPreviewSection />
-      <CreateCTASection />
+      <PhysicsBackground />
+      <div className="relative z-10">
+        <LandingHero />
+        <AppShowcaseSection apps={showcaseApps} />
+        <PublicGallerySection photos={publicPhotos} />
+        <PhotoMixDemo />
+        <BlogPreviewSection />
+        <CreateCTASection />
+      </div>
     </main>
   );
 }
