@@ -102,8 +102,8 @@ export class GoogleAdsClient implements IMarketingClient {
    * Validate Account ID format (digits and dashes only)
    */
   private validateAccountId(accountId: string): void {
-    if (!/^[\d-]+$/.test(accountId)) {
-      throw new Error(`Invalid Account ID format: ${accountId}`);
+    if (!/^\d[\d-]*\d$|^\d$/.test(accountId)) {
+      throw new Error("Invalid Account ID format");
     }
   }
 
@@ -112,7 +112,7 @@ export class GoogleAdsClient implements IMarketingClient {
    */
   private validateCampaignId(campaignId: string): void {
     if (!/^\d+$/.test(campaignId)) {
-      throw new Error(`Invalid Campaign ID format: ${campaignId}`);
+      throw new Error("Invalid Campaign ID format");
     }
   }
 

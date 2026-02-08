@@ -673,6 +673,20 @@ describe("GoogleAdsClient", () => {
       await expect(client.listCampaigns("123; DROP TABLE")).rejects.toThrow(
         "Invalid Account ID format",
       );
+      // Reject strings with only dashes (no digits)
+      await expect(client.listCampaigns("---")).rejects.toThrow(
+        "Invalid Account ID format",
+      );
+      await expect(client.listCampaigns("-")).rejects.toThrow(
+        "Invalid Account ID format",
+      );
+      // Reject leading or trailing dashes
+      await expect(client.listCampaigns("-123")).rejects.toThrow(
+        "Invalid Account ID format",
+      );
+      await expect(client.listCampaigns("123-")).rejects.toThrow(
+        "Invalid Account ID format",
+      );
     });
 
     it("should reject invalid campaign IDs", async () => {

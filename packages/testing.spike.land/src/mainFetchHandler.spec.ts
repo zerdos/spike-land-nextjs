@@ -91,7 +91,10 @@ describe("MainFetchHandler", () => {
 
       expect(handleErrors).toHaveBeenCalled();
       expect(handleFetchApi).toHaveBeenCalled();
-      expect(response).toStrictEqual(mockFetchApiResponse);
+      expect(await response.text()).toBe("Fetch API response");
+      expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+      expect(response.headers.has("X-Frame-Options")).toBe(false);
+      expect(response.headers.get("Content-Security-Policy")).toContain("frame-ancestors");
     });
   });
 
@@ -119,7 +122,7 @@ describe("MainFetchHandler", () => {
         mockEnv,
         mockCtx,
       );
-      expect(response).toStrictEqual(mockFetchApiResponse);
+      expect(await response.text()).toBe("Redirected response");
 
       // Clean up the route after test
       delete routes[testRoute as keyof typeof routes];
@@ -147,7 +150,7 @@ describe("MainFetchHandler", () => {
         mockEnv,
         mockCtx,
       );
-      expect(response).toStrictEqual(mockFetchApiResponse);
+      expect(await response.text()).toBe("Path-based response");
     });
 
     it("should handle root path requests", async () => {
@@ -170,7 +173,7 @@ describe("MainFetchHandler", () => {
         mockEnv,
         mockCtx,
       );
-      expect(response).toStrictEqual(mockFetchApiResponse);
+      expect(await response.text()).toBe("Root path response");
 
       const routesCopy = { ...routes };
       delete (routesCopy as Record<string, string>)["/"];
@@ -195,7 +198,7 @@ describe("MainFetchHandler", () => {
         mockRequest,
         expect.any(Function),
       );
-      expect(response).toStrictEqual(mockFetchApiResponse);
+      expect(await response.text()).toBe("Handled response");
     });
 
     it("should log request URL", async () => {
