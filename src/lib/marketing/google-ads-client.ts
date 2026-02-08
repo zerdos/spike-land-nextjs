@@ -99,6 +99,24 @@ export class GoogleAdsClient implements IMarketingClient {
   }
 
   /**
+   * Validate Account ID format (digits and dashes only)
+   */
+  private validateAccountId(accountId: string): void {
+    if (!/^\d[\d-]*\d$|^\d$/.test(accountId)) {
+      throw new Error("Invalid Account ID format");
+    }
+  }
+
+  /**
+   * Validate Campaign ID format (digits only)
+   */
+  private validateCampaignId(campaignId: string): void {
+    if (!/^\d+$/.test(campaignId)) {
+      throw new Error("Invalid Campaign ID format");
+    }
+  }
+
+  /**
    * Make authenticated request to Google Ads API
    */
   private async request<T>(
@@ -386,6 +404,7 @@ export class GoogleAdsClient implements IMarketingClient {
    * List campaigns for a customer
    */
   async listCampaigns(accountId: string): Promise<Campaign[]> {
+    this.validateAccountId(accountId);
     const customerId = accountId.replace(/-/g, "");
 
     // Fetch currency and campaigns in parallel for better performance
@@ -428,6 +447,8 @@ export class GoogleAdsClient implements IMarketingClient {
     accountId: string,
     campaignId: string,
   ): Promise<Campaign | null> {
+    this.validateAccountId(accountId);
+    this.validateCampaignId(campaignId);
     const customerId = accountId.replace(/-/g, "");
 
     // Fetch currency and campaign in parallel for better performance
@@ -480,6 +501,8 @@ export class GoogleAdsClient implements IMarketingClient {
     startDate: Date,
     endDate: Date,
   ): Promise<CampaignMetrics> {
+    this.validateAccountId(accountId);
+    this.validateCampaignId(campaignId);
     const customerId = accountId.replace(/-/g, "");
     const startStr = (startDate.toISOString().split("T")[0] ?? "").replace(
       /-/g,
