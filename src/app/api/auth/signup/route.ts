@@ -11,10 +11,6 @@ import { ensureUserAlbums } from "@/lib/albums/ensure-user-albums";
 import { bootstrapAdminIfNeeded } from "@/lib/auth/bootstrap-admin";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
-import { assignReferralCodeToUser } from "@/lib/referral/code-generator";
-import { validateReferralAfterVerification } from "@/lib/referral/fraud-detection";
-import { completeReferralAndGrantRewards } from "@/lib/referral/rewards";
-import { linkReferralOnSignup } from "@/lib/referral/tracker";
 import { tryCatch } from "@/lib/try-catch";
 import bcrypt from "bcryptjs";
 import type { NextRequest } from "next/server";
@@ -161,6 +157,7 @@ async function handleSignup(request: NextRequest): Promise<NextResponse> {
     console.error("Failed to bootstrap admin:", bootstrapError);
   }
 
+  /*
   // Assign referral code to new user
   const { error: referralCodeError } = await tryCatch(
     assignReferralCodeToUser(newUser.id),
@@ -176,6 +173,7 @@ async function handleSignup(request: NextRequest): Promise<NextResponse> {
   if (linkReferralError) {
     console.error("Failed to link referral on signup:", linkReferralError);
   }
+  */
 
   // Create default private and public albums
   const { error: albumsError } = await tryCatch(ensureUserAlbums(newUser.id));
@@ -183,6 +181,7 @@ async function handleSignup(request: NextRequest): Promise<NextResponse> {
     console.error("Failed to create default albums:", albumsError);
   }
 
+  /*
   // Process referral rewards (email-based signup = email verified)
   const { data: validation, error: validationError } = await tryCatch(
     validateReferralAfterVerification(newUser.id),
@@ -199,6 +198,7 @@ async function handleSignup(request: NextRequest): Promise<NextResponse> {
       console.error("Failed to grant referral rewards:", rewardsError);
     }
   }
+  */
 
   return NextResponse.json({
     success: true,
