@@ -101,7 +101,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.GENERATE,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.PROCESSING,
       });
 
@@ -114,7 +114,7 @@ describe("generation-service", () => {
 
       expect(result.success).toBe(true);
       expect(result.jobId).toBe(testJobId);
-      expect(result.tokensCost).toBe(2);
+      expect(result.creditsCost).toBe(2);
       expect(mockWorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith({
         userId: testUserId,
         amount: 2,
@@ -229,7 +229,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.MODIFY,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.PROCESSING,
       });
 
@@ -275,7 +275,7 @@ describe("generation-service", () => {
         id: testJobId,
         type: McpJobType.GENERATE,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.COMPLETED,
         prompt: "A beautiful sunset",
         outputImageUrl: "https://example.com/image.jpg",
@@ -317,7 +317,7 @@ describe("generation-service", () => {
           id: "job1",
           type: McpJobType.GENERATE,
           tier: "TIER_1K",
-          tokensCost: 2,
+          creditsCost: 2,
           status: JobStatus.COMPLETED,
           prompt: "Test prompt 1",
           createdAt: mockDate,
@@ -328,7 +328,7 @@ describe("generation-service", () => {
           id: "job2",
           type: McpJobType.MODIFY,
           tier: "TIER_2K",
-          tokensCost: 5,
+          creditsCost: 5,
           status: JobStatus.COMPLETED,
           prompt: "Test prompt 2",
           createdAt: mockDate,
@@ -457,7 +457,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.GENERATE,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.PROCESSING,
       });
       mockGeminiClient.generateImageWithGemini.mockResolvedValue(
@@ -530,7 +530,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.GENERATE,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.PROCESSING,
       });
       // Simulate Gemini failure
@@ -541,7 +541,7 @@ describe("generation-service", () => {
       mockMcpGenerationJob.findUnique.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
-        tokensCost: 2,
+        creditsCost: 2,
       });
       mockWorkspaceCreditManager.refundCredits.mockResolvedValue({ success: true });
 
@@ -586,7 +586,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.GENERATE,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.PROCESSING,
       });
       mockGeminiClient.generateImageWithGemini.mockRejectedValue(
@@ -632,7 +632,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.MODIFY,
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
         status: JobStatus.PROCESSING,
       });
       // First upload call is for input image, second for output
@@ -712,7 +712,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.MODIFY,
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
         status: JobStatus.PROCESSING,
       });
       // Input upload succeeds
@@ -727,7 +727,7 @@ describe("generation-service", () => {
       mockMcpGenerationJob.findUnique.mockResolvedValue({
         id: testJobId,
         userId: testUserId,
-        tokensCost: 5,
+        creditsCost: 5,
       });
       mockWorkspaceCreditManager.refundCredits.mockResolvedValue({ success: true });
 
@@ -777,7 +777,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.MODIFY,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.PROCESSING,
       });
       mockUploadToR2
@@ -821,7 +821,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.GENERATE,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.PROCESSING,
       });
 
@@ -868,7 +868,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.MODIFY,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.PROCESSING,
       });
 
@@ -902,7 +902,7 @@ describe("generation-service", () => {
         id: testJobId,
         type: McpJobType.GENERATE,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.COMPLETED,
         prompt: "A beautiful sunset",
         outputImageUrl: "https://example.com/image.jpg",
@@ -976,7 +976,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.GENERATE,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.PROCESSING,
       });
 
@@ -1004,7 +1004,7 @@ describe("generation-service", () => {
         userId: testUserId,
         type: McpJobType.MODIFY,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.PROCESSING,
       });
 

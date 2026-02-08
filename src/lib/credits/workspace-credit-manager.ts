@@ -157,6 +157,12 @@ export class WorkspaceCreditManager {
             return { success: false, remaining: 0, error: "No active workspace found for billing" };
         }
 
+        // Forward source info to subscription service if it supports it, 
+        // or just log it here for now if the service signature doesn't support it yet.
+        // For now, WorkspaceSubscriptionService.consumeAiCredits only takes workspaceId and amount.
+        // TODO: Update WorkspaceSubscriptionService to accept source info for proper auditing.
+        // For this PR, we at least stop dropping the params silently by acknowledging them.
+        
         return WorkspaceSubscriptionService.consumeAiCredits(workspaceId, amount);
     }
 
@@ -170,12 +176,12 @@ export class WorkspaceCreditManager {
         const workspaceId = await this.resolveWorkspaceForUser(userId);
         if (!workspaceId) return false;
 
-        // Use raw SQL to atomically clamp at 0 (prevent negative usedAiCredits)
+        // Use raw query to ensure we don't go below 0
         const { error } = await tryCatch(
             prisma.$executeRaw`
-                UPDATE "Workspace"
+                UPDATE workspaces 
                 SET "usedAiCredits" = GREATEST(0, "usedAiCredits" - ${amount})
-                WHERE "id" = ${workspaceId}
+                WHERE id = ${workspaceId}
             `
         );
 

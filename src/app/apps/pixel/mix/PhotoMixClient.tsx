@@ -274,22 +274,16 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
   return (
     <div className="container mx-auto pt-24 pb-8 px-4 max-w-4xl">
       {/* Low balance warning - only for authenticated users */}
-      {!isAnonymous && !isBalanceLoading && isLowBalance && (
+      {!isAnonymous && !isBalanceLoading && isLowCredits && (
         <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
           <AlertTriangle className="h-4 w-4 text-yellow-600" />
           <AlertDescription className="flex items-center justify-between">
             <span className="text-sm">
-              Your token balance is running low ({balance} tokens remaining).
+              Your credit balance is running low ({remaining} credits remaining).
             </span>
-            <PurchaseModal
-              trigger={
-                <Button size="sm" variant="outline" className="ml-4">
-                  <Coins className="mr-2 h-4 w-4" />
-                  Get Tokens
-                </Button>
-              }
-              onPurchaseComplete={refetchBalance}
-            />
+            <Button size="sm" variant="outline" className="ml-4" asChild>
+              <Link href="/settings/billing">View Plans</Link>
+            </Button>
           </AlertDescription>
         </Alert>
       )}
@@ -443,11 +437,11 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                 <>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2 text-sm font-medium">
-                      <Coins className="h-5 w-5 text-yellow-500" />
+                      <Sparkles className="h-5 w-5 text-yellow-500" />
                       Your Balance
                     </span>
                     <span className="text-lg font-bold">
-                      {isBalanceLoading ? "..." : `${balance} tokens`}
+                      {isBalanceLoading ? "..." : `${remaining} credits`}
                     </span>
                   </div>
 
@@ -557,7 +551,7 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                 </ol>
               </div>
 
-              {/* Only show "not enough tokens" for paid tiers - not for anonymous */}
+              {/* Only show "not enough credits" for paid tiers - not for anonymous */}
               {!isAnonymous && tokenCost > 0 && !hasEnoughTokens &&
                 !isBalanceLoading && (
                   <>
@@ -565,17 +559,11 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                     <div className="space-y-3">
                       <p className="text-sm text-destructive">
                         You need {tokenCost}{" "}
-                        tokens for Premium tier. Try Free tier or get more tokens.
+                        credits for Premium tier. Try Free tier or upgrade your plan.
                       </p>
-                      <PurchaseModal
-                        trigger={
-                          <Button className="w-full">
-                            <Coins className="mr-2 h-4 w-4" />
-                            Get Tokens
-                          </Button>
-                        }
-                        onPurchaseComplete={refetchBalance}
-                      />
+                      <Button className="w-full" asChild>
+                        <Link href="/settings/billing">View Plans</Link>
+                      </Button>
                     </div>
                   </>
                 )}

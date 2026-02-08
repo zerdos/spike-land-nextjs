@@ -4,7 +4,7 @@ import { PixelLogo } from "@/components/brand";
 import { AlbumsGrid } from "@/components/enhance/AlbumsGrid";
 import { AlbumsGridSkeleton } from "@/components/enhance/AlbumsGridSkeleton";
 import { CreateAlbumDialog } from "@/components/enhance/CreateAlbumDialog";
-import { TokenDisplay } from "@/components/tokens/TokenDisplay";
+import { CreditBalanceDisplay } from "@/components/enhance/CreditBalanceDisplay";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
 import { useUserAlbums } from "@/hooks/useUserAlbums";
@@ -50,7 +50,7 @@ function EnhancePageContent(_props: EnhancePageClientProps) {
                 Pipelines
               </Link>
             </Button>
-            <TokenDisplay />
+            <CreditBalanceDisplay showEstimates={false} className="border-0 shadow-none" />
           </div>
         </div>
 

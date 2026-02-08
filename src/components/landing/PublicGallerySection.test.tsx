@@ -8,9 +8,10 @@ vi.mock("@/components/orbit-landing/ScrollReveal", () => ({
 }));
 
 vi.mock("next/image", () => ({
-  default: ({ src, alt }: { src: string; alt: string }) =>
-    // eslint-disable-next-line @next/next/no-img-element
-    (<img src={src} alt={alt} />),
+  default: (props: any) => {
+    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+    return <img {...props} />;
+  },
 }));
 
 const mockPhotos: PublicPhoto[] = [

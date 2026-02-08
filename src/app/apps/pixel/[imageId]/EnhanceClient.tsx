@@ -12,13 +12,13 @@ import { ShareButton } from "@/components/enhance/ShareButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "@/components/ui/link";
+
 import { useInterval } from "@/hooks/useInterval";
 import { useJobStream } from "@/hooks/useJobStream";
 import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import type { EnhancementTier } from "@prisma/client";
-import { AlertTriangle, ArrowLeft, Download, ExternalLink, Layers } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Coins, Download, ExternalLink, Layers } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -56,7 +56,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { remaining, isLowCredits, isLoading, hasFetched, refetch: refetchBalance } = useWorkspaceCredits(
+  const { remaining: balance, isLowCredits: isLowBalance, isLoading, hasFetched, refetch: refetchBalance } = useWorkspaceCredits(
     {
       autoRefreshOnFocus: true,
     },
@@ -221,7 +221,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           status: "PROCESSING",
           currentStage: null,
           enhancementType: "BLEND",
-          tokensCost: result.tokensCost || 2,
+          creditsCost: result.creditsCost || 2,
           enhancedUrl: null,
           enhancedR2Key: null,
           enhancedWidth: null,
@@ -306,7 +306,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         status: "PROCESSING",
         currentStage: null,
         enhancementType: blendImageData ? "BLEND" : "STANDARD",
-        tokensCost: result.tokensCost || 0,
+        creditsCost: result.creditsCost || 0,
         enhancedUrl: null,
         enhancedR2Key: null,
         enhancedWidth: null,
@@ -411,15 +411,18 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
   return (
     <div className="container mx-auto pt-24 pb-8 px-4">
-      {!isLoading && isLowCredits && (
+      {!isLoading && isLowBalance && (
         <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
           <AlertTriangle className="h-4 w-4 text-yellow-600" />
           <AlertDescription className="flex items-center justify-between">
             <span className="text-sm">
-              Your credit balance is running low ({remaining} credits remaining).
+              Your credit balance is running low ({balance} credits remaining).
             </span>
             <Button size="sm" variant="outline" className="ml-4" asChild>
-              <Link href="/pricing">View Plans</Link>
+              <a href="/settings/billing">
+                <Coins className="mr-2 h-4 w-4" />
+                Get Credits
+              </a>
             </Button>
           </AlertDescription>
         </Alert>
@@ -632,11 +635,10 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               selectedVersionId={selectedVersionId}
               onSelectVersion={setSelectedVersionId}
               onEnhance={handleEnhance}
-              balance={remaining}
+              balance={balance ?? 0}
               isBalanceLoading={isLoading}
               hasFetched={hasFetched}
               isEnhancing={isEnhancing}
-              onBalanceRefresh={refetchBalance}
             />
           </div>
         </div>
@@ -653,7 +655,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             }
           }}
           onEnhance={handleEnhance}
-          currentBalance={remaining}
+          currentBalance={balance ?? 0}
           isProcessing={activeJobId !== null}
           completedVersions={completedVersions.map((
             job: ImageEnhancementJob,
@@ -661,7 +663,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             tier: job.tier,
             url: job.enhancedUrl || "",
           }))}
-          onBalanceRefresh={refetchBalance}
           imageUrl={image.originalUrl}
           imageName={`Blend: ${image.name} + ${blendImageData.fileName}`}
           trigger={null}

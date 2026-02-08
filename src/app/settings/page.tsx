@@ -1,7 +1,6 @@
 "use client";
 
 import { ApiKeysTab } from "@/components/settings/api-keys-tab";
-import { TierBadge, type TierType } from "@/components/tiers";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTier } from "@/hooks/useTier";
+import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
 import { CreditCard } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -27,7 +26,7 @@ import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
-  const { currentTier, isLoading: isTierLoading } = useTier();
+  const { tier: currentTier, isLoading: isTierLoading } = useWorkspaceCredits();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
   const [publicProfile, setPublicProfile] = useState(false);
@@ -214,11 +213,9 @@ export default function SettingsPage() {
                         </span>
                       )
                       : (
-                        <TierBadge
-                          tier={(currentTier as TierType) || "FREE"}
-                          size="md"
-                          showIcon
-                        />
+                        <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                          {currentTier || "FREE"}
+                        </span>
                       )}
                   </div>
                   <Button
