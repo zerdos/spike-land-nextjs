@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { describe, expect, it, vi, beforeEach, afterAll } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { POST, GET } from "./route";
 
 vi.mock("@/auth", () => ({
@@ -17,19 +17,18 @@ vi.mock("@anthropic-ai/claude-agent-sdk", () => ({
 }));
 
 describe("POST /api/test/agent-debug", () => {
-    const originalEnv = process.env;
-
     beforeEach(() => {
         vi.clearAllMocks();
-        process.env = { ...originalEnv };
+        // Reset env vars before each test to ensure clean slate
+        vi.unstubAllEnvs();
     });
 
-    afterAll(() => {
-        process.env = originalEnv;
+    afterEach(() => {
+        vi.unstubAllEnvs();
     });
 
     it("should return 404 in production", async () => {
-        process.env.NODE_ENV = "production";
+        vi.stubEnv("NODE_ENV", "production");
         const request = new Request("http://localhost/api/test/agent-debug", {
             method: "POST",
             body: JSON.stringify({ codespaceId: "123", prompt: "test" }),
@@ -43,7 +42,7 @@ describe("POST /api/test/agent-debug", () => {
     });
 
     it("should return 401 if unauthenticated in development", async () => {
-        process.env.NODE_ENV = "development";
+        vi.stubEnv("NODE_ENV", "development");
         vi.mocked(auth).mockResolvedValue(null);
 
         const request = new Request("http://localhost/api/test/agent-debug", {
@@ -59,7 +58,7 @@ describe("POST /api/test/agent-debug", () => {
     });
 
     it("should return 400 if authenticated but missing body params in development", async () => {
-        process.env.NODE_ENV = "development";
+        vi.stubEnv("NODE_ENV", "development");
         vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as any);
 
         const request = new Request("http://localhost/api/test/agent-debug", {
@@ -76,19 +75,17 @@ describe("POST /api/test/agent-debug", () => {
 });
 
 describe("GET /api/test/agent-debug", () => {
-    const originalEnv = process.env;
-
     beforeEach(() => {
         vi.clearAllMocks();
-        process.env = { ...originalEnv };
+        vi.unstubAllEnvs();
     });
 
-    afterAll(() => {
-        process.env = originalEnv;
+    afterEach(() => {
+        vi.unstubAllEnvs();
     });
 
     it("should return 404 in production", async () => {
-        process.env.NODE_ENV = "production";
+        vi.stubEnv("NODE_ENV", "production");
         const request = new Request("http://localhost/api/test/agent-debug?codespaceId=123", {
             method: "GET",
         });
@@ -101,7 +98,7 @@ describe("GET /api/test/agent-debug", () => {
     });
 
     it("should return 401 if unauthenticated in development", async () => {
-        process.env.NODE_ENV = "development";
+        vi.stubEnv("NODE_ENV", "development");
         vi.mocked(auth).mockResolvedValue(null);
 
         const request = new Request("http://localhost/api/test/agent-debug?codespaceId=123", {
