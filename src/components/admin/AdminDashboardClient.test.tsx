@@ -126,7 +126,7 @@ describe("AdminDashboardClient", () => {
 
     expect(screen.getByText("Quick Links")).toBeInTheDocument();
     expect(screen.getByText("User Analytics")).toBeInTheDocument();
-    expect(screen.getByText("Token Economics")).toBeInTheDocument();
+    expect(screen.getByText("Credit Economics")).toBeInTheDocument();
     expect(screen.getByText("System Health")).toBeInTheDocument();
     expect(screen.getByText("Voucher Management")).toBeInTheDocument();
     expect(screen.getByText("User Management")).toBeInTheDocument();
@@ -361,10 +361,10 @@ describe("AdminDashboardClient", () => {
         "href",
         "/admin/analytics",
       );
-    expect(screen.getByRole("link", { name: /Token Economics/i }))
+    expect(screen.getByRole("link", { name: /Credit Economics/i }))
       .toHaveAttribute(
         "href",
-        "/admin/tokens",
+        "/admin/credits",
       );
     expect(screen.getByRole("link", { name: /System Health/i }))
       .toHaveAttribute(

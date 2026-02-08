@@ -92,7 +92,7 @@ Feature: Smoke Tests
   Scenario: Admin tokens page loads for admin user
     Given I am logged in as "Admin User" with email "admin@example.com"
     And the user is an admin
-    When I visit "/admin/tokens"
+    When I visit "/admin/credits"
     Then the page should load successfully
 
   @fast @requires-db

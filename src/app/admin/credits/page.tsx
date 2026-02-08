@@ -1,5 +1,5 @@
 /**
- * Token Economics Page
+ * Credit Economics Page
  *
  * Displays token purchases, spending, revenue, and circulation metrics.
  */
@@ -62,7 +62,7 @@ export default function TokenEconomicsPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Token Economics</h1>
+        <h1 className="text-3xl font-bold">Credit Economics</h1>
         <div className="grid gap-4 md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => <Card key={i} className="h-32 animate-pulse bg-neutral-100" />)}
         </div>
@@ -73,7 +73,7 @@ export default function TokenEconomicsPage() {
   if (error || !data) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Token Economics</h1>
+        <h1 className="text-3xl font-bold">Credit Economics</h1>
         <Card className="p-6">
           <p className="text-red-500">Error: {error || "No data available"}</p>
         </Card>
@@ -94,7 +94,7 @@ export default function TokenEconomicsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Token Economics</h1>
+        <h1 className="text-3xl font-bold">Credit Economics</h1>
         <p className="mt-2 text-neutral-400">
           Token purchase, spending, and revenue metrics
         </p>
@@ -114,7 +114,7 @@ export default function TokenEconomicsPage() {
 
         <Card className="p-6">
           <p className="text-sm text-neutral-400">
-            Tokens Purchased
+            Credits Allocated
           </p>
           <p className="mt-2 text-3xl font-bold">
             {totalPurchased.toLocaleString()}

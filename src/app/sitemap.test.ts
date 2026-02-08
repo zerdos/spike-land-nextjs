@@ -57,7 +57,7 @@ describe("sitemap", () => {
 
     expect(urls).toContain("https://spike.land/admin");
     expect(urls).toContain("https://spike.land/admin/analytics");
-    expect(urls).toContain("https://spike.land/admin/tokens");
+    expect(urls).toContain("https://spike.land/admin/credits");
     expect(urls).toContain("https://spike.land/admin/system");
     expect(urls).toContain("https://spike.land/admin/vouchers");
     expect(urls).toContain("https://spike.land/admin/users");

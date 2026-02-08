@@ -111,9 +111,9 @@ export function AdminDashboardClient(
       icon: "chart-line",
     },
     {
-      title: "Token Economics",
-      description: "Monitor token purchases, spending, and revenue",
-      href: "/admin/tokens",
+      title: "Credit Economics",
+      description: "Monitor credit allocation, usage, and revenue",
+      href: "/admin/credits",
       icon: "coins",
     },
     {
@@ -130,7 +130,7 @@ export function AdminDashboardClient(
     },
     {
       title: "User Management",
-      description: "Search users, adjust roles, and manage tokens",
+      description: "Search users, adjust roles, and manage credits",
       href: "/admin/users",
       icon: "users",
     },

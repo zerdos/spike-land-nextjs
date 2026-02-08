@@ -1213,7 +1213,7 @@ async function runStage5(browser: Browser): Promise<StageResult> {
   const adminPages = [
     "/admin/analytics",
     "/admin/users",
-    "/admin/tokens",
+    "/admin/credits",
     "/admin/vouchers",
     "/admin/jobs",
     "/admin/photos",
