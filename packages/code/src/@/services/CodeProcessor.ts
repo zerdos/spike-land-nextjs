@@ -6,8 +6,8 @@ import { transpileCode } from "@/services/editorUtils";
 import { RenderService } from "@/services/RenderService";
 import type { RunMessageResult } from "@/services/types";
 
-const RENDER_OPERATION_TIMEOUT_MS = 2000;
-const OVERALL_PROCESS_TIMEOUT_MS = 5000;
+const RENDER_OPERATION_TIMEOUT_MS = 5000;
+const OVERALL_PROCESS_TIMEOUT_MS = 10000;
 
 /**
  * Message data structure for rendered content from the iframe.
@@ -82,10 +82,6 @@ export class CodeProcessor {
     const origin = window.location.origin;
     if (signal.aborted) return false;
 
-    if (signal.aborted) {
-      return false;
-    }
-
     // Transpile code
     const { data: transpiled, error: transpileError } = await tryCatch(
       this.transpileCode(rawCode),
@@ -114,6 +110,7 @@ export class CodeProcessor {
         origin,
         replaceIframe,
         processedSession,
+        signal,
       );
       if (!executionSuccessful) {
         // If iframe execution failed, an error would have been logged by the helper.
@@ -140,6 +137,7 @@ export class CodeProcessor {
    * @param origin - The origin URL for resolving imports
    * @param replaceIframe - Optional callback to replace the iframe DOM element
    * @param processedSession - Session data object that will be mutated with html and css
+   * @param signal - AbortSignal to cancel the operation
    * @returns True on successful execution, false on failure
    */
   private async _handleCodeExecutionInIframe(
@@ -410,24 +408,32 @@ export class CodeProcessor {
         }, OVERALL_PROCESS_TIMEOUT_MS);
       });
 
-      // Abort promise to handle signal abortion
-      const abortPromise = new Promise<void>((_, reject) => {
-        if (signal?.aborted) {
-          reject(new Error("Aborted"));
-          return;
-        }
-        signal?.addEventListener("abort", () => reject(new Error("Aborted")));
-      });
+      const promises: Promise<unknown>[] = [renderPromise, timeoutPromise];
 
-      // Race the `renderPromise` (waiting for iframe message) against the `timeoutPromise` and `abortPromise`.
+      if (signal) {
+        const abortPromise = new Promise<void>((_, reject) => {
+          if (signal.aborted) {
+            reject(new DOMException("Aborted", "AbortError"));
+          } else {
+            signal.addEventListener("abort", () => {
+              reject(new DOMException("Aborted", "AbortError"));
+            }, { once: true });
+          }
+        });
+        promises.push(abortPromise);
+      }
+
+      // Race the `renderPromise` (waiting for iframe message) against the `timeoutPromise` and optionally `abortPromise`.
       // The first one to resolve or reject determines the outcome.
-      const { error: raceError } = await tryCatch(
-        Promise.race([renderPromise, timeoutPromise, abortPromise]),
-      );
+      const { error: raceError } = await tryCatch(Promise.race(promises));
 
       if (raceError) {
-        // Don't log error if it was aborted
-        if (raceError.message !== "Aborted") {
+        // Don't log abort errors as errors
+        if (
+          !(
+            raceError instanceof DOMException && raceError.name === "AbortError"
+          )
+        ) {
           console.error(
             "Error during rendering (race condition or timeout):",
             raceError,
