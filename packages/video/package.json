@@ -5,7 +5,8 @@
   "description": "Promotional video for spike.land using Remotion",
   "scripts": {
     "dev": "remotion studio",
-    "build": "remotion render PromoVideo out/promo.mp4",
+    "render:promo": "remotion render PromoVideo out/promo.mp4",
+    "render:youtube": "remotion render PhysicsOfAttention out/physics-of-attention.mp4",
     "build:gif": "remotion render PromoVideo out/promo.gif --image-format png",
     "upgrade": "remotion upgrade",
     "lint": "eslint src/",
@@ -18,7 +19,8 @@
     "@remotion/transitions": "4.0.419",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "remotion": "4.0.419"
+    "remotion": "4.0.419",
+    "zod": "3.22.3"
   },
   "devDependencies": {
     "@remotion/eslint-config": "4.0.419",
