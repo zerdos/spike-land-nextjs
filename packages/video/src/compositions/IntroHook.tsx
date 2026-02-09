@@ -1,4 +1,4 @@
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig, Img, staticFile } from "remotion";
 import { AuroraBorealis } from "../components/branding/GradientMesh";
 import { SpikeLandLogo } from "../components/branding/SpikeLandLogo";
 import { typewriter } from "../lib/animations";
@@ -33,7 +33,7 @@ export function IntroHook() {
     config: SPRING_CONFIGS.bouncy,
   });
 
-  const logoScale = interpolate(logoProgress, [0, 1], [0, 1]);
+  const logoScale = interpolate(logoProgress, [0, 1], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
   const logoOpacity = interpolate(logoProgress, [0, 0.3], [0, 1], {
     extrapolateRight: "clamp",
   });
@@ -53,7 +53,7 @@ export function IntroHook() {
   const hookOpacity = interpolate(hookProgress, [0, 0.5], [0, 1], {
     extrapolateRight: "clamp",
   });
-  const hookY = interpolate(hookProgress, [0, 1], [20, 0]);
+  const hookY = interpolate(hookProgress, [0, 1], [20, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
 
   return (
     <AbsoluteFill>
@@ -106,6 +106,23 @@ export function IntroHook() {
             </span>
           )}
         </div>
+      </AbsoluteFill>
+      
+      {/* Intro Photo - Fade in after logo */}
+      <AbsoluteFill style={{
+          opacity: interpolate(frame, [80, 110], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+          transform: `scale(${interpolate(frame, [80, 150], [0.95, 1.05], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })})`,
+          zIndex: 0 // Behind the hook text but above background
+      }}>
+          <Img 
+            src={staticFile("assets/intro-person.png")} 
+            style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                opacity: 0.6
+            }}
+          />
       </AbsoluteFill>
 
       {/* Hook question at bottom */}

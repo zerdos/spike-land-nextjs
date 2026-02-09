@@ -554,7 +554,8 @@ type SuccessBadgeProps = {
 
 function SuccessBadge({ progress }: SuccessBadgeProps) {
   const frame = useCurrentFrame();
-  const glowPulse = pulse(frame, 30, 2);
+  const { fps } = useVideoConfig();
+  const glowPulse = pulse(frame, fps, 2);
 
   const scale = interpolate(progress, [0, 1], [0.5, 1]);
   const opacity = interpolate(progress, [0, 0.3], [0, 1], {

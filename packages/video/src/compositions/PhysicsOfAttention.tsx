@@ -1,6 +1,6 @@
 import { AbsoluteFill, Audio, staticFile, Sequence } from "remotion";
 import { COLORS, SCENE_CHAPTERS } from "../lib/constants";
-import { 
+import {
   Scene01_TheHook,
   Scene02_ContextDefined,
   Scene03_PlanMode,
@@ -13,10 +13,11 @@ import {
   Scene10_MetaOutro
 } from "./AttentionScenes";
 import { SubtitleOverlay } from "../components/ui/SubtitleOverlay";
+import { AuroraBorealis } from "../components/branding/GradientMesh";
 
 /**
  * YouTube Long-form Composition: Context Engineering and the Physics of Attention
- * 
+ *
  * Total Frames: 24578 (~13.6 minutes @ 30fps)
  * Orchestrates 10 modular scenes and a persistent subtitle layer.
  */
@@ -24,6 +25,9 @@ export function PhysicsOfAttention() {
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.darkBg, color: COLORS.textPrimary }}>
       <Audio src={staticFile("audio/physics-of-attention.m4a")} />
+
+      {/* Global animated background */}
+      <AuroraBorealis intensity={0.6} />
 
       {/* Persistent UI */}
       <SubtitleOverlay />

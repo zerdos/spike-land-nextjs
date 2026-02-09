@@ -12,35 +12,47 @@ export const VIDEO_CONFIG = {
  * New Scene Structure (10 Scenes)
  */
 export const SCENE_CHAPTERS = {
-  hook:        { from: 6,     duration: 1352, label: "The Hook" },
-  defined:     { from: 1358,  duration: 2064, label: "Context Engineering Defined" },
-  planMode:    { from: 3422,  duration: 2472, label: "Plan Mode Deep Dive" },
-  memento:     { from: 5894,  duration: 2223, label: "The Memento / Zero Memory" },
-  physics:     { from: 8117,  duration: 2816, label: "Physics of Attention" },
-  economics:   { from: 10933, duration: 2378, label: "Economics of Tokens" },
-  caching:     { from: 13311, duration: 3852, label: "Caching & Context Rot" },
-  metacog:     { from: 17163, duration: 1610, label: "Metacognition & Human Role" },
-  tactics:     { from: 18773, duration: 3531, label: "Practical Tactics" },
-  metaOutro:   { from: 22304, duration: 2274, label: "Meta Revelation & Outro" },
+  hook:      { from: 6,     duration: 1352, label: "The Hook" },
+  defined:   { from: 1358,  duration: 2064, label: "Context Engineering Defined" },
+  planMode:  { from: 3422,  duration: 2472, label: "Plan Mode Deep Dive" },
+  memento:   { from: 5894,  duration: 2223, label: "The Memento / Zero Memory" },
+  physics:   { from: 8117,  duration: 2816, label: "Physics of Attention" },
+  economics: { from: 10933, duration: 2378, label: "Economics of Tokens" },
+  caching:   { from: 13311, duration: 3852, label: "Caching & Context Rot" },
+  metacog:   { from: 17163, duration: 1610, label: "Metacognition & Human Role" },
+  tactics:   { from: 18773, duration: 3531, label: "Practical Tactics" },
+  metaOutro: { from: 22304, duration: 2274, label: "Meta Revelation & Outro" },
 } as const;
 
-export const ATTENTION_CHAPTERS = SCENE_CHAPTERS;
-
+export const TIMING = {
+  scene1: { start: 0, end: 150 },
+  scene2: { start: 150, end: 390 },
+  scene3: { start: 390, end: 570 },
+  scene4: { start: 570, end: 930 },
+  scene5: { start: 930, end: 1230 },
+  scene6: { start: 1230, end: 1470 },
+  scene7: { start: 1470, end: 1650 },
+  scene8: { start: 1650, end: 1800 },
+} as const;
 
 /**
  * Scene durations in frames
  */
 export const SCENE_DURATIONS = {
-  hook: SCENE_CHAPTERS.hook.duration,
-  defined: SCENE_CHAPTERS.defined.duration,
-  planMode: SCENE_CHAPTERS.planMode.duration,
-  memento: SCENE_CHAPTERS.memento.duration,
-  physics: SCENE_CHAPTERS.physics.duration,
-  economics: SCENE_CHAPTERS.economics.duration,
-  caching: SCENE_CHAPTERS.caching.duration,
-  metacog: SCENE_CHAPTERS.metacog.duration,
-  tactics: SCENE_CHAPTERS.tactics.duration,
-  metaOutro: SCENE_CHAPTERS.metaOutro.duration,
+  // New scenes (using array index map for compat if needed, or just accessing array)
+  // For now, these are not directly used by name in the new array structure, 
+  // but if we need named access we should probably keep the object or add a helper.
+  // The plan said SCENE_CHAPTERS should be an array.
+  
+  // Backwards compatibility for PromoVideo
+  scene1: TIMING.scene1.end - TIMING.scene1.start,
+  scene2: TIMING.scene2.end - TIMING.scene2.start,
+  scene3: TIMING.scene3.end - TIMING.scene3.start,
+  scene4: TIMING.scene4.end - TIMING.scene4.start,
+  scene5: TIMING.scene5.end - TIMING.scene5.start,
+  scene6: TIMING.scene6.end - TIMING.scene6.start,
+  scene7: TIMING.scene7.end - TIMING.scene7.start,
+  scene8: TIMING.scene8.end - TIMING.scene8.start,
 } as const;
 
 /**

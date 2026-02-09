@@ -55,7 +55,7 @@ export const RemotionRoot = () => {
         {chapters.map((chapter, i) => (
           <Composition
             key={chapter.label}
-            id={`Attn-${String(i + 1).padStart(2, '0')}-${chapter.label.replace(/\s+/g, '-')}`}
+            id={`Attn-${String(i + 1).padStart(2, '0')}-${chapter.label.replace(/[^a-zA-Z0-9-]+/g, '-').replace(/-+/g, '-').replace(/(^-|-$)/g, '')}`}
             component={chapter.component}
             durationInFrames={chapter.duration}
             fps={VIDEO_CONFIG.fps}

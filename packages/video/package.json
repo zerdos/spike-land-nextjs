@@ -17,28 +17,20 @@
     "@remotion/cli": "4.0.419",
     "@remotion/media": "4.0.419",
     "@remotion/transitions": "4.0.419",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "remotion": "4.0.419",
     "zod": "3.22.3"
   },
   "devDependencies": {
     "@remotion/eslint-config": "4.0.419",
     "@remotion/tailwind": "4.0.419",
-    "@types/react": "18.2.0",
-    "@types/react-dom": "18.2.0",
+    "@types/react": "19.2.13",
+    "@types/react-dom": "19.2.3",
     "autoprefixer": "10.4.24",
     "eslint": "10.0.0",
     "postcss": "8.5.6",
     "tailwindcss": "4.1.18",
     "typescript": "5.9.3"
-  },
-  "dependenciesMeta": {
-    "react": {
-      "unplugged": true
-    },
-    "react-dom": {
-      "unplugged": true
-    }
   }
 }

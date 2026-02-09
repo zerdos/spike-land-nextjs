@@ -218,7 +218,8 @@ function AIAgentOrb({
   transformationProgress,
 }: AIAgentOrbProps) {
   const frame = useCurrentFrame();
-  const glowPulse = pulse(frame, 30, 2);
+  const { fps } = useVideoConfig();
+  const glowPulse = pulse(frame, fps, 2);
 
   // Orb path using bezier curve
   // Entry: comes from right side
@@ -480,7 +481,7 @@ function DashboardPanel({
                 fontFamily: "Inter, sans-serif",
               }}
             >
-              {showEnhanced ? "Pulse Dashboard" : "Pulse Dashboard"}
+              Pulse Dashboard
             </div>
             <div
               style={{
@@ -742,7 +743,8 @@ type OptimizedBadgeProps = {
  */
 function OptimizedBadge({ progress }: OptimizedBadgeProps) {
   const frame = useCurrentFrame();
-  const glowPulse = pulse(frame, 30, 2);
+  const { fps } = useVideoConfig();
+  const glowPulse = pulse(frame, fps, 2);
 
   const scale = interpolate(progress, [0, 1], [0.3, 1]);
   const opacity = interpolate(progress, [0, 0.3], [0, 1], {
