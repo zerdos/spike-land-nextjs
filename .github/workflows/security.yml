@@ -70,7 +70,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-          cache: "yarn"
+          # cache: "yarn" is often problematic with Yarn Berry local cache; we use actions/cache below
           cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
@@ -89,10 +89,6 @@ jobs:
       - name: Run yarn audit
         run: yarn npm audit --all --severity moderate
         continue-on-error: false
-
-      - name: Check for outdated packages
-        run: yarn outdated || true
-        continue-on-error: true
 
       - name: Generate security report
         if: failure()

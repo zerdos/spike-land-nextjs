@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
-import { Children, isValidElement, useMemo } from "react";
+import { Children, useMemo } from "react";
 
 // Zoom level constants for type safety and consistency
 export const ZOOM_LEVEL = {
@@ -145,18 +145,14 @@ export function MasonryGrid({
         columnGap: "1rem",
       }}
     >
-      {childArray.map((child, index) => {
-        // Use child's key if available to ensure stable identity across re-renders
-        // This prevents unnecessary unmounts/remounts when items are reordered
-        const key =
-          isValidElement(child) && child.key !== null ? child.key : index;
-
-        return (
-          <div key={key} className="break-inside-avoid mb-4">
-            {child}
-          </div>
-        );
-      })}
+      {childArray.map((child, index) => (
+        <div
+          key={index}
+          className="break-inside-avoid mb-4"
+        >
+          {child}
+        </div>
+      ))}
     </div>
   );
 }

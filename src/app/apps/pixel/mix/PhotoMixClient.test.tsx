@@ -16,7 +16,10 @@ vi.mock("next-view-transitions", () => ({
   useTransitionRouter: () => ({
     push: vi.fn(),
   }),
-  Link: (props: any) => <a {...props} />, 
+  Link: (props: any) => (
+    // eslint-disable-next-line jsx-a11y/anchor-has-content
+    <a {...props} />
+  ),
 }));
 
 // Mock ImageSlot to avoid complex rendering

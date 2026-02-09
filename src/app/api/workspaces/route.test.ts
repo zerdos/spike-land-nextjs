@@ -2,7 +2,6 @@ import { POST } from "./route";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { NextResponse } from "next/server";
 
 // Mock dependencies
 vi.mock("@/auth");

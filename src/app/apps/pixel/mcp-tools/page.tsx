@@ -6,6 +6,8 @@ export const metadata = {
   description: "Test and explore the MCP API for image generation and modification",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function McpToolsPage() {
   const session = await auth();
   const isLoggedIn = !!session?.user?.id;
