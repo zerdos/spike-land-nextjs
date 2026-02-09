@@ -8,6 +8,7 @@ import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
 import type { SocialAccount, SocialPlatform } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { FacebookClient } from "./clients/facebook";
 import { InstagramClient } from "./clients/instagram";
 import { LinkedInClient } from "./clients/linkedin";
 import { TwitterClient } from "./clients/twitter";
@@ -187,6 +188,45 @@ describe("collectPulseMetrics", () => {
     expect(result.results[0]!.platform).toBe("INSTAGRAM");
     expect(InstagramClient).toHaveBeenCalledWith({
       accessToken: "decrypted-token",
+    });
+  });
+
+  it("should pass accountId to FacebookClient for page identification", async () => {
+    const mockAccount = createMockAccount("FACEBOOK", {
+      accountId: "fb-page-12345",
+    });
+    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+
+    const mockMetrics = {
+      followers: 3000,
+      following: 0,
+      postsCount: 150,
+      impressions: 5000,
+      reach: 4000,
+    };
+
+    vi.mocked(FacebookClient).mockImplementation(
+      function() {
+        return {
+          platform: "FACEBOOK" as SocialPlatform,
+          getMetrics: vi.fn().mockResolvedValue(mockMetrics),
+          getAuthUrl: vi.fn(),
+          exchangeCodeForTokens: vi.fn(),
+          getAccountInfo: vi.fn(),
+          createPost: vi.fn(),
+          getPosts: vi.fn(),
+        };
+      } as unknown as typeof FacebookClient,
+    );
+
+    const result = await collectPulseMetrics();
+
+    expect(result.successCount).toBe(1);
+    expect(result.results[0]!.success).toBe(true);
+    expect(result.results[0]!.platform).toBe("FACEBOOK");
+    expect(FacebookClient).toHaveBeenCalledWith({
+      accessToken: "decrypted-token",
+      accountId: "fb-page-12345",
     });
   });
 

@@ -1,3 +1,4 @@
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import prisma from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe/client";
 import { attributeConversion } from "@/lib/tracking/attribution";
@@ -100,8 +101,7 @@ async function handleCheckoutCompleted(
     tokens,
     packageId,
     planId,
-    tokensPerMonth,
-    maxRollover,
+    tokensPerMonth: creditsPerMonth,
   } = session.metadata || {};
 
   if (!userId) {
@@ -110,69 +110,17 @@ async function handleCheckoutCompleted(
   }
 
   if (type === "token_purchase" && tokens && packageId) {
-    // Credit tokens for one-time purchase
+    // Credit purchased tokens by increasing workspace monthly credit limit
     const tokenAmount = parseInt(tokens, 10);
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      // Get or create token balance
-      let balance = await tx.userTokenBalance.findUnique({
-        where: { userId },
+    // Ensure workspace exists for this user, then increment their credit limit
+    const workspaceId = await WorkspaceCreditManager.resolveWorkspaceForUser(userId);
+    if (workspaceId) {
+      await prisma.workspace.update({
+        where: { id: workspaceId },
+        data: { monthlyAiCredits: { increment: tokenAmount } },
       });
-
-      if (!balance) {
-        balance = await tx.userTokenBalance.create({
-          data: { userId, balance: 0 },
-        });
-      }
-
-      // Note: Purchased tokens intentionally have no balance cap.
-      // Unlike regenerated tokens (capped at 100), paid tokens are unlimited
-      // because users have paid for them and should receive full value.
-      const newBalance = balance.balance + tokenAmount;
-
-      // Update balance
-      await tx.userTokenBalance.update({
-        where: { userId },
-        data: { balance: newBalance },
-      });
-
-      // Record transaction
-      await tx.tokenTransaction.create({
-        data: {
-          userId,
-          amount: tokenAmount,
-          type: "EARN_PURCHASE",
-          source: "stripe",
-          sourceId: session.id,
-          balanceAfter: newBalance,
-          metadata: {
-            packageId,
-            sessionId: session.id,
-            amountPaid: session.amount_total,
-          },
-        },
-      });
-
-      // Record Stripe payment (if package exists in DB)
-      const pkg = await tx.tokensPackage.findFirst({
-        where: { active: true },
-      });
-
-      if (pkg) {
-        await tx.stripePayment.create({
-          data: {
-            userId,
-            packageId: pkg.id,
-            tokensGranted: tokenAmount,
-            amountUSD: (session.amount_total || 0) / 100,
-            stripePaymentIntentId: session.payment_intent as string ||
-              session.id,
-            status: "SUCCEEDED",
-            metadata: { packageId, sessionId: session.id },
-          },
-        });
-      }
-    });
+    }
 
     console.log(`[Stripe] Credited ${tokenAmount} tokens to user ${userId}`);
 
@@ -189,7 +137,7 @@ async function handleCheckoutCompleted(
     }
   }
 
-  if (type === "subscription" && planId && tokensPerMonth) {
+  if (type === "subscription" && planId && creditsPerMonth) {
     // Create subscription record
     const stripeSubscriptionId = session.subscription as string;
     const subscriptionData = await stripe.subscriptions.retrieve(
@@ -216,9 +164,7 @@ async function handleCheckoutCompleted(
           status: "ACTIVE",
           currentPeriodStart,
           currentPeriodEnd,
-          tokensPerMonth: parseInt(tokensPerMonth, 10),
-          maxRollover: parseInt(maxRollover || "0", 10),
-          rolloverTokens: 0,
+          creditsPerMonth: parseInt(creditsPerMonth, 10),
         },
         update: {
           stripeSubscriptionId,
@@ -226,49 +172,25 @@ async function handleCheckoutCompleted(
           status: "ACTIVE",
           currentPeriodStart,
           currentPeriodEnd,
-          tokensPerMonth: parseInt(tokensPerMonth, 10),
-          maxRollover: parseInt(maxRollover || "0", 10),
+          creditsPerMonth: parseInt(creditsPerMonth, 10),
         },
       });
 
-      // Credit initial tokens
-      let balance = await tx.userTokenBalance.findUnique({
-        where: { userId },
-      });
-
-      if (!balance) {
-        balance = await tx.userTokenBalance.create({
-          data: { userId, balance: 0 },
+      // Set workspace credit limit and reset usage for new subscription
+      const workspaceId = await WorkspaceCreditManager.resolveWorkspaceForUser(userId);
+      if (workspaceId) {
+        await tx.workspace.update({
+          where: { id: workspaceId },
+          data: {
+            monthlyAiCredits: parseInt(creditsPerMonth, 10),
+            usedAiCredits: 0,
+          },
         });
       }
-
-      const tokenAmount = parseInt(tokensPerMonth, 10);
-      const newBalance = balance.balance + tokenAmount;
-
-      await tx.userTokenBalance.update({
-        where: { userId },
-        data: { balance: newBalance },
-      });
-
-      await tx.tokenTransaction.create({
-        data: {
-          userId,
-          amount: tokenAmount,
-          type: "EARN_PURCHASE",
-          source: "subscription",
-          sourceId: stripeSubscriptionId,
-          balanceAfter: newBalance,
-          metadata: {
-            planId,
-            subscriptionId: stripeSubscriptionId,
-            period: "initial",
-          },
-        },
-      });
     });
 
     console.log(
-      `[Stripe] Created subscription for user ${userId}, credited ${tokensPerMonth} tokens`,
+      `[Stripe] Created subscription for user ${userId}, credited ${creditsPerMonth} tokens`,
     );
 
     // Track purchase conversion attribution for campaign analytics (subscription)
@@ -338,9 +260,7 @@ async function handleCheckoutCompleted(
           tier: tierEnum,
           currentPeriodStart,
           currentPeriodEnd,
-          tokensPerMonth: 0, // Tier subscriptions don't grant tokens per month
-          maxRollover: 0,
-          rolloverTokens: 0,
+          creditsPerMonth: 0, // Tier subscriptions don't grant tokens per month
         },
         update: {
           stripeSubscriptionId,
@@ -352,42 +272,14 @@ async function handleCheckoutCompleted(
         },
       });
 
-      // Update user's token balance tier
-      await tx.userTokenBalance.upsert({
-        where: { userId },
-        create: {
-          userId,
-          balance: capacity, // Start with full well capacity
-          tier: tierEnum,
-          lastRegeneration: new Date(),
-        },
-        update: {
-          tier: tierEnum,
-        },
-      });
-
-      // Record transaction for tier upgrade
-      const currentBalance = await tx.userTokenBalance.findUnique({
-        where: { userId },
-        select: { balance: true },
-      });
-
-      await tx.tokenTransaction.create({
-        data: {
-          userId,
-          amount: 0, // No tokens granted, just tier change
-          type: "EARN_PURCHASE",
-          source: "tier_upgrade",
-          sourceId: stripeSubscriptionId,
-          balanceAfter: currentBalance?.balance || 0,
-          metadata: {
-            tier,
-            previousTier,
-            wellCapacity: capacity,
-            sessionId: session.id,
-          },
-        },
-      });
+      // Update workspace credit capacity based on tier
+      const workspaceId = await WorkspaceCreditManager.resolveWorkspaceForUser(userId);
+      if (workspaceId) {
+        await tx.workspace.update({
+          where: { id: workspaceId },
+          data: { monthlyAiCredits: capacity },
+        });
+      }
     });
 
     console.log(
@@ -454,56 +346,23 @@ async function handleInvoicePaid(stripe: Stripe, invoice: Stripe.Invoice) {
   await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const sub = user.subscription!;
 
-    // Calculate rollover tokens
-    let balance = await tx.userTokenBalance.findUnique({
-      where: { userId: user.id },
-    });
-
-    if (!balance) {
-      balance = await tx.userTokenBalance.create({
-        data: { userId: user.id, balance: 0 },
-      });
-    }
-
-    // Rollover logic: cap at maxRollover (0 means unlimited)
-    let rolloverTokens = balance.balance;
-    if (sub.maxRollover > 0) {
-      rolloverTokens = Math.min(rolloverTokens, sub.maxRollover);
-    }
-
-    const newBalance = rolloverTokens + sub.tokensPerMonth;
-
     // Update subscription period
     await tx.subscription.update({
       where: { id: sub.id },
       data: {
         currentPeriodStart,
         currentPeriodEnd,
-        rolloverTokens,
       },
     });
 
-    // Update balance
-    await tx.userTokenBalance.update({
-      where: { userId: user.id },
-      data: { balance: newBalance },
-    });
-
-    // Record transaction
-    await tx.tokenTransaction.create({
-      data: {
-        userId: user.id,
-        amount: sub.tokensPerMonth,
-        type: "EARN_PURCHASE",
-        source: "subscription_renewal",
-        sourceId: invoice.id,
-        balanceAfter: newBalance,
-        metadata: {
-          rolloverTokens,
-          invoiceId: invoice.id,
-        },
-      },
-    });
+    // Reset workspace credit usage for new billing period
+    const workspaceId = await WorkspaceCreditManager.resolveWorkspaceForUser(user.id);
+    if (workspaceId) {
+      await tx.workspace.update({
+        where: { id: workspaceId },
+        data: { usedAiCredits: 0 },
+      });
+    }
   });
 
   console.log(`[Stripe] Renewed subscription for user ${user.id}`);

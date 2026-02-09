@@ -18,7 +18,6 @@ config({ path: ".env.local", quiet: true });
  * - Test images
  * - Test enhancement jobs
  * - Test API keys
- * - Test vouchers and redemptions
  * - Test featured gallery items
  * - Test MCP generation jobs
  *
@@ -128,27 +127,7 @@ async function cleanup() {
   });
   console.log(`Deleted ${deletedApiKeys.count} test API keys`);
 
-  // 9. Delete test voucher redemptions
-  const deletedRedemptions = await prisma.voucherRedemption.deleteMany({
-    where: {
-      voucherId: {
-        startsWith: "e2e-",
-      },
-    },
-  });
-  console.log(`Deleted ${deletedRedemptions.count} test voucher redemptions`);
-
-  // 10. Delete test vouchers
-  const deletedVouchers = await prisma.voucher.deleteMany({
-    where: {
-      id: {
-        startsWith: "e2e-",
-      },
-    },
-  });
-  console.log(`Deleted ${deletedVouchers.count} test vouchers`);
-
-  // 11. Delete test featured gallery items
+  // 9. Delete test featured gallery items
   const deletedGalleryItems = await prisma.featuredGalleryItem.deleteMany({
     where: {
       id: {
@@ -160,7 +139,7 @@ async function cleanup() {
     `Deleted ${deletedGalleryItems.count} test featured gallery items`,
   );
 
-  // 12. Delete test MCP generation jobs
+  // 10. Delete test MCP generation jobs
   const deletedMcpJobs = await prisma.mcpGenerationJob.deleteMany({
     where: {
       OR: [
@@ -171,29 +150,7 @@ async function cleanup() {
   });
   console.log(`Deleted ${deletedMcpJobs.count} test MCP generation jobs`);
 
-  // 13. Delete test token transactions
-  const deletedTransactions = await prisma.tokenTransaction.deleteMany({
-    where: {
-      userId: {
-        in: [TEST_USER_ID, SECOND_USER_ID],
-      },
-    },
-  });
-  console.log(`Deleted ${deletedTransactions.count} test token transactions`);
-
-  // 14. Reset token balance for test user
-  await prisma.userTokenBalance.upsert({
-    where: { userId: TEST_USER_ID },
-    update: { balance: 100, lastRegeneration: new Date() },
-    create: {
-      userId: TEST_USER_ID,
-      balance: 100,
-      lastRegeneration: new Date(),
-    },
-  });
-  console.log("Reset test user token balance to 100");
-
-  // 15. Delete second test user (optional - can be recreated by seed)
+  // 11. Delete second test user (optional - can be recreated by seed)
   // Keeping second user for faster re-seeding
 
   console.log("\nE2E cleanup completed successfully!");

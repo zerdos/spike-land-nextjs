@@ -907,17 +907,17 @@ async function runStage3(browser: Browser): Promise<StageResult> {
     await page3.goto(`${config.baseUrl}/apps/pixel`);
     await page3.waitForLoadState("networkidle");
 
-    // Check for token-related UI elements
+    // Check for token/credit-related UI elements
     const hasTokenUI = await page3
       .locator(
-        '[data-testid="token-balance"], [data-testid="get-tokens-btn"], button:has-text("Get Tokens"), button:has-text("+")',
+        '[data-testid="token-balance"], [data-testid="credit-balance"], [data-testid="get-tokens-btn"], button:has-text("Get Tokens"), button:has-text("Get Credits"), button:has-text("Buy Tokens"), button:has-text("+"), a:has-text("Get Credits")',
       )
       .first()
       .isVisible({ timeout: 10000 })
       .catch(() => false);
 
     if (!hasTokenUI) {
-      console.log("[Info] Token UI elements not immediately visible");
+      console.log("[Info] Token/Credit UI elements not immediately visible");
     }
   } catch (error) {
     job33Status = "failed";
@@ -1213,7 +1213,7 @@ async function runStage5(browser: Browser): Promise<StageResult> {
   const adminPages = [
     "/admin/analytics",
     "/admin/users",
-    "/admin/tokens",
+    "/admin/credits",
     "/admin/vouchers",
     "/admin/jobs",
     "/admin/photos",

@@ -1,6 +1,6 @@
 import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -11,15 +11,18 @@ export const dynamic = "force-dynamic";
 /**
  * GET /api/mcp/balance
  *
- * Get the current token balance for the authenticated user
+ * Get the current AI credit balance for the authenticated user
  *
  * Headers:
  *   Authorization: Bearer <api_key>
  *
  * Response:
  *   {
- *     balance: number,
- *     lastRegeneration: string (ISO date)
+ *     remaining: number,
+ *     limit: number,
+ *     used: number,
+ *     tier: string,
+ *     workspaceId: string
  *   }
  */
 export async function GET(request: NextRequest) {
@@ -57,19 +60,23 @@ export async function GET(request: NextRequest) {
   }
 
   const { data: balanceInfo, error } = await tryCatch(
-    TokenBalanceManager.getBalance(userId!),
+    WorkspaceCreditManager.getBalance(userId!),
   );
 
-  if (error) {
+  if (error || !balanceInfo) {
     console.error("Failed to get balance:", error);
     return NextResponse.json(
-      { error: "Failed to get token balance" },
+      { error: "Failed to get credit balance" },
       { status: 500 },
     );
   }
 
   return NextResponse.json({
-    balance: balanceInfo.balance,
-    lastRegeneration: balanceInfo.lastRegeneration.toISOString(),
+    remaining: balanceInfo.remaining,
+    limit: balanceInfo.limit,
+    used: balanceInfo.used,
+    tier: balanceInfo.tier,
+    workspaceId: balanceInfo.workspaceId,
   });
 }
+

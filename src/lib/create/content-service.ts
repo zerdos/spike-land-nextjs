@@ -30,6 +30,17 @@ export async function markAsGenerating(
   promptUsed: string,
   userId?: string,
 ): Promise<CreatedApp> {
+  // Verify user exists to avoid FK constraint violation (P2003)
+  // This can happen when handleSignIn() allows auth but fails to create the DB record
+  let validUserId: string | undefined = undefined;
+  if (userId) {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    validUserId = user ? userId : undefined;
+    if (!user) {
+      logger.warn(`User ${userId} not found in database, creating app without owner`);
+    }
+  }
+
   return prisma.createdApp.upsert({
     where: { slug },
     update: {
@@ -40,9 +51,6 @@ export async function markAsGenerating(
       codespaceId,
       codespaceUrl,
       promptUsed,
-      // Don't update generatedById on update if not provided, or should we?
-      // For now, assume re-generation might change it? No, keep original creator usually.
-      // But if it's a new generation, maybe we update.
       generatedAt: new Date(),
     },
     create: {
@@ -54,7 +62,7 @@ export async function markAsGenerating(
       codespaceUrl,
       status: CreatedAppStatus.GENERATING,
       promptUsed,
-      generatedById: userId,
+      generatedById: validUserId,
       viewCount: 0,
     },
   });
@@ -78,14 +86,26 @@ export async function updateAppStatus(
   slug: string,
   status: CreatedAppStatus,
   outgoingLinks?: string[],
-): Promise<CreatedApp> {
-  return prisma.createdApp.update({
-    where: { slug },
-    data: {
-      status,
-      ...(outgoingLinks ? { outgoingLinks } : {}),
-    },
-  });
+): Promise<CreatedApp | null> {
+  try {
+    return await prisma.createdApp.update({
+      where: { slug },
+      data: {
+        status,
+        ...(outgoingLinks ? { outgoingLinks } : {}),
+      },
+    });
+  } catch (error) {
+    // P2025: Record not found — can happen if markAsGenerating() failed
+    if (
+      error instanceof Error
+      && error.message.includes("Record to update not found")
+    ) {
+      logger.error(`Cannot update status for non-existent app: ${slug}`);
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function incrementViewCount(slug: string): Promise<void> {

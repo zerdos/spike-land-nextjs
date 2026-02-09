@@ -48,6 +48,48 @@ if (typeof window !== "undefined") {
   });
 }
 
+// Polyfill for localStorage (required by tracking modules and zoom-slider)
+// Use a class-based implementation to satisfy StorageEvent constructor requirements
+if (typeof window !== "undefined" && !window.localStorage?.getItem) {
+  class MockStorage implements Storage {
+    private data: Record<string, string> = {};
+
+    get length(): number {
+      return Object.keys(this.data).length;
+    }
+
+    clear(): void {
+      this.data = {};
+    }
+
+    getItem(key: string): string | null {
+      return this.data[key] ?? null;
+    }
+
+    key(index: number): string | null {
+      return Object.keys(this.data)[index] ?? null;
+    }
+
+    removeItem(key: string): void {
+      delete this.data[key];
+    }
+
+    setItem(key: string, value: string): void {
+      this.data[key] = value;
+    }
+
+    // Allow indexing by string
+    [name: string]: unknown;
+  }
+
+  const mockStorage = new MockStorage();
+  Object.defineProperty(window, "localStorage", {
+    value: mockStorage,
+    writable: true,
+    configurable: true,
+  });
+}
+
 // Suppress console warnings and errors during tests
 beforeAll(() => {
   // Suppress console.error

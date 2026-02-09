@@ -57,11 +57,11 @@ describe("PlatformHeader Component", () => {
       expect(homeLink).toHaveAttribute("href", "/");
     });
 
-    it("should render Orbit CTA button in desktop navigation", () => {
+    it("should render Create CTA button in desktop navigation", () => {
       render(<PlatformHeader />);
-      const orbitLinks = screen.getAllByRole("link", { name: /orbit/i });
-      expect(orbitLinks.length).toBeGreaterThanOrEqual(1);
-      expect(orbitLinks[0]).toHaveAttribute("href", "/orbit");
+      const createLinks = screen.getAllByRole("link", { name: /create/i });
+      expect(createLinks.length).toBeGreaterThanOrEqual(1);
+      expect(createLinks[0]).toHaveAttribute("href", "/create");
     });
 
     it("should render Features dropdown trigger", () => {
@@ -145,7 +145,7 @@ describe("PlatformHeader Component", () => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
-    it("should render Orbit link in mobile menu when opened", () => {
+    it("should render Create link in mobile menu when opened", () => {
       render(<PlatformHeader />);
       const menuButton = screen.getByRole("button", { name: /open menu/i });
       fireEvent.click(menuButton);
@@ -153,8 +153,8 @@ describe("PlatformHeader Component", () => {
       const dialog = screen.getByRole("dialog");
       expect(dialog).toBeInTheDocument();
 
-      const orbitLink = dialog.querySelector('a[href="/orbit"]');
-      expect(orbitLink).toBeInTheDocument();
+      const createLink = dialog.querySelector('a[href="/create"]');
+      expect(createLink).toBeInTheDocument();
     });
 
     it("should render feature items in mobile menu when opened", () => {
@@ -182,7 +182,7 @@ describe("PlatformHeader Component", () => {
       expect(innerDiv).toBeInTheDocument();
     });
 
-    it("should close mobile menu when clicking Orbit link", async () => {
+    it("should close mobile menu when clicking Create link", async () => {
       render(<PlatformHeader />);
       const menuButton = screen.getByRole("button", { name: /open menu/i });
 
@@ -190,10 +190,10 @@ describe("PlatformHeader Component", () => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
 
       const dialog = screen.getByRole("dialog");
-      const orbitLinkInDialog = dialog.querySelector('a[href="/orbit"]');
-      expect(orbitLinkInDialog).toBeInTheDocument();
+      const createLinkInDialog = dialog.querySelector('a[href="/create"]');
+      expect(createLinkInDialog).toBeInTheDocument();
 
-      fireEvent.click(orbitLinkInDialog!);
+      fireEvent.click(createLinkInDialog!);
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
@@ -253,10 +253,10 @@ describe("PlatformHeader Component", () => {
       expect(screen.getByRole("link", { name: "My Apps" })).toBeInTheDocument();
     });
 
-    it("should render Orbit CTA when authenticated", () => {
+    it("should render Create CTA when authenticated", () => {
       render(<PlatformHeader />);
-      const orbitLinks = screen.getAllByRole("link", { name: /orbit/i });
-      expect(orbitLinks.length).toBeGreaterThanOrEqual(1);
+      const createLinks = screen.getAllByRole("link", { name: /create/i });
+      expect(createLinks.length).toBeGreaterThanOrEqual(1);
     });
 
     it("should not show Sign In in mobile menu when authenticated", () => {
@@ -365,12 +365,12 @@ describe("PlatformHeader Component", () => {
       render(<PlatformHeader />);
 
       // Get all focusable elements in the header
-      const orbitLinks = screen.getAllByRole("link", { name: /orbit/i });
+      const createLinks = screen.getAllByRole("link", { name: /create/i });
       const pricingLink = screen.getByRole("link", { name: "Pricing" });
       const myAppsLink = screen.getByRole("link", { name: "My Apps" });
 
       // Verify these elements exist and are tabbable (no tabindex=-1)
-      expect(orbitLinks[0]).not.toHaveAttribute("tabindex", "-1");
+      expect(createLinks[0]).not.toHaveAttribute("tabindex", "-1");
       expect(pricingLink).not.toHaveAttribute("tabindex", "-1");
       expect(myAppsLink).not.toHaveAttribute("tabindex", "-1");
     });

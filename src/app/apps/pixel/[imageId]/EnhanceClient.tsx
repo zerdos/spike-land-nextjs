@@ -9,13 +9,13 @@ import { EnhancementHistoryGrid } from "@/components/enhance/EnhancementHistoryG
 import { EnhancementSettings } from "@/components/enhance/EnhancementSettings";
 import { EnhancementSidebar } from "@/components/enhance/EnhancementSidebar";
 import { ShareButton } from "@/components/enhance/ShareButton";
-import { PurchaseModal } from "@/components/tokens";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { useInterval } from "@/hooks/useInterval";
 import { useJobStream } from "@/hooks/useJobStream";
-import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import type { EnhancementTier } from "@prisma/client";
 import { AlertTriangle, ArrowLeft, Coins, Download, ExternalLink, Layers } from "lucide-react";
@@ -56,7 +56,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { balance, isLowBalance, isLoading, hasFetched, refetch: refetchBalance } = useTokenBalance(
+  const { remaining: balance, isLowCredits: isLowBalance, isLoading, hasFetched, refetch: refetchBalance } = useWorkspaceCredits(
     {
       autoRefreshOnFocus: true,
     },
@@ -221,7 +221,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           status: "PROCESSING",
           currentStage: null,
           enhancementType: "BLEND",
-          tokensCost: result.tokensCost || 2,
+          creditsCost: result.creditsCost || 2,
           enhancedUrl: null,
           enhancedR2Key: null,
           enhancedWidth: null,
@@ -306,7 +306,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         status: "PROCESSING",
         currentStage: null,
         enhancementType: blendImageData ? "BLEND" : "STANDARD",
-        tokensCost: result.tokensCost || 0,
+        creditsCost: result.creditsCost || 0,
         enhancedUrl: null,
         enhancedR2Key: null,
         enhancedWidth: null,
@@ -416,17 +416,14 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
           <AlertTriangle className="h-4 w-4 text-yellow-600" />
           <AlertDescription className="flex items-center justify-between">
             <span className="text-sm">
-              Your token balance is running low ({balance} tokens remaining).
+              Your credit balance is running low ({balance} credits remaining).
             </span>
-            <PurchaseModal
-              trigger={
-                <Button size="sm" variant="outline" className="ml-4">
-                  <Coins className="mr-2 h-4 w-4" />
-                  Get Tokens
-                </Button>
-              }
-              onPurchaseComplete={refetchBalance}
-            />
+            <Button size="sm" variant="outline" className="ml-4" asChild>
+              <a href="/settings/billing">
+                <Coins className="mr-2 h-4 w-4" />
+                Get Credits
+              </a>
+            </Button>
           </AlertDescription>
         </Alert>
       )}
@@ -638,11 +635,10 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               selectedVersionId={selectedVersionId}
               onSelectVersion={setSelectedVersionId}
               onEnhance={handleEnhance}
-              balance={balance}
+              balance={balance ?? 0}
               isBalanceLoading={isLoading}
               hasFetched={hasFetched}
               isEnhancing={isEnhancing}
-              onBalanceRefresh={refetchBalance}
             />
           </div>
         </div>
@@ -659,7 +655,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             }
           }}
           onEnhance={handleEnhance}
-          currentBalance={balance}
+          currentBalance={balance ?? 0}
           isProcessing={activeJobId !== null}
           completedVersions={completedVersions.map((
             job: ImageEnhancementJob,
@@ -667,7 +663,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
             tier: job.tier,
             url: job.enhancedUrl || "",
           }))}
-          onBalanceRefresh={refetchBalance}
           imageUrl={image.originalUrl}
           imageName={`Blend: ${image.name} + ${blendImageData.fileName}`}
           trigger={null}

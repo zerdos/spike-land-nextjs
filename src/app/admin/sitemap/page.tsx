@@ -27,7 +27,7 @@ const SITEMAP_PATHS = [
   "/referrals",
   "/admin",
   "/admin/analytics",
-  "/admin/tokens",
+  "/admin/credits",
   "/admin/system",
   "/admin/vouchers",
   "/admin/users",

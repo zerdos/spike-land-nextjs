@@ -22,12 +22,6 @@ vi.mock("@/lib/prisma", () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
-    userTokenBalance: {
-      upsert: vi.fn(),
-    },
-    tokenTransaction: {
-      create: vi.fn(),
-    },
   },
 }));
 vi.mock("@/lib/auth/admin-middleware", () => ({
@@ -77,7 +71,6 @@ describe("User Management API", () => {
           name: "Test User",
           image: null,
           role: UserRole.USER,
-          tokenBalance: { balance: 100 },
           _count: { enhancedImages: 5 },
           createdAt: new Date("2025-01-01"),
         },
@@ -106,8 +99,6 @@ describe("User Management API", () => {
         name: "Test User",
         image: null,
         role: UserRole.USER,
-        tokenBalance: { balance: 100 },
-        tokenTransactions: [],
         enhancedImages: [{ id: "img1" }],
         accounts: [{ provider: "github" }],
         createdAt: new Date("2025-01-01"),
@@ -339,92 +330,6 @@ describe("User Management API", () => {
       expect(data.error).toContain("Only super admins can demote super admins");
     });
 
-    it("should adjust user tokens", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_ADMIN_ID },
-      } as any);
-
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: VALID_USER_ID,
-        role: UserRole.USER,
-      } as any);
-
-      vi.mocked(prisma.userTokenBalance.upsert).mockResolvedValue({
-        userId: VALID_USER_ID,
-        balance: 100,
-      } as any);
-
-      vi.mocked(prisma.tokenTransaction.create).mockResolvedValue({} as any);
-
-      const request = new NextRequest("http://localhost/api/admin/users", {
-        method: "PATCH",
-        body: JSON.stringify({
-          userId: VALID_USER_ID,
-          action: "adjustTokens",
-          value: "50",
-        }),
-      });
-
-      const response = await PATCH(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(data.newBalance).toBe(150);
-    });
-
-    it("should return 400 for token adjustment exceeding max", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_ADMIN_ID },
-      } as any);
-
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: VALID_USER_ID,
-        role: UserRole.USER,
-      } as any);
-
-      const request = new NextRequest("http://localhost/api/admin/users", {
-        method: "PATCH",
-        body: JSON.stringify({
-          userId: VALID_USER_ID,
-          action: "adjustTokens",
-          value: "15000",
-        }),
-      });
-
-      const response = await PATCH(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(data.error).toContain("Cannot add more than");
-    });
-
-    it("should return 400 for token removal exceeding min", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: VALID_ADMIN_ID },
-      } as any);
-
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: VALID_USER_ID,
-        role: UserRole.USER,
-      } as any);
-
-      const request = new NextRequest("http://localhost/api/admin/users", {
-        method: "PATCH",
-        body: JSON.stringify({
-          userId: VALID_USER_ID,
-          action: "adjustTokens",
-          value: "-5000",
-        }),
-      });
-
-      const response = await PATCH(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(data.error).toContain("Cannot remove more than");
-    });
-
     it("should return 400 for invalid action", async () => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: VALID_ADMIN_ID },
@@ -555,7 +460,6 @@ describe("User Management API", () => {
         name: "Super Admin",
         role: UserRole.SUPER_ADMIN,
         _count: { albums: 0, enhancedImages: 0, enhancementJobs: 0 },
-        tokenBalance: { balance: 0 },
       } as any);
 
       const { isSuperAdmin } = await import("@/lib/auth/admin-middleware");
@@ -586,7 +490,6 @@ describe("User Management API", () => {
         name: "Test User",
         role: UserRole.USER,
         _count: { albums: 2, enhancedImages: 10, enhancementJobs: 5 },
-        tokenBalance: { balance: 150 },
       } as any);
 
       vi.mocked(prisma.user.delete).mockResolvedValue({} as any);
@@ -611,7 +514,6 @@ describe("User Management API", () => {
         albums: 2,
         images: 10,
         enhancementJobs: 5,
-        tokenBalance: 150,
       });
 
       expect(prisma.user.delete).toHaveBeenCalledWith({
@@ -627,13 +529,12 @@ describe("User Management API", () => {
           albums: 2,
           images: 10,
           enhancementJobs: 5,
-          tokenBalance: 150,
         }),
         undefined,
       );
     });
 
-    it("should handle user with null token balance", async () => {
+    it("should handle user with zero counts", async () => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: VALID_ADMIN_ID },
       } as any);
@@ -644,7 +545,6 @@ describe("User Management API", () => {
         name: "Test User",
         role: UserRole.USER,
         _count: { albums: 0, enhancedImages: 0, enhancementJobs: 0 },
-        tokenBalance: null,
       } as any);
 
       vi.mocked(prisma.user.delete).mockResolvedValue({} as any);
@@ -663,7 +563,9 @@ describe("User Management API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.deletedData.tokenBalance).toBe(0);
+      expect(data.deletedData.albums).toBe(0);
+      expect(data.deletedData.images).toBe(0);
+      expect(data.deletedData.enhancementJobs).toBe(0);
     });
 
     it("should allow super admin to delete another super admin", async () => {
@@ -677,7 +579,6 @@ describe("User Management API", () => {
         name: "Super Admin",
         role: UserRole.SUPER_ADMIN,
         _count: { albums: 0, enhancedImages: 0, enhancementJobs: 0 },
-        tokenBalance: null,
       } as any);
 
       const { isSuperAdmin } = await import("@/lib/auth/admin-middleware");
@@ -713,7 +614,6 @@ describe("User Management API", () => {
         name: "Test User",
         role: UserRole.USER,
         _count: { albums: 0, enhancedImages: 0, enhancementJobs: 0 },
-        tokenBalance: null,
       } as any);
 
       vi.mocked(prisma.user.delete).mockRejectedValue(

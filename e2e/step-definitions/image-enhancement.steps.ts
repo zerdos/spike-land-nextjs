@@ -40,13 +40,25 @@ const mockEnhancementJob = {
   processingCompletedAt: new Date().toISOString(),
 };
 
-// Helper to mock token balance
+// Helper to mock token/credit balance
 async function mockTokenBalance(world: CustomWorld, balance: number) {
+  // Mock both old tokens API and new credits API
   await world.page.route("**/api/tokens/balance", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ balance }),
+    });
+  });
+  await world.page.route("**/api/credits/balance", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        remaining: balance,
+        limit: 100,
+        used: 100 - balance,
+      }),
     });
   });
 }
@@ -611,11 +623,10 @@ Then(
     // Wait for token balance to be fully rendered with a numeric value
     await waitForTokenBalance(this.page, { timeout: TIMEOUTS.DEFAULT });
 
-    // Verify it's visible
+    // Verify it's visible - support both tokens and credits terminology
     const balanceDisplay = this.page.locator('[data-testid="token-balance"]')
-      .or(
-        this.page.getByText(/\d+\s*tokens/i),
-      );
+      .or(this.page.locator('[data-testid="credit-balance"]'))
+      .or(this.page.getByText(/\d+\s*(tokens|credits)/i));
     await expect(balanceDisplay.first()).toBeVisible();
   },
 );
@@ -728,7 +739,7 @@ Then(
 
 Then("I should see a purchase prompt", async function(this: CustomWorld) {
   const purchasePrompt = this.page.getByText(
-    /get tokens?|buy tokens?|purchase/i,
+    /get tokens?|buy tokens?|get credits?|buy credits?|purchase|upgrade/i,
   );
   await expect(purchasePrompt).toBeVisible();
 });

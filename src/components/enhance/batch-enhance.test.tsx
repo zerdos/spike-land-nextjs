@@ -36,7 +36,7 @@ describe("BatchEnhance Component", () => {
 
   it("should display current balance", () => {
     render(<BatchEnhance images={mockImages} currentBalance={50} />);
-    expect(screen.getByText("50 tokens")).toBeInTheDocument();
+    expect(screen.getByText("50 credits")).toBeInTheDocument();
   });
 
   it("should show tier selection options", () => {
@@ -95,9 +95,9 @@ describe("BatchEnhance Component", () => {
     const selectAllButton = screen.getByText("Select All");
     fireEvent.click(selectAllButton);
 
-    // Default tier is TIER_2K (5 tokens per image)
+    // Default tier is TIER_2K (5 credits per image)
     expect(screen.getByText("Total Cost:")).toBeInTheDocument();
-    expect(screen.getByText("15 tokens")).toBeInTheDocument();
+    expect(screen.getByText("15 credits")).toBeInTheDocument();
   });
 
   it("should update cost when tier changes", () => {
@@ -106,24 +106,24 @@ describe("BatchEnhance Component", () => {
     const selectAllButton = screen.getByText("Select All");
     fireEvent.click(selectAllButton);
 
-    // Select TIER_1K (2 tokens per image)
+    // Select TIER_1K (2 credits per image)
     const tier1k = screen.getByRole("radio", { name: /1K \(1024px\)/i });
     fireEvent.click(tier1k);
 
-    // Cost should be 3 images * 2 tokens = 6 tokens
-    expect(screen.getByText("6 tokens")).toBeInTheDocument();
+    // Cost should be 3 images * 2 credits = 6 credits
+    expect(screen.getByText("6 credits")).toBeInTheDocument();
   });
 
-  it("should show insufficient tokens warning", () => {
+  it("should show insufficient credits warning", () => {
     render(<BatchEnhance images={mockImages} currentBalance={5} />);
 
     const selectAllButton = screen.getByText("Select All");
     fireEvent.click(selectAllButton);
 
-    expect(screen.getByText(/Insufficient tokens/i)).toBeInTheDocument();
+    expect(screen.getByText(/Insufficient credits/i)).toBeInTheDocument();
   });
 
-  it("should disable enhance button when insufficient tokens", () => {
+  it("should disable enhance button when insufficient credits", () => {
     render(<BatchEnhance images={mockImages} currentBalance={5} />);
 
     const selectAllButton = screen.getByText("Select All");
@@ -978,12 +978,12 @@ describe("BatchEnhance Component", () => {
     const selectAllButton = screen.getByText("Select All");
     fireEvent.click(selectAllButton);
 
-    // Select TIER_4K (10 tokens per image)
+    // Select TIER_4K (10 credits per image)
     const tier4k = screen.getByRole("radio", { name: /4K \(4096px\)/i });
     fireEvent.click(tier4k);
 
-    // Cost should be 3 images * 10 tokens = 30 tokens
-    expect(screen.getByText("30 tokens")).toBeInTheDocument();
+    // Cost should be 3 images * 10 credits = 30 credits
+    expect(screen.getByText("30 credits")).toBeInTheDocument();
   });
 
   it("should display progress bar during processing", async () => {
@@ -1143,7 +1143,7 @@ describe("BatchEnhance Component", () => {
     vi.useRealTimers();
     render(<BatchEnhance images={mockImages} currentBalance={1} />);
 
-    // Select all images - cost will be 15 tokens for TIER_2K
+    // Select all images - cost will be 15 credits for TIER_2K
     const selectAllButton = screen.getByText("Select All");
     fireEvent.click(selectAllButton);
 

@@ -24,9 +24,6 @@ model User {
   updatedAt                DateTime               @updatedAt
   stripeCustomerId         String?                @unique
   role                     UserRole               @default(USER)
-  referralCode             String?                @unique
-  referredById             String?
-  referralCount            Int                    @default(0)
   passwordHash             String?
   accounts                 Account[]
   albums                   Album[]
@@ -34,16 +31,8 @@ model User {
   auditLogs                AuditLog[]
   enhancedImages           EnhancedImage[]
   enhancementJobs          ImageEnhancementJob[]
-  refereeReferrals         Referral[]             @relation("RefereeReferrals")
-  referrerReferrals        Referral[]             @relation("ReferrerReferrals")
   sessions                 Session[]
-  stripePayments           StripePayment[]
   subscription             Subscription?
-  tokenTransactions        TokenTransaction[]
-  tokenBalance             UserTokenBalance?
-  referredBy               User?                  @relation("Referrals", fields: [referredById], references: [id])
-  referrals                User[]                 @relation("Referrals")
-  voucherRedemptions       VoucherRedemption[]
   createdGalleryItems      FeaturedGalleryItem[]  @relation("GalleryItemCreator")
   emailLogs                EmailLog[]
   trackedUrls              TrackedUrl[]
@@ -458,72 +447,7 @@ model AppCodeVersion {
   @@map("app_code_versions")
 }
 
-model UserTokenBalance {
-  id               String           @id @default(cuid())
-  userId           String           @unique
-  balance          Int              @default(0)
-  lastRegeneration DateTime         @default(now())
-  tier             SubscriptionTier @default(FREE)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([tier])
-  @@map("user_token_balances")
-}
-
-model TokenTransaction {
-  id           String               @id @default(cuid())
-  userId       String
-  amount       Int
-  type         TokenTransactionType
-  source       String?
-  sourceId     String?
-  balanceAfter Int
-  metadata     Json?
-  createdAt    DateTime             @default(now())
-  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-  @@index([sourceId])
-  @@map("token_transactions")
-}
-
-model TokensPackage {
-  id             String          @id @default(cuid())
-  name           String
-  tokens         Int
-  priceUSD       Decimal         @db.Decimal(10, 2)
-  stripePriceId  String          @unique
-  active         Boolean         @default(true)
-  sortOrder      Int             @default(0)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  stripePayments StripePayment[]
-
-  @@index([active, sortOrder])
-  @@map("tokens_packages")
-}
-
-model StripePayment {
-  id                    String              @id @default(cuid())
-  userId                String
-  packageId             String
-  tokensGranted         Int
-  amountUSD             Decimal             @db.Decimal(10, 2)
-  stripePaymentIntentId String              @unique
-  status                StripePaymentStatus
-  metadata              Json?
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-  package               TokensPackage       @relation(fields: [packageId], references: [id])
-  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-  @@index([stripePaymentIntentId])
-  @@map("stripe_payments")
-}
+// Token-related models removed in Phase 7 migration
 
 model EnhancedImage {
   id                   String                @id @default(cuid())
@@ -562,7 +486,7 @@ model ImageEnhancementJob {
   userId                String
   tier                  EnhancementTier
   enhancementType       EnhancementType @default(STANDARD)
-  tokensCost            Int
+  creditsCost           Int
   status                JobStatus
   currentStage          PipelineStage? // Current pipeline stage for progress tracking
   enhancedUrl           String?
@@ -626,9 +550,7 @@ model Subscription {
   currentPeriodEnd     DateTime
   cancelAtPeriodEnd    Boolean            @default(false)
   downgradeTo          SubscriptionTier?
-  tokensPerMonth       Int
-  rolloverTokens       Int                @default(0)
-  maxRollover          Int                @default(0)
+  creditsPerMonth      Int
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -640,18 +562,17 @@ model Subscription {
 }
 
 model SubscriptionPlan {
-  id             String   @id @default(cuid())
-  name           String
-  tokensPerMonth Int
-  priceGBP       Decimal  @db.Decimal(10, 2)
-  stripePriceId  String   @unique
-  maxRollover    Int      @default(0)
-  priority       Boolean  @default(false)
-  apiAccess      Boolean  @default(false)
-  active         Boolean  @default(true)
-  sortOrder      Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id               String   @id @default(cuid())
+  name             String
+  creditsPerMonth  Int
+  priceGBP         Decimal  @db.Decimal(10, 2)
+  stripePriceId    String   @unique
+  priority         Boolean  @default(false)
+  apiAccess        Boolean  @default(false)
+  active           Boolean  @default(true)
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([active, sortOrder])
   @@map("subscription_plans")
@@ -701,58 +622,7 @@ model AlbumImage {
   @@map("album_images")
 }
 
-model Voucher {
-  id          String              @id @default(cuid())
-  code        String              @unique
-  type        VoucherType
-  value       Int
-  maxUses     Int?
-  currentUses Int                 @default(0)
-  expiresAt   DateTime?
-  status      VoucherStatus       @default(ACTIVE)
-  metadata    Json?
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  redemptions VoucherRedemption[]
-
-  @@index([code])
-  @@index([status, expiresAt])
-  @@map("vouchers")
-}
-
-model VoucherRedemption {
-  id            String   @id @default(cuid())
-  voucherId     String
-  userId        String
-  tokensGranted Int
-  redeemedAt    DateTime @default(now())
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  voucher       Voucher  @relation(fields: [voucherId], references: [id], onDelete: Cascade)
-
-  @@unique([voucherId, userId])
-  @@index([userId, redeemedAt])
-  @@index([voucherId])
-  @@map("voucher_redemptions")
-}
-
-model Referral {
-  id            String         @id @default(cuid())
-  referrerId    String
-  refereeId     String
-  status        ReferralStatus @default(PENDING)
-  tokensGranted Int            @default(0)
-  ipAddress     String?
-  createdAt     DateTime       @default(now())
-  completedAt   DateTime?
-  referee       User           @relation("RefereeReferrals", fields: [refereeId], references: [id], onDelete: Cascade)
-  referrer      User           @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
-
-  @@unique([referrerId, refereeId])
-  @@index([referrerId, status])
-  @@index([refereeId])
-  @@index([status, createdAt])
-  @@map("referrals")
-}
+// Voucher and Referral models removed in Phase 7 migration
 
 model AuditLog {
   id           String      @id @default(cuid())
@@ -1038,42 +908,16 @@ enum SubscriptionInterval {
   YEARLY
 }
 
-enum VoucherType {
-  FIXED_TOKENS
-  PERCENTAGE_BONUS
-  SUBSCRIPTION_TRIAL
-}
+// legacy voucher enums removed
 
-enum VoucherStatus {
-  ACTIVE
-  INACTIVE
-  EXPIRED
-  DEPLETED
-}
-
-enum TokenTransactionType {
-  EARN_REGENERATION
-  EARN_PURCHASE
-  EARN_BONUS
-  EARN_ADMIN_ADJUSTMENT
-  SPEND_ENHANCEMENT
-  SPEND_MCP_GENERATION
-  SPEND_BOX_CREATION
-  SPEND_APP_MESSAGE // Cost for sending a message in app chat
-  REFUND
-}
+// legacy token enums removed
 
 enum McpJobType {
   GENERATE
   MODIFY
 }
 
-enum StripePaymentStatus {
-  PENDING
-  SUCCEEDED
-  FAILED
-  REFUNDED
-}
+// legacy payment status enum removed
 
 enum EnhancementTier {
   FREE
@@ -1132,11 +976,7 @@ enum AlbumPrivacy {
   PUBLIC
 }
 
-enum ReferralStatus {
-  PENDING
-  COMPLETED
-  INVALID
-}
+// legacy referral status enum removed
 
 enum AuditAction {
   // Admin actions
@@ -1511,7 +1351,7 @@ model McpGenerationJob {
   apiKeyId              String?
   type                  McpJobType
   tier                  EnhancementTier
-  tokensCost            Int
+  creditsCost           Int
   status                JobStatus
   prompt                String
   inputImageUrl         String?
@@ -5407,4 +5247,16 @@ enum CreatedAppStatus {
   GENERATING
   PUBLISHED
   FAILED
+}
+
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  subscribedAt   DateTime  @default(now())
+  unsubscribed   Boolean   @default(false)
+  unsubscribedAt DateTime?
+  source         String    @default("footer")
+
+  @@index([email])
+  @@map("newsletter_subscribers")
 }

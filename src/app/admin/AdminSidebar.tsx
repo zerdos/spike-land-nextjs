@@ -17,7 +17,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
   { href: "/admin/analytics", label: "User Analytics", icon: "📈" },
-  { href: "/admin/tokens", label: "Token Economics", icon: "💰" },
+  { href: "/admin/credits", label: "Credit Economics", icon: "💰" },
   { href: "/admin/system", label: "System Health", icon: "🏥" },
   { href: "/admin/jobs", label: "Jobs", icon: "⚙️" },
   { href: "/admin/agents", label: "Agents", icon: "🤖" },
@@ -27,8 +27,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/photos", label: "Photos", icon: "📸" },
   { href: "/admin/gallery", label: "Featured Gallery", icon: "🖼️" },
   { href: "/admin/errors", label: "Error Logs", icon: "🐛" },
-  { href: "/admin/marketing", label: "Marketing", icon: "📣" },
-  { href: "/admin/marketing/ab-tests", label: "A/B Tests", icon: "🧪" },
   { href: "/admin/social-media", label: "Social Media", icon: "📱" },
   { href: "/admin/emails", label: "Email Logs", icon: "📧" },
   { href: "/admin/sitemap", label: "Sitemap Preview", icon: "🗺️" },

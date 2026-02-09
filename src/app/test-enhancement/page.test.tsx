@@ -48,11 +48,11 @@ class MockFileReader {
 vi.stubGlobal("FileReader", MockFileReader);
 
 describe("TestEnhancementPage", () => {
-  // Helper to set up default token balance mock
+  // Helper to set up default credit balance mock
   const setupDefaultBalanceMock = () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ balance: 50 }),
+      json: () => Promise.resolve({ remaining: 50 }),
     });
   };
 
@@ -81,29 +81,29 @@ describe("TestEnhancementPage", () => {
       });
     });
 
-    it("should fetch token balance on mount", async () => {
+    it("should fetch credit balance on mount", async () => {
       setupDefaultBalanceMock();
       render(<TestEnhancementPage />);
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith("/api/tokens/balance");
+        expect(mockFetch).toHaveBeenCalledWith("/api/credits/balance");
       });
     });
 
-    it("should display token balance after loading", async () => {
+    it("should display credit balance after loading", async () => {
       setupDefaultBalanceMock();
       render(<TestEnhancementPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Token Balance: 50/)).toBeInTheDocument();
+        expect(screen.getByText(/Credit Balance: 50/)).toBeInTheDocument();
       });
     });
 
-    it("should show loading state for token balance initially", () => {
+    it("should show loading state for credit balance initially", () => {
       mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
       render(<TestEnhancementPage />);
 
-      expect(screen.getByText(/Token Balance: \.\.\./)).toBeInTheDocument();
+      expect(screen.getByText(/Credit Balance: \.\.\./)).toBeInTheDocument();
     });
 
     it("should render file upload input", () => {
@@ -137,12 +137,12 @@ describe("TestEnhancementPage", () => {
       setupDefaultBalanceMock();
       render(<TestEnhancementPage />);
 
-      expect(screen.getByText(/1K - 2 tokens/)).toBeInTheDocument();
-      expect(screen.getByText(/2K - 5 tokens/)).toBeInTheDocument();
-      expect(screen.getByText(/4K - 10 tokens/)).toBeInTheDocument();
+      expect(screen.getByText(/1K - 2 credits/)).toBeInTheDocument();
+      expect(screen.getByText(/2K - 5 credits/)).toBeInTheDocument();
+      expect(screen.getByText(/4K - 10 credits/)).toBeInTheDocument();
     });
 
-    it("should have refresh button for token balance", () => {
+    it("should have refresh button for credit balance", () => {
       setupDefaultBalanceMock();
       render(<TestEnhancementPage />);
 
@@ -151,8 +151,8 @@ describe("TestEnhancementPage", () => {
     });
   });
 
-  describe("Token Balance", () => {
-    it("should refresh token balance when refresh button is clicked", async () => {
+  describe("Credit Balance", () => {
+    it("should refresh credit balance when refresh button is clicked", async () => {
       setupDefaultBalanceMock();
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<TestEnhancementPage />);
@@ -163,7 +163,7 @@ describe("TestEnhancementPage", () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ balance: 75 }),
+        json: () => Promise.resolve({ remaining: 75 }),
       });
 
       const refreshButton = screen.getByRole("button", { name: /Refresh/i });
@@ -174,7 +174,7 @@ describe("TestEnhancementPage", () => {
       });
     });
 
-    it("should handle token balance fetch error gracefully", async () => {
+    it("should handle credit balance fetch error gracefully", async () => {
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
       render(<TestEnhancementPage />);
@@ -186,13 +186,13 @@ describe("TestEnhancementPage", () => {
 
       await waitFor(() => {
         expect(mockConsoleError).toHaveBeenCalledWith(
-          "Error fetching token balance:",
+          "Error fetching credit balance:",
           expect.any(Error),
         );
       });
     });
 
-    it("should handle non-ok response from token balance API", async () => {
+    it("should handle non-ok response from credit balance API", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         json: () => Promise.resolve({ error: "Unauthorized" }),
@@ -205,8 +205,8 @@ describe("TestEnhancementPage", () => {
         expect(mockFetch).toHaveBeenCalled();
       });
 
-      // Token balance should remain as "..." since response was not ok
-      expect(screen.getByText(/Token Balance: \.\.\./)).toBeInTheDocument();
+      // Credit balance should remain as "..." since response was not ok
+      expect(screen.getByText(/Credit Balance: \.\.\./)).toBeInTheDocument();
     });
   });
 
@@ -276,7 +276,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 50 }),
+          json: () => Promise.resolve({ remaining: 50 }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -293,7 +293,7 @@ describe("TestEnhancementPage", () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 48 }),
+          json: () => Promise.resolve({ remaining: 48 }),
         });
 
       render(<TestEnhancementPage />);
@@ -346,7 +346,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 50 }),
+          json: () => Promise.resolve({ remaining: 50 }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -354,7 +354,7 @@ describe("TestEnhancementPage", () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 48 }),
+          json: () => Promise.resolve({ remaining: 48 }),
         });
 
       render(<TestEnhancementPage />);
@@ -393,7 +393,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 50 }),
+          json: () => Promise.resolve({ remaining: 50 }),
         })
         .mockImplementationOnce(() => new Promise(() => {})); // Never resolves
 
@@ -424,7 +424,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 50 }),
+          json: () => Promise.resolve({ remaining: 50 }),
         })
         .mockResolvedValueOnce({
           ok: false,
@@ -459,7 +459,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 50 }),
+          json: () => Promise.resolve({ remaining: 50 }),
         })
         .mockRejectedValueOnce(new Error("Network error"));
 
@@ -501,7 +501,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 50 }),
+          json: () => Promise.resolve({ remaining: 50 }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -509,7 +509,7 @@ describe("TestEnhancementPage", () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 48 }),
+          json: () => Promise.resolve({ remaining: 48 }),
         });
 
       render(<TestEnhancementPage />);
@@ -548,7 +548,7 @@ describe("TestEnhancementPage", () => {
 
       // The uploadImage function should return early if !file
       // We can't directly test this since the button is disabled, but we ensure no additional fetch happens
-      expect(mockFetch).toHaveBeenCalledTimes(1); // Only the initial token balance fetch
+      expect(mockFetch).toHaveBeenCalledTimes(1); // Only the initial credit balance fetch
     });
   });
 
@@ -565,7 +565,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 50 }),
+          json: () => Promise.resolve({ remaining: 50 }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -573,7 +573,7 @@ describe("TestEnhancementPage", () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 48 }),
+          json: () => Promise.resolve({ remaining: 48 }),
         });
 
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -630,7 +630,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 50 }),
+          json: () => Promise.resolve({ remaining: 50 }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -638,7 +638,7 @@ describe("TestEnhancementPage", () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 48 }),
+          json: () => Promise.resolve({ remaining: 48 }),
         });
 
       render(<TestEnhancementPage />);
@@ -682,7 +682,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 50 }),
+          json: () => Promise.resolve({ remaining: 50 }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -690,7 +690,7 @@ describe("TestEnhancementPage", () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 48 }),
+          json: () => Promise.resolve({ remaining: 48 }),
         });
 
       render(<TestEnhancementPage />);
@@ -743,11 +743,11 @@ describe("TestEnhancementPage", () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 43 }),
+          json: () => Promise.resolve({ remaining: 43 }),
         });
 
       const enhanceButton = screen.getByRole("button", {
-        name: /Enhance \(5 tokens\)/i,
+        name: /Enhance \(5 credits\)/i,
       });
       await act(async () => {
         fireEvent.click(enhanceButton);
@@ -784,7 +784,7 @@ describe("TestEnhancementPage", () => {
       mockFetch.mockImplementationOnce(() => new Promise(() => {})); // Never resolves
 
       const enhanceButton = screen.getByRole("button", {
-        name: /Enhance \(5 tokens\)/i,
+        name: /Enhance \(5 credits\)/i,
       });
       await act(async () => {
         fireEvent.click(enhanceButton);
@@ -799,11 +799,11 @@ describe("TestEnhancementPage", () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: false,
-        json: () => Promise.resolve({ error: "Insufficient tokens" }),
+        json: () => Promise.resolve({ error: "Insufficient credits" }),
       });
 
       const enhanceButton = screen.getByRole("button", {
-        name: /Enhance \(5 tokens\)/i,
+        name: /Enhance \(5 credits\)/i,
       });
       await act(async () => {
         fireEvent.click(enhanceButton);
@@ -811,7 +811,7 @@ describe("TestEnhancementPage", () => {
 
       await waitFor(() => {
         expect(mockAlert).toHaveBeenCalledWith(
-          "Enhancement failed: Insufficient tokens",
+          "Enhancement failed: Insufficient credits",
         );
       });
     });
@@ -822,7 +822,7 @@ describe("TestEnhancementPage", () => {
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const enhanceButton = screen.getByRole("button", {
-        name: /Enhance \(5 tokens\)/i,
+        name: /Enhance \(5 credits\)/i,
       });
       await act(async () => {
         fireEvent.click(enhanceButton);
@@ -854,7 +854,7 @@ describe("TestEnhancementPage", () => {
         });
 
       const enhanceButton = screen.getByRole("button", {
-        name: /Enhance \(5 tokens\)/i,
+        name: /Enhance \(5 credits\)/i,
       });
       await act(async () => {
         fireEvent.click(enhanceButton);
@@ -867,12 +867,12 @@ describe("TestEnhancementPage", () => {
       await waitFor(() => {
         // Text is split - "Enhancement failed: " and "Processing error" are separate
         expect(screen.getByText(/Processing error/)).toBeInTheDocument();
-        expect(screen.getByText(/Tokens have been refunded/))
+        expect(screen.getByText(/Credits have been refunded/))
           .toBeInTheDocument();
       });
     });
 
-    it("should disable enhance button when token balance is insufficient", async () => {
+    it("should disable enhance button when credit balance is insufficient", async () => {
       const uploadedImage = {
         id: "img123",
         name: "test.png",
@@ -884,7 +884,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 3 }),
+          json: () => Promise.resolve({ remaining: 3 }),
         }) // Low balance
         .mockResolvedValueOnce({
           ok: true,
@@ -892,7 +892,7 @@ describe("TestEnhancementPage", () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 3 }),
+          json: () => Promise.resolve({ remaining: 3 }),
         });
 
       render(<TestEnhancementPage />);
@@ -918,14 +918,14 @@ describe("TestEnhancementPage", () => {
         expect(screen.getByText(/Uploaded Successfully/)).toBeInTheDocument();
       });
 
-      // TIER_2K costs 5 tokens, but we only have 3
+      // TIER_2K costs 5 credits, but we only have 3
       const enhanceButton = screen.getByRole("button", {
-        name: /Enhance \(5 tokens\)/i,
+        name: /Enhance \(5 credits\)/i,
       });
       expect(enhanceButton).toBeDisabled();
 
-      // Should show insufficient tokens message - text pattern: "Insufficient tokens. Need 5, have 3"
-      expect(screen.getByText(/Insufficient tokens\. Need 5, have 3/))
+      // Should show insufficient credits message - text pattern: "Insufficient credits. Need 5, have 3"
+      expect(screen.getByText(/Insufficient credits\. Need 5, have 3/))
         .toBeInTheDocument();
     });
 
@@ -933,12 +933,12 @@ describe("TestEnhancementPage", () => {
       render(<TestEnhancementPage />);
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith("/api/tokens/balance");
+        expect(mockFetch).toHaveBeenCalledWith("/api/credits/balance");
       });
 
       // Enhance button should be disabled when no image is uploaded
       const enhanceButton = screen.getByRole("button", {
-        name: /Enhance \(5 tokens\)/i,
+        name: /Enhance \(5 credits\)/i,
       });
       expect(enhanceButton).toBeDisabled();
     });
@@ -957,7 +957,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 50 }),
+          json: () => Promise.resolve({ remaining: 50 }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -965,7 +965,7 @@ describe("TestEnhancementPage", () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 48 }),
+          json: () => Promise.resolve({ remaining: 48 }),
         });
 
       render(<TestEnhancementPage />);
@@ -1017,7 +1017,7 @@ describe("TestEnhancementPage", () => {
       }
 
       const enhanceButton = screen.getByRole("button", {
-        name: /Enhance \(5 tokens\)/i,
+        name: /Enhance \(5 credits\)/i,
       });
       await act(async () => {
         fireEvent.click(enhanceButton);
@@ -1060,11 +1060,11 @@ describe("TestEnhancementPage", () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 43 }),
+          json: () => Promise.resolve({ remaining: 43 }),
         });
 
       const enhanceButton = screen.getByRole("button", {
-        name: /Enhance \(5 tokens\)/i,
+        name: /Enhance \(5 credits\)/i,
       });
       await act(async () => {
         fireEvent.click(enhanceButton);
@@ -1101,7 +1101,7 @@ describe("TestEnhancementPage", () => {
         });
 
       const enhanceButton = screen.getByRole("button", {
-        name: /Enhance \(5 tokens\)/i,
+        name: /Enhance \(5 credits\)/i,
       });
       await act(async () => {
         fireEvent.click(enhanceButton);
@@ -1139,7 +1139,7 @@ describe("TestEnhancementPage", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 50 }),
+          json: () => Promise.resolve({ remaining: 50 }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -1147,7 +1147,7 @@ describe("TestEnhancementPage", () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 48 }),
+          json: () => Promise.resolve({ remaining: 48 }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -1161,7 +1161,7 @@ describe("TestEnhancementPage", () => {
       if (jobData.status === "COMPLETED") {
         mockFetch.mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ balance: 43 }),
+          json: () => Promise.resolve({ remaining: 43 }),
         });
       }
 
@@ -1189,7 +1189,7 @@ describe("TestEnhancementPage", () => {
       });
 
       const enhanceButton = screen.getByRole("button", {
-        name: /Enhance \(5 tokens\)/i,
+        name: /Enhance \(5 credits\)/i,
       });
       await act(async () => {
         fireEvent.click(enhanceButton);
@@ -1216,7 +1216,7 @@ describe("TestEnhancementPage", () => {
         .toBeInTheDocument();
     });
 
-    it("should display job tier and tokens used", async () => {
+    it("should display job tier and credits used", async () => {
       await setupCompletedJob({
         status: "COMPLETED",
         tier: "TIER_2K",
@@ -1232,7 +1232,7 @@ describe("TestEnhancementPage", () => {
       // The text is split across elements, so we check for individual parts
       expect(screen.getByText("Tier:")).toBeInTheDocument();
       expect(screen.getByText("TIER_2K")).toBeInTheDocument();
-      expect(screen.getByText("Tokens Used:")).toBeInTheDocument();
+      expect(screen.getByText("Credits Used:")).toBeInTheDocument();
     });
 
     it("should display failed job with error message", async () => {
@@ -1246,7 +1246,7 @@ describe("TestEnhancementPage", () => {
         expect(screen.getByText(/AI processing failed/)).toBeInTheDocument();
       });
 
-      expect(screen.getByText(/Tokens have been refunded/)).toBeInTheDocument();
+      expect(screen.getByText(/Credits have been refunded/)).toBeInTheDocument();
     });
   });
 

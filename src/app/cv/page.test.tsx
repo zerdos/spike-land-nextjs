@@ -102,7 +102,7 @@ describe("CV Page", () => {
       render(<CVPage />);
       expect(screen.getAllByText("Spike Land").length).toBeGreaterThan(0);
       expect(
-        screen.getByText(/AI-powered platform for creating, modifying, and deploying/i),
+        screen.getByText(/Open-source, AI-powered development platform/i),
       ).toBeInTheDocument();
     });
 

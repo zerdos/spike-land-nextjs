@@ -1,3 +1,4 @@
+import { ReadAloudParagraph } from "@/components/blog/ReadAloudButton";
 import { parseWikiLinks } from "@/lib/learnit/wiki-links";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import React from "react";
@@ -16,6 +17,12 @@ const components = {
     // eslint-disable-next-line jsx-a11y/anchor-has-content
     return <a {...props} />;
   },
+  // Paragraphs with read-aloud button
+  p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
+    <ReadAloudParagraph>
+      <p {...props} />
+    </ReadAloudParagraph>
+  ),
 };
 
 interface LearnItContentProps {

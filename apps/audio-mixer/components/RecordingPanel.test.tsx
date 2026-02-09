@@ -3,9 +3,15 @@
  * Resolves #332
  */
 
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RecordingPanel } from "./RecordingPanel";
+
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <TooltipProvider>{children}</TooltipProvider>
+);
 
 // Mock audio-engine
 vi.mock("../lib/audio-engine", () => ({
@@ -31,13 +37,13 @@ describe("RecordingPanel", () => {
   });
 
   it("renders record button when not recording", () => {
-    render(<RecordingPanel {...defaultProps} />);
+    render(<RecordingPanel {...defaultProps} />, { wrapper });
 
     expect(screen.getByText("Record")).toBeInTheDocument();
   });
 
   it("calls onStart when record button is clicked", async () => {
-    render(<RecordingPanel {...defaultProps} />);
+    render(<RecordingPanel {...defaultProps} />, { wrapper });
 
     const recordButton = screen.getByText("Record");
     fireEvent.click(recordButton);
@@ -49,7 +55,7 @@ describe("RecordingPanel", () => {
 
   it("shows error message when recording fails", async () => {
     defaultProps.onStart = vi.fn().mockResolvedValue(false);
-    render(<RecordingPanel {...defaultProps} />);
+    render(<RecordingPanel {...defaultProps} />, { wrapper });
 
     const recordButton = screen.getByText("Record");
     fireEvent.click(recordButton);
@@ -68,7 +74,7 @@ describe("RecordingPanel", () => {
         }),
     );
 
-    render(<RecordingPanel {...defaultProps} />);
+    render(<RecordingPanel {...defaultProps} />, { wrapper });
 
     const recordButton = screen.getByText("Record");
     fireEvent.click(recordButton);
@@ -83,6 +89,7 @@ describe("RecordingPanel", () => {
   it("shows recording controls when recording", () => {
     render(
       <RecordingPanel {...defaultProps} isRecording={true} duration={30} />,
+      { wrapper },
     );
 
     expect(screen.getByText("0:30")).toBeInTheDocument();
@@ -95,6 +102,7 @@ describe("RecordingPanel", () => {
   it("shows pulsing indicator when recording", () => {
     const { container } = render(
       <RecordingPanel {...defaultProps} isRecording={true} />,
+      { wrapper },
     );
 
     const indicator = container.querySelector(".animate-pulse");
@@ -105,6 +113,7 @@ describe("RecordingPanel", () => {
   it("shows yellow indicator when paused", () => {
     const { container } = render(
       <RecordingPanel {...defaultProps} isRecording={true} isPaused={true} />,
+      { wrapper },
     );
 
     const indicator = container.querySelector(".bg-yellow-500");
@@ -113,7 +122,7 @@ describe("RecordingPanel", () => {
   });
 
   it("calls onPause when pause button is clicked", () => {
-    render(<RecordingPanel {...defaultProps} isRecording={true} />);
+    render(<RecordingPanel {...defaultProps} isRecording={true} />, { wrapper });
 
     const pauseButton = screen.getByLabelText("Pause recording");
     fireEvent.click(pauseButton);
@@ -124,6 +133,7 @@ describe("RecordingPanel", () => {
   it("calls onResume when resume button is clicked while paused", () => {
     render(
       <RecordingPanel {...defaultProps} isRecording={true} isPaused={true} />,
+      { wrapper },
     );
 
     const resumeButton = screen.getByLabelText("Resume recording");
@@ -133,7 +143,7 @@ describe("RecordingPanel", () => {
   });
 
   it("calls onStop when stop button is clicked", () => {
-    render(<RecordingPanel {...defaultProps} isRecording={true} />);
+    render(<RecordingPanel {...defaultProps} isRecording={true} />, { wrapper });
 
     const stopButton = screen.getByLabelText("Stop and save recording");
     fireEvent.click(stopButton);
@@ -142,7 +152,7 @@ describe("RecordingPanel", () => {
   });
 
   it("calls onCancel when cancel button is clicked", () => {
-    render(<RecordingPanel {...defaultProps} isRecording={true} />);
+    render(<RecordingPanel {...defaultProps} isRecording={true} />, { wrapper });
 
     const cancelButton = screen.getByText("Cancel");
     fireEvent.click(cancelButton);
@@ -153,6 +163,7 @@ describe("RecordingPanel", () => {
   it("formats duration correctly", () => {
     render(
       <RecordingPanel {...defaultProps} isRecording={true} duration={125} />,
+      { wrapper },
     );
 
     expect(screen.getByText("2:05")).toBeInTheDocument();

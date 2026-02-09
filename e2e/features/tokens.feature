@@ -1,3 +1,5 @@
+@skip
+# SKIP REASON: Token purchase modal and token packs have been replaced by workspace credit subscriptions
 Feature: Token Management
   As a user
   I want to manage my tokens

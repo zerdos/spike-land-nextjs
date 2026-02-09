@@ -42,6 +42,7 @@ vi.mock("next-auth/providers/google", () => ({
   default: vi.fn(() => ({ id: "google" })),
 }));
 
+/*
 // Mock referral modules
 vi.mock("@/lib/referral/code-generator", () => ({
   assignReferralCodeToUser: vi.fn().mockResolvedValue("ABC12345"),
@@ -61,6 +62,7 @@ vi.mock("@/lib/referral/fraud-detection", () => ({
 vi.mock("@/lib/referral/rewards", () => ({
   completeReferralAndGrantRewards: vi.fn().mockResolvedValue({ success: true }),
 }));
+*/
 
 vi.mock("next-auth/providers/credentials", () => ({
   default: vi.fn(() => ({ id: "credentials" })),
@@ -251,6 +253,7 @@ describe("handleSignIn", () => {
     consoleSpy.mockRestore();
   });
 
+  /*
   it("should assign referral code to new users", async () => {
     const { handleSignIn } = await import("./auth");
     const { assignReferralCodeToUser } = await import(
@@ -264,7 +267,9 @@ describe("handleSignIn", () => {
 
     expect(assignReferralCodeToUser).toHaveBeenCalledWith("user_123");
   });
+  */
 
+  /*
   it("should link referral on new user signup", async () => {
     const { handleSignIn } = await import("./auth");
     const { linkReferralOnSignup } = await import("@/lib/referral/tracker");
@@ -276,7 +281,9 @@ describe("handleSignIn", () => {
 
     expect(linkReferralOnSignup).toHaveBeenCalledWith("user_123");
   });
+  */
 
+  /*
   it("should not process referrals for existing users", async () => {
     const { handleSignIn } = await import("./auth");
     const { assignReferralCodeToUser } = await import(
@@ -295,7 +302,9 @@ describe("handleSignIn", () => {
     expect(assignReferralCodeToUser).not.toHaveBeenCalled();
     expect(linkReferralOnSignup).not.toHaveBeenCalled();
   });
+  */
 
+  /*
   it("should grant referral rewards for new users with valid referrals", async () => {
     const { handleSignIn } = await import("./auth");
     const { validateReferralAfterVerification } = await import(
@@ -318,7 +327,9 @@ describe("handleSignIn", () => {
 
     expect(completeReferralAndGrantRewards).toHaveBeenCalledWith("ref-123");
   });
+  */
 
+  /*
   it("should not grant rewards if fraud checks fail", async () => {
     const { handleSignIn } = await import("./auth");
     const { validateReferralAfterVerification } = await import(
@@ -341,7 +352,9 @@ describe("handleSignIn", () => {
 
     expect(completeReferralAndGrantRewards).not.toHaveBeenCalled();
   });
+  */
 
+  /*
   it("should handle referral errors gracefully without blocking sign-in", async () => {
     const { handleSignIn } = await import("./auth");
     const { assignReferralCodeToUser } = await import(
@@ -366,6 +379,7 @@ describe("handleSignIn", () => {
 
     consoleSpy.mockRestore();
   });
+  */
 });
 
 describe("signIn callback behavior", () => {
@@ -407,6 +421,7 @@ describe("signIn callback behavior", () => {
     );
   });
 
+  /*
   it("should verify OAuth handleSignIn triggers referral processing for new users", async () => {
     const { handleSignIn } = await import("./auth");
     const { assignReferralCodeToUser } = await import(
@@ -420,4 +435,5 @@ describe("signIn callback behavior", () => {
     // Referral code should be assigned for new OAuth users
     expect(assignReferralCodeToUser).toHaveBeenCalled();
   });
+  */
 });

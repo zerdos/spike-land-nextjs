@@ -40,9 +40,9 @@ vi.mock("@/lib/ai/gemini-client", () => ({
   DEFAULT_TEMPERATURE: null,
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: {
-    refundTokens: mockRefundTokens,
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: {
+    refundCredits: mockRefundTokens,
   },
 }));
 
@@ -246,7 +246,7 @@ describe("enhance-image.direct", () => {
       expect(result.error).toContain("Failed to upload");
     });
 
-    it("should refund tokens on failure", async () => {
+    it("should refund credits on failure", async () => {
       mockDownloadFromR2.mockResolvedValue(null);
 
       await enhanceImageDirect(validInput);
@@ -254,8 +254,6 @@ describe("enhance-image.direct", () => {
       expect(mockRefundTokens).toHaveBeenCalledWith(
         "user-789",
         10,
-        "job-123",
-        expect.any(String),
       );
     });
 
@@ -288,17 +286,13 @@ describe("enhance-image.direct", () => {
 
     it("should handle refund failure gracefully", async () => {
       mockDownloadFromR2.mockResolvedValue(null);
-      mockRefundTokens.mockResolvedValue({
-        success: false,
-        error: "Refund failed",
-      });
+      mockRefundTokens.mockResolvedValue(false);
 
       const result = await enhanceImageDirect(validInput);
 
       expect(result.success).toBe(false);
       expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to refund tokens"),
-        "Refund failed",
+        expect.stringContaining("Failed to refund credits"),
       );
     });
 

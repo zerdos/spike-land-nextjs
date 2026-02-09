@@ -1,4 +1,4 @@
-import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
 import { UserRole } from "@prisma/client";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -32,34 +32,30 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-// Mock useTokenBalance hook
+// Mock useWorkspaceCredits hook
 const mockRefetch = vi.fn();
-vi.mock("@/hooks/useTokenBalance", () => ({
-  useTokenBalance: vi.fn(() => ({
-    balance: 50,
+vi.mock("@/hooks/useWorkspaceCredits", () => ({
+  useWorkspaceCredits: vi.fn(() => ({
+    remaining: 50,
+    limit: 100,
+    used: 50,
+    tier: "free",
+    workspaceId: "ws-123",
     isLoading: false,
-    stats: {
-      totalSpent: 100,
-      totalEarned: 150,
-      totalRefunded: 10,
-      transactionCount: 25,
-    },
+    hasFetched: true,
+    error: null,
+    isLowCredits: false,
+    isCriticalCredits: false,
+    usagePercent: 50,
     estimatedEnhancements: {
       tier1K: 25,
       tier2K: 10,
       tier4K: 5,
+      suggested: 25,
+      suggestedTier: "1K",
     },
     refetch: mockRefetch,
   })),
-}));
-
-// Mock VoucherInput component
-vi.mock("@/components/tokens/VoucherInput", () => ({
-  VoucherInput: ({ onRedeemed }: { onRedeemed?: () => void; }) => (
-    <div data-testid="voucher-input">
-      <button onClick={() => onRedeemed?.()}>Mock Redeem</button>
-    </div>
-  ),
 }));
 
 // Mock fetch for checkout
@@ -105,10 +101,10 @@ describe("TokensPage", () => {
     });
 
     render(<TokensPage />);
-    expect(screen.getByText("Token Management")).toBeInTheDocument();
+    expect(screen.getByText("AI Credits")).toBeInTheDocument();
   });
 
-  it("should display current token balance", () => {
+  it("should display current credit balance", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: mockAuthUser,
@@ -119,10 +115,10 @@ describe("TokensPage", () => {
     });
 
     render(<TokensPage />);
-    // Use getAllByText since "50" appears multiple times (in balance and package estimates)
+    // Use getAllByText since "50" appears multiple times (in balance and usage stats)
     const balanceElements = screen.getAllByText("50");
     expect(balanceElements.length).toBeGreaterThan(0);
-    expect(screen.getByText("tokens available")).toBeInTheDocument();
+    expect(screen.getByText("credits available")).toBeInTheDocument();
   });
 
   it("should display estimated enhancements", () => {
@@ -145,7 +141,7 @@ describe("TokensPage", () => {
     expect(screen.getByText("4K quality")).toBeInTheDocument();
   });
 
-  it("should display token stats", () => {
+  it("should display monthly usage stats", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: mockAuthUser,
@@ -156,26 +152,9 @@ describe("TokensPage", () => {
     });
 
     render(<TokensPage />);
-    expect(screen.getByText("Total Spent")).toBeInTheDocument();
-    expect(screen.getByText("Total Earned")).toBeInTheDocument();
-    expect(screen.getByText("Transactions")).toBeInTheDocument();
-    // Stats values are rendered - use getAllBy since they may appear in other places
-    expect(screen.getAllByText("100 tokens").length).toBeGreaterThan(0); // totalSpent
-  });
-
-  it("should display voucher input", () => {
-    vi.mocked(useSession).mockReturnValue({
-      data: {
-        user: mockAuthUser,
-        expires: "2024-12-31",
-      },
-      status: "authenticated",
-      update: vi.fn(),
-    });
-
-    render(<TokensPage />);
-    expect(screen.getByTestId("voucher-input")).toBeInTheDocument();
-    expect(screen.getByText("Redeem Voucher")).toBeInTheDocument();
+    expect(screen.getByText("Monthly Usage")).toBeInTheDocument();
+    expect(screen.getByText("50 / 100 credits")).toBeInTheDocument();
+    expect(screen.getByText("50% of monthly limit used")).toBeInTheDocument();
   });
 
   it("should display token packages", () => {
@@ -189,7 +168,7 @@ describe("TokensPage", () => {
     });
 
     render(<TokensPage />);
-    expect(screen.getByText("Purchase Tokens")).toBeInTheDocument();
+    expect(screen.getByText("Purchase Credits")).toBeInTheDocument();
     // Package cards have data-testid attributes
     expect(screen.getByTestId("package-card-starter")).toBeInTheDocument();
     expect(screen.getByTestId("package-card-basic")).toBeInTheDocument();
@@ -262,7 +241,7 @@ describe("TokensPage", () => {
     });
   });
 
-  it("should display token usage guide", () => {
+  it("should display credit usage guide", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: mockAuthUser,
@@ -273,7 +252,7 @@ describe("TokensPage", () => {
     });
 
     render(<TokensPage />);
-    expect(screen.getByText("Token Costs per Enhancement")).toBeInTheDocument();
+    expect(screen.getByText("AI Credit Costs per Enhancement")).toBeInTheDocument();
     expect(screen.getByText("1K Enhancement")).toBeInTheDocument();
     expect(screen.getByText("2K Enhancement")).toBeInTheDocument();
     expect(screen.getByText("4K Enhancement")).toBeInTheDocument();
@@ -320,24 +299,6 @@ describe("TokensPage", () => {
     render(<TokensPage />);
     const refreshButton = screen.getByRole("button", { name: /refresh/i });
     await user.click(refreshButton);
-
-    expect(mockRefetch).toHaveBeenCalled();
-  });
-
-  it("should call refetch when voucher is redeemed", async () => {
-    const user = userEvent.setup();
-    vi.mocked(useSession).mockReturnValue({
-      data: {
-        user: mockAuthUser,
-        expires: "2024-12-31",
-      },
-      status: "authenticated",
-      update: vi.fn(),
-    });
-
-    render(<TokensPage />);
-    const redeemButton = screen.getByText("Mock Redeem");
-    await user.click(redeemButton);
 
     expect(mockRefetch).toHaveBeenCalled();
   });
@@ -451,13 +412,18 @@ describe("TokensPage", () => {
       update: vi.fn(),
     });
 
-    vi.mocked(useTokenBalance).mockReturnValue({
-      balance: 0,
+    vi.mocked(useWorkspaceCredits).mockReturnValue({
+      remaining: 0,
+      limit: 0,
+      used: 0,
       tier: null,
-      maxBalance: null,
+      workspaceId: null,
       isLoading: true,
       hasFetched: false,
-      stats: null,
+      error: null,
+      isLowCredits: false,
+      isCriticalCredits: false,
+      usagePercent: 0,
       estimatedEnhancements: {
         tier1K: 0,
         tier2K: 0,
@@ -466,16 +432,11 @@ describe("TokensPage", () => {
         suggestedTier: "1K",
       },
       refetch: mockRefetch,
-      error: null,
-      isLowBalance: false,
-      isCriticalBalance: false,
-      lastRegeneration: null,
-      timeUntilNextRegeneration: null,
     });
 
     render(<TokensPage />);
     // The RefreshCw spinner should be visible instead of the balance number
-    expect(screen.queryByText("tokens available")).toBeInTheDocument();
+    expect(screen.queryByText("credits available")).toBeInTheDocument();
   });
 
   it("should display estimated enhancements when available", () => {
@@ -488,13 +449,18 @@ describe("TokensPage", () => {
       update: vi.fn(),
     });
 
-    vi.mocked(useTokenBalance).mockReturnValue({
-      balance: 50,
+    vi.mocked(useWorkspaceCredits).mockReturnValue({
+      remaining: 50,
+      limit: 100,
+      used: 50,
       tier: null,
-      maxBalance: null,
+      workspaceId: null,
       isLoading: false,
       hasFetched: true,
-      stats: null,
+      error: null,
+      isLowCredits: false,
+      isCriticalCredits: false,
+      usagePercent: 50,
       estimatedEnhancements: {
         tier1K: 25,
         tier2K: 10,
@@ -503,56 +469,12 @@ describe("TokensPage", () => {
         suggestedTier: "1K",
       },
       refetch: mockRefetch,
-      error: null,
-      isLowBalance: false,
-      isCriticalBalance: false,
-      lastRegeneration: null,
-      timeUntilNextRegeneration: null,
     });
 
     render(<TokensPage />);
     // The estimated enhancements section should be displayed when values are available
     expect(screen.getByText("Estimated enhancements remaining:"))
       .toBeInTheDocument();
-  });
-
-  it("should display null stats as zeros", () => {
-    vi.mocked(useSession).mockReturnValue({
-      data: {
-        user: mockAuthUser,
-        expires: "2024-12-31",
-      },
-      status: "authenticated",
-      update: vi.fn(),
-    });
-
-    vi.mocked(useTokenBalance).mockReturnValue({
-      balance: 50,
-      tier: null,
-      maxBalance: null,
-      isLoading: false,
-      hasFetched: true,
-      stats: null,
-      estimatedEnhancements: {
-        tier1K: 25,
-        tier2K: 10,
-        tier4K: 5,
-        suggested: 25,
-        suggestedTier: "1K",
-      },
-      refetch: mockRefetch,
-      error: null,
-      isLowBalance: false,
-      isCriticalBalance: false,
-      lastRegeneration: null,
-      timeUntilNextRegeneration: null,
-    });
-
-    render(<TokensPage />);
-    // Both totalSpent and totalEarned will show "0 tokens" when stats is null
-    const zeroTokensElements = screen.getAllByText("0 tokens");
-    expect(zeroTokensElements.length).toBe(2); // totalSpent and totalEarned
-    expect(screen.getAllByText("0").length).toBeGreaterThan(0); // transactionCount
   });
 
   it("should show save badge for non-starter packages", () => {
@@ -624,13 +546,18 @@ describe("TokensPage", () => {
       update: vi.fn(),
     });
 
-    vi.mocked(useTokenBalance).mockReturnValue({
-      balance: 50,
+    vi.mocked(useWorkspaceCredits).mockReturnValue({
+      remaining: 50,
+      limit: 100,
+      used: 50,
       tier: null,
-      maxBalance: null,
+      workspaceId: null,
       isLoading: false,
       hasFetched: true,
-      stats: null,
+      error: null,
+      isLowCredits: false,
+      isCriticalCredits: false,
+      usagePercent: 50,
       estimatedEnhancements: {
         tier1K: 25,
         tier2K: 10,
@@ -639,11 +566,6 @@ describe("TokensPage", () => {
         suggestedTier: "1K",
       },
       refetch: mockRefetch,
-      error: null,
-      isLowBalance: false,
-      isCriticalBalance: false,
-      lastRegeneration: null,
-      timeUntilNextRegeneration: null,
     });
 
     render(<TokensPage />);

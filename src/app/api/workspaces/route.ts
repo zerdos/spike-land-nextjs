@@ -141,6 +141,29 @@ export async function POST(request: Request) {
     );
   }
 
+  // Verify user still exists in database (security/integrity check)
+  const { data: userExists, error: userCheckError } = await tryCatch(
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true },
+    }),
+  );
+
+  if (userCheckError) {
+     console.error("Failed to check user existence:", userCheckError);
+     return NextResponse.json(
+       { error: "Internal server error" },
+       { status: 500 },
+     );
+   }
+
+  if (!userExists) {
+    return NextResponse.json(
+      { error: "User not found" },
+      { status: 401 },
+    );
+  }
+
   const { name, description, isPersonal } = validation.data;
 
   // Generate unique slug

@@ -13,8 +13,8 @@ import { auth } from "@/auth";
 import { isAdminByUserId } from "@/lib/auth/admin-middleware";
 import { rerunMcpJob } from "@/lib/mcp/generation-service";
 import prisma from "@/lib/prisma";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { enhanceImageDirect } from "@/workflows/enhance-image.direct";
 import type { EnhancementTier } from "@prisma/client";
@@ -122,20 +122,19 @@ async function rerunEnhancementJob(
   const originalR2Key = job.image.originalR2Key;
   const tokensCost = ENHANCEMENT_COSTS[job.tier] || 0;
 
-  // Consume tokens for new job
-  const consumeResult = await TokenBalanceManager.consumeTokens({
+  // Consume credits for new job
+  const consumeResult = await WorkspaceCreditManager.consumeCredits({
     userId: job.userId,
     amount: tokensCost,
     source: "enhancement_rerun",
     sourceId: job.id,
-    metadata: { tier: job.tier, rerunOf: job.id },
   });
 
   if (!consumeResult.success) {
     return NextResponse.json(
       {
         error: consumeResult.error ||
-          `Insufficient token balance. Required: ${tokensCost} tokens`,
+          `Insufficient credit balance. Required: ${tokensCost} credits`,
       },
       { status: 402 },
     );
@@ -148,7 +147,7 @@ async function rerunEnhancementJob(
         userId: job.userId,
         imageId: job.imageId,
         tier: job.tier,
-        tokensCost,
+        creditsCost: tokensCost,
         status: JobStatus.PROCESSING,
         geminiPrompt: job.geminiPrompt,
         processingStartedAt: new Date(),
@@ -157,13 +156,8 @@ async function rerunEnhancementJob(
   );
 
   if (createError || !newJob) {
-    // Refund tokens if job creation failed
-    await TokenBalanceManager.refundTokens(
-      job.userId,
-      tokensCost,
-      job.id,
-      "Job creation failed during rerun",
-    );
+    // Refund credits if job creation failed
+    await WorkspaceCreditManager.refundCredits(job.userId, tokensCost);
     return NextResponse.json(
       { error: "Failed to create new job" },
       { status: 500 },
@@ -191,6 +185,6 @@ async function rerunEnhancementJob(
     success: true,
     newJobId: newJob.id,
     source: "enhancement",
-    tokensCost,
+    creditsCost: tokensCost,
   });
 }

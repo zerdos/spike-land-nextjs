@@ -60,7 +60,6 @@
     "db:migrate:reset": "yarn prisma migrate reset",
     "db:push": "yarn prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:seed-vouchers": "tsx prisma/seed-vouchers.ts",
     "db:seed-e2e": "tsx prisma/seed-e2e.ts",
     "db:cleanup-e2e": "tsx prisma/cleanup-e2e.ts",
     "test:e2e:db": "CI=true cucumber-js --profile db",

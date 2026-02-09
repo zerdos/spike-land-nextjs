@@ -70,10 +70,25 @@ const createMockImage = (overrides = {}) => ({
   ...overrides,
 });
 
+// Mock localStorage for zoom-slider component
+const mockLocalStorage = {
+  getItem: vi.fn(() => null),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  length: 0,
+  key: vi.fn(() => null),
+};
+Object.defineProperty(window, "localStorage", {
+  value: mockLocalStorage,
+  writable: true,
+});
+
 describe("AlbumDetailClient", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", mockFetch);
     vi.clearAllMocks();
+    mockLocalStorage.getItem.mockReturnValue(null);
   });
 
   afterEach(() => {

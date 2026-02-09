@@ -152,7 +152,6 @@ describe("useThumbnailPreference", () => {
         key: STORAGE_KEY,
         newValue: "true",
         oldValue: "false",
-        storageArea: localStorage,
       });
 
       act(() => {
@@ -170,7 +169,6 @@ describe("useThumbnailPreference", () => {
         key: STORAGE_KEY,
         newValue: "false",
         oldValue: "true",
-        storageArea: localStorage,
       });
 
       act(() => {
@@ -187,7 +185,6 @@ describe("useThumbnailPreference", () => {
         key: "other-key",
         newValue: "true",
         oldValue: "false",
-        storageArea: localStorage,
       });
 
       act(() => {
@@ -204,7 +201,6 @@ describe("useThumbnailPreference", () => {
         key: STORAGE_KEY,
         newValue: null,
         oldValue: "false",
-        storageArea: localStorage,
       });
 
       act(() => {

@@ -15,15 +15,22 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: {
-    refundTokens: vi.fn(),
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: {
+    refundCredits: vi.fn(),
+    getBalance: vi.fn().mockResolvedValue({
+      remaining: 100,
+      limit: 100,
+      used: 0,
+      tier: "FREE",
+      workspaceId: "workspace-123",
+    }),
   },
 }));
 
 const { auth } = await import("@/auth");
 const prisma = (await import("@/lib/prisma")).default;
-const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
+const { WorkspaceCreditManager } = await import("@/lib/credits/workspace-credit-manager");
 const { POST } = await import("./route");
 
 describe("/api/jobs/[jobId]/cancel", () => {
@@ -77,7 +84,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       id: mockJobId,
       userId: "different-user-id",
       status: JobStatus.PENDING,
-      tokensCost: 10,
+      creditsCost: 10,
     } as any);
 
     const request = new NextRequest(
@@ -101,7 +108,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       id: mockJobId,
       userId: mockUserId,
       status: JobStatus.COMPLETED,
-      tokensCost: 10,
+      creditsCost: 10,
     } as any);
 
     const request = new NextRequest(
@@ -116,7 +123,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
     expect(json.error).toBe("Cannot cancel job with status: COMPLETED");
   });
 
-  it("cancels PENDING job and refunds tokens", async () => {
+  it("cancels PENDING job and refunds credits", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: mockUserId },
     } as any);
@@ -125,7 +132,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       id: mockJobId,
       userId: mockUserId,
       status: JobStatus.PENDING,
-      tokensCost: 10,
+      creditsCost: 10,
     };
 
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue(
@@ -137,11 +144,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       updatedJob as any,
     );
 
-    vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
-      success: true,
-      balance: 100,
-      transaction: {} as any,
-    });
+    vi.mocked(WorkspaceCreditManager.refundCredits).mockResolvedValue(true);
 
     const request = new NextRequest(
       "http://localhost:3000/api/jobs/test-job-id/cancel",
@@ -154,18 +157,15 @@ describe("/api/jobs/[jobId]/cancel", () => {
     const json = await response.json();
     expect(json.success).toBe(true);
     expect(json.job.status).toBe(JobStatus.CANCELLED);
-    expect(json.tokensRefunded).toBe(10);
-    expect(json.newBalance).toBe(100);
+    expect(json.creditsRefunded).toBe(10);
 
-    expect(TokenBalanceManager.refundTokens).toHaveBeenCalledWith(
+    expect(WorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
       mockUserId,
       10,
-      mockJobId,
-      "Job cancelled by user",
     );
   });
 
-  it("cancels PROCESSING job and refunds tokens", async () => {
+  it("cancels PROCESSING job and refunds credits", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: mockUserId },
     } as any);
@@ -174,7 +174,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       id: mockJobId,
       userId: mockUserId,
       status: JobStatus.PROCESSING,
-      tokensCost: 20,
+      creditsCost: 20,
     };
 
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue(
@@ -186,11 +186,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       updatedJob as any,
     );
 
-    vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
-      success: true,
-      balance: 120,
-      transaction: {} as any,
-    });
+    vi.mocked(WorkspaceCreditManager.refundCredits).mockResolvedValue(true);
 
     const request = new NextRequest(
       "http://localhost:3000/api/jobs/test-job-id/cancel",
@@ -202,11 +198,10 @@ describe("/api/jobs/[jobId]/cancel", () => {
     expect(response.status).toBe(200);
     const json = await response.json();
     expect(json.success).toBe(true);
-    expect(json.tokensRefunded).toBe(20);
-    expect(json.newBalance).toBe(120);
+    expect(json.creditsRefunded).toBe(20);
   });
 
-  it("returns 500 if token refund fails", async () => {
+  it("returns 500 if credit refund fails", async () => {
     vi.mocked(auth).mockResolvedValue({
       user: { id: mockUserId },
     } as any);
@@ -215,7 +210,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       id: mockJobId,
       userId: mockUserId,
       status: JobStatus.PENDING,
-      tokensCost: 10,
+      creditsCost: 10,
     };
 
     vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue(
@@ -227,10 +222,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
       updatedJob as any,
     );
 
-    vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
-      success: false,
-      error: "Refund failed",
-    });
+    vi.mocked(WorkspaceCreditManager.refundCredits).mockResolvedValue(false);
 
     const request = new NextRequest(
       "http://localhost:3000/api/jobs/test-job-id/cancel",
@@ -241,7 +233,7 @@ describe("/api/jobs/[jobId]/cancel", () => {
 
     expect(response.status).toBe(500);
     const json = await response.json();
-    expect(json.error).toContain("token refund failed");
+    expect(json.error).toContain("credit refund failed");
     expect(json.job).toBeDefined();
   });
 

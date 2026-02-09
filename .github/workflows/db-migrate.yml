@@ -56,18 +56,8 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
-      - name: Run custom migration SQL (if exists)
+      - name: Set initial admin user (idempotent)
         run: |
-          # Find and run any custom migration SQL files that need direct execution
-          # These are for complex migrations that Prisma can't handle
-
-          # Check for Phase 3-5 features migration (idempotent)
-          if [ -f "prisma/migrations/20241204_add_phase_3_5_features/migration.sql" ]; then
-            echo "Running Phase 3-5 migration SQL..."
-            psql "$DATABASE_URL" -f prisma/migrations/20241204_add_phase_3_5_features/migration.sql || true
-          fi
-
-          # Set initial admin user (idempotent)
           echo "Ensuring admin user configuration..."
           psql "$DATABASE_URL" -c "UPDATE users SET id = 'user_49d6efb916aec77949d6efb916aec779' WHERE email = 'zolika84@gmail.com' AND id != 'user_49d6efb916aec77949d6efb916aec779';" || true
           psql "$DATABASE_URL" -c "UPDATE users SET role = 'SUPER_ADMIN' WHERE id = 'user_49d6efb916aec77949d6efb916aec779';" || true

@@ -3,11 +3,12 @@ import { expect } from "@playwright/test";
 import { waitForPageReady } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
 
-// Helper function for mocking token balance (used by multiple steps)
+// Helper function for mocking token/credit balance (used by multiple steps)
 async function mockTokenBalance(
   world: CustomWorld,
   balance: number,
 ): Promise<void> {
+  // Mock old tokens API
   await world.page.route("**/api/tokens/balance", async (route) => {
     await route.fulfill({
       status: 200,
@@ -15,6 +16,19 @@ async function mockTokenBalance(
       body: JSON.stringify({ balance }),
     });
   });
+  // Mock new credits API
+  await world.page.route("**/api/credits/balance", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        remaining: balance,
+        limit: 100,
+        used: 100 - balance,
+      }),
+    });
+  });
+  // Mock MCP balance API
   await world.page.route("**/api/mcp/balance", async (route) => {
     await route.fulfill({
       status: 200,
@@ -880,7 +894,8 @@ Then(
 Then(
   "I should see an insufficient tokens warning",
   async function(this: CustomWorld) {
-    const warning = this.page.getByText(/insufficient.*tokens/i);
+    // Match both "insufficient tokens" and "insufficient credits"
+    const warning = this.page.getByText(/insufficient.*(tokens|credits)/i);
     await expect(warning.first()).toBeVisible({ timeout: 10000 });
   },
 );

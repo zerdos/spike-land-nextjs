@@ -18,6 +18,7 @@ interface TimelineTrackProps {
   onPositionChange: (position: number) => void;
   onTrimChange?: (trimStart: number, trimEnd: number) => void;
   onSelect: () => void;
+  onClickPlay?: () => void;
 }
 
 const TRACK_HEIGHT = 64;
@@ -150,6 +151,7 @@ export function TimelineTrack({
   onPositionChange,
   onTrimChange,
   onSelect,
+  onClickPlay,
 }: TimelineTrackProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const waveformCacheRef = useRef<ImageData | null>(null);
@@ -157,11 +159,6 @@ export function TimelineTrack({
   const [isHoveringHandle, setIsHoveringHandle] = useState<
     "start" | "end" | null
   >(null);
-
-  const startX = useRef(0);
-  const startPosition = useRef(0);
-  const startTrimStart = useRef(0);
-  const startTrimEnd = useRef(0);
 
   // Calculate dimensions
   const effectiveTrimStart = track.trimStart;
@@ -234,11 +231,60 @@ export function TimelineTrack({
       e.stopPropagation();
       onSelect();
 
-      setDragMode(mode);
-      startX.current = e.clientX;
-      startPosition.current = track.position ?? track.delay ?? 0;
-      startTrimStart.current = track.trimStart;
-      startTrimEnd.current = track.trimEnd > 0 ? track.trimEnd : track.duration;
+      const mouseDownX = e.clientX;
+      const mouseDownY = e.clientY;
+      const savedPosition = track.position ?? track.delay ?? 0;
+      const savedTrimStart = track.trimStart;
+      const savedTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
+      let dragActivated = false;
+
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        const deltaX = moveEvent.clientX - mouseDownX;
+        const deltaY = moveEvent.clientY - mouseDownY;
+
+        if (!dragActivated) {
+          if (Math.sqrt(deltaX * deltaX + deltaY * deltaY) < 5) return;
+          dragActivated = true;
+          setDragMode(mode);
+        }
+
+        const deltaTime = deltaX / zoom;
+
+        if (mode === "move") {
+          const newPosition = Math.max(0, savedPosition + deltaTime);
+          const snappedPosition = snapTime(newPosition);
+          onPositionChange(snappedPosition);
+        } else if (mode === "trim-start" && onTrimChange) {
+          const newTrimStart = savedTrimStart + deltaTime;
+          const maxTrimStart = savedTrimEnd - 0.1;
+          const clampedTrimStart = Math.min(newTrimStart, maxTrimStart);
+          const snappedTrimStart = snapTime(clampedTrimStart);
+          onTrimChange(snappedTrimStart, savedTrimEnd);
+        } else if (mode === "trim-end" && onTrimChange) {
+          const newTrimEnd = savedTrimEnd + deltaTime;
+          const minTrimEnd = Math.max(0, savedTrimStart) + 0.1;
+          const maxTrimEnd = track.duration;
+          const clampedTrimEnd = Math.max(
+            minTrimEnd,
+            Math.min(maxTrimEnd, newTrimEnd),
+          );
+          const snappedTrimEnd = snapTime(clampedTrimEnd);
+          onTrimChange(savedTrimStart, snappedTrimEnd);
+        }
+      };
+
+      const handleMouseUp = () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+
+        if (!dragActivated && mode === "move" && onClickPlay) {
+          onClickPlay();
+        }
+        setDragMode(null);
+      };
+
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
     },
     [
       track.position,
@@ -246,59 +292,14 @@ export function TimelineTrack({
       track.trimStart,
       track.trimEnd,
       track.duration,
+      zoom,
+      snapTime,
       onSelect,
+      onPositionChange,
+      onTrimChange,
+      onClickPlay,
     ],
   );
-
-  useEffect(() => {
-    if (!dragMode) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const deltaX = e.clientX - startX.current;
-      const deltaTime = deltaX / zoom;
-
-      if (dragMode === "move") {
-        const newPosition = Math.max(0, startPosition.current + deltaTime);
-        const snappedPosition = snapTime(newPosition);
-        onPositionChange(snappedPosition);
-      } else if (dragMode === "trim-start" && onTrimChange) {
-        const newTrimStart = startTrimStart.current + deltaTime;
-        const maxTrimStart = startTrimEnd.current - 0.1;
-        const clampedTrimStart = Math.min(newTrimStart, maxTrimStart);
-        const snappedTrimStart = snapTime(clampedTrimStart);
-        onTrimChange(snappedTrimStart, startTrimEnd.current);
-      } else if (dragMode === "trim-end" && onTrimChange) {
-        const newTrimEnd = startTrimEnd.current + deltaTime;
-        const minTrimEnd = Math.max(0, startTrimStart.current) + 0.1;
-        const maxTrimEnd = track.duration;
-        const clampedTrimEnd = Math.max(
-          minTrimEnd,
-          Math.min(maxTrimEnd, newTrimEnd),
-        );
-        const snappedTrimEnd = snapTime(clampedTrimEnd);
-        onTrimChange(startTrimStart.current, snappedTrimEnd);
-      }
-    };
-
-    const handleMouseUp = () => {
-      setDragMode(null);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [
-    dragMode,
-    zoom,
-    snapTime,
-    onPositionChange,
-    onTrimChange,
-    track.duration,
-  ]);
 
   const silenceWidth = silenceBefore * zoom;
 

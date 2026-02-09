@@ -28,6 +28,21 @@ vi.mock("@/hooks/useTier", () => ({
   }),
 }));
 
+// Mock useWorkspaceCredits hook (used for tier badge display)
+vi.mock("@/hooks/useWorkspaceCredits", () => ({
+  useWorkspaceCredits: () => ({
+    tier: "FREE",
+    balance: 100,
+    limit: 1000,
+    usedCredits: 0,
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+    hasCredits: true,
+    creditPercentage: 10,
+  }),
+}));
+
 const mockUseSession = vi.mocked(useSession);
 const mockRedirect = vi.mocked(redirect);
 

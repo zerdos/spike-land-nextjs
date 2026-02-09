@@ -182,6 +182,10 @@ declare global {
       USER_ID_SALT?: string;
       BLOCKED_EMAIL_DOMAINS?: string;
 
+      // ElevenLabs TTS
+      ELEVENLABS_API_KEY?: string;
+      ELEVENLABS_VOICE_ID?: string;
+
       // Workflow
       WORKFLOW_RUNTIME?: string;
       STANDALONE?: string;

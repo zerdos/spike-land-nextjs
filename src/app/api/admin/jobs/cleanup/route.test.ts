@@ -78,24 +78,24 @@ describe("POST /api/admin/jobs/cleanup", () => {
       totalFound: 3,
       cleanedUp: 3,
       failed: 0,
-      tokensRefunded: 27,
+      creditsRefunded: 27,
       jobs: [
         {
           id: "job1",
           userId: "user1",
-          tokensRefunded: 10,
+          creditsRefunded: 10,
           processingDuration: 600000,
         },
         {
           id: "job2",
           userId: "user2",
-          tokensRefunded: 7,
+          creditsRefunded: 7,
           processingDuration: 480000,
         },
         {
           id: "job3",
           userId: "user3",
-          tokensRefunded: 10,
+          creditsRefunded: 10,
           processingDuration: 720000,
         },
       ],
@@ -113,9 +113,9 @@ describe("POST /api/admin/jobs/cleanup", () => {
     expect(data.success).toBe(true);
     expect(data.result.totalFound).toBe(3);
     expect(data.result.cleanedUp).toBe(3);
-    expect(data.result.tokensRefunded).toBe(27);
+    expect(data.result.creditsRefunded).toBe(27);
     expect(data.message).toContain("Successfully cleaned up 3 stuck jobs");
-    expect(data.message).toContain("refunded 27 tokens");
+    expect(data.message).toContain("refunded 27 credits");
 
     expect(cleanupStuckJobs).toHaveBeenCalledWith({});
   });
@@ -132,7 +132,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       totalFound: 0,
       cleanedUp: 0,
       failed: 0,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       jobs: [],
       errors: [],
     });
@@ -165,36 +165,36 @@ describe("POST /api/admin/jobs/cleanup", () => {
       totalFound: 5,
       cleanedUp: 0,
       failed: 0,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       jobs: [
         {
           id: "job1",
           userId: "user1",
-          tokensRefunded: 0,
+          creditsRefunded: 0,
           processingDuration: 600000,
         },
         {
           id: "job2",
           userId: "user2",
-          tokensRefunded: 0,
+          creditsRefunded: 0,
           processingDuration: 480000,
         },
         {
           id: "job3",
           userId: "user3",
-          tokensRefunded: 0,
+          creditsRefunded: 0,
           processingDuration: 720000,
         },
         {
           id: "job4",
           userId: "user4",
-          tokensRefunded: 0,
+          creditsRefunded: 0,
           processingDuration: 540000,
         },
         {
           id: "job5",
           userId: "user5",
-          tokensRefunded: 0,
+          creditsRefunded: 0,
           processingDuration: 660000,
         },
       ],
@@ -235,7 +235,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       totalFound: 0,
       cleanedUp: 0,
       failed: 0,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       jobs: [],
       errors: [],
     });
@@ -268,7 +268,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       totalFound: 0,
       cleanedUp: 0,
       failed: 0,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       jobs: [],
       errors: [],
     });
@@ -321,7 +321,7 @@ describe("POST /api/admin/jobs/cleanup", () => {
       totalFound: 0,
       cleanedUp: 0,
       failed: 0,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       jobs: [],
       errors: [],
     });
@@ -351,24 +351,24 @@ describe("POST /api/admin/jobs/cleanup", () => {
       totalFound: 3,
       cleanedUp: 2,
       failed: 1,
-      tokensRefunded: 17,
+      creditsRefunded: 17,
       jobs: [
         {
           id: "job1",
           userId: "user1",
-          tokensRefunded: 10,
+          creditsRefunded: 10,
           processingDuration: 600000,
         },
         {
           id: "job2",
           userId: "user2",
-          tokensRefunded: 7,
+          creditsRefunded: 7,
           processingDuration: 480000,
         },
         {
           id: "job3",
           userId: "user3",
-          tokensRefunded: 0,
+          creditsRefunded: 0,
           processingDuration: 0,
           error: "Token refund failed",
         },

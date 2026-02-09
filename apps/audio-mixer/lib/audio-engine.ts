@@ -173,9 +173,10 @@ export async function mixTracksToBlob(
         // Normal positive trimStart
         startTime = Math.max(0, trackPosition);
         bufferOffset = track.trimStart;
-        playDuration = effectiveTrimEnd - track.trimStart;
+        playDuration = Math.max(0, effectiveTrimEnd - track.trimStart);
       }
 
+      if (playDuration <= 0) continue;
       source.start(startTime, bufferOffset, playDuration);
     }
   }

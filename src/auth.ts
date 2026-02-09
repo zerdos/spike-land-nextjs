@@ -13,10 +13,6 @@ import { bootstrapAdminIfNeeded } from "@/lib/auth/bootstrap-admin";
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
-import { assignReferralCodeToUser } from "@/lib/referral/code-generator";
-import { validateReferralAfterVerification } from "@/lib/referral/fraud-detection";
-import { completeReferralAndGrantRewards } from "@/lib/referral/rewards";
-import { linkReferralOnSignup } from "@/lib/referral/tracker";
 import { attributeConversion } from "@/lib/tracking/attribution";
 import { tryCatch } from "@/lib/try-catch";
 import { UserRole } from "@prisma/client";
@@ -117,6 +113,7 @@ export async function handleSignIn(user: {
         console.error("Failed to bootstrap admin:", bootstrapError);
       }
 
+      /*
       // Assign referral code to new user
       const { error: referralCodeError } = await tryCatch(
         assignReferralCodeToUser(upsertedUser.id),
@@ -132,6 +129,7 @@ export async function handleSignIn(user: {
       if (linkReferralError) {
         console.error("Failed to link referral on signup:", linkReferralError);
       }
+      */
 
       // Create default private and public albums
       const { error: albumsError } = await tryCatch(
@@ -150,6 +148,7 @@ export async function handleSignIn(user: {
       }
     }
 
+    /*
     // Process referral rewards if email is verified (for OAuth, it's auto-verified)
     if (user.email && isNewUser) {
       const { data: validation, error: validationError } = await tryCatch(
@@ -167,6 +166,7 @@ export async function handleSignIn(user: {
         }
       }
     }
+    */
   }
   return true;
 }

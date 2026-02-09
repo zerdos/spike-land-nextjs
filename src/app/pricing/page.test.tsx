@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { useSession } from "next-auth/react";
 import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -23,27 +23,24 @@ vi.mock("next/image", () => ({
   },
 }));
 
-// Mock fetch with a helper function
+// Mock fetch for the useWorkspaceCredits hook
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-// Helper to setup fetch mocks for authenticated users
-function setupAuthenticatedFetchMock(
-  checkoutResponse?: { url?: string; error?: string; },
-) {
+// Helper to setup fetch mock for credit balance
+function setupCreditBalanceMock(remaining = 5) {
   mockFetch.mockImplementation((url: string) => {
-    if (url === "/api/tokens/balance") {
+    if (url === "/api/credits/balance") {
       return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({ balance: 5, timeUntilNextRegenMs: 300000 }),
-      });
-    }
-    if (url === "/api/stripe/checkout") {
-      return Promise.resolve({
         json: () =>
-          Promise.resolve(
-            checkoutResponse ?? { url: "https://checkout.stripe.com/123" },
-          ),
+          Promise.resolve({
+            remaining,
+            limit: 100,
+            used: 100 - remaining,
+            tier: "FREE",
+            workspaceId: "ws_123",
+          }),
       });
     }
     return Promise.reject(new Error(`Unexpected fetch: ${url}`));
@@ -53,11 +50,6 @@ function setupAuthenticatedFetchMock(
 describe("PricingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock location
-    Object.defineProperty(window, "location", {
-      value: { href: "" },
-      writable: true,
-    });
   });
 
   it("renders the pricing page with title", () => {
@@ -65,295 +57,238 @@ describe("PricingPage", () => {
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
     expect(screen.getByText("Pricing")).toBeDefined();
     expect(
-      screen.getByText(/Get tokens to enhance your images with AI/),
+      screen.getByText(
+        /Choose a workspace plan that fits your social media and AI needs/,
+      ),
     ).toBeDefined();
   });
 
-  it("displays token usage guide", () => {
+  it("displays AI credit usage guide", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Token Usage Guide")).toBeDefined();
+    expect(screen.getByText("AI Credit Usage Guide")).toBeDefined();
     expect(screen.getByText("1K Enhancement")).toBeDefined();
     expect(screen.getByText("2K Enhancement")).toBeDefined();
     expect(screen.getByText("4K Enhancement")).toBeDefined();
   });
 
-  it("renders all token packages", () => {
+  it("displays credit cost descriptions for each tier", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    // Use testids since pack names appear in FAQ as well
-    expect(screen.getByTestId("package-card-starter")).toBeDefined();
-    expect(screen.getByTestId("package-card-basic")).toBeDefined();
-    expect(screen.getByTestId("package-card-pro")).toBeDefined();
-    expect(screen.getByTestId("package-card-power")).toBeDefined();
+    expect(screen.getByText("1 credit per image")).toBeDefined();
+    expect(screen.getByText("2 credits per image")).toBeDefined();
+    expect(screen.getByText("5 credits per image")).toBeDefined();
   });
 
-  it("does not render subscription plans", () => {
+  it("renders all three workspace tier cards", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.queryByText("Monthly Plans")).toBeNull();
-    expect(screen.queryByText("Hobby")).toBeNull();
-    expect(screen.queryByText("Creator")).toBeNull();
-    expect(screen.queryByText("Studio")).toBeNull();
-    expect(screen.queryByText("Subscribe")).toBeNull();
+    const tiersSection = screen.getByTestId("workspace-tiers-section");
+    expect(within(tiersSection).getByText("Free")).toBeDefined();
+    expect(within(tiersSection).getByText("Pro")).toBeDefined();
+    expect(within(tiersSection).getByText("Business")).toBeDefined();
   });
 
-  it('shows "Most Popular" badge for pro package', () => {
+  it("shows correct pricing for each tier", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    // Use within() to scope to token packages grid (Pixel section)
-    const tokenPackagesGrid = screen.getByTestId("token-packages-grid");
-    expect(within(tokenPackagesGrid).getByText("Most Popular")).toBeDefined();
+    expect(screen.getByText("$0")).toBeDefined();
+    expect(screen.getByText("$29")).toBeDefined();
+    expect(screen.getByText("$99")).toBeDefined();
   });
 
-  it('shows "Best Value" badge for power package', () => {
+  it('shows "Most Popular" badge for Pro tier', () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    // Use within() to scope to token packages grid (Pixel section)
-    const tokenPackagesGrid = screen.getByTestId("token-packages-grid");
-    expect(within(tokenPackagesGrid).getByText("Best Value")).toBeDefined();
+    const tiersSection = screen.getByTestId("workspace-tiers-section");
+    expect(within(tiersSection).getByText("Most Popular")).toBeDefined();
   });
 
-  it("shows Save percentage badges on non-starter packages", () => {
+  it('shows "Best Value" badge for Business tier', () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    // Should have multiple save badges
-    const saveBadges = screen.getAllByText(/Save \d+%/);
-    expect(saveBadges.length).toBeGreaterThanOrEqual(2);
+    const tiersSection = screen.getByTestId("workspace-tiers-section");
+    expect(within(tiersSection).getByText("Best Value")).toBeDefined();
   });
 
-  it("shows enhancement estimates for each package", () => {
+  it("shows monthly AI credit allocations for each tier", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    // Each package should show enhancement estimates
-    const enhanceUpTo = screen.getAllByText("Enhance up to:");
-    expect(enhanceUpTo.length).toBe(4);
-
-    // Each package shows estimates for 1K, 2K, and 4K
-    expect(screen.getAllByText(/images at 1K/).length).toBe(4);
-    expect(screen.getAllByText(/images at 2K/).length).toBe(4);
-    expect(screen.getAllByText(/images at 4K/).length).toBe(4);
+    expect(screen.getByText("100 AI credits/month")).toBeDefined();
+    expect(screen.getByText("1,000 AI credits/month")).toBeDefined();
+    expect(screen.getByText("5,000 AI credits/month")).toBeDefined();
   });
 
-  it("renders package cards with data-testid", () => {
+  it("shows social account limits for each tier", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByTestId("package-card-starter")).toBeDefined();
-    expect(screen.getByTestId("package-card-basic")).toBeDefined();
-    expect(screen.getByTestId("package-card-pro")).toBeDefined();
-    expect(screen.getByTestId("package-card-power")).toBeDefined();
+    expect(screen.getByText("3 social accounts")).toBeDefined();
+    expect(screen.getByText("10 social accounts")).toBeDefined();
   });
 
-  it("shows one-time purchase message", () => {
+  it("shows team member limits for each tier", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByText("One-time purchase. No subscription required."))
-      .toBeDefined();
+    expect(screen.getByText("1 team member")).toBeDefined();
+    expect(screen.getByText("3 team members")).toBeDefined();
+    expect(screen.getByText("10 team members")).toBeDefined();
   });
 
-  it("shows tokens never expire message", () => {
+  it('shows "Current Plan" button on Free tier', () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByText(/Tokens never expire!/)).toBeDefined();
+    expect(screen.getByText("Current Plan")).toBeDefined();
   });
 
-  it("hides Buy Now buttons for unauthenticated users", () => {
+  it('shows "Coming Soon" buttons on Pro and Business tiers', () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.queryByTestId("buy-button-starter")).toBeNull();
-    expect(screen.queryByTestId("buy-button-basic")).toBeNull();
-    expect(screen.queryByTestId("buy-button-pro")).toBeNull();
-    expect(screen.queryByTestId("buy-button-power")).toBeNull();
+    const comingSoonButtons = screen.getAllByText("Coming Soon");
+    expect(comingSoonButtons.length).toBe(2);
   });
 
-  it("shows Sign in to get free tokens button for unauthenticated users", () => {
+  it("renders workspace tiers section with data-testid", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Sign in to get free tokens")).toBeDefined();
+    expect(screen.getByTestId("workspace-tiers-section")).toBeDefined();
   });
 
-  it("calls checkout API when authenticated user clicks Buy Now", async () => {
+  it("renders Orbit Workspace Plans heading", () => {
+    (useSession as Mock).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+    });
+    setupCreditBalanceMock();
+
+    render(<PricingPage />);
+
+    expect(screen.getByText("Orbit Workspace Plans")).toBeDefined();
+    expect(
+      screen.getByText(
+        /Power your social media management with Orbit workspace subscriptions/,
+      ),
+    ).toBeDefined();
+  });
+
+  it("renders AI hero card with enhancement description", () => {
+    (useSession as Mock).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+    });
+    setupCreditBalanceMock();
+
+    render(<PricingPage />);
+
+    expect(
+      screen.getByText("Integrated AI Image Enhancement"),
+    ).toBeDefined();
+    expect(
+      screen.getByText(
+        /Use Orbit's built-in AI to enhance your brand photography/,
+      ),
+    ).toBeDefined();
+  });
+
+  it("does not show credit balance for unauthenticated users", () => {
+    (useSession as Mock).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+    });
+    setupCreditBalanceMock();
+
+    render(<PricingPage />);
+
+    expect(screen.queryByText("Your current balance")).toBeNull();
+  });
+
+  it("shows credit balance for authenticated users", async () => {
     (useSession as Mock).mockReturnValue({
       data: { user: { id: "123", email: "test@test.com" } },
       status: "authenticated",
     });
-
-    setupAuthenticatedFetchMock();
-
-    render(<PricingPage />);
-
-    const buyButton = screen.getByTestId("buy-button-starter");
-    fireEvent.click(buyButton);
-
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packageId: "starter", mode: "payment" }),
-      });
-    });
-  });
-
-  it("redirects to checkout URL on successful purchase", async () => {
-    (useSession as Mock).mockReturnValue({
-      data: { user: { id: "123", email: "test@test.com" } },
-      status: "authenticated",
-    });
-
-    setupAuthenticatedFetchMock();
+    setupCreditBalanceMock(42);
 
     render(<PricingPage />);
 
-    const buyButton = screen.getByTestId("buy-button-starter");
-    fireEvent.click(buyButton);
-
-    await waitFor(() => {
-      expect(window.location.href).toBe("https://checkout.stripe.com/123");
-    });
-  });
-
-  it("shows error when checkout fails", async () => {
-    (useSession as Mock).mockReturnValue({
-      data: { user: { id: "123", email: "test@test.com" } },
-      status: "authenticated",
-    });
-
-    setupAuthenticatedFetchMock({ error: "Something went wrong" });
-
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
-
-    render(<PricingPage />);
-
-    const buyButton = screen.getByTestId("buy-button-starter");
-    fireEvent.click(buyButton);
-
-    await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith("Something went wrong");
-    });
-  });
-
-  it("shows default error when checkout fails without error message", async () => {
-    (useSession as Mock).mockReturnValue({
-      data: { user: { id: "123", email: "test@test.com" } },
-      status: "authenticated",
-    });
-
-    setupAuthenticatedFetchMock({});
-
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
-
-    render(<PricingPage />);
-
-    const buyButton = screen.getByTestId("buy-button-starter");
-    fireEvent.click(buyButton);
-
-    await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith(
-        "Failed to create checkout session",
-      );
-    });
-  });
-
-  it("shows error when network request fails", async () => {
-    (useSession as Mock).mockReturnValue({
-      data: { user: { id: "123", email: "test@test.com" } },
-      status: "authenticated",
-    });
-
-    // Mock that throws on checkout
-    mockFetch.mockImplementation((url: string) => {
-      if (url === "/api/tokens/balance") {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ balance: 5, timeUntilNextRegenMs: 300000 }),
-        });
-      }
-      if (url === "/api/stripe/checkout") {
-        return Promise.reject(new Error("Network error"));
-      }
-      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
-    });
-
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
-    const consoleSpy = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
-
-    render(<PricingPage />);
-
-    const buyButton = screen.getByTestId("buy-button-starter");
-    fireEvent.click(buyButton);
-
-    await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith("Failed to start checkout");
-    });
-
-    consoleSpy.mockRestore();
+    expect(screen.getByText("Your current balance")).toBeDefined();
   });
 
   it("renders FAQ section with updated questions", () => {
@@ -361,129 +296,68 @@ describe("PricingPage", () => {
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
     expect(screen.getByText("Frequently Asked Questions")).toBeDefined();
-    expect(screen.getByText("What are tokens used for?")).toBeDefined();
-    expect(screen.getByText("Do tokens expire?")).toBeDefined();
-    expect(screen.getByText("Which pack should I choose?")).toBeDefined();
-    expect(screen.getByText("Can I get a refund?")).toBeDefined();
+    expect(
+      screen.getByText("What are AI credits used for?"),
+    ).toBeDefined();
+    expect(screen.getByText("How do I get more credits?")).toBeDefined();
+    expect(screen.getByText("Do credits roll over?")).toBeDefined();
+    expect(
+      screen.getByText("What happens if an enhancement fails?"),
+    ).toBeDefined();
   });
 
-  it("does not render subscription-related FAQ questions", () => {
+  it("does not render old token package elements", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.queryByText("Can I cancel my subscription?")).toBeNull();
+    // Old token package test IDs should not exist
+    expect(screen.queryByTestId("package-card-starter")).toBeNull();
+    expect(screen.queryByTestId("package-card-basic")).toBeNull();
+    expect(screen.queryByTestId("package-card-power")).toBeNull();
+    expect(screen.queryByTestId("token-packages-grid")).toBeNull();
+
+    // Old copy should not exist
+    expect(
+      screen.queryByText("One-time purchase. No subscription required."),
+    ).toBeNull();
+    expect(screen.queryByText(/Credits never expire!/)).toBeNull();
+    expect(screen.queryByText("Sign in to get free credits")).toBeNull();
   });
 
-  it("hides buttons while session is loading", () => {
+  it("renders hero image with correct alt text", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
-      status: "loading",
+      status: "unauthenticated",
     });
+    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    // Buttons are hidden for non-authenticated users (loading is not authenticated)
-    expect(screen.queryByTestId("buy-button-starter")).toBeNull();
-    expect(screen.queryByTestId("buy-button-basic")).toBeNull();
-    expect(screen.queryByTestId("buy-button-pro")).toBeNull();
-    expect(screen.queryByTestId("buy-button-power")).toBeNull();
+    expect(screen.getByAltText("Orbit AI Credits")).toBeDefined();
   });
 
-  it("shows Processing text while purchase is loading", async () => {
+  it("shows loading state for credit balance", () => {
     (useSession as Mock).mockReturnValue({
       data: { user: { id: "123", email: "test@test.com" } },
       status: "authenticated",
     });
 
-    // Use a promise that we control to keep the loading state active
-    let resolvePromise: (value: unknown) => void;
-    const checkoutPromise = new Promise((resolve) => {
-      resolvePromise = resolve;
-    });
-
-    // Mock that keeps checkout pending
-    mockFetch.mockImplementation((url: string) => {
-      if (url === "/api/tokens/balance") {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ balance: 5, timeUntilNextRegenMs: 300000 }),
-        });
-      }
-      if (url === "/api/stripe/checkout") {
-        return { json: () => checkoutPromise };
-      }
-      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
-    });
+    // Return a promise that never resolves to keep loading state
+    mockFetch.mockImplementation(() => new Promise(() => {}));
 
     render(<PricingPage />);
 
-    const buyButton = screen.getByTestId("buy-button-starter");
-    fireEvent.click(buyButton);
-
-    await waitFor(() => {
-      expect(screen.getByText("Redirecting to checkout...")).toBeDefined();
-    });
-
-    // Cleanup
-    resolvePromise!({ url: "https://checkout.stripe.com/123" });
-  });
-
-  it("does not show Sign in button while session is loading", () => {
-    (useSession as Mock).mockReturnValue({
-      data: null,
-      status: "loading",
-    });
-
-    render(<PricingPage />);
-
-    // Sign in button is hidden during loading to avoid flash
-    expect(screen.queryByText("Sign in to get free tokens")).toBeNull();
-  });
-
-  it("renders token packages grid with data-testid", () => {
-    (useSession as Mock).mockReturnValue({
-      data: null,
-      status: "unauthenticated",
-    });
-
-    render(<PricingPage />);
-
-    expect(screen.getByTestId("token-packages-grid")).toBeDefined();
-  });
-
-  it("shows buy now buttons for authenticated users", () => {
-    (useSession as Mock).mockReturnValue({
-      data: { user: { id: "123", email: "test@test.com" } },
-      status: "authenticated",
-    });
-
-    render(<PricingPage />);
-
-    expect(screen.getByTestId("buy-button-starter")).toBeDefined();
-    expect(screen.getByTestId("buy-button-basic")).toBeDefined();
-    expect(screen.getByTestId("buy-button-pro")).toBeDefined();
-    expect(screen.getByTestId("buy-button-power")).toBeDefined();
-  });
-
-  it("displays Free Tokens section", () => {
-    (useSession as Mock).mockReturnValue({
-      data: null,
-      status: "unauthenticated",
-    });
-
-    render(<PricingPage />);
-
-    expect(screen.getByText("Free Tokens Every 15 Minutes!")).toBeDefined();
-    expect(screen.getByText("+1 Token Every 15 Min")).toBeDefined();
-    expect(screen.getByText("Up to 10 Free Tokens")).toBeDefined();
-    expect(screen.getByText("2 Tokens = 1 Image")).toBeDefined();
+    expect(screen.getByText("Your current balance")).toBeDefined();
+    expect(screen.getByText("...")).toBeDefined();
   });
 });

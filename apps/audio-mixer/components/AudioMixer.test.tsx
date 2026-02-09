@@ -51,6 +51,7 @@ const mockTrackManager = {
   reorderTracks: vi.fn(),
   restoreTracks: vi.fn(),
   playTrack: vi.fn(),
+  playSoloTrack: vi.fn(),
   stopTrack: vi.fn(),
   playAllTracks: vi.fn(),
   stopAllTracks: vi.fn(),
@@ -118,12 +119,25 @@ const mockTimeline = {
   endScrub: vi.fn(),
 };
 
+const mockProjectManager = {
+  projects: [],
+  currentProjectId: "test-project",
+  isLoading: false,
+  loadProjectList: vi.fn(),
+  switchProject: vi.fn(),
+  createProject: vi.fn().mockResolvedValue("new-project-id"),
+  deleteProject: vi.fn(),
+  renameProject: vi.fn(),
+  copyTrackToCurrentProject: vi.fn(),
+};
+
 vi.mock("../hooks", () => ({
   useAudioContext: () => mockAudioContext,
   useAudioRecording: () => mockRecording,
   useAudioTracks: () => mockTrackManager,
   useAudioStorage: () => mockAudioStorage,
   useProjectPersistence: () => [mockPersistenceState, mockPersistenceActions],
+  useProjectManager: () => mockProjectManager,
   useTimeline: () => mockTimeline,
 }));
 
@@ -151,7 +165,6 @@ const renderAudioMixer = async () => {
 
   // Wait for the main UI to appear - new compact layout has no "Master Station"
   await waitFor(() => {
-    expect(screen.getByText("Audio Mixer")).toBeInTheDocument();
     expect(screen.getByLabelText("Master volume")).toBeInTheDocument();
   });
 };
@@ -194,8 +207,8 @@ describe("AudioMixer", () => {
     it("renders the header", async () => {
       await renderAudioMixer();
 
+      // Project dropdown shows "Audio Mixer" as default project name
       expect(screen.getByText("Audio Mixer")).toBeInTheDocument();
-      // Description text removed in compact layout
     });
 
     it("renders master controls", async () => {

@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
  *       id: string,
  *       type: "GENERATE" | "MODIFY",
  *       tier: string,
- *       tokensCost: number,
+ *       creditsCost: number,
  *       status: string,
  *       prompt: string,
  *       inputImageUrl?: string,

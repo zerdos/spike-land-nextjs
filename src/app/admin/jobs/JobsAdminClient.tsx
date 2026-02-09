@@ -952,7 +952,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                     <div className="flex justify-between">
                       <span className="text-neutral-500">Tier</span>
                       <span>
-                        {TIER_LABELS[selectedJob.tier]} ({selectedJob.tokensCost} tokens)
+                        {TIER_LABELS[selectedJob.tier]} ({selectedJob.creditsCost} credits)
                       </span>
                     </div>
                     {selectedJob.source === "mcp" && selectedJob.mcpJobType && (

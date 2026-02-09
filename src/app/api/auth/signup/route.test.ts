@@ -57,6 +57,7 @@ vi.mock("@/lib/auth/bootstrap-admin", () => ({
   bootstrapAdminIfNeeded: mockBootstrapAdmin,
 }));
 
+/*
 vi.mock("@/lib/referral/code-generator", () => ({
   assignReferralCodeToUser: mockReferralFunctions.assignReferralCodeToUser,
 }));
@@ -72,6 +73,7 @@ vi.mock("@/lib/referral/fraud-detection", () => ({
 vi.mock("@/lib/referral/rewards", () => ({
   completeReferralAndGrantRewards: mockReferralFunctions.completeReferralAndGrantRewards,
 }));
+*/
 
 // Helper to create mock request
 function createMockRequest(
@@ -416,6 +418,7 @@ describe("POST /api/auth/signup", () => {
       expect(mockBootstrapAdmin).toHaveBeenCalledWith("stable-user-id-123");
     });
 
+    /*
     it("should assign referral code to new user", async () => {
       const req = createMockRequest({
         email: "test@example.com",
@@ -428,7 +431,9 @@ describe("POST /api/auth/signup", () => {
           "stable-user-id-123",
         );
     });
+    */
 
+    /*
     it("should link referral on signup", async () => {
       const req = createMockRequest({
         email: "test@example.com",
@@ -440,6 +445,7 @@ describe("POST /api/auth/signup", () => {
         "stable-user-id-123",
       );
     });
+    */
 
     it("should create default private and public albums", async () => {
       const req = createMockRequest({
@@ -470,6 +476,7 @@ describe("POST /api/auth/signup", () => {
       });
     });
 
+    /*
     it("should process referral rewards if validation passes", async () => {
       mockReferralFunctions.validateReferralAfterVerification.mockResolvedValue(
         {
@@ -489,7 +496,9 @@ describe("POST /api/auth/signup", () => {
           "referral-123",
         );
     });
+    */
 
+    /*
     it("should not process referral rewards if validation fails", async () => {
       mockReferralFunctions.validateReferralAfterVerification.mockResolvedValue(
         {
@@ -507,6 +516,7 @@ describe("POST /api/auth/signup", () => {
       expect(mockReferralFunctions.completeReferralAndGrantRewards).not
         .toHaveBeenCalled();
     });
+    */
 
     it("should continue signup even if post-signup tasks fail", async () => {
       mockBootstrapAdmin.mockRejectedValue(new Error("Bootstrap failed"));

@@ -144,7 +144,11 @@ async function* generateStream(
     // If validation failed but we pushed raw code, report the error with codespace link
     if (!content) {
       logger.error(`App generation partially failed for ${slug}: ${genError}`);
-      await updateAppStatus(slug, CreatedAppStatus.FAILED);
+      try {
+        await updateAppStatus(slug, CreatedAppStatus.FAILED);
+      } catch (updateError) {
+        logger.error(`Failed to mark app ${slug} as FAILED:`, { updateError });
+      }
       yield {
         type: "error",
         message: genError || "Generated content failed validation",
@@ -175,8 +179,12 @@ async function* generateStream(
     };
   } catch (error) {
     logger.error(`App generation failed for ${slug}:`, { error });
-    // Mark as failed in DB
-    await updateAppStatus(slug, CreatedAppStatus.FAILED);
+    // Try to mark as failed, but don't let this mask the original error
+    try {
+      await updateAppStatus(slug, CreatedAppStatus.FAILED);
+    } catch (updateError) {
+      logger.error(`Failed to mark app ${slug} as FAILED:`, { updateError });
+    }
 
     yield {
       type: "error",

@@ -1061,7 +1061,7 @@ Point-in-time (if enabled)
 2. **Connection Security**
    - Always use SSL/TLS in production
    - Verify SSL certificates
-   - Use connection string with `sslmode=require`
+   - Use connection string with `sslmode=verify-full`
 
 3. **Secrets Management**
    - Never commit `.env` file to git

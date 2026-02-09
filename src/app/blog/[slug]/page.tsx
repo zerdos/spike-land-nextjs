@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 
 import { BlogHeader, Prose } from "@/components/blog";
 import { MDXContent } from "@/components/blog/MDXContent";
+import { ReadAloudArticle } from "@/components/blog/ReadAloudArticle";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
 import { getAllPosts, getPostBySlug, getPostSlugs } from "@/lib/blog/get-posts";
@@ -113,8 +114,13 @@ export default async function BlogPostPage({ params }: PageProps) {
         {/* Header */}
         <BlogHeader frontmatter={frontmatter} readingTime={readingTime} />
 
+        {/* Listen to article */}
+        <div className="mt-6">
+          <ReadAloudArticle />
+        </div>
+
         {/* Content */}
-        <Prose className="mt-12">
+        <Prose className="mt-12" data-article-content>
           <MDXContent source={mdxSource} />
         </Prose>
 

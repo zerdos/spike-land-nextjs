@@ -22,9 +22,9 @@ async function getDashboardMetrics() {
       processingJobs,
       completedJobs,
       failedJobs,
-      totalTokensPurchased,
-      totalTokensSpent,
-      activeVouchers,
+      creditsAllocated,
+      creditsUsed,
+      totalWorkspaces,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({
@@ -45,29 +45,17 @@ async function getDashboardMetrics() {
       prisma.imageEnhancementJob.count({
         where: { status: JobStatus.FAILED },
       }),
-      prisma.tokenTransaction.aggregate({
-        where: {
-          type: {
-            in: ["EARN_PURCHASE", "EARN_BONUS", "EARN_REGENERATION"],
-          },
-        },
+      prisma.workspace.aggregate({
         _sum: {
-          amount: true,
+          monthlyAiCredits: true,
         },
       }),
-      prisma.tokenTransaction.aggregate({
-        where: {
-          type: "SPEND_ENHANCEMENT",
-        },
+      prisma.workspace.aggregate({
         _sum: {
-          amount: true,
+          usedAiCredits: true,
         },
       }),
-      prisma.voucher.count({
-        where: {
-          status: "ACTIVE",
-        },
-      }),
+      prisma.workspace.count(),
     ]);
 
     return {
@@ -81,9 +69,9 @@ async function getDashboardMetrics() {
         failed: failedJobs,
         active: pendingJobs + processingJobs,
       },
-      totalTokensPurchased: totalTokensPurchased._sum.amount || 0,
-      totalTokensSpent: Math.abs(totalTokensSpent._sum.amount || 0),
-      activeVouchers,
+      totalCreditsAllocated: creditsAllocated._sum.monthlyAiCredits || 0,
+      totalCreditsUsed: creditsUsed._sum.usedAiCredits || 0,
+      totalWorkspaces,
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
@@ -100,9 +88,9 @@ async function getDashboardMetrics() {
         failed: 0,
         active: 0,
       },
-      totalTokensPurchased: 0,
-      totalTokensSpent: 0,
-      activeVouchers: 0,
+      totalCreditsAllocated: 0,
+      totalCreditsUsed: 0,
+      totalWorkspaces: 0,
       timestamp: new Date().toISOString(),
     };
   }
@@ -149,9 +137,9 @@ export default async function AdminDashboard() {
         failed: 0,
         active: 0,
       },
-      totalTokensPurchased: 0,
-      totalTokensSpent: 0,
-      activeVouchers: 0,
+      totalCreditsAllocated: 0,
+      totalCreditsUsed: 0,
+      totalWorkspaces: 0,
       timestamp: new Date().toISOString(),
     };
     return <AdminDashboardClient initialMetrics={defaultMetrics} />;

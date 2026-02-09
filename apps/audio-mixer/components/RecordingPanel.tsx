@@ -5,6 +5,7 @@
 
 "use client";
 
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AlertCircle, Circle, Pause, Square } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { formatTime } from "../lib/audio-engine";
@@ -91,14 +92,19 @@ export function RecordingPanel({
   if (!isRecording) {
     return (
       <div className="flex flex-col gap-2">
-        <button
-          onClick={handleStart}
-          disabled={isStarting}
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-wait text-white rounded-lg transition-colors"
-        >
-          <Circle className="w-4 h-4 fill-current" />
-          {isStarting ? "Starting..." : "Record"}
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={handleStart}
+              disabled={isStarting}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-wait text-white rounded-lg transition-colors"
+            >
+              <Circle className="w-4 h-4 fill-current" />
+              {isStarting ? "Starting..." : "Record"}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Record (R)</TooltipContent>
+        </Tooltip>
         {error && (
           <div className="flex items-center gap-2 text-red-400 text-sm max-w-[250px]">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -122,33 +128,48 @@ export function RecordingPanel({
       </div>
 
       {/* Pause/Resume */}
-      <button
-        onClick={isPaused ? onResume : onPause}
-        className="p-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded transition-colors"
-        aria-label={isPaused ? "Resume recording" : "Pause recording"}
-      >
-        {isPaused
-          ? <Circle className="w-4 h-4 fill-current" />
-          : <Pause className="w-4 h-4" />}
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={isPaused ? onResume : onPause}
+            className="p-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded transition-colors"
+            aria-label={isPaused ? "Resume recording" : "Pause recording"}
+          >
+            {isPaused
+              ? <Circle className="w-4 h-4 fill-current" />
+              : <Pause className="w-4 h-4" />}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">{isPaused ? "Resume" : "Pause"}</TooltipContent>
+      </Tooltip>
 
       {/* Stop (save) */}
-      <button
-        onClick={onStop}
-        className="p-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
-        aria-label="Stop and save recording"
-      >
-        <Square className="w-4 h-4 fill-current" />
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={onStop}
+            className="p-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
+            aria-label="Stop and save recording"
+          >
+            <Square className="w-4 h-4 fill-current" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Stop & Save</TooltipContent>
+      </Tooltip>
 
       {/* Cancel */}
-      <button
-        onClick={onCancel}
-        className="px-3 py-1 text-gray-400 hover:text-white transition-colors"
-        aria-label="Cancel recording"
-      >
-        Cancel
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={onCancel}
+            className="px-3 py-1 text-gray-400 hover:text-white transition-colors"
+            aria-label="Cancel recording"
+          >
+            Cancel
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Cancel Recording</TooltipContent>
+      </Tooltip>
     </div>
   );
 }

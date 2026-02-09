@@ -1,34 +1,72 @@
 name: Claude Code Review
+
 on:
-  pull_request:
-    types: [opened, synchronize]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types: [completed]
+
+# Only one review at a time per PR branch
+concurrency:
+  group: claude-review-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    if: github.event.pull_request.draft == false
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+    # Only run when CI passed AND it was triggered by a pull_request (not push to main)
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
       issues: read
       id-token: write
 
     steps:
+      - name: Get PR number
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Try to get PR number from workflow_run event payload
+          PR_NUMBER="${{ github.event.workflow_run.pull_requests[0].number }}"
+
+          # Fallback: search by head branch (needed for forked PRs)
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "0" ]; then
+            HEAD_BRANCH="${{ github.event.workflow_run.head_branch }}"
+            PR_NUMBER=$(gh pr list --repo "${{ github.repository }}" \
+              --head "$HEAD_BRANCH" --state open \
+              --json number --jq '.[0].number // empty')
+          fi
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "::warning::No open PR found for this workflow run"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Skip draft PRs
+          IS_DRAFT=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.draft')
+          if [ "$IS_DRAFT" = "true" ]; then
+            echo "PR #$PR_NUMBER is a draft, skipping review"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "Will review PR #$PR_NUMBER"
+
       - name: Checkout repository
+        if: steps.pr.outputs.skip != 'true'
         uses: actions/checkout@v6
         with:
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 30
 
       - name: Setup Node.js
+        if: steps.pr.outputs.skip != 'true'
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
@@ -36,6 +74,7 @@ jobs:
           cache-dependency-path: yarn.lock
 
       - name: Cache node_modules
+        if: steps.pr.outputs.skip != 'true'
         uses: actions/cache@v5
         id: yarn-cache
         with:
@@ -45,14 +84,17 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies (if cache miss)
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        if: steps.pr.outputs.skip != 'true' && steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install --immutable
 
-      - name: download diff
+      - name: Download diff
+        if: steps.pr.outputs.skip != 'true'
         run: |
-          curl -fsSL https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}.diff > ${{ github.event.pull_request.number }}.diff
+          curl -fsSL "https://github.com/${{ github.repository }}/pull/${{ steps.pr.outputs.number }}.diff" \
+            > "${{ steps.pr.outputs.number }}.diff"
 
       - name: Run Claude Code Review
+        if: steps.pr.outputs.skip != 'true'
         id: claude-review
         uses: anthropics/claude-code-action@v1
         env:
@@ -74,10 +116,13 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number }}
+            PR NUMBER: ${{ steps.pr.outputs.number }}
 
             the full changeset of the branch till now is!
-            @${{ github.event.pull_request.number }}.diff
+            @${{ steps.pr.outputs.number }}.diff
+
+            **All CI/CD checks (lint, type-check, unit tests, build, E2E tests) have already PASSED.**
+            You are the final gate before merge.
 
             Please do a line by line code review on this pull request and provide feedback on:
             - Code quality and best practices
@@ -91,9 +136,9 @@ jobs:
             ## Your Capabilities
 
             **GitHub Access:**
-            - Read existing comments: `gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments`
-            - Read PR reviews: `gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews`
-            - Read PR commits: `gh pr view ${{ github.event.pull_request.number }} --json commits`
+            - Read existing comments: `gh api repos/${{ github.repository }}/issues/${{ steps.pr.outputs.number }}/comments`
+            - Read PR reviews: `gh api repos/${{ github.repository }}/pulls/${{ steps.pr.outputs.number }}/reviews`
+            - Read PR commits: `gh pr view ${{ steps.pr.outputs.number }} --json commits`
             - Remove outdated Pull request reviews! so if something got fixed - remove from the original comment as well which mentioned the issue.
             - Use `gh pr comment` or `gh api` for comment management
 
@@ -102,31 +147,35 @@ jobs:
             - But you shouldn't commit anything.
 
             **Comment Management:**
-            - Before posting new review comments, check for existing Claude code code reviews! If you find any, please update / remove the existing review.
+            - Before posting new review comments, check for existing Claude code reviews! If you find any, please update / remove the existing review.
 
-            Be constructive and helpful.
-            If you find anything that's not clear - or needs to be changed, you can ask @Jules to do it, simply mentioning in the PR review - to do the following changes in this PR.  You must either accept the PR, or ask modifications. If you are happy with it, wait until the CI finishes. If it is passed, you can merge the PR. If the PR failed, please ask @Jules to fix the CI.
+            ## Decision: You MUST choose one of two outcomes
 
-            ## Jules Integration (only if Jules created the PR)
+            ### Option 1: APPROVE & MERGE
+            If the code is good and ready to ship:
+            1. Approve the PR:
+               ```
+               gh pr review ${{ steps.pr.outputs.number }} --approve --body "✅ Code review passed. LGTM!"
+               ```
+            2. Merge the PR immediately (CI already passed):
+               ```
+               echo $GH_PAT_TOKEN | gh auth login --with-token
+               gh pr merge ${{ steps.pr.outputs.number }} --squash --delete-branch
+               ```
 
-            If not Jules created the PR, just ignore this section.
-            When you need Jules to make changes:
-
-
-            To communicate with Jules, use PR reviews instead of PR comments:
-            # This works (PR review):
+            ### Option 2: REQUEST CHANGES
+            If the code needs fixes, request changes. Tag @Jules to make the fixes (Jules is an AI coding agent that monitors PR reviews):
+            ```
             echo $GH_PAT_TOKEN | gh auth login --with-token
-            gh api repos/zerdos/spike-land-nextjs/pulls/XXX/reviews -X POST -f body="@Jules message" -f event="COMMENT"
-
-            # This does NOT work (regular comment):
-            gh pr comment XXX --body "@Jules message"
-
-            **Jules Request Template:**
-            ```
-            @Jules Please make the following changes to this PR:
+            gh api repos/${{ github.repository }}/pulls/${{ steps.pr.outputs.number }}/reviews \
+              -X POST \
+              -f event="REQUEST_CHANGES" \
+              -f body="@Jules Please make the following changes to this PR:
             - [ ] Fix: <specific issue with file path and line number>
-            - [ ] Add: <specific addition needed>
+            - [ ] Add: <specific addition needed>"
             ```
+
+            Be constructive and helpful. Approve and merge if the PR is acceptable — don't be overly pedantic about style nits when the code is functional and CI passes.
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options

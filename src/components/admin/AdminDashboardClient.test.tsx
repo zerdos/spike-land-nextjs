@@ -24,9 +24,9 @@ describe("AdminDashboardClient", () => {
       failed: 5,
       active: 15,
     },
-    totalTokensPurchased: 10000,
-    totalTokensSpent: 8000,
-    activeVouchers: 3,
+    totalCreditsAllocated: 10000,
+    totalCreditsUsed: 8000,
+    totalWorkspaces: 3,
     timestamp: "2025-01-01T00:00:00.000Z",
   };
 
@@ -92,20 +92,20 @@ describe("AdminDashboardClient", () => {
     expect(screen.getByText("1 active job")).toBeInTheDocument();
   });
 
-  it("should render token metrics", () => {
+  it("should render credit metrics", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
-    expect(screen.getByText("Tokens Purchased")).toBeInTheDocument();
+    expect(screen.getByText("Credits Allocated")).toBeInTheDocument();
     expect(screen.getByText("10,000")).toBeInTheDocument();
-    expect(screen.getByText("8,000 spent")).toBeInTheDocument();
+    expect(screen.getByText("8,000 used")).toBeInTheDocument();
   });
 
-  it("should render voucher metrics", () => {
+  it("should render workspace metrics", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
-    expect(screen.getByText("Active Vouchers")).toBeInTheDocument();
+    expect(screen.getByText("Workspaces")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
-    expect(screen.getByText("Promotional campaigns")).toBeInTheDocument();
+    expect(screen.getByText("Active workspaces")).toBeInTheDocument();
   });
 
   it("should render real-time job status section", () => {
@@ -126,7 +126,7 @@ describe("AdminDashboardClient", () => {
 
     expect(screen.getByText("Quick Links")).toBeInTheDocument();
     expect(screen.getByText("User Analytics")).toBeInTheDocument();
-    expect(screen.getByText("Token Economics")).toBeInTheDocument();
+    expect(screen.getByText("Credit Economics")).toBeInTheDocument();
     expect(screen.getByText("System Health")).toBeInTheDocument();
     expect(screen.getByText("Voucher Management")).toBeInTheDocument();
     expect(screen.getByText("User Management")).toBeInTheDocument();
@@ -361,10 +361,10 @@ describe("AdminDashboardClient", () => {
         "href",
         "/admin/analytics",
       );
-    expect(screen.getByRole("link", { name: /Token Economics/i }))
+    expect(screen.getByRole("link", { name: /Credit Economics/i }))
       .toHaveAttribute(
         "href",
-        "/admin/tokens",
+        "/admin/credits",
       );
     expect(screen.getByRole("link", { name: /System Health/i }))
       .toHaveAttribute(

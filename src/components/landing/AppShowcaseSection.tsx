@@ -1,0 +1,98 @@
+"use client";
+
+import { LiveAppCard } from "@/components/create/live-app-card";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/components/ui/link";
+import type { ShowcaseApp } from "@/lib/landing/showcase-feed";
+import { ArrowRight, Blocks } from "lucide-react";
+import { motion } from "framer-motion";
+
+interface AppShowcaseSectionProps {
+  apps: ShowcaseApp[];
+}
+
+export function AppShowcaseSection({ apps }: AppShowcaseSectionProps) {
+  if (apps.length === 0) return null;
+
+  return (
+    <section className="relative py-32 overflow-hidden">
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center gap-2 mb-6"
+        >
+          <span className="p-2 rounded-xl bg-cyan-400/10 border border-cyan-400/20 text-cyan-400">
+            <Blocks className="w-5 h-5" />
+          </span>
+          <span className="text-sm font-semibold tracking-widest uppercase text-cyan-400">Live Cosmic Entities</span>
+        </motion.div>
+
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-4xl md:text-6xl font-bold text-white mb-8 tracking-tight"
+        >
+          What people are{" "}
+          <span className="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+            materializing
+          </span>
+        </motion.h2>
+
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-xl text-zinc-500 mb-16 max-w-2xl font-light"
+        >
+          Witness the raw power of AI. Every app below was built starting from a single sentence.
+        </motion.p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {apps.map((app, index) => (
+            <motion.div
+              key={app.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.05 * (index % 4) }}
+              whileHover={{ y: -8 }}
+            >
+              <LiveAppCard
+                title={app.title}
+                description={app.description}
+                slug={app.slug}
+                codespaceId={app.codespaceId}
+                viewCount={app.viewCount}
+              />
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-20 text-center"
+        >
+          <Button
+            asChild
+            variant="ghost"
+            className="text-zinc-400 hover:text-white gap-2 transition-all duration-300"
+          >
+            <Link href="/create">
+              View the Multiverse
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </Button>
+        </motion.div>
+      </div>
+    </section>
+  );
+}

@@ -23,7 +23,7 @@ import {
   LayoutGrid,
   LogOut,
   Menu,
-  Rocket,
+  Sparkles,
   Settings,
   SplitSquareVertical,
   User,
@@ -81,11 +81,11 @@ export function PlatformHeader() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {/* Orbit - Primary CTA */}
+            {/* Create - Primary CTA */}
             <Button asChild variant="default" size="sm" className="font-semibold">
-              <Link href="/orbit" className="flex items-center gap-1.5">
-                <Rocket className="h-4 w-4" />
-                Orbit
+              <Link href="/create" className="flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4" />
+                Create
               </Link>
             </Button>
 
@@ -159,29 +159,26 @@ export function PlatformHeader() {
               </Button>
             </SheetTrigger>
             <SheetContent
-              side="bottom"
-              className="rounded-t-[2rem] border-t border-primary/20 bg-background/95 backdrop-blur-xl h-[60vh] z-[60] overflow-y-auto"
+              side="top"
+              className="border-b border-primary/20 bg-background/95 backdrop-blur-xl h-[100dvh] z-[60] overflow-y-auto"
             >
               <VisuallyHidden>
                 <SheetTitle>Navigation Menu</SheetTitle>
               </VisuallyHidden>
-              <div className="flex justify-center w-full pt-2 pb-6">
-                <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20" />
-              </div>
               <nav className="flex flex-col gap-4 px-4 pb-8">
-                {/* Orbit - Primary CTA */}
+                {/* Create - Primary CTA */}
                 <Button
                   asChild
                   variant="default"
                   className="w-full font-semibold h-12"
                 >
                   <Link
-                    href="/orbit"
+                    href="/create"
                     className="flex items-center justify-center gap-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Rocket className="h-5 w-5" />
-                    Orbit - AI Marketing Team
+                    <Sparkles className="h-5 w-5" />
+                    Create - AI App Builder
                   </Link>
                 </Button>
 

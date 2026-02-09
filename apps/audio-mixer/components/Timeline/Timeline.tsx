@@ -34,6 +34,8 @@ interface TimelineProps {
   onTrimChange: (trackId: string, trimStart: number, trimEnd: number) => void;
   onRemoveTrack: (trackId: string) => void;
   onScrubAudio?: (time: number) => void;
+  onSoloPreview?: (trackId: string) => void;
+  onCrossProjectDrop?: (sourceProjectId: string, trackId: string, position: number) => void;
   // Recording preview
   isRecording?: boolean;
   recordingDuration?: number;
@@ -62,6 +64,8 @@ export function Timeline({
   onTrimChange,
   onRemoveTrack,
   onScrubAudio,
+  onSoloPreview,
+  onCrossProjectDrop,
   isRecording = false,
   recordingDuration = 0,
   recordingStartPosition = 0,
@@ -70,6 +74,39 @@ export function Timeline({
   const isScrubbing = useRef(false);
   const scrubStartX = useRef(0);
   const scrubStartTime = useRef(0);
+
+  // Cross-project drag and drop handlers
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      if (!onCrossProjectDrop) return;
+      if (e.dataTransfer.types.includes("application/x-audio-track")) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+      }
+    },
+    [onCrossProjectDrop],
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      if (!onCrossProjectDrop) return;
+      const data = e.dataTransfer.getData("application/x-audio-track");
+      if (!data) return;
+
+      e.preventDefault();
+      try {
+        const { sourceProjectId, trackId } = JSON.parse(data);
+        const rect = e.currentTarget.getBoundingClientRect();
+        const scrollLeft = viewportRef.current?.scrollLeft || 0;
+        const x = e.clientX - rect.left + scrollLeft;
+        const position = Math.max(0, x / zoom);
+        onCrossProjectDrop(sourceProjectId, trackId, position);
+      } catch {
+        // Invalid drag data
+      }
+    },
+    [onCrossProjectDrop, zoom],
+  );
 
   // Calculate total duration (including track positions and recording preview)
   const totalDuration = Math.max(
@@ -222,6 +259,8 @@ export function Timeline({
         className="relative overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-white/20 transition-all"
         style={{ height: "100%", minHeight: "200px" }}
         onMouseDown={handleViewportMouseDown}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
         role="application"
         aria-label="Timeline tracks editor"
         tabIndex={0}
@@ -267,6 +306,7 @@ export function Timeline({
                   onPositionChange={(position) => onTrackPositionChange(track.id, position)}
                   onTrimChange={(trimStart, trimEnd) => onTrimChange(track.id, trimStart, trimEnd)}
                   onSelect={() => onSelectTrack(track.id)}
+                  onClickPlay={onSoloPreview ? () => onSoloPreview(track.id) : undefined}
                 />
               </div>
             ))}
