@@ -1,8 +1,4 @@
-import {
-  CODESPACE_TOOL_NAMES,
-  createCodespaceServer,
-} from "@/lib/claude-agent/tools/codespace-tools";
-import { query } from "@anthropic-ai/claude-agent-sdk";
+import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
 export const maxDuration = 120;
@@ -16,6 +12,15 @@ export const maxDuration = 120;
  * - prompt: string - The prompt to send to the agent
  */
 export async function POST(request: Request) {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { codespaceId, prompt } = await request.json();
 
@@ -29,6 +34,12 @@ export async function POST(request: Request) {
     console.log("[test/agent-debug] Starting test");
     console.log("[test/agent-debug] codespaceId:", codespaceId);
     console.log("[test/agent-debug] prompt:", prompt);
+
+    // Dynamic imports to prevent side effects in production/CI
+    const { CODESPACE_TOOL_NAMES, createCodespaceServer } = await import(
+      "@/lib/claude-agent/tools/codespace-tools"
+    );
+    const { query } = await import("@anthropic-ai/claude-agent-sdk");
 
     // Create MCP server
     const server = createCodespaceServer(codespaceId);
@@ -117,6 +128,15 @@ export async function POST(request: Request) {
  * GET /api/test/agent-debug?codespaceId=xxx&code=xxx
  */
 export async function GET(request: Request) {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const url = new URL(request.url);
   const codespaceId = url.searchParams.get("codespaceId");
   const code = url.searchParams.get("code");
