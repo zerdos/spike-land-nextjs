@@ -31,6 +31,9 @@ vi.mock("next/image", () => ({
   },
 }));
 
+// Mock sonner toast
+vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
+
 // Mock fetch for the useWorkspaceCredits hook
 const mockFetch = vi.fn();
 global.fetch = mockFetch;

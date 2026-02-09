@@ -27,7 +27,7 @@ export const Scene04_MementoMemory = () => {
             <div style={{ position: 'relative', width: '100%', height: '400px' }}>
                 {Array.from({ length: 5 }).map((_, i) => {
                     const delay = 300 + i * 60;
-                    const opacity = interpolate(frame, [delay, delay + 20, delay + 50, delay + 60], [0, 1, 1, 0]);
+                    const opacity = interpolate(frame, [delay, delay + 20, delay + 50, delay + 60], [0, 1, 1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
                     return (
                         <div key={i} style={{
                             position: 'absolute',
@@ -68,7 +68,7 @@ export const Scene04_MementoMemory = () => {
                         author="Zoltan Erdos"
                         delay={20}
                     />
-                    <div style={{ opacity: interpolate(frame, [900, 930], [0, 1]) }}>
+                    <div style={{ opacity: interpolate(frame, [900, 930], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>
                         <CodeBlock
                             code={`# PLAN\n1. Open src/components/setter.tsx\n2. Fix bug at line 42\n3. Verify results`}
                             language="markdown"
@@ -83,7 +83,7 @@ export const Scene04_MementoMemory = () => {
       {frame >= 1400 && frame < 1800 && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 60 }}>
             <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 60, opacity: interpolate(frame, [1400, 1500], [1, 0]) }}>🔍</div>
+                <div style={{ fontSize: 60, opacity: interpolate(frame, [1400, 1500], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>🔍</div>
                 <div style={{ color: COLORS.cyan, fontSize: 26 }}>EXPLORER</div>
             </div>
 
@@ -98,12 +98,12 @@ export const Scene04_MementoMemory = () => {
                     position: 'absolute',
                     height: '100%',
                     backgroundColor: COLORS.cyan,
-                    width: interpolate(frame, [1400, 1600], [0, 100]) + '%'
+                    width: interpolate(frame, [1400, 1600], [0, 100], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) + '%'
                 }} />
             </div>
 
             <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 60, opacity: interpolate(frame, [1550, 1650], [0, 1]) }}>💻</div>
+                <div style={{ fontSize: 60, opacity: interpolate(frame, [1550, 1650], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>💻</div>
                 <div style={{ color: COLORS.fuchsia, fontSize: 26 }}>CODER</div>
             </div>
 
@@ -115,7 +115,7 @@ export const Scene04_MementoMemory = () => {
                 width: '100%',
                 height: '100%',
                 backgroundColor: 'white',
-                opacity: interpolate(frame, [1500, 1515, 1530], [0, 1, 0]),
+                opacity: interpolate(frame, [1500, 1515, 1530], [0, 1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }),
                 zIndex: 100
             }} />
         </div>
@@ -127,14 +127,14 @@ export const Scene04_MementoMemory = () => {
             <KineticText text="Specificity is Mandatory" fontSize={76} color={COLORS.cyan} type="reveal" />
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60, width: '100%' }}>
-                <div style={{ opacity: interpolate(frame, [1850, 1870], [0, 1]) }}>
+                <div style={{ opacity: interpolate(frame, [1850, 1870], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>
                     <div style={{ color: COLORS.error, fontSize: 30, marginBottom: 20 }}>❌ VAGUE (Useless)</div>
                     <div style={{ padding: 30, backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: 16, border: `1px solid ${COLORS.error}`, color: COLORS.textMuted, fontSize: 22 }}>
                         "Fix the bug in the component where the layout breaks on small screens."
                     </div>
                 </div>
 
-                <div style={{ opacity: interpolate(frame, [1950, 1970], [0, 1]) }}>
+                <div style={{ opacity: interpolate(frame, [1950, 1970], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>
                     <div style={{ color: COLORS.success, fontSize: 30, marginBottom: 20 }}>✅ SPECIFIC (Perfect)</div>
                     <CodeBlock
                         code={`Edit src/lib/ui.tsx:156\nChange flex-direction to 'column'\nwhere width < 768px`}

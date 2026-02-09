@@ -44,13 +44,13 @@ vi.mock("@/lib/stripe/client", () => ({
   WORKSPACE_TIER_PLANS: {
     PRO: {
       name: "Pro",
-      priceUSD: 29,
+      priceGBP: 29,
       monthlyAiCredits: 1000,
       tier: "PRO",
     },
     BUSINESS: {
       name: "Business",
-      priceUSD: 99,
+      priceGBP: 99,
       monthlyAiCredits: 5000,
       tier: "BUSINESS",
     },
@@ -66,6 +66,9 @@ vi.mock("@/lib/prisma", () => ({
     },
     subscription: {
       findUnique: vi.fn(),
+    },
+    workspace: {
+      findFirst: vi.fn(),
     },
   },
 }));
@@ -551,12 +554,43 @@ describe("POST /api/stripe/checkout", () => {
     expect(data.error).toBe("Invalid tier ID");
   });
 
+  it("returns 400 when user already has an active workspace subscription", async () => {
+    (auth as Mock).mockResolvedValue({
+      user: { id: "123", email: "test@test.com", name: "Test User" },
+    });
+    (prisma.user.findUnique as Mock).mockResolvedValue({
+      stripeCustomerId: "cus_existing",
+    });
+    (prisma.workspace.findFirst as Mock).mockResolvedValue({
+      stripeSubscriptionId: "sub_existing",
+    });
+
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ tierId: "PRO", mode: "workspace_tier" }),
+      },
+    );
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe(
+      "You already have an active workspace subscription. Please cancel it first.",
+    );
+  });
+
   it("creates checkout session for valid workspace_tier request", async () => {
     (auth as Mock).mockResolvedValue({
       user: { id: "123", email: "test@test.com", name: "Test User" },
     });
     (prisma.user.findUnique as Mock).mockResolvedValue({
       stripeCustomerId: "cus_existing",
+    });
+    (prisma.workspace.findFirst as Mock).mockResolvedValue({
+      stripeSubscriptionId: null,
     });
 
     const request = new NextRequest(
@@ -582,6 +616,9 @@ describe("POST /api/stripe/checkout", () => {
     });
     (prisma.user.findUnique as Mock).mockResolvedValue({
       stripeCustomerId: "cus_existing",
+    });
+    (prisma.workspace.findFirst as Mock).mockResolvedValue({
+      stripeSubscriptionId: null,
     });
 
     const request = new NextRequest(

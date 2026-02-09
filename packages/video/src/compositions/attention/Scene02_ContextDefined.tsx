@@ -89,7 +89,7 @@ export const Scene02_ContextDefined = () => {
                         {Array.from({ length: 15 }).map((_, i) => {
                             const t = frame - 860 - i * 5;
                             const y = interpolate(t, [0, 40], [300, 200 - i * 15], { extrapolateRight: 'clamp' });
-                            const opacity = interpolate(t, [0, 10], [0, 1]);
+                            const opacity = interpolate(t, [0, 10], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
                             return (
                                 <div key={i} style={{
                                     position: 'absolute',

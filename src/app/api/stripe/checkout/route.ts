@@ -292,15 +292,44 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
     }
 
     if (
-      typeof plan.priceUSD !== "number" || plan.priceUSD <= 0 ||
-      !Number.isFinite(plan.priceUSD)
+      typeof plan.priceGBP !== "number" || plan.priceGBP <= 0 ||
+      !Number.isFinite(plan.priceGBP)
     ) {
       console.error(
-        `Invalid price configuration for tier ${tierId}: ${plan.priceUSD}`,
+        `Invalid price configuration for tier ${tierId}: ${plan.priceGBP}`,
       );
       return NextResponse.json({ error: "Invalid tier configuration" }, {
         status: 500,
       });
+    }
+
+    // Check if user's workspace already has an active tier subscription
+    const { data: userWorkspace, error: workspaceError } = await tryCatch(
+      prisma.workspace.findFirst({
+        where: {
+          isPersonal: true,
+          members: { some: { userId: session.user.id } },
+          deletedAt: null,
+        },
+        select: { stripeSubscriptionId: true },
+      }),
+    );
+
+    if (workspaceError) {
+      console.error("Error checking workspace subscription:", workspaceError);
+      return NextResponse.json(
+        { error: "Failed to check subscription status" },
+        { status: 500 },
+      );
+    }
+
+    if (userWorkspace?.stripeSubscriptionId) {
+      return NextResponse.json(
+        {
+          error: "You already have an active workspace subscription. Please cancel it first.",
+        },
+        { status: 400 },
+      );
     }
 
     const { data: checkoutSession, error: checkoutError } = await tryCatch(
@@ -311,12 +340,12 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
         line_items: [
           {
             price_data: {
-              currency: "usd",
+              currency: "gbp",
               product_data: {
                 name: `Orbit ${plan.name} Plan`,
                 description: `${plan.monthlyAiCredits} AI credits/month + full workspace features`,
               },
-              unit_amount: Math.round(plan.priceUSD * 100),
+              unit_amount: Math.round(plan.priceGBP * 100),
               recurring: {
                 interval: "month",
               },

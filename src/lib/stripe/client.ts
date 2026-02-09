@@ -101,13 +101,13 @@ export const TIER_SUBSCRIPTIONS = {
 export const WORKSPACE_TIER_PLANS = {
   PRO: {
     name: "Pro",
-    priceUSD: 29,
+    priceGBP: 29,
     monthlyAiCredits: 1000,
     tier: "PRO" as const,
   },
   BUSINESS: {
     name: "Business",
-    priceUSD: 99,
+    priceGBP: 99,
     monthlyAiCredits: 5000,
     tier: "BUSINESS" as const,
   },

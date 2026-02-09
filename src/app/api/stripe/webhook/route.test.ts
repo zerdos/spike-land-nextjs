@@ -1674,6 +1674,7 @@ describe("POST /api/stripe/webhook", () => {
         where: { id: "workspace_123" },
         data: {
           stripeSubscriptionId: "sub_123",
+          monthlyAiCredits: 1000,
           usedAiCredits: 0,
         },
       });
@@ -1718,6 +1719,14 @@ describe("POST /api/stripe/webhook", () => {
       expect(response.status).toBe(200);
       expect(data.received).toBe(true);
       expect(mockUpgradeTier).toHaveBeenCalledWith("workspace_123", "BUSINESS");
+      expect(mockPrismaWorkspaceUpdate).toHaveBeenCalledWith({
+        where: { id: "workspace_123" },
+        data: {
+          stripeSubscriptionId: "sub_456",
+          monthlyAiCredits: 5000,
+          usedAiCredits: 0,
+        },
+      });
       consoleSpy.mockRestore();
     });
 

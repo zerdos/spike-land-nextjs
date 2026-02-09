@@ -17,6 +17,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function PricingPage() {
   const { data: session, status } = useSession();
@@ -41,9 +42,15 @@ export default function PricingPage() {
         body: JSON.stringify({ mode: "workspace_tier", tierId }),
       });
       const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.error || "Failed to start checkout. Please try again.");
+        return;
+      }
       if (data.url) {
         window.location.href = data.url;
       }
+    } catch {
+      toast.error("Network error. Please check your connection and try again.");
     } finally {
       setCheckoutLoading(null);
     }

@@ -41,9 +41,9 @@ export const Scene05_AttentionPhysics = () => {
 
             <AttentionPie
                 segments={[
-                    { label: "Relevant Code", value: interpolate(frame, [900, 1100], [100, 20]), color: COLORS.cyan },
-                    { label: "Irrelevant Docs", value: interpolate(frame, [900, 1100], [0, 40]), color: COLORS.fuchsia },
-                    { label: "Conversation Noise", value: interpolate(frame, [900, 1100], [0, 40]), color: COLORS.purple },
+                    { label: "Relevant Code", value: interpolate(frame, [900, 1100], [100, 20], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }), color: COLORS.cyan },
+                    { label: "Irrelevant Docs", value: interpolate(frame, [900, 1100], [0, 40], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }), color: COLORS.fuchsia },
+                    { label: "Conversation Noise", value: interpolate(frame, [900, 1100], [0, 40], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }), color: COLORS.purple },
                 ]}
                 size={500}
                 delay={20}

@@ -72,7 +72,7 @@ export const Scene09_Tactics = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                         <div style={{ color: COLORS.success, fontSize: 30, fontWeight: 800 }}>EXACT REFERENCE ✅</div>
                         <ChatBubble message="See src/lib/db.ts lines 42-65. Follow that pattern exactly." />
-                        <div style={{ opacity: interpolate(frame, [1300, 1330], [0, 1]) }}>
+                        <div style={{ opacity: interpolate(frame, [1300, 1330], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>
                             <CodeBlock
                                 code={`export const useDb = () => {\n  // THE PATTERN\n}`}
                                 language="typescript"

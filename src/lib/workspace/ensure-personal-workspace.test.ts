@@ -1,11 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockPrisma = vi.hoisted(() => ({
-  workspace: {
-    findFirst: vi.fn(),
-    create: vi.fn(),
-  },
-}));
+const mockPrisma = vi.hoisted(() => {
+  const mock = {
+    workspace: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
+    $transaction: vi.fn(),
+  };
+  // $transaction executes the callback with the mock itself as the tx client
+  mock.$transaction.mockImplementation((cb: (tx: typeof mock) => Promise<unknown>) => cb(mock));
+  return mock;
+});
 
 vi.mock("@/lib/prisma", () => ({
   default: mockPrisma,

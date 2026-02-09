@@ -327,11 +327,12 @@ async function handleCheckoutCompleted(
         workspaceTier as "PRO" | "BUSINESS",
       );
 
-      // Store Stripe subscription ID and reset used credits
+      // Store Stripe subscription ID, set monthly credits, and reset used credits
       await prisma.workspace.update({
         where: { id: workspaceId },
         data: {
           stripeSubscriptionId,
+          monthlyAiCredits: parseInt(workspaceCredits, 10),
           usedAiCredits: 0,
         },
       });

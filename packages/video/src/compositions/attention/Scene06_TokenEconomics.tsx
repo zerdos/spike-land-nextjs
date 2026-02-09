@@ -66,7 +66,7 @@ export const Scene06_TokenEconomics = () => {
                         gridTemplateColumns: 'repeat(10, 1fr)',
                         gap: 10,
                         width: '400px',
-                        opacity: interpolate(frame, [850, 860], [0.3, 1])
+                        opacity: interpolate(frame, [850, 860], [0.3, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })
                     }}>
                         {Array.from({ length: 50 }).map((_, i) => (
                             <div key={i} style={{
@@ -128,7 +128,7 @@ export const Scene06_TokenEconomics = () => {
                        alignItems: 'center',
                        justifyContent: 'center',
                        fontSize: 100,
-                       opacity: interpolate(frame, [1450, 1460], [0, 1])
+                       opacity: interpolate(frame, [1450, 1460], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })
                    }}>
                        🖼️
                    </div>

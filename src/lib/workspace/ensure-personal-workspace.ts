@@ -20,37 +20,40 @@ export async function ensurePersonalWorkspace(
   userId: string,
   userName?: string | null,
 ): Promise<string | null> {
-  // Check for existing personal workspace first (idempotent)
-  const existing = await prisma.workspace.findFirst({
-    where: {
-      isPersonal: true,
-      members: {
-        some: { userId },
+  // Use a transaction to prevent race conditions between check and create
+  const result = await prisma.$transaction(async (tx) => {
+    // Check for existing personal workspace first (idempotent)
+    const existing = await tx.workspace.findFirst({
+      where: {
+        isPersonal: true,
+        members: {
+          some: { userId },
+        },
+        deletedAt: null,
       },
-      deletedAt: null,
-    },
-    select: { id: true },
-  });
+      select: { id: true },
+    });
 
-  if (existing) {
-    return existing.id;
-  }
+    if (existing) {
+      return existing;
+    }
 
-  // Create personal workspace with default credits (100 from schema)
-  const workspace = await prisma.workspace.create({
-    data: {
-      name: `${userName || "User"}'s Workspace`,
-      slug: `user-${userId}-${Date.now().toString(36)}`,
-      isPersonal: true,
-      members: {
-        create: {
-          userId,
-          role: "OWNER",
+    // Create personal workspace with default credits (100 from schema)
+    return tx.workspace.create({
+      data: {
+        name: `${userName || "User"}'s Workspace`,
+        slug: `user-${userId}-${Date.now().toString(36)}`,
+        isPersonal: true,
+        members: {
+          create: {
+            userId,
+            role: "OWNER",
+          },
         },
       },
-    },
-    select: { id: true },
+      select: { id: true },
+    });
   });
 
-  return workspace.id;
+  return result.id;
 }
