@@ -1,6 +1,5 @@
 import { Config } from "@remotion/cli/config";
 import { enableTailwind } from "@remotion/tailwind";
-import path from "path";
 
 Config.setVideoImageFormat("jpeg");
 Config.setOverwriteOutput(true);

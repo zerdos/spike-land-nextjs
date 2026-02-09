@@ -25,6 +25,16 @@ export const TIMING = {
   scene8: { start: 1650, end: 1800 }, // 55-60s: EndCard - Brand and CTA
 } as const;
 
+export const ATTENTION_CHAPTERS = {
+  intro:        { from: 0,     duration: 900,  label: "Intro" },
+  uncertainty:  { from: 900,   duration: 2700, label: "The Great Refactor" },
+  productivity: { from: 3600,  duration: 3600, label: "Productivity Paradox" },
+  aiSlop:       { from: 7200,  duration: 5400, label: "AI Slop Case Study" },
+  quality:      { from: 12600, duration: 5400, label: "Quality Triangle" },
+  identity:     { from: 18000, duration: 5400, label: "Identity & Vision" },
+  outro:        { from: 23400, duration: 1178, label: "Outro" },
+} as const;
+
 /**
  * Scene durations in frames
  */
