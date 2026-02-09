@@ -80,7 +80,7 @@ export function AnalyticsPageContent() {
           }}
           secondaryCta={{
             text: "View Pricing",
-            href: "/tokens",
+            href: "/pricing",
           }}
         />
 

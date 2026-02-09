@@ -158,7 +158,7 @@ describe("UserAvatar Component", () => {
 
     await user.click(screen.getByTestId("user-avatar"));
     expect(screen.getByText("Pixel - AI Photo Enhance")).toBeInTheDocument();
-    expect(screen.getByText("Token Management")).toBeInTheDocument();
+    expect(screen.getByText("Credit Management")).toBeInTheDocument();
     expect(screen.getByText("My Apps")).toBeInTheDocument();
     expect(screen.getByText("Profile")).toBeInTheDocument();
     expect(screen.getByText("Settings")).toBeInTheDocument();
@@ -247,7 +247,7 @@ describe("UserAvatar Component", () => {
     expect(pixelLink).toHaveAttribute("href", "/apps/pixel");
   });
 
-  it("should have Token Management link pointing to /tokens", async () => {
+  it("should have Credit Management link pointing to /pricing", async () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: createMockUser({
@@ -264,10 +264,10 @@ describe("UserAvatar Component", () => {
     render(<UserAvatar />);
 
     await user.click(screen.getByTestId("user-avatar"));
-    const tokensLink = screen.getByRole("menuitem", {
-      name: /token management/i,
+    const creditsLink = screen.getByRole("menuitem", {
+      name: /credit management/i,
     });
-    expect(tokensLink).toHaveAttribute("href", "/tokens");
+    expect(creditsLink).toHaveAttribute("href", "/pricing");
   });
 
   it("should have My Apps link pointing to /my-apps", async () => {

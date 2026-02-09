@@ -1,4 +1,4 @@
-import { BarChart3, Brain, Calendar, Rocket, SplitSquareVertical } from "lucide-react";
+import { BarChart3, Bot, Brain, Calendar, Rocket, SplitSquareVertical } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -46,6 +46,14 @@ const features = [
       "Deep performance insights across all platforms. Track growth, engagement, and ROI in one unified dashboard.",
     icon: BarChart3,
     gradient: "from-orange-500 to-red-500",
+  },
+  {
+    href: "/features/ai-tools",
+    title: "AI Tools",
+    description:
+      "Intelligent automation suite for content creation, optimization, and scheduling powered by cutting-edge AI.",
+    icon: Bot,
+    gradient: "from-indigo-500 to-violet-500",
   },
 ];
 

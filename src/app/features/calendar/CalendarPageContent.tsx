@@ -80,7 +80,7 @@ export function CalendarPageContent() {
           }}
           secondaryCta={{
             text: "View Pricing",
-            href: "/tokens",
+            href: "/pricing",
           }}
         />
 

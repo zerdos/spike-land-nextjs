@@ -27,6 +27,12 @@ function isPixelAppChildRoute(pathname: string | null): boolean {
 export function ConditionalHeader() {
   const pathname = usePathname();
 
+  // Allow /orbit-landing through before checking excluded paths
+  // (since "/orbit" in EXCLUDED_PATHS would match "/orbit-landing" via startsWith)
+  if (pathname?.startsWith("/orbit-landing")) {
+    return <PlatformHeader />;
+  }
+
   const shouldHide = EXCLUDED_PATHS.some((path) => pathname?.startsWith(path));
 
   if (shouldHide) {

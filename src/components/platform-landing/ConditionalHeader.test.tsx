@@ -131,4 +131,22 @@ describe("ConditionalHeader Component", () => {
     expect(screen.getByTestId("platform-header")).toBeInTheDocument();
     expect(screen.queryByTestId("pixel-app-header")).not.toBeInTheDocument();
   });
+
+  it("should render PlatformHeader on /orbit-landing", () => {
+    mockUsePathname.mockReturnValue("/orbit-landing");
+    render(<ConditionalHeader />);
+    expect(screen.getByTestId("platform-header")).toBeInTheDocument();
+  });
+
+  it("should NOT render header on /orbit", () => {
+    mockUsePathname.mockReturnValue("/orbit");
+    render(<ConditionalHeader />);
+    expect(screen.queryByTestId("platform-header")).not.toBeInTheDocument();
+  });
+
+  it("should NOT render header on /orbit/workspace/dashboard", () => {
+    mockUsePathname.mockReturnValue("/orbit/workspace/dashboard");
+    render(<ConditionalHeader />);
+    expect(screen.queryByTestId("platform-header")).not.toBeInTheDocument();
+  });
 });

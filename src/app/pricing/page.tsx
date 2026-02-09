@@ -44,7 +44,7 @@ export default function PricingPage() {
             <div className="flex items-center justify-center gap-2 mb-2">
               <Sparkles className="h-6 w-6 text-primary" />
               <CardTitle className="text-2xl">
-                Integrated AI Image Enhancement
+                Pixel AI Photo Enhancement
               </CardTitle>
             </div>
             <CardDescription className="text-base">
