@@ -25,10 +25,11 @@ export function Footer() {
     },
   });
 
-  // Hide footer on my-apps, live, create, orbit, and audio-mixer routes
+  // Hide footer on my-apps, live, create, orbit (but not orbit-landing), and audio-mixer routes
   if (
     pathname?.startsWith("/my-apps") || pathname?.startsWith("/live") ||
-    pathname?.startsWith("/orbit") || pathname?.startsWith("/create") ||
+    (pathname?.startsWith("/orbit") && !pathname?.startsWith("/orbit-landing")) ||
+    pathname?.startsWith("/create") ||
     pathname?.startsWith("/apps/audio-mixer")
   ) {
     return null;
@@ -106,7 +107,31 @@ export function Footer() {
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-white font-heading">Legal</h4>
+            <h4 className="text-sm font-semibold text-white font-heading">Explore</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <Link href="/about" className="hover:text-primary transition-colors">
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link href="/portfolio" className="hover:text-primary transition-colors">
+                  Portfolio
+                </Link>
+              </li>
+              <li>
+                <Link href="/press" className="hover:text-primary transition-colors">
+                  Press
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className="hover:text-primary transition-colors">
+                  Blog
+                </Link>
+              </li>
+            </ul>
+
+            <h4 className="text-sm font-semibold text-white font-heading pt-2">Legal</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link href="/privacy" className="hover:text-primary transition-colors">

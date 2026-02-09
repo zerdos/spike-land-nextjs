@@ -76,9 +76,9 @@ export function UserAvatar({ className, user: propUser }: UserAvatarProps) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/tokens">
+          <Link href="/pricing">
             <Coins className="mr-2 h-4 w-4" />
-            <span>Token Management</span>
+            <span>Credit Management</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

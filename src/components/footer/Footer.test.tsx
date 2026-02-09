@@ -147,4 +147,26 @@ describe("Footer", () => {
     render(<Footer />);
     expect(screen.getByText("Spike Land")).toBeDefined();
   });
+
+  it("renders Explore section with navigation links", () => {
+    (usePathname as Mock).mockReturnValue("/");
+    render(<Footer />);
+    expect(screen.getByText("Explore")).toBeDefined();
+    expect(screen.getByText("About")).toBeDefined();
+    expect(screen.getByText("Portfolio")).toBeDefined();
+    expect(screen.getByText("Press")).toBeDefined();
+    expect(screen.getByText("Blog")).toBeDefined();
+  });
+
+  it("renders on /orbit-landing route", () => {
+    (usePathname as Mock).mockReturnValue("/orbit-landing");
+    render(<Footer />);
+    expect(screen.getByText("Spike Land")).toBeDefined();
+  });
+
+  it("returns null on /orbit routes", () => {
+    (usePathname as Mock).mockReturnValue("/orbit");
+    const { container } = render(<Footer />);
+    expect(container.firstChild).toBeNull();
+  });
 });

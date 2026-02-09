@@ -16,11 +16,11 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import {
   BarChart3,
+  Bot,
   Brain,
   Calendar,
   ChevronDown,
   Coins,
-  LayoutGrid,
   LogOut,
   Menu,
   Sparkles,
@@ -57,10 +57,17 @@ const featureItems = [
     description: "Deep performance insights",
     icon: BarChart3,
   },
+  {
+    href: "/features/ai-tools",
+    label: "AI Tools",
+    description: "Intelligent automation suite",
+    icon: Bot,
+  },
 ];
 
 // Main navigation links
 const navLinks = [
+  { href: "/orbit-landing", label: "Orbit" },
   { href: "/services", label: "Services" },
   { href: "/pricing", label: "Pricing" },
 ];
@@ -125,14 +132,6 @@ export function PlatformHeader() {
                 {link.label}
               </Link>
             ))}
-
-            {/* My Apps - De-emphasized */}
-            <Link
-              href="/my-apps"
-              className="text-sm font-medium text-muted-foreground/70 hover:text-muted-foreground transition-colors"
-            >
-              My Apps
-            </Link>
 
             {!isAuthenticated && (
               <Link
@@ -219,16 +218,6 @@ export function PlatformHeader() {
                   </Link>
                 ))}
 
-                {/* My Apps - De-emphasized */}
-                <Link
-                  href="/my-apps"
-                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <LayoutGrid className="h-5 w-5" />
-                  <span>My Apps</span>
-                </Link>
-
                 {!isAuthenticated && (
                   <Link
                     href="/auth/signin"
@@ -268,13 +257,13 @@ export function PlatformHeader() {
                       </div>
 
                       <Link
-                        href="/tokens"
+                        href="/pricing"
                         className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
                         onClick={() =>
                           setMobileMenuOpen(false)}
                       >
                         <Coins className="mr-3 h-5 w-5" />
-                        <span>Token Management</span>
+                        <span>Credit Management</span>
                       </Link>
 
                       <Link

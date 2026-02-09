@@ -80,7 +80,7 @@ export function ABTestingPageContent() {
           }}
           secondaryCta={{
             text: "View Pricing",
-            href: "/tokens",
+            href: "/pricing",
           }}
         />
 

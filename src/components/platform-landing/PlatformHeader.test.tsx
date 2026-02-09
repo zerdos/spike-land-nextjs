@@ -71,14 +71,23 @@ describe("PlatformHeader Component", () => {
 
     it("should render desktop navigation links", () => {
       render(<PlatformHeader />);
+      expect(screen.getByRole("link", { name: "Orbit" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Services" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Pricing" })).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "My Apps" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Sign In" })).toBeInTheDocument();
+    });
+
+    it("should NOT render My Apps in header navigation", () => {
+      render(<PlatformHeader />);
+      expect(screen.queryByRole("link", { name: "My Apps" })).not.toBeInTheDocument();
     });
 
     it("should have correct href for navigation links", () => {
       render(<PlatformHeader />);
+      expect(screen.getByRole("link", { name: "Orbit" })).toHaveAttribute(
+        "href",
+        "/orbit-landing",
+      );
       expect(screen.getByRole("link", { name: "Services" })).toHaveAttribute(
         "href",
         "/services",
@@ -86,10 +95,6 @@ describe("PlatformHeader Component", () => {
       expect(screen.getByRole("link", { name: "Pricing" })).toHaveAttribute(
         "href",
         "/pricing",
-      );
-      expect(screen.getByRole("link", { name: "My Apps" })).toHaveAttribute(
-        "href",
-        "/my-apps",
       );
       expect(screen.getByRole("link", { name: "Sign In" })).toHaveAttribute(
         "href",
@@ -167,6 +172,7 @@ describe("PlatformHeader Component", () => {
       expect(dialog.querySelector('a[href="/features/calendar"]')).toBeInTheDocument();
       expect(dialog.querySelector('a[href="/features/brand-brain"]')).toBeInTheDocument();
       expect(dialog.querySelector('a[href="/features/analytics"]')).toBeInTheDocument();
+      expect(dialog.querySelector('a[href="/features/ai-tools"]')).toBeInTheDocument();
     });
 
     it("should have border styling on header", () => {
@@ -212,15 +218,14 @@ describe("PlatformHeader Component", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
-    it("should render My Apps link in mobile menu with de-emphasized styling", () => {
+    it("should NOT render My Apps link in mobile menu", () => {
       render(<PlatformHeader />);
       const menuButton = screen.getByRole("button", { name: /open menu/i });
       fireEvent.click(menuButton);
 
       const dialog = screen.getByRole("dialog");
       const myAppsLink = dialog.querySelector('a[href="/my-apps"]');
-      expect(myAppsLink).toBeInTheDocument();
-      expect(myAppsLink).toHaveClass("text-muted-foreground");
+      expect(myAppsLink).not.toBeInTheDocument();
     });
   });
 
@@ -249,8 +254,8 @@ describe("PlatformHeader Component", () => {
 
     it("should still render navigation links", () => {
       render(<PlatformHeader />);
+      expect(screen.getByRole("link", { name: "Orbit" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Pricing" })).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "My Apps" })).toBeInTheDocument();
     });
 
     it("should render Create CTA when authenticated", () => {
@@ -320,6 +325,7 @@ describe("PlatformHeader Component", () => {
       expect(dialog.querySelector('a[href="/features/calendar"]')).toBeInTheDocument();
       expect(dialog.querySelector('a[href="/features/brand-brain"]')).toBeInTheDocument();
       expect(dialog.querySelector('a[href="/features/analytics"]')).toBeInTheDocument();
+      expect(dialog.querySelector('a[href="/features/ai-tools"]')).toBeInTheDocument();
     });
 
     it("should have aria-label on Features dropdown trigger", () => {
@@ -366,13 +372,13 @@ describe("PlatformHeader Component", () => {
 
       // Get all focusable elements in the header
       const createLinks = screen.getAllByRole("link", { name: /create/i });
+      const orbitLink = screen.getByRole("link", { name: "Orbit" });
       const pricingLink = screen.getByRole("link", { name: "Pricing" });
-      const myAppsLink = screen.getByRole("link", { name: "My Apps" });
 
       // Verify these elements exist and are tabbable (no tabindex=-1)
       expect(createLinks[0]).not.toHaveAttribute("tabindex", "-1");
+      expect(orbitLink).not.toHaveAttribute("tabindex", "-1");
       expect(pricingLink).not.toHaveAttribute("tabindex", "-1");
-      expect(myAppsLink).not.toHaveAttribute("tabindex", "-1");
     });
 
     it("should close mobile menu with Escape key", () => {

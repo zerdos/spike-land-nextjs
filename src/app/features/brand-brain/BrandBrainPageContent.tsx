@@ -80,7 +80,7 @@ export function BrandBrainPageContent() {
           }}
           secondaryCta={{
             text: "View Pricing",
-            href: "/tokens",
+            href: "/pricing",
           }}
         />
 

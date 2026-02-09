@@ -258,7 +258,7 @@ describe("PricingPage", () => {
     render(<PricingPage />);
 
     expect(
-      screen.getByText("Integrated AI Image Enhancement"),
+      screen.getByText("Pixel AI Photo Enhancement"),
     ).toBeDefined();
     expect(
       screen.getByText(
