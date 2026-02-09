@@ -1,101 +1,68 @@
 import { Composition, Folder } from "remotion";
 import { PhysicsOfAttention, PromoVideo } from "./Video";
 import {
-  IntroScene,
-  UncertaintyScene,
-  ProductivityScene,
-  AISlopScene,
-  QualitySkillsScene,
-  IdentityVisionScene,
-  OutroScene,
+  Scene01_TheHook,
+  Scene02_ContextDefined,
+  Scene03_PlanMode,
+  Scene04_MementoMemory,
+  Scene05_AttentionPhysics,
+  Scene06_TokenEconomics,
+  Scene07_CachingRot,
+  Scene08_Metacognition,
+  Scene09_Tactics,
+  Scene10_MetaOutro,
 } from "./compositions/AttentionScenes";
-import { VIDEO_CONFIG } from "./lib/constants";
+import { VIDEO_CONFIG, SCENE_CHAPTERS } from "./lib/constants";
 
 /**
  * Remotion Root - Composition Registry
- * 
- * Organized with Folders for better navigation in Remotion Studio.
- * Using hyphenated IDs for maximum compatibility.
  */
 export const RemotionRoot = () => {
+  const chapters = [
+    { component: Scene01_TheHook, ...SCENE_CHAPTERS.hook },
+    { component: Scene02_ContextDefined, ...SCENE_CHAPTERS.defined },
+    { component: Scene03_PlanMode, ...SCENE_CHAPTERS.planMode },
+    { component: Scene04_MementoMemory, ...SCENE_CHAPTERS.memento },
+    { component: Scene05_AttentionPhysics, ...SCENE_CHAPTERS.physics },
+    { component: Scene06_TokenEconomics, ...SCENE_CHAPTERS.economics },
+    { component: Scene07_CachingRot, ...SCENE_CHAPTERS.caching },
+    { component: Scene08_Metacognition, ...SCENE_CHAPTERS.metacog },
+    { component: Scene09_Tactics, ...SCENE_CHAPTERS.tactics },
+    { component: Scene10_MetaOutro, ...SCENE_CHAPTERS.metaOutro },
+  ];
+
   return (
     <>
-      {/* Main Production Compositions */}
       <Composition
         id="Physics-of-Attention"
         component={PhysicsOfAttention}
-        durationInFrames={24578}
-        fps={VIDEO_CONFIG.fps}
-        width={VIDEO_CONFIG.width}
-        height={VIDEO_CONFIG.height}
-      />
-      <Composition
-        id="PromoVideo"
-        component={PromoVideo}
         durationInFrames={VIDEO_CONFIG.durationInFrames}
         fps={VIDEO_CONFIG.fps}
         width={VIDEO_CONFIG.width}
         height={VIDEO_CONFIG.height}
       />
+      
+      <Composition
+        id="PromoVideo"
+        component={PromoVideo}
+        durationInFrames={1800}
+        fps={VIDEO_CONFIG.fps}
+        width={VIDEO_CONFIG.width}
+        height={VIDEO_CONFIG.height}
+      />
 
-      {/* Individual Scene Previews */}
       <Folder name="Attention-Scenes">
-        <Composition
-          id="Attn-01-Intro"
-          component={IntroScene}
-          durationInFrames={900}
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="Attn-02-Uncertainty"
-          component={UncertaintyScene}
-          durationInFrames={2700}
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="Attn-03-Productivity"
-          component={ProductivityScene}
-          durationInFrames={3600}
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="Attn-04-AISlop"
-          component={AISlopScene}
-          durationInFrames={5400}
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="Attn-05-Quality"
-          component={QualitySkillsScene}
-          durationInFrames={5400}
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="Attn-06-Identity"
-          component={IdentityVisionScene}
-          durationInFrames={5400}
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="Attn-07-Outro"
-          component={OutroScene}
-          durationInFrames={1178}
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
+        {chapters.map((chapter, i) => (
+          <Composition
+            key={chapter.label}
+            id={`Attn-${String(i + 1).padStart(2, '0')}-${chapter.label.replace(/\s+/g, '-')}`}
+            component={chapter.component}
+            durationInFrames={chapter.duration}
+            fps={VIDEO_CONFIG.fps}
+            width={VIDEO_CONFIG.width}
+            height={VIDEO_CONFIG.height}
+          />
+        ))}
       </Folder>
     </>
   );
