@@ -13,7 +13,7 @@ Config.overrideWebpackConfig((config) => {
   const resolveReact = (name: string) => {
     try {
       return path.dirname(require.resolve(`${name}/package.json`));
-    } catch (e) {
+    } catch (_e) {
       return path.resolve(process.cwd(), "../../node_modules", name);
     }
   };
