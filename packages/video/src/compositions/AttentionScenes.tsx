@@ -1,16 +1,13 @@
-import { AbsoluteFill, Sequence, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { COLORS, SPRING_CONFIGS } from "../lib/constants";
+import { AbsoluteFill, Sequence, interpolate, useCurrentFrame, staticFile, Img } from "remotion";
+import { COLORS } from "../lib/constants";
 import { GradientMesh } from "../components/branding/GradientMesh";
-import { GlitchText } from "../components/ui/GlitchText";
-import { TextOverlay } from "../components/ui/TextOverlay";
+import { KineticText } from "../components/ui/KineticText";
 
 // Helper for centered text with animation
-const CenteredHeader = ({ text, subtext }: { text: string; subtext?: string }) => {
+const CenteredHeader = ({ text, subtext, type = "scale" }: { text: string; subtext?: string; type?: "scale" | "reveal" }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
   
   const opacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: "clamp" });
-  const scale = spring({ frame, fps, config: SPRING_CONFIGS.smooth });
 
   return (
     <div style={{ 
@@ -20,43 +17,93 @@ const CenteredHeader = ({ text, subtext }: { text: string; subtext?: string }) =
       justifyContent: 'center', 
       height: '100%', 
       opacity,
-      transform: `scale(${scale})`,
       zIndex: 10
     }}>
-      <h1 style={{ fontSize: 90, fontWeight: 900, textAlign: 'center', marginBottom: 20, color: COLORS.cyan, textShadow: `0 0 20px ${COLORS.cyan}44` }}>{text}</h1>
-      {subtext && <p style={{ fontSize: 45, color: COLORS.textSecondary, textAlign: 'center', maxWidth: 800 }}>{subtext}</p>}
+      <KineticText text={text} fontSize={100} color={COLORS.cyan} type={type} />
+      {subtext && (
+        <div style={{ marginTop: 20 }}>
+          <KineticText text={subtext} fontSize={40} color={COLORS.textSecondary} type="slide" direction="bottom" delay={30} />
+        </div>
+      )}
     </div>
   );
 };
 
-export const IntroScene = () => (
+const SceneBackground = ({ src, opacity = 0.3 }: { src: string; opacity?: number }) => (
   <AbsoluteFill>
-    <GradientMesh animationSpeed={0.02} />
-    <CenteredHeader 
-      text="Context Engineering" 
-      subtext="and the Physics of Attention" 
+    <Img 
+      src={staticFile(src)} 
+      style={{ 
+        width: '100%', 
+        height: '100%', 
+        objectFit: 'cover',
+        opacity: opacity,
+        filter: 'blur(5px) brightness(0.5)'
+      }} 
     />
+    <GradientMesh animationSpeed={0.01} />
   </AbsoluteFill>
 );
 
-export const UncertaintyScene = () => {
+export const IntroScene = () => {
   const frame = useCurrentFrame();
+  const opacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+
   return (
     <AbsoluteFill>
-      <GradientMesh />
+      <AbsoluteFill>
+        <Img 
+          src={staticFile("images/youtube_thumbnail_physics_of_attention_v2_1770632505603.png")} 
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'cover',
+            opacity: 0.4,
+            filter: 'blur(5px) brightness(0.5)'
+          }} 
+        />
+        <GradientMesh animationSpeed={0.01} />
+      </AbsoluteFill>
+      
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '100%', 
+        opacity,
+        zIndex: 10
+      }}>
+        <div style={{ fontSize: 100, color: COLORS.cyan, fontWeight: 700 }}>Context Engineering</div>
+        <div style={{ marginTop: 20, fontSize: 40, color: COLORS.textSecondary }}>and the Physics of Attention</div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+export const UncertaintyScene = () => {
+  return (
+    <AbsoluteFill>
+      <SceneBackground src="images/scene_refactor_identity_1770634084819.png" />
       <CenteredHeader 
         text="The Great Refactor" 
         subtext="2026: A profession under reconstruction" 
       />
-      <div style={{ position: 'absolute', bottom: 100, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-        <GlitchText 
+      <div style={{ position: 'absolute', bottom: 150, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+        <KineticText 
           text="The career progression kind of stopped." 
-          fontSize={40} 
+          fontSize={44} 
           color={COLORS.fuchsia} 
-          isGlitching={frame > 100} 
+          type="slide" 
+          delay={100}
         />
         <Sequence from={150}>
-           <p style={{ fontSize: 24, color: COLORS.textMuted }}>"Being a developer will be obsolete in two years, for sure."</p>
+           <KineticText 
+            text="Being a developer will be obsolete in two years." 
+            fontSize={28} 
+            color={COLORS.textMuted} 
+            type="reveal"
+          />
         </Sequence>
       </div>
     </AbsoluteFill>
@@ -66,16 +113,20 @@ export const UncertaintyScene = () => {
 export const ProductivityScene = () => {
   return (
     <AbsoluteFill>
-      <GradientMesh />
+      <SceneBackground src="images/scene_productivity_paradox_1770634100756.png" />
       <CenteredHeader 
         text="The Productivity Paradox" 
-        subtext="If I do a PR fast, it won't even be looked at until the end of the sprint." 
+        subtext="The faster I code, the slower the team moves." 
       />
       <Sequence from={200}>
-        <div style={{ position: 'absolute', top: 200, right: 100, maxWidth: 400 }}>
-          <p style={{ fontSize: 28, fontStyle: 'italic', borderLeft: `4px solid ${COLORS.cyan}`, paddingLeft: 20 }}>
-            "I became the most productive that I ever been in my life... unfortunately, at work it's not that easy."
-          </p>
+        <div style={{ position: 'absolute', top: 250, right: 150, maxWidth: 500 }}>
+          <KineticText 
+            text="If I do a PR fast, it won't even be looked at until the end of the sprint."
+            fontSize={32}
+            color={COLORS.cyan}
+            type="slide"
+            direction="left"
+          />
         </div>
       </Sequence>
     </AbsoluteFill>
@@ -84,16 +135,22 @@ export const ProductivityScene = () => {
 
 export const AISlopScene = () => (
   <AbsoluteFill>
-    <GradientMesh />
+    <SceneBackground src="images/scene_ai_slop_basket_api_v2_1770634125690.png" />
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', padding: 100 }}>
        <TextOverlay 
         text="The AI Slop Confession" 
-        subtext="If coding agents are making mistakes, the requirements weren't specified well enough."
+        subtext="When agents make assumptions you can't verify."
         size="large"
         gradient
       />
-      <div style={{ marginTop: 40, opacity: 0.7 }}>
-        <p style={{ fontSize: 20, textAlign: 'center' }}>"The AI takes assumptions on legacy codebase, and as a new developer, you have no idea what assumptions the agent made."</p>
+      <div style={{ marginTop: 60 }}>
+        <KineticText 
+          text="The AI takes assumptions on legacy codebase." 
+          fontSize={24} 
+          color={COLORS.textSecondary}
+          type="reveal"
+          delay={120}
+        />
       </div>
     </div>
   </AbsoluteFill>
@@ -101,26 +158,33 @@ export const AISlopScene = () => (
 
 export const QualitySkillsScene = () => (
   <AbsoluteFill>
-    <GradientMesh />
+    <SceneBackground src="images/scene_quality_triangle_v2_1770634140682.png" />
     <CenteredHeader 
       text="Quality Triangle Broken" 
       subtext="High quality, fast, AND cheap. Choose all three." 
     />
-    <div style={{ position: 'absolute', top: '15%', width: '100%', textAlign: 'center' }}>
-       <GlitchText text="CONTEXT ENGINEERING" fontSize={60} color={COLORS.cyan} isGlitching />
+    <div style={{ position: 'absolute', top: '20%', width: '100%', textAlign: 'center' }}>
+       <KineticText text="CONTEXT ENGINEERING" fontSize={70} color={COLORS.cyan} type="scale" />
     </div>
   </AbsoluteFill>
 );
 
 export const IdentityVisionScene = () => (
   <AbsoluteFill>
-    <GradientMesh />
+    <SceneBackground src="images/scene_identity_passion_v2_1770634156539.png" />
     <CenteredHeader 
       text="A New Hope" 
       subtext="Passionate about programming, powered by AI." 
     />
-    <div style={{ position: 'absolute', bottom: 150, width: '100%', textAlign: 'center', opacity: 0.8 }}>
-      <p style={{ fontSize: 32 }}>"I want to be seen as a guy who really loves tech, really passionate about programming."</p>
+    <div style={{ position: 'absolute', bottom: 200, width: '100%', textAlign: 'center' }}>
+      <KineticText 
+        text="I want to be seen as a guy who really loves tech." 
+        fontSize={36} 
+        color={COLORS.fuchsia}
+        type="slide"
+        direction="top"
+        delay={150}
+      />
     </div>
   </AbsoluteFill>
 );
@@ -131,6 +195,7 @@ export const OutroScene = () => (
     <CenteredHeader 
       text="spike.land" 
       subtext="Your agentic development partner." 
+      type="reveal"
     />
   </AbsoluteFill>
 );

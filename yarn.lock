@@ -7999,6 +7999,7 @@ __metadata:
     remotion: "npm:4.0.419"
     tailwindcss: "npm:4.1.18"
     typescript: "npm:5.9.3"
+    zod: "npm:3.22.3"
   dependenciesMeta:
     react:
       unplugged: true
