@@ -92,6 +92,7 @@ describe("Code Durable Object", () => {
       R2: {
         get: vi.fn(),
         put: vi.fn().mockResolvedValue(undefined), // Make R2 put return a promise
+        delete: vi.fn().mockResolvedValue(undefined), // LargeValueStorage fire-and-forget cleanup
       },
       // Add other env properties if needed by the Code class
     } as unknown as Env;
@@ -331,6 +332,55 @@ describe("Code Durable Object", () => {
       expect(mockState.storage.put).not.toHaveBeenCalled();
       expect(mockEnv.R2.put).not.toHaveBeenCalled();
       expect(codeInstance.wsHandler.broadcast).not.toHaveBeenCalled();
+    });
+
+    it("should overflow large code to R2 via LargeValueStorage", async () => {
+      const largeCode = "x".repeat(70_000); // >64 KiB
+      const newSession: ICodeSession = {
+        ...initialSession,
+        code: largeCode,
+      };
+
+      await codeInstance.updateAndBroadcastSession(newSession);
+
+      // LargeValueStorage should put pointer in DO and value in R2
+      // The R2 key pattern is do_{doId}/{storageKey}
+      expect(mockEnv.R2.put).toHaveBeenCalledWith(
+        "do_test-id/session_code",
+        largeCode,
+      );
+      // DO storage should have the pointer sentinel
+      expect(mockState.storage.put).toHaveBeenCalledWith(
+        "session_code",
+        expect.objectContaining({
+          __r2_ref: true,
+          key: "do_test-id/session_code",
+          originalType: "string",
+        }),
+      );
+    });
+
+    it("should overflow large transpiled to R2 via LargeValueStorage", async () => {
+      const largeTranspiled = "y".repeat(70_000);
+      const newSession: ICodeSession = {
+        ...initialSession,
+        transpiled: largeTranspiled,
+      };
+
+      await codeInstance.updateAndBroadcastSession(newSession);
+
+      expect(mockEnv.R2.put).toHaveBeenCalledWith(
+        "do_test-id/session_transpiled",
+        largeTranspiled,
+      );
+      expect(mockState.storage.put).toHaveBeenCalledWith(
+        "session_transpiled",
+        expect.objectContaining({
+          __r2_ref: true,
+          key: "do_test-id/session_transpiled",
+          originalType: "string",
+        }),
+      );
     });
   });
 });
