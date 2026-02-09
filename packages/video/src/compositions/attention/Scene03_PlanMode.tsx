@@ -1,11 +1,11 @@
-import React from 'react';
+import { Fragment } from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
 import { COLORS, SPRING_CONFIGS } from '../../lib/constants';
 import { ChapterTitle, SplitLayout, QuoteBlock } from './shared';
 import { CodeBlock } from '../../components/ui';
 import { KineticText } from '../../components/ui/KineticText';
 
-export const Scene03_PlanMode: React.FC = () => {
+export const Scene03_PlanMode = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -55,12 +55,10 @@ export const Scene03_PlanMode: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <KineticText text="MODE SWITCH" fontSize={40} color={COLORS.cyan} type="reveal" />
                     <div style={{ 
-                        padding: '10px 30px', 
-                        backgroundColor: COLORS.error, 
                         borderRadius: 8, 
-                        color: 'white', 
+                        color: 'white',  
                         fontWeight: 'bold',
-                        animation: 'pulse 1s infinite'
+                        opacity: 0.6 + 0.4 * Math.sin(frame * 0.2) // pulse replacement
                     }}>
                         RESTRICTED
                     </div>
@@ -97,7 +95,7 @@ export const Scene03_PlanMode: React.FC = () => {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 60 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
                 {['EXPLORE', 'PLAN', 'CODE'].map((step, i) => (
-                    <React.Fragment key={step}>
+                    <Fragment key={step}>
                         <div style={{ 
                             padding: '30px 50px', 
                             backgroundColor: frame >= 1300 + i * 40 ? COLORS.cyan : COLORS.darkCard,
@@ -111,7 +109,7 @@ export const Scene03_PlanMode: React.FC = () => {
                             {step}
                         </div>
                         {i < 2 && <div style={{ fontSize: 40, color: COLORS.cyan }}>→</div>}
-                    </React.Fragment>
+                    </Fragment>
                 ))}
             </div>
             <QuoteBlock 
@@ -140,10 +138,10 @@ export const Scene03_PlanMode: React.FC = () => {
                 
                 <div style={{ 
                     position: 'absolute', 
-                    top: -40, 
+
                     right: -40, 
                     fontSize: 80,
-                    animation: 'float 3s ease-in-out infinite' 
+                    top: -40 + Math.sin(frame * 0.1) * 20, // float replacement 
                 }}>
                     💡
                 </div>

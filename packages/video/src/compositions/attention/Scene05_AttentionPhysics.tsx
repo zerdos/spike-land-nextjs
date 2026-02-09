@@ -1,11 +1,11 @@
-import React from 'react';
+
 import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion';
 import { COLORS } from '../../lib/constants';
 import { ChapterTitle, QuoteBlock } from './shared';
 import { AttentionPie, TokenFlow } from '../../components/ui';
 import { KineticText } from '../../components/ui/KineticText';
 
-export const Scene05_AttentionPhysics: React.FC = () => {
+export const Scene05_AttentionPhysics = () => {
   const frame = useCurrentFrame();
 
   return (
@@ -74,8 +74,8 @@ export const Scene05_AttentionPhysics: React.FC = () => {
                     if (frame < startFrame) return null;
                     
                     const angle = (i * 137.5) * (Math.PI / 180);
-                    const distance = interpolate(frame, [startFrame, startFrame + 60], [1000, 0]);
-                    const opacity = interpolate(frame, [startFrame, startFrame + 10], [0, 0.4]);
+                    const distance = interpolate(frame, [startFrame, startFrame + 60], [1000, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+                    const opacity = interpolate(frame, [startFrame, startFrame + 10], [0, 0.4], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
                     
                     return (
                         <div key={i} style={{ 

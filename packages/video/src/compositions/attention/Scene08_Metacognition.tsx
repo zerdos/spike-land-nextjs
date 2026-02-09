@@ -1,11 +1,11 @@
-import React from 'react';
+
 import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion';
 import { COLORS } from '../../lib/constants';
 import { ChapterTitle, QuoteBlock, SplitLayout } from './shared';
 import { ChatBubble, ProgressBar } from '../../components/ui';
 import { KineticText } from '../../components/ui/KineticText';
 
-export const Scene08_Metacognition: React.FC = () => {
+export const Scene08_Metacognition = () => {
   const frame = useCurrentFrame();
 
   return (

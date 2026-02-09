@@ -39,7 +39,7 @@ export const Scene07_CachingRot = () => {
                     { label: "STATIC: CLAUDE.MD", percentage: 0.3, color: COLORS.cyan, status: "cached" },
                     { label: "STATIC: SYSTEM PROMPT", percentage: 0.5, color: COLORS.darkCard, status: "cached" },
                 ]}
-                fillLevel={interpolate(frame, [300, 500], [0, 1], { extrapolateRight: 'clamp' })}
+                fillLevel={interpolate(frame, [300, 500], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })}
             />
         </div>
       )}
@@ -51,10 +51,10 @@ export const Scene07_CachingRot = () => {
             
             <div style={{ width: '800px', display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <ChatBubble isAgent message="I'll use getUserDataV2() to fetch that." />
-                <div style={{ opacity: interpolate(frame, [1400, 1420], [0, 1]), marginLeft: 40 }}>
+                <div style={{ opacity: interpolate(frame, [1400, 1420], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }), marginLeft: 40 }}>
                     <ChatBubble message="Wait, that function doesn't exist..." />
                 </div>
-                <div style={{ opacity: interpolate(frame, [1600, 1620], [0, 1]) }}>
+                <div style={{ opacity: interpolate(frame, [1600, 1620], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>
                     <ChatBubble isAgent message="Actually, getUserDataV2() is defined in your API docs. [HALLUCINATION]" />
                     <div style={{ 
                         position: 'absolute', 
@@ -85,14 +85,14 @@ export const Scene07_CachingRot = () => {
                         { label: "HISTORY", percentage: 0.7, color: COLORS.error, status: "rotting" },
                         { label: "SYSTEM", percentage: 0.2, color: COLORS.darkCard, status: "cached" },
                     ]}
-                    fillLevel={interpolate(frame, [2100, 2300], [0.8, 1])}
+                    fillLevel={interpolate(frame, [2100, 2300], [0.8, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })}
                 />
                 <div style={{ marginTop: 20, color: COLORS.error, fontWeight: 'bold' }}>83% CAPACITY REFRESH</div>
             </div>
 
-            <div style={{ fontSize: 100, transform: `rotate(${interpolate(frame, [2300, 2500], [0, 90])}deg)` }}>🪚</div>
+            <div style={{ fontSize: 100, transform: `rotate(${interpolate(frame, [2300, 2500], [0, 90], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })}deg)` }}>🪚</div>
 
-            <div style={{ textAlign: 'center', opacity: interpolate(frame, [2500, 2600], [0, 1]) }}>
+            <div style={{ textAlign: 'center', opacity: interpolate(frame, [2500, 2600], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>
                 <ContextWindow 
                     sections={[
                         { label: "NEWEST", percentage: 0.2, color: COLORS.purple, status: "fresh" },

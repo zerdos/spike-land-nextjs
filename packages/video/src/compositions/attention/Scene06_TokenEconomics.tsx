@@ -158,7 +158,7 @@ export const Scene06_TokenEconomics = () => {
                         <div style={{ 
                             position: 'absolute', 
                             top: 0, 
-                            left: interpolate(frame, [1500, 1900], [0, 100]) + '%', 
+                            left: interpolate(frame, [1500, 1900], [0, 100], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) + '%', 
                             width: '100%', 
                             height: '100%', 
                             backgroundColor: COLORS.darkCard 

@@ -19,16 +19,16 @@ import { VIDEO_CONFIG, SCENE_CHAPTERS } from "./lib/constants";
  */
 export const RemotionRoot = () => {
   const chapters = [
-    { component: Scene01_TheHook, ...SCENE_CHAPTERS[0] },
-    { component: Scene02_ContextDefined, ...SCENE_CHAPTERS[1] },
-    { component: Scene03_PlanMode, ...SCENE_CHAPTERS[2] },
-    { component: Scene04_MementoMemory, ...SCENE_CHAPTERS[3] },
-    { component: Scene05_AttentionPhysics, ...SCENE_CHAPTERS[4] },
-    { component: Scene06_TokenEconomics, ...SCENE_CHAPTERS[5] },
-    { component: Scene07_CachingRot, ...SCENE_CHAPTERS[6] },
-    { component: Scene08_Metacognition, ...SCENE_CHAPTERS[7] },
-    { component: Scene09_Tactics, ...SCENE_CHAPTERS[8] },
-    { component: Scene10_MetaOutro, ...SCENE_CHAPTERS[9] },
+    { component: Scene01_TheHook, ...SCENE_CHAPTERS.hook },
+    { component: Scene02_ContextDefined, ...SCENE_CHAPTERS.defined },
+    { component: Scene03_PlanMode, ...SCENE_CHAPTERS.planMode },
+    { component: Scene04_MementoMemory, ...SCENE_CHAPTERS.memento },
+    { component: Scene05_AttentionPhysics, ...SCENE_CHAPTERS.physics },
+    { component: Scene06_TokenEconomics, ...SCENE_CHAPTERS.economics },
+    { component: Scene07_CachingRot, ...SCENE_CHAPTERS.caching },
+    { component: Scene08_Metacognition, ...SCENE_CHAPTERS.metacog },
+    { component: Scene09_Tactics, ...SCENE_CHAPTERS.tactics },
+    { component: Scene10_MetaOutro, ...SCENE_CHAPTERS.metaOutro },
   ];
 
   return (

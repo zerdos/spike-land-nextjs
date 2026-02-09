@@ -11,18 +11,18 @@ export const VIDEO_CONFIG = {
 /**
  * New Scene Structure (10 Scenes)
  */
-export const SCENE_CHAPTERS = [
-  { frame: 6,     duration: 1352, label: "The Hook" },
-  { frame: 1358,  duration: 2064, label: "Context Engineering Defined" },
-  { frame: 3422,  duration: 2472, label: "Plan Mode Deep Dive" },
-  { frame: 5894,  duration: 2223, label: "The Memento / Zero Memory" },
-  { frame: 8117,  duration: 2816, label: "Physics of Attention" },
-  { frame: 10933, duration: 2378, label: "Economics of Tokens" },
-  { frame: 13311, duration: 3852, label: "Caching & Context Rot" },
-  { frame: 17163, duration: 1610, label: "Metacognition & Human Role" },
-  { frame: 18773, duration: 3531, label: "Practical Tactics" },
-  { frame: 22304, duration: 2274, label: "Meta Revelation & Outro" },
-] as const;
+export const SCENE_CHAPTERS = {
+  hook:      { from: 6,     duration: 1352, label: "The Hook" },
+  defined:   { from: 1358,  duration: 2064, label: "Context Engineering Defined" },
+  planMode:  { from: 3422,  duration: 2472, label: "Plan Mode Deep Dive" },
+  memento:   { from: 5894,  duration: 2223, label: "The Memento / Zero Memory" },
+  physics:   { from: 8117,  duration: 2816, label: "Physics of Attention" },
+  economics: { from: 10933, duration: 2378, label: "Economics of Tokens" },
+  caching:   { from: 13311, duration: 3852, label: "Caching & Context Rot" },
+  metacog:   { from: 17163, duration: 1610, label: "Metacognition & Human Role" },
+  tactics:   { from: 18773, duration: 3531, label: "Practical Tactics" },
+  metaOutro: { from: 22304, duration: 2274, label: "Meta Revelation & Outro" },
+} as const;
 
 export const TIMING = {
   scene1: { start: 0, end: 150 },

@@ -1,0 +1,9 @@
+{
+  "root": true,
+  "extends": [
+    "@remotion"
+  ],
+  "rules": {
+    "@next/next/no-html-link-for-pages": "off"
+  }
+}

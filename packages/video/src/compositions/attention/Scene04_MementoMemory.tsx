@@ -1,11 +1,11 @@
-import React from 'react';
+
 import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion';
 import { COLORS } from '../../lib/constants';
 import { ChapterTitle, SplitLayout, QuoteBlock } from './shared';
 import { MementoCard, ChatBubble, CodeBlock } from '../../components/ui';
 import { KineticText } from '../../components/ui/KineticText';
 
-export const Scene04_MementoMemory: React.FC = () => {
+export const Scene04_MementoMemory = () => {
   const frame = useCurrentFrame();
 
   return (

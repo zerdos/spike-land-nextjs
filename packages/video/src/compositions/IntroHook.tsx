@@ -33,7 +33,7 @@ export function IntroHook() {
     config: SPRING_CONFIGS.bouncy,
   });
 
-  const logoScale = interpolate(logoProgress, [0, 1], [0, 1]);
+  const logoScale = interpolate(logoProgress, [0, 1], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
   const logoOpacity = interpolate(logoProgress, [0, 0.3], [0, 1], {
     extrapolateRight: "clamp",
   });
@@ -53,7 +53,7 @@ export function IntroHook() {
   const hookOpacity = interpolate(hookProgress, [0, 0.5], [0, 1], {
     extrapolateRight: "clamp",
   });
-  const hookY = interpolate(hookProgress, [0, 1], [20, 0]);
+  const hookY = interpolate(hookProgress, [0, 1], [20, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
 
   return (
     <AbsoluteFill>

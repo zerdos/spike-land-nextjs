@@ -300,8 +300,8 @@ function AIOrb({ entryProgress, awakeningProgress, lookProgress }: AIOrbProps) {
     orbScale = interpolate(entryProgress, [0, 1], [0.3, 1]);
   } else if (lookProgress > 0) {
     // Looking at dashboard - subtle movement
-    orbX = interpolate(lookProgress, [0, 1], [0, -100]);
-    orbY = interpolate(lookProgress, [0, 1], [0, 50]);
+    orbX = interpolate(lookProgress, [0, 1], [0, -100], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+    orbY = interpolate(lookProgress, [0, 1], [0, 50], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
     orbScale = 1;
   } else {
     orbX = 0;

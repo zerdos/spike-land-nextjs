@@ -77,7 +77,7 @@ export const Scene10_MetaOutro: React.FC = () => {
       {frame >= 1000 && frame < 1500 && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 40 }}>
             <div style={{ fontSize: 40, color: COLORS.textSecondary }}>The article about context engineering...</div>
-            <div style={{ transform: `scale(${interpolate(frame, [1100, 1400], [1, 5])})`, opacity: interpolate(frame, [1300, 1500], [1, 0]) }}>
+            <div style={{ transform: `scale(${interpolate(frame, [1100, 1400], [1, 5], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })})`, opacity: interpolate(frame, [1300, 1500], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>
                 <KineticText text="Was Context Engineered" fontSize={80} color={COLORS.cyan} type="reveal" />
             </div>
             {frame >= 1100 && (
@@ -112,10 +112,10 @@ export const Scene10_MetaOutro: React.FC = () => {
             <div style={{ transform: `scale(${spring({ frame: frame - 2000, fps, config: SPRING_CONFIGS.bouncy })})` }}>
                 <SpikeLandLogo size={200} />
             </div>
-            <div style={{ marginTop: 40, opacity: interpolate(frame, [2050, 2100], [0, 1]) }}>
+            <div style={{ marginTop: 40, opacity: interpolate(frame, [2050, 2100], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>
                 <KineticText text="Thanks for watching" fontSize={40} color={COLORS.textSecondary} type="reveal" />
             </div>
-            <div style={{ opacity: interpolate(frame, [2150, 2200, 2274 - 20, 2274], [0, 1, 1, 0]) }}>
+            <div style={{ opacity: interpolate(frame, [2150, 2200, 2274 - 20, 2274], [0, 1, 1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>
                 <KineticText text="See you next time." fontSize={24} color={COLORS.textMuted} type="reveal" delay={20} />
             </div>
         </div>
