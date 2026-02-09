@@ -1,4 +1,4 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, Img, staticFile } from 'remotion';
 import { COLORS } from '../../lib/constants';
 import { fadeIn } from '../../lib/animations';
 import { AlertCard, SplitLayout } from './shared';
@@ -69,8 +69,26 @@ export const Scene01_TheHook = () => {
             <KineticText text="Engineers Context" fontSize={110} color={COLORS.cyan} type="reveal" delay={20} />
             <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30 }}>
                 <KineticText text="Interview with Opus 4.6" fontSize={56} color={COLORS.fuchsia} type="slide" direction="bottom" delay={40} />
-                <div style={{ opacity: fadeIn(frame - 1000, fps, 1, 60), display: 'flex', alignItems: 'center', gap: 20 }}>
-                    <span style={{ color: COLORS.textSecondary, fontSize: 36, fontFamily: 'Inter, sans-serif' }}>by Zoltan Erdos</span>
+                <div style={{ opacity: fadeIn(frame - 1000, fps, 1, 60), display: 'flex', alignItems: 'center', gap: 24 }}>
+                    <Img
+                        src={staticFile('images/zoltan-erdos.png')}
+                        style={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            border: `3px solid ${COLORS.cyan}`,
+                            boxShadow: `0 0 20px ${COLORS.cyan}40`,
+                        }}
+                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <span style={{ color: COLORS.textPrimary, fontSize: 36, fontWeight: 700, fontFamily: 'Inter, sans-serif' }}>Zoltan Erdos</span>
+                        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                            <span style={{ color: COLORS.cyan, fontSize: 20, fontFamily: 'monospace' }}>linkedin.com/in/zerdos</span>
+                            <span style={{ color: COLORS.textMuted, fontSize: 20 }}>|</span>
+                            <span style={{ color: COLORS.cyan, fontSize: 20, fontFamily: 'monospace' }}>github.com/zerdos</span>
+                        </div>
+                    </div>
                     <SpikeLandLogo size={50} showWordmark={false} />
                 </div>
             </div>
