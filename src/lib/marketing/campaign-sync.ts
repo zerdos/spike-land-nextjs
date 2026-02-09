@@ -7,6 +7,7 @@
 
 import { safeDecryptToken, safeEncryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
+import { pMap } from "@/lib/promise-utils";
 import { setCachedMetrics } from "@/lib/tracking/metrics-cache";
 import { tryCatch } from "@/lib/try-catch";
 import { createMarketingClient } from "./index";
@@ -156,12 +157,22 @@ export async function syncExternalCampaigns(): Promise<SyncResult> {
       continue;
     }
 
-    // For each campaign, check if it's linked and fetch metrics
-    for (const campaign of campaigns) {
+    // Filter only linked campaigns to avoid unnecessary processing
+    const linkedCampaigns = campaigns.filter((campaign) => {
       const linkKey = `${account.platform}:${campaign.id}`;
-      const link = linksByExternal.get(linkKey);
+      return linksByExternal.has(linkKey);
+    });
 
-      if (link) {
+    // Parallel fetch metrics with concurrency limit to avoid rate limits
+    // while significantly speeding up sync for many campaigns
+    await pMap(
+      linkedCampaigns,
+      async (campaign) => {
+        const linkKey = `${account.platform}:${campaign.id}`;
+        const link = linksByExternal.get(linkKey);
+
+        if (!link) return;
+
         // Campaign is linked - fetch metrics
         const { data: metrics, error: metricsError } = await tryCatch(
           client.getCampaignMetrics(
@@ -176,7 +187,7 @@ export async function syncExternalCampaigns(): Promise<SyncResult> {
           result.errors.push(
             `Campaign ${campaign.id} (${campaign.name}): ${metricsError.message}`,
           );
-          continue;
+          return;
         }
 
         allSpendData.push({
@@ -195,8 +206,9 @@ export async function syncExternalCampaigns(): Promise<SyncResult> {
         });
 
         result.synced++;
-      }
-    }
+      },
+      5, // Concurrency limit
+    );
   }
 
   // 4. Store aggregated spend data in cache for ROI calculation
