@@ -133,6 +133,28 @@ describe("get-posts", () => {
   });
 
   describe("getPostBySlug", () => {
+    it("returns null when slug contains path traversal characters", () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      const post = getPostBySlug("../../secret");
+
+      expect(post).toBeNull();
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Invalid slug: ../../secret");
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("returns null when slug contains invalid characters", () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      const post = getPostBySlug("invalid slug!");
+
+      expect(post).toBeNull();
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Invalid slug: invalid slug!");
+      consoleErrorSpy.mockRestore();
+    });
+
     it("returns null when post file does not exist", () => {
       vi.mocked(fs.existsSync).mockReturnValue(false);
 
