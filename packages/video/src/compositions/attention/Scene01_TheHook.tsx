@@ -1,4 +1,3 @@
-import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
 import { COLORS } from '../../lib/constants';
 import { fadeIn } from '../../lib/animations';
@@ -8,7 +7,7 @@ import { GlitchText, CodeBlock } from '../../components/ui';
 import { KineticText } from '../../components/ui/KineticText';
 import { SpikeLandLogo } from '../../components/branding/SpikeLandLogo';
 
-export const Scene01_TheHook: React.FC = () => {
+export const Scene01_TheHook = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 

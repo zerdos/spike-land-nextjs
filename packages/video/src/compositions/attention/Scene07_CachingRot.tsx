@@ -1,11 +1,10 @@
-import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
 import { COLORS, SPRING_CONFIGS } from '../../lib/constants';
 import { ChapterTitle, QuoteBlock, SplitLayout } from './shared';
 import { ContextWindow, ChatBubble, CodeBlock } from '../../components/ui';
 import { KineticText } from '../../components/ui/KineticText';
 
-export const Scene07_CachingRot: React.FC = () => {
+export const Scene07_CachingRot = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -51,12 +50,12 @@ export const Scene07_CachingRot: React.FC = () => {
             <div style={{ fontSize: 60, fontWeight: 900, color: COLORS.error }}>CONTEXT ROT</div>
             
             <div style={{ width: '800px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <ChatBubble sender="ai" message="I'll use getUserDataV2() to fetch that." />
+                <ChatBubble isAgent message="I'll use getUserDataV2() to fetch that." />
                 <div style={{ opacity: interpolate(frame, [1400, 1420], [0, 1]), marginLeft: 40 }}>
-                    <ChatBubble sender="user" message="Wait, that function doesn't exist..." />
+                    <ChatBubble message="Wait, that function doesn't exist..." />
                 </div>
                 <div style={{ opacity: interpolate(frame, [1600, 1620], [0, 1]) }}>
-                    <ChatBubble sender="ai" message="Actually, getUserDataV2() is defined in your API docs. [HALLUCINATION]" />
+                    <ChatBubble isAgent message="Actually, getUserDataV2() is defined in your API docs. [HALLUCINATION]" />
                     <div style={{ 
                         position: 'absolute', 
                         top: 0, 

@@ -1,11 +1,10 @@
-import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
 import { COLORS, SPRING_CONFIGS } from '../../lib/constants';
 import { ChapterTitle, QuoteBlock, SplitLayout } from './shared';
 import { ChatBubble, CodeBlock } from '../../components/ui';
 import { KineticText } from '../../components/ui/KineticText';
 
-export const Scene09_Tactics: React.FC = () => {
+export const Scene09_Tactics = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -29,7 +28,7 @@ export const Scene09_Tactics: React.FC = () => {
                 left={
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                         <div style={{ color: COLORS.error, fontSize: 24, fontWeight: 800 }}>THE "HELP" LOOP ❌</div>
-                        <ChatBubble sender="user" message="HELP!! TypeError: Cannot read 'map' of undefined. [Pasts 1000 lines of code]" />
+                        <ChatBubble message="HELP!! TypeError: Cannot read 'map' of undefined. [Pasts 1000 lines of code]" />
                         <div style={{ fontSize: 18, color: COLORS.textMuted }}>Result: Confusion & Hallucinations</div>
                     </div>
                 }
@@ -71,7 +70,7 @@ export const Scene09_Tactics: React.FC = () => {
                 right={
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                         <div style={{ color: COLORS.success, fontSize: 24, fontWeight: 800 }}>EXACT REFERENCE ✅</div>
-                        <ChatBubble sender="user" message="See src/lib/db.ts lines 42-65. Follow that pattern exactly." />
+                        <ChatBubble message="See src/lib/db.ts lines 42-65. Follow that pattern exactly." />
                         <div style={{ opacity: interpolate(frame, [1300, 1330], [0, 1]) }}>
                             <CodeBlock 
                                 code={`export const useDb = () => {\n  // THE PATTERN\n}`} 

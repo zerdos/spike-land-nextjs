@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion';
 import { COLORS } from '../../lib/constants';
 import { ChapterTitle, QuoteBlock, SplitLayout } from './shared';
 import { ChatBubble, ProgressBar } from '../../components/ui';

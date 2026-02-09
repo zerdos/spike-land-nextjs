@@ -1,4 +1,3 @@
-import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
 import { COLORS } from '../../lib/constants';
 import { fadeIn } from '../../lib/animations';
@@ -6,7 +5,7 @@ import { ChapterTitle, QuoteBlock, SplitLayout } from './shared';
 import { BarChart } from '../../components/ui';
 import { KineticText } from '../../components/ui/KineticText';
 
-export const Scene02_ContextDefined: React.FC = () => {
+export const Scene02_ContextDefined = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 

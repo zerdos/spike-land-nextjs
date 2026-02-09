@@ -1,10 +1,9 @@
-import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
 import { COLORS, SPRING_CONFIGS } from '../../lib/constants';
 import { ChapterTitle, SplitLayout, QuoteBlock } from './shared';
 import { KineticText } from '../../components/ui/KineticText';
 
-export const Scene06_TokenEconomics: React.FC = () => {
+export const Scene06_TokenEconomics = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 

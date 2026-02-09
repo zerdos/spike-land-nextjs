@@ -41,6 +41,16 @@ export const SCENE_DURATIONS = {
   metacog: SCENE_CHAPTERS.metacog.duration,
   tactics: SCENE_CHAPTERS.tactics.duration,
   metaOutro: SCENE_CHAPTERS.metaOutro.duration,
+  
+  // Backwards compatibility for PromoVideo
+  scene1: 150,
+  scene2: 240,
+  scene3: 180,
+  scene4: 360,
+  scene5: 300,
+  scene6: 240,
+  scene7: 180,
+  scene8: 150,
 } as const;
 
 /**

@@ -1,6 +1,6 @@
 import React from 'react';
-import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Img, staticFile, spring } from 'remotion';
-import { COLORS, SPRING_CONFIGS } from '../../lib/constants';
+import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Img, staticFile } from 'remotion';
+import { COLORS } from '../../lib/constants';
 import { fadeIn, slideIn, typewriter } from '../../lib/animations';
 import { KineticText } from '../../components/ui/KineticText';
 import { GradientMesh } from '../../components/branding/GradientMesh';
