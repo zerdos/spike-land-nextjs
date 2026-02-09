@@ -9,6 +9,7 @@ import {
 import { handleErrors } from "./handleErrors";
 // import type { AutoSaveEntry } from "./routeHandler";
 import type Env from "./env";
+import { LargeValueStorage } from "./largeValueStorage";
 import { McpServer } from "./mcp";
 import { RouteHandler } from "./routeHandler";
 import { WebSocketHandler } from "./websocketHandler";
@@ -34,6 +35,7 @@ export class Code implements DurableObject {
   private routeHandler: RouteHandler;
   wsHandler: WebSocketHandler;
   private mcpServer: McpServer;
+  private largeStorage: LargeValueStorage;
 
   private origin = "";
   private logs: ICodeSession[] = [];
@@ -74,10 +76,10 @@ export class Code implements DurableObject {
       createdAt: Date.now(),
     };
 
-    // Save version to storage
-    await this.state.storage.put(`version_${versionNumber}`, version);
+    // Save version to storage (may overflow to R2 for large code)
+    await this.largeStorage.put(`version_${versionNumber}`, version);
     this.versionCount = versionNumber;
-    await this.state.storage.put("version_count", versionNumber);
+    await this.largeStorage.putDirect("version_count", versionNumber);
 
     console.log(
       `[Version] Saved version ${versionNumber} for codeSpace: ${session.codeSpace}`,
@@ -91,7 +93,7 @@ export class Code implements DurableObject {
    * Returns null if version doesn't exist.
    */
   public async getVersion(versionNumber: number): Promise<CodeVersion | null> {
-    const version = await this.state.storage.get<CodeVersion>(
+    const version = await this.largeStorage.get<CodeVersion>(
       `version_${versionNumber}`,
     );
     return version || null;
@@ -113,7 +115,7 @@ export class Code implements DurableObject {
     const versions: Array<{ number: number; hash: string; createdAt: number; }> = [];
 
     for (let i = 1; i <= this.versionCount; i++) {
-      const version = await this.state.storage.get<CodeVersion>(`version_${i}`);
+      const version = await this.largeStorage.get<CodeVersion>(`version_${i}`);
       if (version) {
         versions.push({
           number: version.number,
@@ -308,6 +310,11 @@ export class Code implements DurableObject {
     });
 
     this.session = this.backupSession;
+    this.largeStorage = new LargeValueStorage(
+      this.state.storage as DurableObjectStorage,
+      this.env.R2,
+      this.state.id.toString(),
+    );
     this.wsHandler = new WebSocketHandler(this);
     this.routeHandler = new RouteHandler(this);
     this.mcpServer = new McpServer(this);
@@ -337,19 +344,19 @@ export class Code implements DurableObject {
 
       const promises = [];
       promises.push(
-        this.state.storage.put("session_core", sessionCoreData).catch((e) => {
+        this.largeStorage.put("session_core", sessionCoreData).catch((e) => {
           console.error(`Failed to save session_core for ${codeSpace}:`, e);
           throw e;
         }),
       );
       promises.push(
-        this.state.storage.put("session_code", code || "").catch((e) => {
+        this.largeStorage.put("session_code", code || "").catch((e) => {
           console.error(`Failed to save session_code for ${codeSpace}:`, e);
           throw e;
         }),
       );
       promises.push(
-        this.state.storage.put("session_transpiled", transpiled || "").catch(
+        this.largeStorage.put("session_transpiled", transpiled || "").catch(
           (e) => {
             console.error(
               `Failed to save session_transpiled for ${codeSpace}:`,
@@ -409,13 +416,13 @@ export class Code implements DurableObject {
       const codeSpace = this.getCodeSpace(url, request);
 
       // Attempt to load session parts (try new key first, then old key for migration)
-      let sessionCore = await this.state.storage.get<
+      let sessionCore = await this.largeStorage.get<
         Omit<ICodeSession, "code" | "transpiled" | "html" | "css"> | undefined
       >("session_core");
 
       // If no data found with new key, try the old key for backward compatibility
       if (!sessionCore) {
-        sessionCore = await this.state.storage.get<
+        sessionCore = await this.largeStorage.get<
           Omit<ICodeSession, "code" | "transpiled" | "html" | "css"> | undefined
         >("session");
 
@@ -424,16 +431,16 @@ export class Code implements DurableObject {
           console.log(
             `Migrating session data from old key for codeSpace: ${codeSpace}`,
           );
-          await this.state.storage.put("session_core", sessionCore);
-          await this.state.storage.delete("session"); // Clean up old key
+          await this.largeStorage.put("session_core", sessionCore);
+          await this.largeStorage.delete("session"); // Clean up old key
         }
       }
       let loadedSession: ICodeSession | null = null;
 
       if (sessionCore && sessionCore.codeSpace === codeSpace) { // Ensure loaded core is for the correct codespace
-        const code = await this.state.storage.get<string>("session_code") ??
+        const code = await this.largeStorage.get<string>("session_code") ??
           sessionCore.code;
-        const transpiled = await this.state.storage.get<string>("session_transpiled") ??
+        const transpiled = await this.largeStorage.get<string>("session_transpiled") ??
           sessionCore.transpiled;
 
         const r2HtmlKey = `r2_html_${codeSpace}`;
@@ -560,7 +567,7 @@ export class Code implements DurableObject {
       this.initialized = true;
 
       // Load version count from storage
-      const storedVersionCount = await this.state.storage.get<number>(
+      const storedVersionCount = await this.largeStorage.getDirect<number>(
         "version_count",
       );
       if (storedVersionCount) {
