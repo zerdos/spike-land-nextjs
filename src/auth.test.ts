@@ -68,6 +68,11 @@ vi.mock("next-auth/providers/credentials", () => ({
   default: vi.fn(() => ({ id: "credentials" })),
 }));
 
+const mockEnsurePersonalWorkspace = vi.fn().mockResolvedValue("ws_123");
+vi.mock("@/lib/workspace/ensure-personal-workspace", () => ({
+  ensurePersonalWorkspace: mockEnsurePersonalWorkspace,
+}));
+
 describe("NextAuth Full Configuration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -121,6 +126,7 @@ describe("handleSignIn", () => {
     vi.clearAllMocks();
     mockUpsert.mockResolvedValue({ id: "user_123" });
     mockFindUnique.mockResolvedValue(null);
+    mockEnsurePersonalWorkspace.mockResolvedValue("ws_123");
     process.env.AUTH_SECRET = "test-auth-secret";
   });
 
@@ -212,6 +218,37 @@ describe("handleSignIn", () => {
         image: null,
       },
     });
+  });
+
+  it("should create personal workspace for new users", async () => {
+    const { handleSignIn } = await import("./auth");
+    mockFindUnique.mockResolvedValueOnce(null); // No existing user
+    mockUpsert.mockResolvedValueOnce({ id: "user_123", name: "New User" });
+    const user = {
+      email: "newuser@example.com",
+      name: "New User",
+      image: null,
+    };
+
+    await handleSignIn(user);
+
+    expect(mockEnsurePersonalWorkspace).toHaveBeenCalledWith(
+      "user_123",
+      "New User",
+    );
+  });
+
+  it("should not create workspace for existing users", async () => {
+    const { handleSignIn } = await import("./auth");
+    mockFindUnique.mockResolvedValueOnce({
+      id: "user_123",
+      email: "existing@example.com",
+    }); // Existing user
+    const user = { email: "existing@example.com", name: "Existing User" };
+
+    await handleSignIn(user);
+
+    expect(mockEnsurePersonalWorkspace).not.toHaveBeenCalled();
   });
 
   it("should return true and log error on database failure", async () => {

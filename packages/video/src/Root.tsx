@@ -10,6 +10,7 @@ import {
   LiveUpdate,
   MyAppsAgent,
   OrbitDashboard,
+  PhysicsOfAttention,
   PromoVideo,
   ResultsProof,
   TheProblem,
@@ -34,6 +35,18 @@ export const RemotionRoot = () => {
         width={VIDEO_CONFIG.width}
         height={VIDEO_CONFIG.height}
       />
+
+      {/* YouTube Long-form Content */}
+      <Folder name="YouTube">
+        <Composition
+          id="PhysicsOfAttention"
+          component={PhysicsOfAttention}
+          durationInFrames={24578} // ~13.6 minutes @ 30fps
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+      </Folder>
 
       {/* New 8-scene structure */}
       <Folder name="Scenes">

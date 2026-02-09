@@ -12,16 +12,42 @@ import {
 } from "@/components/ui/card";
 import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
 import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
-import { Check, Sparkles, Zap } from "lucide-react";
+import { Check, Loader2, Sparkles, Zap } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function PricingPage() {
   const { data: session, status } = useSession();
   const isAuthenticated = status === "authenticated" && session?.user;
+  const router = useRouter();
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   // Fetch credit balance for logged-in users
   const { remaining, isLoading } = useWorkspaceCredits();
+
+  async function handleTierCheckout(tierId: "PRO" | "BUSINESS") {
+    if (!isAuthenticated) {
+      router.push("/auth/signin?callbackUrl=/pricing");
+      return;
+    }
+
+    setCheckoutLoading(tierId);
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "workspace_tier", tierId }),
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } finally {
+      setCheckoutLoading(null);
+    }
+  }
 
   return (
     <div className="container mx-auto pt-24 pb-12 px-4">
@@ -176,8 +202,14 @@ export default function PricingPage() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Button className="w-full" disabled>
-                Coming Soon
+              <Button
+                className="w-full"
+                onClick={() => handleTierCheckout("PRO")}
+                disabled={checkoutLoading === "PRO"}
+              >
+                {checkoutLoading === "PRO"
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>
+                  : "Get Started"}
               </Button>
             </CardFooter>
           </Card>
@@ -228,9 +260,12 @@ export default function PricingPage() {
               <Button
                 variant="outline"
                 className="w-full border-green-500 text-green-600 hover:bg-green-50"
-                disabled
+                onClick={() => handleTierCheckout("BUSINESS")}
+                disabled={checkoutLoading === "BUSINESS"}
               >
-                Coming Soon
+                {checkoutLoading === "BUSINESS"
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>
+                  : "Get Started"}
               </Button>
             </CardFooter>
           </Card>

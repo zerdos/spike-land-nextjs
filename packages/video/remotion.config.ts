@@ -9,12 +9,18 @@ Config.overrideWebpackConfig((config) => {
   // Enable Tailwind CSS
   const tailwindConfig = enableTailwind(config);
 
-  // Force React 18 resolution using absolute paths
-  // This ensures the bundler uses our local React 18, not the monorepo's React 19
-  // Use process.cwd() since the CLI is run from the package directory
-  const packageDir = process.cwd();
-  const reactPath = path.resolve(packageDir, "node_modules/react");
-  const reactDomPath = path.resolve(packageDir, "node_modules/react-dom");
+  // Robust React resolution
+  // This ensures the bundler uses the correct React version regardless of hoisting
+  const resolveReact = (name: string) => {
+    try {
+      return path.dirname(require.resolve(`${name}/package.json`));
+    } catch (e) {
+      return path.resolve(process.cwd(), "../../node_modules", name);
+    }
+  };
+
+  const reactPath = resolveReact("react");
+  const reactDomPath = resolveReact("react-dom");
 
   console.log("[remotion.config] Using React from:", reactPath);
 
@@ -26,9 +32,9 @@ Config.overrideWebpackConfig((config) => {
         ...tailwindConfig.resolve?.alias,
         react: reactPath,
         "react-dom": reactDomPath,
-        "react/jsx-runtime": path.join(reactPath, "jsx-runtime"),
-        "react/jsx-dev-runtime": path.join(reactPath, "jsx-dev-runtime"),
-        "react-dom/client": path.join(reactDomPath, "client"),
+        "react/jsx-runtime": path.join(reactPath, "jsx-runtime.js"),
+        "react/jsx-dev-runtime": path.join(reactPath, "jsx-dev-runtime.js"),
+        "react-dom/client": path.join(reactDomPath, "client.js"),
       },
     },
   };

@@ -41,6 +41,20 @@ vi.mock("@/lib/stripe/client", () => ({
       name: "Creator",
     },
   },
+  WORKSPACE_TIER_PLANS: {
+    PRO: {
+      name: "Pro",
+      priceUSD: 29,
+      monthlyAiCredits: 1000,
+      tier: "PRO",
+    },
+    BUSINESS: {
+      name: "Business",
+      priceUSD: 99,
+      monthlyAiCredits: 5000,
+      tier: "BUSINESS",
+    },
+  },
 }));
 
 // Mock Prisma
@@ -492,6 +506,97 @@ describe("POST /api/stripe/checkout", () => {
     );
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it("returns 400 when workspace_tier mode is missing tierId", async () => {
+    (auth as Mock).mockResolvedValue({
+      user: { id: "123", email: "test@test.com" },
+    });
+
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ mode: "workspace_tier" }),
+      },
+    );
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("Tier ID required for workspace tier");
+  });
+
+  it("returns 400 when tier ID is invalid for workspace_tier mode", async () => {
+    (auth as Mock).mockResolvedValue({
+      user: { id: "123", email: "test@test.com" },
+    });
+    (prisma.user.findUnique as Mock).mockResolvedValue({
+      stripeCustomerId: "cus_existing",
+    });
+
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ tierId: "INVALID", mode: "workspace_tier" }),
+      },
+    );
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("Invalid tier ID");
+  });
+
+  it("creates checkout session for valid workspace_tier request", async () => {
+    (auth as Mock).mockResolvedValue({
+      user: { id: "123", email: "test@test.com", name: "Test User" },
+    });
+    (prisma.user.findUnique as Mock).mockResolvedValue({
+      stripeCustomerId: "cus_existing",
+    });
+
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ tierId: "PRO", mode: "workspace_tier" }),
+      },
+    );
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.sessionId).toBe("cs_123");
+    expect(data.url).toBe("https://checkout.stripe.com/session");
+  });
+
+  it("creates checkout session for BUSINESS workspace_tier", async () => {
+    (auth as Mock).mockResolvedValue({
+      user: { id: "123", email: "test@test.com", name: "Test User" },
+    });
+    (prisma.user.findUnique as Mock).mockResolvedValue({
+      stripeCustomerId: "cus_existing",
+    });
+
+    const request = new NextRequest(
+      "http://localhost:3000/api/stripe/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ tierId: "BUSINESS", mode: "workspace_tier" }),
+      },
+    );
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
   });
 
   it("returns 500 when database error occurs while fetching user", async () => {

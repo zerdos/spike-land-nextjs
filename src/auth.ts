@@ -15,6 +15,7 @@ import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { attributeConversion } from "@/lib/tracking/attribution";
 import { tryCatch } from "@/lib/try-catch";
+import { ensurePersonalWorkspace } from "@/lib/workspace/ensure-personal-workspace";
 import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import type { DefaultSession } from "next-auth";
@@ -137,6 +138,14 @@ export async function handleSignIn(user: {
       );
       if (albumsError) {
         console.error("Failed to create default albums:", albumsError);
+      }
+
+      // Create personal workspace with 100 AI credits
+      const { error: workspaceError } = await tryCatch(
+        ensurePersonalWorkspace(upsertedUser.id, upsertedUser.name),
+      );
+      if (workspaceError) {
+        console.error("Failed to create personal workspace:", workspaceError);
       }
 
       // Track signup conversion attribution for campaign analytics

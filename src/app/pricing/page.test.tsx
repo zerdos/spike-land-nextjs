@@ -9,6 +9,14 @@ vi.mock("next-auth/react", () => ({
   useSession: vi.fn(),
 }));
 
+// Mock next/navigation
+const mockRouterPush = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: mockRouterPush,
+  }),
+}));
+
 // Mock next/image
 vi.mock("next/image", () => ({
   default: function MockImage(
@@ -206,7 +214,7 @@ describe("PricingPage", () => {
     expect(screen.getByText("Current Plan")).toBeDefined();
   });
 
-  it('shows "Coming Soon" buttons on Pro and Business tiers', () => {
+  it('shows "Get Started" buttons on Pro and Business tiers', () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
@@ -215,8 +223,8 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    const comingSoonButtons = screen.getAllByText("Coming Soon");
-    expect(comingSoonButtons.length).toBe(2);
+    const getStartedButtons = screen.getAllByText("Get Started");
+    expect(getStartedButtons.length).toBe(2);
   });
 
   it("renders workspace tiers section with data-testid", () => {
