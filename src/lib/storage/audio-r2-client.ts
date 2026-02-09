@@ -265,7 +265,7 @@ export async function downloadAudioFromR2(key: string): Promise<Buffer | null> {
   if (response.Body) {
     const { error: streamError } = await tryCatch(
       (async () => {
-        for await (const chunk of response.Body!) {
+        for await (const chunk of response.Body! as AsyncIterable<Uint8Array>) {
           chunks.push(chunk);
         }
       })(),
