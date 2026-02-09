@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { useEffect } from "react";
+import { describe, expect, it, vi } from "vitest";
 import {
   clampZoomLevel,
   isValidZoomLevel,
@@ -206,5 +207,46 @@ describe("clampZoomLevel", () => {
     expect(clampZoomLevel(2.6)).toBe(3);
     expect(clampZoomLevel(0.5)).toBe(1); // rounds to 1, which is MIN
     expect(clampZoomLevel(5.5)).toBe(5); // rounds to 6, clamped to MAX
+  });
+});
+
+describe("MasonryGrid Performance", () => {
+  it("does not remount items when siblings are removed (stable keys)", () => {
+    const mountFn = vi.fn();
+    const unmountFn = vi.fn();
+
+    function TrackedItem({ id }: { id: string }) {
+      useEffect(() => {
+        mountFn(id);
+        return () => unmountFn(id);
+      }, [id]);
+      return <div data-testid={id}>{id}</div>;
+    }
+
+    const { rerender } = render(
+      <MasonryGrid>
+        <TrackedItem key="a" id="a" />
+        <TrackedItem key="b" id="b" />
+        <TrackedItem key="c" id="c" />
+      </MasonryGrid>,
+    );
+
+    expect(mountFn).toHaveBeenCalledTimes(3);
+    mountFn.mockClear();
+    unmountFn.mockClear();
+
+    // Remove the middle item — "a" and "c" should NOT remount
+    rerender(
+      <MasonryGrid>
+        <TrackedItem key="a" id="a" />
+        <TrackedItem key="c" id="c" />
+      </MasonryGrid>,
+    );
+
+    // Only "b" should have been unmounted
+    expect(unmountFn).toHaveBeenCalledTimes(1);
+    expect(unmountFn).toHaveBeenCalledWith("b");
+    // No items should have been re-mounted
+    expect(mountFn).not.toHaveBeenCalled();
   });
 });
