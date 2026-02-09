@@ -72,14 +72,13 @@ export const UncertaintyScene = () => {
           type="slide" 
           delay={100}
         />
-        <Sequence from={150}>
-           <KineticText 
-            text="Being a developer will be obsolete in two years." 
-            fontSize={28} 
-            color={COLORS.textMuted} 
-            type="reveal"
-          />
-        </Sequence>
+        <KineticText 
+          text="Being a developer will be obsolete in two years." 
+          fontSize={28} 
+          color={COLORS.textMuted} 
+          type="reveal"
+          delay={150}
+        />
       </div>
     </AbsoluteFill>
   );
@@ -111,22 +110,20 @@ export const ProductivityScene = () => {
 export const AISlopScene = () => (
   <AbsoluteFill>
     <SceneBackground src="images/scene_ai_slop_basket_api_v2_1770634125690.png" />
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', padding: 100 }}>
-       <TextOverlay 
-        text="The AI Slop Confession" 
-        subtext="When agents make assumptions you can't verify."
-        size="large"
-        gradient
+    <TextOverlay 
+      text="The AI Slop Confession" 
+      subtext="When agents make assumptions you can't verify."
+      size="large"
+      gradient
+    />
+    <div style={{ position: 'absolute', top: '65%', width: '100%', textAlign: 'center' }}>
+      <KineticText 
+        text="The AI takes assumptions on legacy codebase." 
+        fontSize={24} 
+        color={COLORS.textSecondary}
+        type="reveal"
+        delay={120}
       />
-      <div style={{ marginTop: 60 }}>
-        <KineticText 
-          text="The AI takes assumptions on legacy codebase." 
-          fontSize={24} 
-          color={COLORS.textSecondary}
-          type="reveal"
-          delay={120}
-        />
-      </div>
     </div>
   </AbsoluteFill>
 );
@@ -138,7 +135,7 @@ export const QualitySkillsScene = () => (
       text="Quality Triangle Broken" 
       subtext="High quality, fast, AND cheap. Choose all three." 
     />
-    <div style={{ position: 'absolute', top: '20%', width: '100%', textAlign: 'center' }}>
+    <div style={{ position: 'absolute', bottom: '15%', width: '100%', textAlign: 'center' }}>
        <KineticText text="CONTEXT ENGINEERING" fontSize={70} color={COLORS.cyan} type="scale" />
     </div>
   </AbsoluteFill>
