@@ -22,7 +22,7 @@ export async function waitForPageReady(
 ): Promise<void> {
   const {
     strategy = "both",
-    timeout = 10000,
+    timeout = 30000,
     waitForSuspense = true,
   } = options;
 
@@ -88,7 +88,7 @@ export async function gotoWithRetry(
 ): Promise<void> {
   const {
     waitUntil = "commit",
-    timeout = 10000,
+    timeout = 30000,
     maxRetries = 3,
   } = options;
 
@@ -123,7 +123,7 @@ export async function waitForUrlPath(
   expectedPath: string,
   options: { timeout?: number; exact?: boolean; } = {},
 ): Promise<void> {
-  const { timeout = 10000, exact = false } = options;
+  const { timeout = 30000, exact = false } = options;
 
   await page.waitForURL(
     (url) => {

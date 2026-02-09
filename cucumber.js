@@ -87,8 +87,8 @@ module.exports = {
     failFast: false, // Stop on first failure for faster CI feedback
     retry: 1, // Retry once in CI to handle transient issues (faster feedback)
     tags: "not @skip and not @flaky and not @wip", // Include @requires-db tests in sharded runs
-    timeout: 30000, // 30 second timeout for CI
-    parallel: 16,
+    timeout: 60000, // 60 second timeout for CI to handle compilation latency
+    parallel: 4, // Reduce parallelism to prevent ECONNRESET on resource-constrained runners
   },
   local: {
     paths: ["e2e/features/**/*.feature"],
