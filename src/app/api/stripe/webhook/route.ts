@@ -1,6 +1,7 @@
 import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import prisma from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe/client";
+import { WorkspaceSubscriptionService } from "@/lib/subscription/workspace-subscription";
 import { attributeConversion } from "@/lib/tracking/attribution";
 import { tryCatch, tryCatchSync } from "@/lib/try-catch";
 import type { Prisma, SubscriptionTier } from "@prisma/client";
@@ -102,6 +103,8 @@ async function handleCheckoutCompleted(
     packageId,
     planId,
     tokensPerMonth: creditsPerMonth,
+    tier: workspaceTier,
+    monthlyAiCredits: workspaceCredits,
   } = session.metadata || {};
 
   if (!userId) {
@@ -298,6 +301,58 @@ async function handleCheckoutCompleted(
       console.error(
         "Failed to track tier upgrade attribution:",
         tierAttributionError,
+      );
+    }
+  }
+
+  // Handle workspace tier subscription (Orbit PRO/BUSINESS)
+  if (type === "workspace_tier" && workspaceTier && workspaceCredits) {
+    const validWorkspaceTiers = ["PRO", "BUSINESS"];
+    if (!validWorkspaceTiers.includes(workspaceTier)) {
+      console.error(`Invalid workspace tier value: ${workspaceTier}`);
+      return;
+    }
+
+    const stripeSubscriptionId = session.subscription as string;
+    if (!stripeSubscriptionId) {
+      console.error("No subscription ID in workspace_tier session");
+      return;
+    }
+
+    // Resolve workspace and upgrade tier using WorkspaceSubscriptionService
+    const workspaceId = await WorkspaceCreditManager.resolveWorkspaceForUser(userId);
+    if (workspaceId) {
+      await WorkspaceSubscriptionService.upgradeTier(
+        workspaceId,
+        workspaceTier as "PRO" | "BUSINESS",
+      );
+
+      // Store Stripe subscription ID and reset used credits
+      await prisma.workspace.update({
+        where: { id: workspaceId },
+        data: {
+          stripeSubscriptionId,
+          usedAiCredits: 0,
+        },
+      });
+    }
+
+    console.log(
+      `[Stripe] Workspace tier upgrade to ${workspaceTier} for user ${userId}`,
+    );
+
+    // Track workspace tier upgrade attribution
+    const { error: workspaceTierAttributionError } = await tryCatch(
+      attributeConversion(
+        userId,
+        "PURCHASE",
+        (session.amount_total || 0) / 100,
+      ),
+    );
+    if (workspaceTierAttributionError) {
+      console.error(
+        "Failed to track workspace tier attribution:",
+        workspaceTierAttributionError,
       );
     }
   }

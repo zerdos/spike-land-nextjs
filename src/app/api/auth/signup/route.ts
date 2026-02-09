@@ -12,6 +12,7 @@ import { bootstrapAdminIfNeeded } from "@/lib/auth/bootstrap-admin";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
+import { ensurePersonalWorkspace } from "@/lib/workspace/ensure-personal-workspace";
 import bcrypt from "bcryptjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -179,6 +180,14 @@ async function handleSignup(request: NextRequest): Promise<NextResponse> {
   const { error: albumsError } = await tryCatch(ensureUserAlbums(newUser.id));
   if (albumsError) {
     console.error("Failed to create default albums:", albumsError);
+  }
+
+  // Create personal workspace with 100 AI credits
+  const { error: workspaceError } = await tryCatch(
+    ensurePersonalWorkspace(newUser.id, newUser.name),
+  );
+  if (workspaceError) {
+    console.error("Failed to create personal workspace:", workspaceError);
   }
 
   /*

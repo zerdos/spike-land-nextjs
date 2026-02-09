@@ -85,7 +85,7 @@ export function TheProblem() {
         <div
           style={{
             opacity: interpolate(panelProgress, [0, 1], [0, 1]),
-            transform: `translateY(${interpolate(panelProgress, [0, 1], [50, 0])}px)`,
+            transform: `translateY(${interpolate(panelProgress, [0, 1], [50, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })}px)`,
             width: 1000,
             backgroundColor: `${COLORS.darkCard}ee`,
             borderRadius: 24,

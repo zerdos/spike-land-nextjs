@@ -97,6 +97,23 @@ export const TIER_SUBSCRIPTIONS = {
   },
 } as const;
 
+// Workspace tier plan definitions (Orbit PRO/BUSINESS)
+export const WORKSPACE_TIER_PLANS = {
+  PRO: {
+    name: "Pro",
+    priceUSD: 29,
+    monthlyAiCredits: 1000,
+    tier: "PRO" as const,
+  },
+  BUSINESS: {
+    name: "Business",
+    priceUSD: 99,
+    monthlyAiCredits: 5000,
+    tier: "BUSINESS" as const,
+  },
+} as const;
+
 export type TokenPackageId = keyof typeof TOKEN_PACKAGES;
 export type SubscriptionPlanId = keyof typeof SUBSCRIPTION_PLANS;
 export type TierSubscriptionId = keyof typeof TIER_SUBSCRIPTIONS;
+export type WorkspaceTierPlanId = keyof typeof WORKSPACE_TIER_PLANS;

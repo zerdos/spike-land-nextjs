@@ -10,6 +10,7 @@ const {
   mockCreateStableUserId,
   mockReferralFunctions,
   mockBootstrapAdmin,
+  mockEnsurePersonalWorkspace,
 } = vi.hoisted(() => ({
   mockPrisma: {
     user: {
@@ -35,6 +36,7 @@ const {
     completeReferralAndGrantRewards: vi.fn(),
   },
   mockBootstrapAdmin: vi.fn(),
+  mockEnsurePersonalWorkspace: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -55,6 +57,10 @@ vi.mock("@/auth.config", () => ({
 
 vi.mock("@/lib/auth/bootstrap-admin", () => ({
   bootstrapAdminIfNeeded: mockBootstrapAdmin,
+}));
+
+vi.mock("@/lib/workspace/ensure-personal-workspace", () => ({
+  ensurePersonalWorkspace: mockEnsurePersonalWorkspace,
 }));
 
 /*
@@ -121,6 +127,7 @@ describe("POST /api/auth/signup", () => {
       undefined,
     );
     mockBootstrapAdmin.mockResolvedValue(undefined);
+    mockEnsurePersonalWorkspace.mockResolvedValue("ws_123");
     // Default album mocks for ensureUserAlbums
     mockPrisma.album.findMany.mockResolvedValue([]);
     mockPrisma.album.createMany.mockResolvedValue({ count: 2 });
@@ -446,6 +453,19 @@ describe("POST /api/auth/signup", () => {
       );
     });
     */
+
+    it("should create personal workspace with 100 credits", async () => {
+      const req = createMockRequest({
+        email: "test@example.com",
+        password: "password123",
+      });
+      await POST(req);
+
+      expect(mockEnsurePersonalWorkspace).toHaveBeenCalledWith(
+        "stable-user-id-123",
+        null,
+      );
+    });
 
     it("should create default private and public albums", async () => {
       const req = createMockRequest({

@@ -16,7 +16,7 @@ vi.mock("next-view-transitions", () => ({
   useTransitionRouter: () => ({
     push: vi.fn(),
   }),
-  Link: (props: any) => <a {...props} />, 
+  Link: (props: any) => <a {...props}>{props.children}</a>, 
 }));
 
 // Mock ImageSlot to avoid complex rendering

@@ -156,6 +156,7 @@ export function PromoVideo() {
 /**
  * Individual scene compositions for preview/testing
  */
+export { PhysicsOfAttention } from "./compositions/PhysicsOfAttention";
 export { AIDiscovery } from "./compositions/AIDiscovery";
 export { ChatSolution } from "./compositions/ChatSolution";
 export { EndCard } from "./compositions/EndCard";

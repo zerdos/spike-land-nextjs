@@ -1,7 +1,16 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { getStripe, SUBSCRIPTION_PLANS, TOKEN_PACKAGES } from "@/lib/stripe/client";
-import type { SubscriptionPlanId, TokenPackageId } from "@/lib/stripe/client";
+import {
+  getStripe,
+  SUBSCRIPTION_PLANS,
+  TOKEN_PACKAGES,
+  WORKSPACE_TIER_PLANS,
+} from "@/lib/stripe/client";
+import type {
+  SubscriptionPlanId,
+  TokenPackageId,
+  WorkspaceTierPlanId,
+} from "@/lib/stripe/client";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -12,7 +21,8 @@ const MAX_BODY_SIZE = 10 * 1024;
 interface CheckoutRequest {
   packageId?: TokenPackageId;
   planId?: SubscriptionPlanId;
-  mode: "payment" | "subscription";
+  tierId?: WorkspaceTierPlanId;
+  mode: "payment" | "subscription" | "workspace_tier";
 }
 
 async function processCheckout(request: NextRequest): Promise<NextResponse> {
@@ -38,7 +48,7 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
     });
   }
 
-  const { packageId, planId, mode } = body;
+  const { packageId, planId, tierId, mode } = body;
 
   if (mode === "payment" && !packageId) {
     return NextResponse.json({ error: "Package ID required for payment" }, {
@@ -48,6 +58,12 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
 
   if (mode === "subscription" && !planId) {
     return NextResponse.json({ error: "Plan ID required for subscription" }, {
+      status: 400,
+    });
+  }
+
+  if (mode === "workspace_tier" && !tierId) {
+    return NextResponse.json({ error: "Tier ID required for workspace tier" }, {
       status: 400,
     });
   }
@@ -254,6 +270,75 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
     if (checkoutError) {
       console.error(
         "Error creating subscription checkout session:",
+        checkoutError,
+      );
+      return NextResponse.json(
+        { error: "Failed to create checkout session" },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      sessionId: checkoutSession.id,
+      url: checkoutSession.url,
+    });
+  }
+
+  if (mode === "workspace_tier" && tierId) {
+    const plan = WORKSPACE_TIER_PLANS[tierId];
+    if (!plan) {
+      return NextResponse.json({ error: "Invalid tier ID" }, { status: 400 });
+    }
+
+    if (
+      typeof plan.priceUSD !== "number" || plan.priceUSD <= 0 ||
+      !Number.isFinite(plan.priceUSD)
+    ) {
+      console.error(
+        `Invalid price configuration for tier ${tierId}: ${plan.priceUSD}`,
+      );
+      return NextResponse.json({ error: "Invalid tier configuration" }, {
+        status: 500,
+      });
+    }
+
+    const { data: checkoutSession, error: checkoutError } = await tryCatch(
+      stripe.checkout.sessions.create({
+        customer: stripeCustomerId,
+        mode: "subscription",
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `Orbit ${plan.name} Plan`,
+                description: `${plan.monthlyAiCredits} AI credits/month + full workspace features`,
+              },
+              unit_amount: Math.round(plan.priceUSD * 100),
+              recurring: {
+                interval: "month",
+              },
+            },
+            quantity: 1,
+          },
+        ],
+        metadata: {
+          userId: session.user.id,
+          tierId,
+          tier: plan.tier,
+          monthlyAiCredits: plan.monthlyAiCredits.toString(),
+          type: "workspace_tier",
+        },
+        success_url: `${origin}/pricing?upgrade=success`,
+        cancel_url: `${origin}/pricing?canceled=true`,
+      }),
+    );
+
+    if (checkoutError) {
+      console.error(
+        "Error creating workspace tier checkout session:",
         checkoutError,
       );
       return NextResponse.json(

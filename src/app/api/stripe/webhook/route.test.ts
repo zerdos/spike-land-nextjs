@@ -41,6 +41,14 @@ vi.mock("@/lib/tracking/attribution", () => ({
   attributeConversion: vi.fn().mockResolvedValue(undefined),
 }));
 
+// Mock WorkspaceSubscriptionService
+const mockUpgradeTier = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/subscription/workspace-subscription", () => ({
+  WorkspaceSubscriptionService: {
+    upgradeTier: mockUpgradeTier,
+  },
+}));
+
 // Mock WorkspaceCreditManager
 vi.mock("@/lib/credits/workspace-credit-manager", () => ({
   WorkspaceCreditManager: {
@@ -79,6 +87,7 @@ describe("POST /api/stripe/webhook", () => {
     // Default mock implementations
     mockResolveWorkspaceForUser.mockResolvedValue("workspace_123");
     mockPrismaWorkspaceUpdate.mockResolvedValue({});
+    mockUpgradeTier.mockResolvedValue({ success: true });
     mockPrismaTransaction.mockImplementation((fn) =>
       fn({
         subscription: {
@@ -1621,6 +1630,217 @@ describe("POST /api/stripe/webhook", () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         "[Stripe] Tier upgrade completed for user user_456: STANDARD → PREMIUM",
       );
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe("checkout.session.completed - workspace_tier", () => {
+    it("handles workspace tier upgrade to PRO", async () => {
+      mockConstructEvent.mockReturnValue({
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_123",
+            subscription: "sub_123",
+            metadata: {
+              userId: "user_123",
+              type: "workspace_tier",
+              tier: "PRO",
+              tierId: "PRO",
+              monthlyAiCredits: "1000",
+            },
+            amount_total: 2900,
+          },
+        },
+      });
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
+
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.received).toBe(true);
+      expect(mockUpgradeTier).toHaveBeenCalledWith("workspace_123", "PRO");
+      expect(mockPrismaWorkspaceUpdate).toHaveBeenCalledWith({
+        where: { id: "workspace_123" },
+        data: {
+          stripeSubscriptionId: "sub_123",
+          usedAiCredits: 0,
+        },
+      });
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "[Stripe] Workspace tier upgrade to PRO for user user_123",
+      );
+      consoleSpy.mockRestore();
+    });
+
+    it("handles workspace tier upgrade to BUSINESS", async () => {
+      mockConstructEvent.mockReturnValue({
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_456",
+            subscription: "sub_456",
+            metadata: {
+              userId: "user_456",
+              type: "workspace_tier",
+              tier: "BUSINESS",
+              tierId: "BUSINESS",
+              monthlyAiCredits: "5000",
+            },
+            amount_total: 9900,
+          },
+        },
+      });
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
+
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.received).toBe(true);
+      expect(mockUpgradeTier).toHaveBeenCalledWith("workspace_123", "BUSINESS");
+      consoleSpy.mockRestore();
+    });
+
+    it("handles workspace tier with invalid tier value", async () => {
+      mockConstructEvent.mockReturnValue({
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_123",
+            subscription: "sub_123",
+            metadata: {
+              userId: "user_123",
+              type: "workspace_tier",
+              tier: "INVALID",
+              monthlyAiCredits: "1000",
+            },
+            amount_total: 2900,
+          },
+        },
+      });
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
+
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.received).toBe(true);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Invalid workspace tier value: INVALID",
+      );
+      expect(mockUpgradeTier).not.toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+
+    it("handles workspace tier without subscription ID", async () => {
+      mockConstructEvent.mockReturnValue({
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_123",
+            subscription: null,
+            metadata: {
+              userId: "user_123",
+              type: "workspace_tier",
+              tier: "PRO",
+              monthlyAiCredits: "1000",
+            },
+            amount_total: 2900,
+          },
+        },
+      });
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
+
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.received).toBe(true);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "No subscription ID in workspace_tier session",
+      );
+      consoleSpy.mockRestore();
+    });
+
+    it("handles workspace tier when no workspace exists", async () => {
+      mockResolveWorkspaceForUser.mockResolvedValue(null);
+
+      mockConstructEvent.mockReturnValue({
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_123",
+            subscription: "sub_123",
+            metadata: {
+              userId: "user_123",
+              type: "workspace_tier",
+              tier: "PRO",
+              monthlyAiCredits: "1000",
+            },
+            amount_total: 2900,
+          },
+        },
+      });
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/stripe/webhook",
+        {
+          method: "POST",
+          body: "test_body",
+          headers: { "stripe-signature": "sig_valid" },
+        },
+      );
+
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.received).toBe(true);
+      expect(mockUpgradeTier).not.toHaveBeenCalled();
+      expect(mockPrismaWorkspaceUpdate).not.toHaveBeenCalled();
       consoleSpy.mockRestore();
     });
   });

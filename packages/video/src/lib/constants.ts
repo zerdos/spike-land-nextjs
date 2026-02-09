@@ -5,38 +5,54 @@ export const VIDEO_CONFIG = {
   width: 1920,
   height: 1080,
   fps: 30,
-  durationInFrames: 1800, // 60 seconds (expanded for proper storytelling)
+  durationInFrames: 24578, // 819.26s
 } as const;
 
 /**
- * Scene timing in frames (at 30fps)
- * Total: 1800 frames = 60 seconds
- *
- * Story Arc: Hook -> Problem -> Discovery -> Solution -> Transformation -> Deployment -> Proof -> CTA
+ * New Scene Structure (10 Scenes)
  */
+export const SCENE_CHAPTERS = {
+  hook:      { from: 6,     duration: 1352, label: "The Hook" },
+  defined:   { from: 1358,  duration: 2064, label: "Context Engineering Defined" },
+  planMode:  { from: 3422,  duration: 2472, label: "Plan Mode Deep Dive" },
+  memento:   { from: 5894,  duration: 2223, label: "The Memento / Zero Memory" },
+  physics:   { from: 8117,  duration: 2816, label: "Physics of Attention" },
+  economics: { from: 10933, duration: 2378, label: "Economics of Tokens" },
+  caching:   { from: 13311, duration: 3852, label: "Caching & Context Rot" },
+  metacog:   { from: 17163, duration: 1610, label: "Metacognition & Human Role" },
+  tactics:   { from: 18773, duration: 3531, label: "Practical Tactics" },
+  metaOutro: { from: 22304, duration: 2274, label: "Meta Revelation & Outro" },
+} as const;
+
 export const TIMING = {
-  scene1: { start: 0, end: 150 }, // 0-5s: IntroHook - Brand reveal + hook question
-  scene2: { start: 150, end: 390 }, // 5-13s: TheProblem - Dashboard shows declining metrics
-  scene3: { start: 390, end: 570 }, // 13-19s: AIDiscovery - AI agent awakens
-  scene4: { start: 570, end: 930 }, // 19-31s: ChatSolution - User chats with AI
-  scene5: { start: 930, end: 1230 }, // 31-41s: Transformation - AI transforms dashboard
-  scene6: { start: 1230, end: 1470 }, // 41-49s: GoingLive - Syncing to all platforms
-  scene7: { start: 1470, end: 1650 }, // 49-55s: ResultsProof - Before/after comparison
-  scene8: { start: 1650, end: 1800 }, // 55-60s: EndCard - Brand and CTA
+  scene1: { start: 0, end: 150 },
+  scene2: { start: 150, end: 390 },
+  scene3: { start: 390, end: 570 },
+  scene4: { start: 570, end: 930 },
+  scene5: { start: 930, end: 1230 },
+  scene6: { start: 1230, end: 1470 },
+  scene7: { start: 1470, end: 1650 },
+  scene8: { start: 1650, end: 1800 },
 } as const;
 
 /**
  * Scene durations in frames
  */
 export const SCENE_DURATIONS = {
-  scene1: TIMING.scene1.end - TIMING.scene1.start, // 150 frames (5s) - IntroHook
-  scene2: TIMING.scene2.end - TIMING.scene2.start, // 240 frames (8s) - TheProblem
-  scene3: TIMING.scene3.end - TIMING.scene3.start, // 180 frames (6s) - AIDiscovery
-  scene4: TIMING.scene4.end - TIMING.scene4.start, // 360 frames (12s) - ChatSolution
-  scene5: TIMING.scene5.end - TIMING.scene5.start, // 300 frames (10s) - Transformation
-  scene6: TIMING.scene6.end - TIMING.scene6.start, // 240 frames (8s) - GoingLive
-  scene7: TIMING.scene7.end - TIMING.scene7.start, // 180 frames (6s) - ResultsProof
-  scene8: TIMING.scene8.end - TIMING.scene8.start, // 150 frames (5s) - EndCard
+  // New scenes (using array index map for compat if needed, or just accessing array)
+  // For now, these are not directly used by name in the new array structure, 
+  // but if we need named access we should probably keep the object or add a helper.
+  // The plan said SCENE_CHAPTERS should be an array.
+  
+  // Backwards compatibility for PromoVideo
+  scene1: TIMING.scene1.end - TIMING.scene1.start,
+  scene2: TIMING.scene2.end - TIMING.scene2.start,
+  scene3: TIMING.scene3.end - TIMING.scene3.start,
+  scene4: TIMING.scene4.end - TIMING.scene4.start,
+  scene5: TIMING.scene5.end - TIMING.scene5.start,
+  scene6: TIMING.scene6.end - TIMING.scene6.start,
+  scene7: TIMING.scene7.end - TIMING.scene7.start,
+  scene8: TIMING.scene8.end - TIMING.scene8.start,
 } as const;
 
 /**
