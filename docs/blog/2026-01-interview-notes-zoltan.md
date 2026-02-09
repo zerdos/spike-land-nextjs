@@ -60,7 +60,7 @@
 
 > "Opus 4.0 - I could solve an issue that I couldn't technically solve before"
 
-> "Opus 4.5 - from 10 tasks with proper planning, it can execute 8-9"
+> "Opus 4.6 - from 10 tasks with proper planning, it can execute 8-9"
 
 ### On What Developers Get Wrong
 
@@ -150,7 +150,7 @@ _This specific example illustrates the "AI slop" problem in concrete detail._
 > answer something, I go back to the documentation or run another agent to find
 > out."
 
-> "Then Opus 4.5 came out in December. It can orchestrate multiple agents as a
+> "Then Opus 4.6 came out in December. It can orchestrate multiple agents as a
 > coordinated team. You don't just have a copilot anymore - you have a whole dev
 > team. Or a flock of dev teams."
 

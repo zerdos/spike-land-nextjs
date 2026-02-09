@@ -61,7 +61,7 @@ Development (TDD), and staying current with the latest tech trends.
    deployment and ensures every change is validated.
 
 3. **AI-Assisted Workflows** - With proper planning, AI can execute complex
-   tasks. From 10 tasks, Claude Opus 4.5 can complete 9 correctly with proper
+   tasks. From 10 tasks, Claude Opus 4.6 can complete 9 correctly with proper
    context.
 
 4. **Zero Technical Debt** - With AI assistance, refactoring is no longer a

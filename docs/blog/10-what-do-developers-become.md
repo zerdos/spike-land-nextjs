@@ -39,7 +39,7 @@ honest about what has changed.
 AI writes code now. Not bad code. Not simple code. Good code. Complex code. Code
 that works.
 
-I use Opus 4.5 every day. From ten tasks with proper planning, it can execute
+I use Opus 4.6 every day. From ten tasks with proper planning, it can execute
 eight or nine. That is not a typo. Eighty to ninety percent of what I used to do
 manually, an AI can now do with the right context.
 

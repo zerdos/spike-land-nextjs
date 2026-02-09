@@ -99,7 +99,7 @@ const COMPARISON_DATA = [
       desc: "Deeply integrated with Anthropic's cloud models for maximum performance.",
       points: [
         "Sonnet 4.5 for daily work",
-        "Opus 4.5 for reasoning",
+        "Opus 4.6 for reasoning",
         "Local models are secondary",
       ],
       color: "amber",
@@ -109,7 +109,7 @@ const COMPARISON_DATA = [
       desc: "Supports various backends but has strict recommendations for safety.",
       points: [
         "Strongly recommends Claude Pro/Max",
-        "Opus 4.5 needed for injection resistance",
+        "Opus 4.6 needed for injection resistance",
         "Local models often too limited",
       ],
       color: "emerald",

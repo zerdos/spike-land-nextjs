@@ -60,7 +60,7 @@ export const PITFALLS_CONTENT = [
 
 export const MODEL_COMPARISON = [
   {
-    name: "Opus 4.5",
+    name: "Opus 4.6",
     speed: 76,
     cost: 5,
     score: 74.5,

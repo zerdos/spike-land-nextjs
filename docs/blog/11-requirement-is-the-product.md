@@ -34,7 +34,7 @@ Then AI changed everything.
 
 Here is what happened. Code became instant.
 
-With Claude Opus 4.5, I can describe a feature and watch it appear. Complex
+With Claude Opus 4.6, I can describe a feature and watch it appear. Complex
 features. Database queries. API endpoints. Frontend components. All of it, fast.
 
 But only if the description is perfect.
