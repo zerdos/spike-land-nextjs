@@ -207,7 +207,7 @@ export async function syncExternalCampaigns(): Promise<SyncResult> {
 
         result.synced++;
       },
-      5, // Concurrency limit
+      2, // Concurrency limit (reduced for stability in CI)
     );
   }
 
