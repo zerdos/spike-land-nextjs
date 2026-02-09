@@ -157,8 +157,8 @@ Then("the mobile menu sheet should not be visible", async function(this: CustomW
   await expect(dialog).not.toBeVisible({ timeout: 3000 });
 });
 
-Then("I should see the mobile menu button", async function(this: CustomWorld) {
-  const menuButton = this.page.getByRole("button", { name: /open menu/i });
+Then("I should see the public pages mobile menu button", async function(this: CustomWorld) {
+  const menuButton = this.page.getByRole("button", { name: /(open|toggle) menu/i });
   await expect(menuButton).toBeVisible({ timeout: 5000 });
 });
 

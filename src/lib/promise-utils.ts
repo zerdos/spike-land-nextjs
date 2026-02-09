@@ -26,7 +26,8 @@ export async function pMap<T, R>(
       if (i >= items.length) return;
 
       try {
-        results[i] = await mapper(items[i], i);
+        // items[i] is guaranteed to be defined because of the bounds check above
+        results[i] = await mapper(items[i]!, i);
       } catch (error) {
         // If one fails, the whole Promise.all will reject,
         // stopping other workers (eventually, though they might finish current task)
