@@ -325,7 +325,10 @@ export async function getAudioMetadata(
 
   const { data: response, error } = await tryCatch(client.send(command));
   if (error) {
-    console.error("Error getting audio metadata from R2:", error);
+    // NotFound is expected for cache misses - don't log
+    if (error.name !== "NotFound") {
+      console.error("Error getting audio metadata from R2:", error);
+    }
     return null;
   }
 
