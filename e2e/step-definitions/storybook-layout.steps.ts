@@ -71,12 +71,16 @@ Then(
 // Mobile menu steps
 Then("I should see the mobile menu button", async function(this: CustomWorld) {
   // Mobile menu button has aria-label "Toggle menu" or contains Menu icon
-  const menuButton = this.page.getByRole("button", { name: /toggle menu/i });
+  const menuButton = this.page.getByRole("button", {
+    name: /(toggle|open) menu/i,
+  });
   await expect(menuButton).toBeVisible({ timeout: 10000 });
 });
 
 When("I click the mobile menu button", async function(this: CustomWorld) {
-  const menuButton = this.page.getByRole("button", { name: /toggle menu/i });
+  const menuButton = this.page.getByRole("button", {
+    name: /(toggle|open) menu/i,
+  });
   await expect(menuButton).toBeVisible();
   await menuButton.click();
   // Wait for drawer to appear using Playwright's built-in waiting
