@@ -340,8 +340,18 @@ When(
 );
 
 // Then steps
-// Note: "I should see {string} metric card" is defined in admin-marketing.steps.ts
-// and handles both admin dashboard and marketing pages
+Then(
+  "I should see {string} metric card",
+  async function(this: CustomWorld, metricName: string) {
+    const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
+    await expect(heading).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await waitForTextWithRetry(
+      this.page,
+      metricName,
+      { timeout: TIMEOUTS.DEFAULT, exact: true },
+    );
+  },
+);
 
 Then(
   "the {string} metric should display a number",
@@ -477,6 +487,14 @@ Then("I should see tokens spent count", async function(this: CustomWorld) {
   await waitForTextWithRetry(
     this.page,
     /\d+ spent/,
+    { timeout: TIMEOUTS.DEFAULT },
+  );
+});
+
+Then("I should see credits used count", async function(this: CustomWorld) {
+  await waitForTextWithRetry(
+    this.page,
+    /\d+ used/,
     { timeout: TIMEOUTS.DEFAULT },
   );
 });

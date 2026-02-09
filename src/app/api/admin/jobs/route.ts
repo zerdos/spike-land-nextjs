@@ -34,7 +34,7 @@ function transformEnhancementJob(job: {
   id: string;
   status: JobStatus;
   tier: string;
-  tokensCost: number;
+  creditsCost: number;
   enhancedUrl: string | null;
   enhancedWidth: number | null;
   enhancedHeight: number | null;
@@ -61,7 +61,7 @@ function transformEnhancementJob(job: {
     source: "enhancement" as JobSource,
     status: job.status,
     tier: job.tier as UnifiedJob["tier"],
-    tokensCost: job.tokensCost,
+    creditsCost: job.creditsCost,
     prompt: job.geminiPrompt,
     inputUrl: job.image.originalUrl,
     outputUrl: job.enhancedUrl,
@@ -94,7 +94,7 @@ function transformMcpJob(job: {
   id: string;
   status: JobStatus;
   tier: string;
-  tokensCost: number;
+  creditsCost: number;
   type: string;
   prompt: string;
   inputImageUrl: string | null;
@@ -120,7 +120,7 @@ function transformMcpJob(job: {
     source: "mcp" as JobSource,
     status: job.status,
     tier: job.tier as UnifiedJob["tier"],
-    tokensCost: job.tokensCost,
+    creditsCost: job.creditsCost,
     prompt: job.prompt,
     inputUrl: job.inputImageUrl,
     outputUrl: job.outputImageUrl,

@@ -77,46 +77,42 @@ export async function POST(req: Request) {
     return new NextResponse("Invalid Tier", { status: 400 });
   }
 
-  // Check user balance and consume tokens
+  // Check user balance and consume credits
   const cost = tier.pricePerHour; // Charge 1 hour upfront
 
   // Lazy import to avoid circular dependencies if any
-  const { TokenBalanceManager } = await import(
-    "@/lib/tokens/balance-manager"
+  const { WorkspaceCreditManager } = await import(
+    "@/lib/credits/workspace-credit-manager"
   );
 
   const { data: hasBalance, error: balanceError } = await tryCatch(
-    TokenBalanceManager.hasEnoughTokens(session.user.id, cost),
+    WorkspaceCreditManager.hasEnoughCredits(session.user.id, cost),
   );
 
   if (balanceError) {
-    console.error("Token balance check error:", balanceError);
+    console.error("Credit balance check error:", balanceError);
     return new NextResponse("Internal Error", { status: 500 });
   }
 
   if (!hasBalance) {
-    return new NextResponse("Insufficient Tokens", { status: 402 });
+    return new NextResponse("Insufficient Credits", { status: 402 });
   }
 
   // Container provisioning is handled asynchronously. The box is created with status CREATING,
   // and a background worker (or cloud function) triggers the actual provisioning.
   // We use `after` to ensure the response is sent immediately while provisioning starts.
 
-  const { data: tokenResult, error: tokenError } = await tryCatch(
-    TokenBalanceManager.consumeTokens({
+  const { data: creditResult, error: creditError } = await tryCatch(
+    WorkspaceCreditManager.consumeCredits({
       userId: session.user.id,
       amount: cost,
       source: "box_creation",
-      sourceId: "pending", // we don't have box ID yet
-      metadata: {
-        tierId: tier.id,
-        tierName: tier.name,
-      },
+      sourceId: "pending",
     }),
   );
 
-  if (tokenError || !tokenResult?.success) {
-    console.error("Token consumption error:", tokenError);
+  if (creditError || !creditResult?.success) {
+    console.error("Credit consumption error:", creditError);
     return new NextResponse("Failed to process payment", { status: 500 });
   }
 
@@ -135,12 +131,7 @@ export async function POST(req: Request) {
   if (createError) {
     // Refund if creation fails
     await tryCatch(
-      TokenBalanceManager.refundTokens(
-        session.user.id,
-        cost,
-        "pending",
-        "Box creation failed",
-      ),
+      WorkspaceCreditManager.refundCredits(session.user.id, cost),
     );
     console.error("Box creation failed:", createError);
     return new NextResponse("Internal Error", { status: 500 });

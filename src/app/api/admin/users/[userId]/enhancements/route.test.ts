@@ -56,7 +56,7 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
       id: "job1",
       tier: "TIER_1K",
       status: "COMPLETED",
-      tokensCost: 10,
+      creditsCost: 10,
       errorMessage: null,
       createdAt: new Date("2025-01-01"),
       processingStartedAt: new Date("2025-01-01T00:00:01"),
@@ -75,7 +75,7 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
       id: "job2",
       tier: "TIER_2K",
       status: "FAILED",
-      tokensCost: 20,
+      creditsCost: 20,
       errorMessage: "Processing failed",
       createdAt: new Date("2025-01-02"),
       processingStartedAt: new Date("2025-01-02T00:00:01"),
@@ -243,7 +243,7 @@ describe("GET /api/admin/users/[userId]/enhancements", () => {
     expect(firstEnhancement.id).toBe("job1");
     expect(firstEnhancement.tier).toBe("TIER_1K");
     expect(firstEnhancement.status).toBe("COMPLETED");
-    expect(firstEnhancement.tokenCost).toBe(10);
+    expect(firstEnhancement.creditsCost).toBe(10);
     expect(firstEnhancement.resultUrl).toBe("https://example.com/result1.jpg");
     expect(firstEnhancement.image.id).toBe("img1");
     expect(firstEnhancement.image.name).toBe("test1.jpg");

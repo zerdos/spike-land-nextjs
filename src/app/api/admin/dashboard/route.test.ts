@@ -22,10 +22,8 @@ vi.mock("@/lib/prisma", () => ({
     imageEnhancementJob: {
       count: vi.fn(),
     },
-    tokenTransaction: {
+    workspace: {
       aggregate: vi.fn(),
-    },
-    voucher: {
       count: vi.fn(),
     },
   },
@@ -92,11 +90,11 @@ describe("GET /api/admin/dashboard", () => {
       .mockResolvedValueOnce(480)
       .mockResolvedValueOnce(5);
 
-    vi.mocked(prisma.tokenTransaction.aggregate)
-      .mockResolvedValueOnce({ _sum: { amount: 10000 } } as never)
-      .mockResolvedValueOnce({ _sum: { amount: -8000 } } as never);
+    vi.mocked(prisma.workspace.aggregate)
+      .mockResolvedValueOnce({ _sum: { monthlyAiCredits: 10000 } } as never)
+      .mockResolvedValueOnce({ _sum: { usedAiCredits: 8000 } } as never);
 
-    vi.mocked(prisma.voucher.count).mockResolvedValueOnce(3);
+    vi.mocked(prisma.workspace.count).mockResolvedValueOnce(3);
 
     const response = await GET();
     const data = await response.json();
@@ -110,9 +108,9 @@ describe("GET /api/admin/dashboard", () => {
     expect(data.jobStatus.completed).toBe(480);
     expect(data.jobStatus.failed).toBe(5);
     expect(data.jobStatus.active).toBe(15);
-    expect(data.totalTokensPurchased).toBe(10000);
-    expect(data.totalTokensSpent).toBe(8000);
-    expect(data.activeVouchers).toBe(3);
+    expect(data.totalCreditsAllocated).toBe(10000);
+    expect(data.totalCreditsUsed).toBe(8000);
+    expect(data.totalWorkspaces).toBe(3);
     expect(data.timestamp).toBeDefined();
   });
 
@@ -133,18 +131,18 @@ describe("GET /api/admin/dashboard", () => {
       .mockResolvedValueOnce(0)
       .mockResolvedValueOnce(0);
 
-    vi.mocked(prisma.tokenTransaction.aggregate)
-      .mockResolvedValueOnce({ _sum: { amount: null } } as never)
-      .mockResolvedValueOnce({ _sum: { amount: null } } as never);
+    vi.mocked(prisma.workspace.aggregate)
+      .mockResolvedValueOnce({ _sum: { monthlyAiCredits: null } } as never)
+      .mockResolvedValueOnce({ _sum: { usedAiCredits: null } } as never);
 
-    vi.mocked(prisma.voucher.count).mockResolvedValueOnce(0);
+    vi.mocked(prisma.workspace.count).mockResolvedValueOnce(0);
 
     const response = await GET();
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data.totalTokensPurchased).toBe(0);
-    expect(data.totalTokensSpent).toBe(0);
+    expect(data.totalCreditsAllocated).toBe(0);
+    expect(data.totalCreditsUsed).toBe(0);
   });
 
   it("should return 500 on database error", async () => {

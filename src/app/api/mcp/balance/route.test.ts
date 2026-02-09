@@ -4,12 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const {
   mockAuthenticateMcpOrSession,
   mockCheckRateLimit,
-  mockTokenBalanceManager,
+  mockWorkspaceCreditManager,
 } = vi.hoisted(
   () => ({
     mockAuthenticateMcpOrSession: vi.fn(),
     mockCheckRateLimit: vi.fn(),
-    mockTokenBalanceManager: {
+    mockWorkspaceCreditManager: {
       getBalance: vi.fn(),
     },
   }),
@@ -26,8 +26,8 @@ vi.mock("@/lib/rate-limiter", () => ({
   },
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: mockTokenBalanceManager,
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: mockWorkspaceCreditManager,
 }));
 
 import type { NextRequest } from "next/server";
@@ -44,7 +44,7 @@ function createMockRequest(headers: Record<string, string> = {}): NextRequest {
 
 describe("GET /api/mcp/balance", () => {
   const testUserId = "test-user-123";
-  const mockDate = new Date("2024-01-15T12:00:00Z");
+  const testWorkspaceId = "workspace-456";
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -111,7 +111,7 @@ describe("GET /api/mcp/balance", () => {
   });
 
   describe("success cases", () => {
-    it("should return balance information", async () => {
+    it("should return credit balance information", async () => {
       mockAuthenticateMcpOrSession.mockResolvedValue({
         success: true,
         userId: testUserId,
@@ -119,9 +119,12 @@ describe("GET /api/mcp/balance", () => {
       mockCheckRateLimit.mockResolvedValue({
         isLimited: false,
       });
-      mockTokenBalanceManager.getBalance.mockResolvedValue({
-        balance: 50,
-        lastRegeneration: mockDate,
+      mockWorkspaceCreditManager.getBalance.mockResolvedValue({
+        remaining: 50,
+        limit: 100,
+        used: 50,
+        tier: "PRO",
+        workspaceId: testWorkspaceId,
       });
 
       const request = createMockRequest({
@@ -131,9 +134,12 @@ describe("GET /api/mcp/balance", () => {
       const body = await response.json();
 
       expect(response.status).toBe(200);
-      expect(body.balance).toBe(50);
-      expect(body.lastRegeneration).toBe(mockDate.toISOString());
-      expect(mockTokenBalanceManager.getBalance).toHaveBeenCalledWith(
+      expect(body.remaining).toBe(50);
+      expect(body.limit).toBe(100);
+      expect(body.used).toBe(50);
+      expect(body.tier).toBe("PRO");
+      expect(body.workspaceId).toBe(testWorkspaceId);
+      expect(mockWorkspaceCreditManager.getBalance).toHaveBeenCalledWith(
         testUserId,
       );
     });
@@ -148,7 +154,7 @@ describe("GET /api/mcp/balance", () => {
       mockCheckRateLimit.mockResolvedValue({
         isLimited: false,
       });
-      mockTokenBalanceManager.getBalance.mockRejectedValue(
+      mockWorkspaceCreditManager.getBalance.mockRejectedValue(
         new Error("Database error"),
       );
 
@@ -159,7 +165,27 @@ describe("GET /api/mcp/balance", () => {
       const body = await response.json();
 
       expect(response.status).toBe(500);
-      expect(body.error).toBe("Failed to get token balance");
+      expect(body.error).toBe("Failed to get credit balance");
+    });
+
+    it("should return 500 when getBalance returns null", async () => {
+      mockAuthenticateMcpOrSession.mockResolvedValue({
+        success: true,
+        userId: testUserId,
+      });
+      mockCheckRateLimit.mockResolvedValue({
+        isLimited: false,
+      });
+      mockWorkspaceCreditManager.getBalance.mockResolvedValue(null);
+
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_validkey",
+      });
+      const response = await GET(request);
+      const body = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(body.error).toBe("Failed to get credit balance");
     });
   });
 });

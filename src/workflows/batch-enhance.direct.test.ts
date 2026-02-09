@@ -20,13 +20,13 @@ vi.mock("./enhance-image.direct", () => ({
   enhanceImageDirect: mockEnhanceImageDirect,
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: {
-    refundTokens: mockRefundTokens,
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: {
+    refundCredits: mockRefundTokens,
   },
 }));
 
-vi.mock("@/lib/tokens/costs", () => ({
+vi.mock("@/lib/credits/costs", () => ({
   ENHANCEMENT_COSTS: {
     TIER_1K: 10,
     TIER_2K: 20,
@@ -156,7 +156,7 @@ describe("batch-enhance.direct", () => {
         data: expect.objectContaining({
           userId: "user-789",
           tier: "TIER_1K",
-          tokensCost: 10,
+          creditsCost: 10,
           status: JobStatus.PROCESSING,
         }),
       });
@@ -392,7 +392,7 @@ describe("batch-enhance.direct", () => {
 
       expect(mockPrismaCreate).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          tokensCost: 20,
+          creditsCost: 20,
         }),
       });
     });
@@ -405,7 +405,7 @@ describe("batch-enhance.direct", () => {
 
       expect(mockPrismaCreate).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          tokensCost: 40,
+          creditsCost: 40,
         }),
       });
     });

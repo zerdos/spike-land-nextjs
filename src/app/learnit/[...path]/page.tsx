@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { ReadAloudArticle } from "@/components/blog/ReadAloudArticle";
 import { LearnItContent } from "@/components/learnit/content";
 import { GenerateButton } from "@/components/learnit/generate-button";
 import { Prerequisites } from "@/components/learnit/prerequisites";
@@ -144,6 +145,9 @@ export default async function LearnItTopicPage({ params }: PageProps) {
             </>
           )}
         </div>
+        <div className="mt-4">
+          <ReadAloudArticle />
+        </div>
       </header>
 
       {/* Prerequisites banner */}
@@ -151,7 +155,9 @@ export default async function LearnItTopicPage({ params }: PageProps) {
         <Prerequisites topicId={content.id} className="mb-8" />
       </Suspense>
 
-      <LearnItContent content={content.content} />
+      <div data-article-content>
+        <LearnItContent content={content.content} />
+      </div>
 
       {/* Related topics sidebar/section */}
       <Suspense fallback={null}>

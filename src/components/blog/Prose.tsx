@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-interface ProseProps {
+interface ProseProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
 }
@@ -9,7 +9,7 @@ interface ProseProps {
  * Typography wrapper component for blog content
  * Provides consistent styling for long-form content
  */
-export function Prose({ children, className }: ProseProps) {
+export function Prose({ children, className, ...props }: ProseProps) {
   return (
     <div
       className={cn(
@@ -19,6 +19,7 @@ export function Prose({ children, className }: ProseProps) {
         "max-w-none",
         className,
       )}
+      {...props}
     >
       {children}
     </div>

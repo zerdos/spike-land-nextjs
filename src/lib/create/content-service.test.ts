@@ -20,6 +20,9 @@ const { mockPrisma } = vi.hoisted(() => {
         update: vi.fn(),
         findMany: vi.fn(),
       },
+      user: {
+        findUnique: vi.fn(),
+      },
     },
   };
 });
@@ -44,7 +47,7 @@ describe("content-service", () => {
   });
 
   describe("markAsGenerating", () => {
-    it("should upsert app with generating status", async () => {
+    it("should upsert app with generating status (no userId)", async () => {
       const mockApp = { slug: "test", status: CreatedAppStatus.GENERATING };
       (prisma.createdApp.upsert as any).mockResolvedValue(mockApp);
 
@@ -62,7 +65,31 @@ describe("content-service", () => {
       expect(prisma.createdApp.upsert).toHaveBeenCalledWith(expect.objectContaining({
         where: { slug: "test" },
         update: expect.objectContaining({ status: CreatedAppStatus.GENERATING }),
-        create: expect.objectContaining({ status: CreatedAppStatus.GENERATING }),
+        create: expect.objectContaining({ status: CreatedAppStatus.GENERATING, generatedById: undefined }),
+      }));
+    });
+
+    it("should set generatedById when user exists", async () => {
+      const mockApp = { slug: "test", status: CreatedAppStatus.GENERATING };
+      (prisma.user.findUnique as any).mockResolvedValue({ id: "user-1" });
+      (prisma.createdApp.upsert as any).mockResolvedValue(mockApp);
+
+      await markAsGenerating("test", ["test"], "Title", "Desc", "id", "url", "prompt", "user-1");
+
+      expect(prisma.createdApp.upsert).toHaveBeenCalledWith(expect.objectContaining({
+        create: expect.objectContaining({ generatedById: "user-1" }),
+      }));
+    });
+
+    it("should omit generatedById when user does not exist (prevents FK violation)", async () => {
+      const mockApp = { slug: "test", status: CreatedAppStatus.GENERATING };
+      (prisma.user.findUnique as any).mockResolvedValue(null);
+      (prisma.createdApp.upsert as any).mockResolvedValue(mockApp);
+
+      await markAsGenerating("test", ["test"], "Title", "Desc", "id", "url", "prompt", "nonexistent-user");
+
+      expect(prisma.createdApp.upsert).toHaveBeenCalledWith(expect.objectContaining({
+        create: expect.objectContaining({ generatedById: undefined }),
       }));
     });
   });
@@ -94,6 +121,25 @@ describe("content-service", () => {
         where: { slug: "test" },
         data: expect.objectContaining({ status: CreatedAppStatus.PUBLISHED }),
       }));
+    });
+
+    it("should return null when record not found (P2025)", async () => {
+      (prisma.createdApp.update as any).mockRejectedValue(
+        new Error("Record to update not found."),
+      );
+
+      const result = await updateAppStatus("nonexistent", CreatedAppStatus.FAILED);
+
+      expect(result).toBeNull();
+    });
+
+    it("should rethrow non-P2025 errors", async () => {
+      (prisma.createdApp.update as any).mockRejectedValue(
+        new Error("Connection refused"),
+      );
+
+      await expect(updateAppStatus("test", CreatedAppStatus.FAILED))
+        .rejects.toThrow("Connection refused");
     });
   });
 

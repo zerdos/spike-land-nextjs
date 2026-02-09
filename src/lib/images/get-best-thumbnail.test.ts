@@ -42,7 +42,7 @@ function createMockJob(
     userId: "user-1",
     tier: EnhancementTier.TIER_1K,
     enhancementType: "STANDARD",
-    tokensCost: 2,
+    creditsCost: 2,
     status: JobStatus.COMPLETED,
     enhancedUrl: "https://example.com/enhanced-1k.jpg",
     enhancedR2Key: "enhanced-1k-key",

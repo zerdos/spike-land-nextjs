@@ -14,7 +14,7 @@ import { auth } from "@/auth";
 import { isAdminByUserId } from "@/lib/auth/admin-middleware";
 import { cancelMcpJob } from "@/lib/mcp/generation-service";
 import prisma from "@/lib/prisma";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { tryCatch } from "@/lib/try-catch";
 import type { JobSource, UnifiedJob } from "@/types/admin-jobs";
 import { JobStatus } from "@prisma/client";
@@ -32,7 +32,7 @@ function transformEnhancementJob(job: {
   id: string;
   status: JobStatus;
   tier: string;
-  tokensCost: number;
+  creditsCost: number;
   enhancedUrl: string | null;
   enhancedWidth: number | null;
   enhancedHeight: number | null;
@@ -76,7 +76,7 @@ function transformEnhancementJob(job: {
     source: "enhancement" as JobSource,
     status: job.status,
     tier: job.tier as UnifiedJob["tier"],
-    tokensCost: job.tokensCost,
+    creditsCost: job.creditsCost,
     prompt: job.geminiPrompt,
     inputUrl: job.image.originalUrl,
     outputUrl: job.enhancedUrl,
@@ -123,7 +123,7 @@ function transformMcpJob(job: {
   id: string;
   status: JobStatus;
   tier: string;
-  tokensCost: number;
+  creditsCost: number;
   type: string;
   prompt: string;
   inputImageUrl: string | null;
@@ -149,7 +149,7 @@ function transformMcpJob(job: {
     source: "mcp" as JobSource,
     status: job.status,
     tier: job.tier as UnifiedJob["tier"],
-    tokensCost: job.tokensCost,
+    creditsCost: job.creditsCost,
     prompt: job.prompt,
     inputUrl: job.inputImageUrl,
     outputUrl: job.outputImageUrl,
@@ -260,7 +260,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   const { data: enhancementJob } = await tryCatch(
     prisma.imageEnhancementJob.findUnique({
       where: { id: jobId },
-      select: { id: true, status: true, userId: true, tokensCost: true },
+      select: { id: true, status: true, userId: true, creditsCost: true },
     }),
   );
 
@@ -288,17 +288,15 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Refund tokens
-    await TokenBalanceManager.refundTokens(
+    // Refund credits
+    await WorkspaceCreditManager.refundCredits(
       enhancementJob.userId,
-      enhancementJob.tokensCost,
-      jobId,
-      "Admin cancelled job",
+      enhancementJob.creditsCost,
     );
 
     return NextResponse.json({
       success: true,
-      tokensRefunded: enhancementJob.tokensCost,
+      creditsRefunded: enhancementJob.creditsCost,
       source: "enhancement",
     });
   }
@@ -318,7 +316,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     }
     return NextResponse.json({
       success: true,
-      tokensRefunded: result.tokensRefunded,
+      creditsRefunded: result.creditsRefunded,
       source: "mcp",
     });
   }

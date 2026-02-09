@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Briefcase, Building2, Globe, Rocket } from "lucide-react";
+import { Building2, Globe, Rocket } from "lucide-react";
 
 export default function AboutPage() {
   return (
@@ -11,8 +11,8 @@ export default function AboutPage() {
             About Spike Land
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Empowering creators and businesses with the next generation of AI-driven social media
-            tools.
+            An open-source, AI-powered development platform — removing the friction between idea and
+            shipped software.
           </p>
         </div>
 
@@ -27,12 +27,21 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent className="text-lg leading-relaxed text-muted-foreground">
               <p>
-                At Spike Land, we believe that powerful social media management shouldn't be
-                reserved for large enterprises with massive budgets. Our mission is to democratize
-                professional-grade marketing tools through Artificial Intelligence. By automating
-                the complex, data-heavy aspects of social strategy—from scheduling to A/B testing—we
-                free our users to focus on what truly matters: creating authentic connections and
-                compelling content.
+                The bottleneck in modern software development is not writing code. It is everything
+                around the code — blocked PRs, week-long review cycles, the fear of refactoring, the
+                meetings about meetings. Spike Land exists to make that friction unnecessary. By
+                combining AI agents, fast CI pipelines, and engineering discipline, we enable
+                developers to ship production-grade software faster than ever — without sacrificing
+                quality. The entire platform is{" "}
+                <a
+                  href="https://github.com/zerdos/spike.land"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  open source on GitHub
+                </a>
+                .
               </p>
             </CardContent>
           </Card>
@@ -44,23 +53,24 @@ export default function AboutPage() {
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2">
                 <Globe className="w-6 h-6 text-primary" />
-                The Founder's Story
+                The Founder&apos;s Story
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-muted-foreground">
               <p>
-                Spike Land is the culmination of years of engineering excellence and a passion for
-                scalable technology. Based in Brighton, UK, the journey began with a simple
-                observation: while social platforms were evolving rapidly, the tools to manage them
-                were lagging behind, often trapping creative minds in repetitive administrative
-                tasks.
+                Spike Land is the work of Zoltan Erdos, a full-stack developer with 12+ years of
+                experience building software for companies like Investec Bank, TalkTalk, and Virgin
+                Media O2. Based in Brighton, UK, the project grew from a simple observation: AI can
+                write code faster than any human — but only if the engineering foundations are right.
+                Fast CI, 100% test coverage, strict types, clean architecture. Without those, you are
+                just automating chaos.
               </p>
               <p>
-                Drawing on deep technical expertise gained from working with some of the UK&apos;s
-                most recognizable brands, our founder set out to build a solution that combines the
-                reliability of enterprise systems with the agility required for the modern creator
-                economy. From our Brighton studio, we work with businesses across the UK—Spike Land
-                isn&apos;t just a tool; it&apos;s a force multiplier for your digital presence.
+                After years of watching enterprise teams cling to manual reviews, manual testing, and
+                manual deployment ceremonies — paying more to move slower — the mission became clear:
+                build a platform that proves a single developer with the right tools and discipline
+                can outship entire teams. Not by working harder, but by removing the friction that
+                makes software development slow. SPIKE LAND LTD is a UK company (No. 16906682).
               </p>
             </CardContent>
           </Card>
@@ -72,19 +82,19 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                title: "Innovation First",
+                title: "Engineering Discipline",
                 description:
-                  "We constantly push the boundaries of what AI can do for marketing, never settling for the status quo.",
+                  "100% test coverage, strict TypeScript, fast CI. The foundation is not the AI — it is the engineering discipline that makes AI a force multiplier.",
               },
               {
-                title: "User-Centricity",
+                title: "Open Source",
                 description:
-                  "Every feature we build is designed to solve real problems for real creators, simplifying complexity.",
+                  "The entire platform is open source. Clone it, run it locally, contribute. Transparency is not a value statement — it is the codebase on GitHub.",
               },
               {
-                title: "Transparency",
+                title: "Human on the Loop",
                 description:
-                  "We believe in clear data, honest metrics, and building trust through open communication.",
+                  "AI does the exploration and execution. Humans design the system, review the plans, and make the decisions that require business context.",
               },
             ].map((value, index) => (
               <Card
@@ -118,26 +128,27 @@ export default function AboutPage() {
               </div>
               <p className="text-lg font-medium text-muted-foreground mb-2">Founder</p>
               <p className="text-muted-foreground/80">
-                Building the ultimate AI-powered social media command center. enhancing content
-                workflows, and enabling data-driven growth for creators worldwide.
+                Building an open-source, AI-powered development platform. Recursive agent workflows,
+                fast CI, 100% test coverage, and engineering discipline that makes autonomous coding
+                agents safe and productive.
               </p>
             </div>
 
-            {/* Item 2: Virgin */}
+            {/* Item 2: Virgin Media O2 */}
             <div className="relative pl-8 md:pl-12 group">
               <div className="absolute -left-[7px] top-0 w-4 h-4 rounded-full bg-muted-foreground/40 ring-4 ring-background group-hover:bg-primary/60 transition-all">
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
-                <h3 className="text-xl font-bold text-foreground">Virgin</h3>
-                <Briefcase className="w-5 h-5 text-muted-foreground hidden sm:block" />
+                <h3 className="text-xl font-bold text-foreground">Virgin Media O2</h3>
+                <span className="text-sm text-muted-foreground">2023 &ndash; 2026</span>
               </div>
               <p className="text-lg font-medium text-muted-foreground mb-2">
-                Engineering Leadership
+                Frontend Developer (Contractor)
               </p>
               <p className="text-muted-foreground/80">
-                Contributed to high-scale consumer technology solutions, focusing on performance,
-                customer experience, and robust system architecture for one of the world&apos;s most
-                iconic brands.
+                Delivered critical user journeys on the My O2 mobile platform. Pioneered AI-assisted
+                development with Claude Code and context engineering. Reduced CSS build size by 80%
+                via PostCSS plugins.
               </p>
             </div>
 

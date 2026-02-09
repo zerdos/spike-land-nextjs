@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, CheckCircle, Coins, Loader2, Sparkles, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Loader2, Sparkles, XCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -111,7 +111,7 @@ export function AlbumBatchEnhance({
   const imagesToEnhance = notEnhancedForTier.length;
   const tierCost = TIER_INFO[selectedTier].cost;
   const totalCost = imagesToEnhance * tierCost;
-  const hasEnoughTokens = userBalance !== null && userBalance >= totalCost;
+  const hasEnoughCredits = userBalance !== null && userBalance >= totalCost;
 
   const pendingCount = enhancingImages.filter(
     (img) => img.status === "pending",
@@ -133,10 +133,11 @@ export function AlbumBatchEnhance({
 
   const fetchBalance = useCallback(async () => {
     try {
-      const response = await fetch("/api/tokens/balance");
+      // Get AI credit balance
+      const response = await fetch("/api/credits/balance");
       if (response.ok) {
         const data = await response.json();
-        setUserBalance(data.balance ?? 0);
+        setUserBalance(data.remaining ?? 0);
       }
     } catch (error) {
       console.error("Failed to fetch balance:", error);
@@ -260,7 +261,7 @@ export function AlbumBatchEnhance({
   );
 
   const startBatchEnhancement = useCallback(async () => {
-    if (imagesToEnhance === 0 || !hasEnoughTokens) {
+    if (imagesToEnhance === 0 || !hasEnoughCredits) {
       return;
     }
 
@@ -339,7 +340,7 @@ export function AlbumBatchEnhance({
   }, [
     albumId,
     imagesToEnhance,
-    hasEnoughTokens,
+    hasEnoughCredits,
     notEnhancedForTier,
     selectedTier,
     fetchBalance,
@@ -419,7 +420,7 @@ export function AlbumBatchEnhance({
           {/* Balance display */}
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div className="flex items-center gap-2">
-              <Coins className="h-5 w-5 text-yellow-500" />
+              <Sparkles className="h-5 w-5 text-primary" />
               <span className="text-sm font-medium">Your Balance</span>
             </div>
             {!hasFetchedBalance
@@ -431,7 +432,7 @@ export function AlbumBatchEnhance({
               )
               : (
                 <span className="text-lg font-bold" data-testid="user-balance">
-                  {userBalance ?? 0} tokens
+                  {userBalance ?? 0} credits
                 </span>
               )}
           </div>
@@ -472,7 +473,7 @@ export function AlbumBatchEnhance({
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-medium">
-                              {info.cost} tokens
+                              {info.cost} credits
                             </p>
                             <p className="text-xs text-muted-foreground">
                               per image
@@ -499,20 +500,20 @@ export function AlbumBatchEnhance({
               </div>
               <div className="flex justify-between text-sm">
                 <span>Cost per image:</span>
-                <span className="font-medium">{tierCost} tokens</span>
+                <span className="font-medium">{tierCost} credits</span>
               </div>
               <div className="flex justify-between text-sm font-bold">
                 <span>Total cost:</span>
-                <span data-testid="total-cost">{totalCost} tokens</span>
+                <span data-testid="total-cost">{totalCost} credits</span>
               </div>
-              {!hasEnoughTokens && userBalance !== null && (
+              {!hasEnoughCredits && userBalance !== null && (
                 <div className="flex items-start gap-2 p-2 bg-destructive/10 rounded border border-destructive/20">
                   <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                   <p
                     className="text-sm text-destructive"
                     data-testid="insufficient-balance-warning"
                   >
-                    Insufficient tokens. You need {totalCost} but only have {userBalance}.
+                    Insufficient credits. You need {totalCost} but only have {userBalance}.
                   </p>
                 </div>
               )}
@@ -613,7 +614,7 @@ export function AlbumBatchEnhance({
                   onClick={startBatchEnhancement}
                   disabled={isProcessing ||
                     imagesToEnhance === 0 ||
-                    (hasFetchedBalance && !hasEnoughTokens)}
+                    (hasFetchedBalance && !hasEnoughCredits)}
                   data-testid="confirm-enhance-button"
                 >
                   {isProcessing
@@ -627,7 +628,7 @@ export function AlbumBatchEnhance({
                       <>
                         <Sparkles className="mr-2 h-4 w-4" />
                         Enhance {imagesToEnhance} Image
-                        {imagesToEnhance !== 1 ? "s" : ""} ({totalCost} tokens)
+                        {imagesToEnhance !== 1 ? "s" : ""} ({totalCost} credits)
                       </>
                     )}
                 </Button>

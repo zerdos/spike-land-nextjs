@@ -70,7 +70,7 @@ async function main() {
       imageId: imageId,
       userId: userId,
       tier: EnhancementTier.TIER_4K,
-      tokensCost: 10,
+      creditsCost: 10,
       status: JobStatus.COMPLETED,
       enhancedUrl: "/test-image.png", // Using same image for test
       enhancedR2Key: "mock-enhanced-key",

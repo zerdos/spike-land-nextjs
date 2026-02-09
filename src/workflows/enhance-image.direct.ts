@@ -36,7 +36,7 @@ import {
 } from "@/lib/images/image-dimensions";
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, PipelineStage } from "@prisma/client";
 import {
@@ -307,8 +307,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     },
   });
   console.log(
-    `[Direct Enhancement] Analysis saved: ${
-      JSON.stringify(analysisResult.structuredAnalysis.defects)
+    `[Direct Enhancement] Analysis saved: ${JSON.stringify(analysisResult.structuredAnalysis.defects)
     }`,
   );
 
@@ -360,8 +359,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
 
   // Step 5: STAGE 3 - Build enhancement prompt (blend or dynamic)
   console.log(
-    `[Direct Enhancement] Stage 3: Building ${
-      sourceImageData ? "blend" : "dynamic"
+    `[Direct Enhancement] Stage 3: Building ${sourceImageData ? "blend" : "dynamic"
     } enhancement prompt`,
   );
   await updateJobStage(jobId, PipelineStage.PROMPTING);
@@ -377,8 +375,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   // Step 7: STAGE 4 - Enhance with Gemini using dynamic prompt (with retry)
   const modelToUse = getModelForTier(tier);
   console.log(
-    `[Direct Enhancement] Stage 4: Calling Gemini API for ${TIER_TO_SIZE[tier]} enhancement${
-      sourceImageData ? " [BLEND]" : ""
+    `[Direct Enhancement] Stage 4: Calling Gemini API for ${TIER_TO_SIZE[tier]} enhancement${sourceImageData ? " [BLEND]" : ""
     } using model: ${modelToUse}`,
   );
   await updateJobStage(jobId, PipelineStage.GENERATING);
@@ -495,19 +492,11 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
     // Include full error stack trace for better debugging
     console.error(`[Direct Enhancement] Job ${jobId} failed:`, error);
 
-    // Refund tokens on failure
-    const refundResult = await TokenBalanceManager.refundTokens(
-      userId,
-      tokensCost,
-      jobId,
-      errorMessage,
-    );
+    // Refund credits on failure
+    const refundSuccess = await WorkspaceCreditManager.refundCredits(userId, tokensCost);
 
-    if (!refundResult.success) {
-      console.error(
-        "[Direct Enhancement] Failed to refund tokens:",
-        refundResult.error,
-      );
+    if (!refundSuccess) {
+      console.error("[Direct Enhancement] Failed to refund credits");
     }
 
     // Update job as failed and refunded

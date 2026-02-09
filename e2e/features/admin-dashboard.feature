@@ -24,8 +24,8 @@ Feature: Admin Dashboard
     When I visit "/admin"
     Then I should see "Total Users" metric card
     And I should see "Enhancements" metric card
-    And I should see "Tokens Purchased" metric card
-    And I should see "Active Vouchers" metric card
+    And I should see "Credits Allocated" metric card
+    And I should see "Workspaces" metric card
 
   Scenario: Admin dashboard displays user count
     Given the user is an admin
@@ -39,18 +39,18 @@ Feature: Admin Dashboard
     Then the "Enhancements" metric should display total count
     And I should see active jobs count
 
-  Scenario: Admin dashboard displays token statistics
+  Scenario: Admin dashboard displays credit statistics
     Given the user is an admin
     When I visit "/admin"
-    Then the "Tokens Purchased" metric should display total
-    And I should see tokens spent count
+    Then the "Credits Allocated" metric should display total
+    And I should see credits used count
 
   Scenario: Admin dashboard displays quick links
     Given the user is an admin
     When I visit "/admin"
     Then I should see "Quick Links" heading
     And I should see "User Analytics" quick link
-    And I should see "Token Economics" quick link
+    And I should see "Credit Economics" quick link
     And I should see "System Health" quick link
     And I should see "Voucher Management" quick link
     And I should see "User Management" quick link
@@ -65,11 +65,11 @@ Feature: Admin Dashboard
 
   # SKIP REASON: failing - needs to investigate
   @skip
-  Scenario: Navigate to Token Economics from dashboard
+  Scenario: Navigate to Credit Economics from dashboard
     Given the user is an admin
     And I am on the admin dashboard
-    When I click the "Token Economics" quick link
-    Then I should be on the "/admin/tokens" page
+    When I click the "Credit Economics" quick link
+    Then I should be on the "/admin/credits" page
 
   # SKIP REASON: failing - needs to investigate
   @skip

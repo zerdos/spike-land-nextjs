@@ -5,7 +5,7 @@ import { PixelLogo } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Menu, Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -15,7 +15,7 @@ export function PixelAppHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: session, status } = useSession();
   const isAuthenticated = status === "authenticated" && session?.user;
-  const { balance, isLoading: balanceLoading } = useTokenBalance();
+  const { remaining: balance, isLoading: balanceLoading } = useWorkspaceCredits();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">

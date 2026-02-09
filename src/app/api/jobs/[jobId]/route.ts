@@ -48,7 +48,7 @@ async function getJobHandler(jobId: string, userId: string | null) {
       id: job.id,
       status: job.status,
       tier: job.tier,
-      tokensCost: job.tokensCost,
+      creditsCost: job.creditsCost,
       enhancedUrl: job.enhancedUrl,
       enhancedWidth: job.enhancedWidth,
       enhancedHeight: job.enhancedHeight,

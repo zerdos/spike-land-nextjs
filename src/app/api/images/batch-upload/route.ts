@@ -5,9 +5,9 @@ import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { deleteFromR2 } from "@/lib/storage/r2-client";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import type { EnhancementTier } from "@/lib/tokens/costs";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
+import type { EnhancementTier } from "@/lib/credits/costs";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { isSecureFilename } from "@/lib/upload/validation";
 import type { NextRequest } from "next/server";
@@ -172,39 +172,25 @@ async function handleBatchUpload(
   const totalCost = files.length * costPerImage;
 
   // Check balance
-  const { balance } = await TokenBalanceManager.getBalance(session.user.id);
-  if (balance < totalCost) {
+  const balance = await WorkspaceCreditManager.getBalance(session.user.id);
+  if (!balance || balance.remaining < totalCost) {
     return NextResponse.json(
       {
-        error: `Insufficient tokens. You need ${totalCost} tokens but have ${balance}.`,
-        title: "Insufficient Tokens",
-        suggestion: "Please purchase more tokens to continue uploading.",
+        error: `Insufficient credits. You need ${totalCost} credits but have ${balance?.remaining ?? 0}.`,
+        title: "Insufficient Credits",
+        suggestion: "Please upgrade your plan to continue uploading.",
       },
       { status: 402, headers: { "X-Request-ID": requestId } },
     );
   }
 
-  // Deduct tokens upfront (or reservation)
-  // We will deduct here. If upload fails completely, we might need refund logic,
-  // but complex transaction rollback across services is hard.
-  // We'll rely on the fact that R2 failure is rare and we can refund if everything fails.
-  // However, safest is to deduct inside the DB transaction phase if possible,
-  // but we can't do R2 inside DB transaction.
-  // Strategy: Check balance here, consume tokens AFTER R2 success but inside DB transaction?
-  // No, consumeTokens creates a record. It should be part of the transaction if possible.
-  // TokenBalanceManager.consumeTokens is not transaction-aware (it uses its own transaction).
-  // Let's deduct upfront. If R2 fails for ALL, we refund.
-
-  await TokenBalanceManager.consumeTokens({
+  // Deduct credits upfront
+  // If R2 fails for ALL, we refund.
+  await WorkspaceCreditManager.consumeCredits({
     userId: session.user.id,
     amount: totalCost,
     source: "BATCH_UPLOAD",
-    sourceId: requestId, // Use request ID as reference
-    metadata: {
-      albumId: albumId || null,
-      fileCount: files.length,
-      tier: defaultTier,
-    },
+    sourceId: requestId,
   });
 
   if (!files || files.length === 0) {
@@ -283,9 +269,8 @@ async function handleBatchUpload(
       {
         error: errorMessage.message,
         title: errorMessage.title,
-        suggestion: `Total batch size exceeds maximum of 50MB (current: ${
-          Math.round(totalSize / 1024 / 1024)
-        }MB).`,
+        suggestion: `Total batch size exceeds maximum of 50MB (current: ${Math.round(totalSize / 1024 / 1024)
+          }MB).`,
       },
       { status: 400, headers: { "X-Request-ID": requestId } },
     );
@@ -398,15 +383,8 @@ async function handleBatchUpload(
     requestLogger.warn("All files failed during R2 upload phase", {
       failureCount: results.filter((r) => !r.success).length,
     });
-    // Refund tokens if all failed
-    await TokenBalanceManager.addTokens({
-      userId: session.user.id,
-      amount: totalCost,
-      type: "REFUND", // Needs to be cast or added to enum if strict
-      source: "BATCH_UPLOAD_FAIL",
-      sourceId: requestId,
-      metadata: { reason: "All R2 uploads failed" },
-    });
+    // Refund credits if all failed
+    await WorkspaceCreditManager.refundCredits(session.user.id, totalCost);
 
     return NextResponse.json(
       {
@@ -425,13 +403,7 @@ async function handleBatchUpload(
   // Refund for failed individual files (if any)
   const failedR2Count = results.filter((r) => !r.success).length;
   if (failedR2Count > 0) {
-    await TokenBalanceManager.addTokens({
-      userId: session.user.id,
-      amount: failedR2Count * costPerImage,
-      type: "REFUND",
-      source: "BATCH_UPLOAD_PARTIAL_FAIL",
-      sourceId: requestId,
-    });
+    await WorkspaceCreditManager.refundCredits(session.user.id, failedR2Count * costPerImage);
   }
 
   // PHASE 2: Create all database records in a single transaction
@@ -486,7 +458,7 @@ async function handleBatchUpload(
             imageId: img.id,
             tier: defaultTier,
             status: "PENDING",
-            tokensCost: costPerImage,
+            creditsCost: costPerImage,
           },
         });
 

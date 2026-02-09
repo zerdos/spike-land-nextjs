@@ -4,6 +4,7 @@
 
 "use client";
 
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Magnet, ZoomIn, ZoomOut } from "lucide-react";
 import type { SnapGrid } from "../../types";
@@ -44,13 +45,17 @@ export function TimelineControls({
     <div className="flex items-center gap-4 px-4 py-1.5 bg-black/20 backdrop-blur-sm border-b border-white/5">
       {/* Zoom controls */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={handleZoomOut}
-          className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all active:scale-95"
-          title="Zoom out"
-        >
-          <ZoomOut className="w-4 h-4" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={handleZoomOut}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all active:scale-95"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Zoom Out (−)</TooltipContent>
+        </Tooltip>
 
         <div className="flex items-center gap-4 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
           <input
@@ -68,32 +73,40 @@ export function TimelineControls({
           </span>
         </div>
 
-        <button
-          onClick={handleZoomIn}
-          className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all active:scale-95"
-          title="Zoom in"
-        >
-          <ZoomIn className="w-4 h-4" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={handleZoomIn}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all active:scale-95"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Zoom In (+)</TooltipContent>
+        </Tooltip>
       </div>
 
       <div className="w-px h-6 bg-white/10" />
 
       {/* Snap controls */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => onSnapToggle(!snapEnabled)}
-          className={cn(
-            "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 border",
-            snapEnabled
-              ? "bg-primary/20 text-primary border-primary/30 shadow-glow-cyan-sm"
-              : "bg-white/5 text-gray-400 border-white/10 hover:text-white",
-          )}
-          title={snapEnabled ? "Disable snap to grid" : "Enable snap to grid"}
-        >
-          <Magnet className="w-3.5 h-3.5" />
-          Grid Snap
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => onSnapToggle(!snapEnabled)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 border",
+                snapEnabled
+                  ? "bg-primary/20 text-primary border-primary/30 shadow-glow-cyan-sm"
+                  : "bg-white/5 text-gray-400 border-white/10 hover:text-white",
+              )}
+            >
+              <Magnet className="w-3.5 h-3.5" />
+              Grid Snap
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Grid Snap (G)</TooltipContent>
+        </Tooltip>
 
         {snapEnabled && (
           <select

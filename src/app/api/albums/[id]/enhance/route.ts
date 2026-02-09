@@ -1,8 +1,8 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { batchEnhanceImagesDirect, type BatchEnhanceInput } from "@/workflows/batch-enhance.direct";
 import type { EnhancementTier } from "@prisma/client";
@@ -110,13 +110,14 @@ async function handleEnhanceRequest(
 
   // Early return if nothing to enhance
   if (imagesToEnhanceCount === 0) {
+    const balance = await WorkspaceCreditManager.getBalance(session.user.id);
     return NextResponse.json({
       success: true,
       totalImages: totalAlbumImagesCount,
       skipped: skippedCount,
       queued: 0,
       totalCost: 0,
-      newBalance: (await TokenBalanceManager.getBalance(session.user.id)).balance,
+      newBalance: balance?.remaining ?? 0,
       jobs: [],
     });
   }
@@ -168,8 +169,8 @@ async function handleEnhanceRequest(
   const tokenCost = ENHANCEMENT_COSTS[tier];
   const totalCost = tokenCost * imagesToEnhance.length;
 
-  // Check if user has enough tokens
-  const hasEnough = await TokenBalanceManager.hasEnoughTokens(
+  // Check if user has enough credits
+  const hasEnough = await WorkspaceCreditManager.hasEnoughCredits(
     session.user.id,
     totalCost,
   );
@@ -177,7 +178,7 @@ async function handleEnhanceRequest(
   if (!hasEnough) {
     return NextResponse.json(
       {
-        error: "Insufficient tokens",
+        error: "Insufficient credits",
         required: totalCost,
         toEnhance: imagesToEnhance.length,
       },
@@ -185,19 +186,18 @@ async function handleEnhanceRequest(
     );
   }
 
-  // Consume tokens upfront for the entire batch
+  // Consume credits upfront for the entire batch
   const batchId = `album-${albumId}-${Date.now()}`;
-  const consumeResult = await TokenBalanceManager.consumeTokens({
+  const consumeResult = await WorkspaceCreditManager.consumeCredits({
     userId: session.user.id,
     amount: totalCost,
     source: "album_batch_enhancement",
     sourceId: batchId,
-    metadata: { tier, albumId, imageCount: imagesToEnhance.length },
   });
 
   if (!consumeResult.success) {
     return NextResponse.json(
-      { error: consumeResult.error || "Failed to consume tokens" },
+      { error: consumeResult.error || "Failed to consume credits" },
       { status: 500 },
     );
   }
@@ -242,7 +242,7 @@ async function handleEnhanceRequest(
     skipped: skippedCount,
     queued: imagesToEnhance.length,
     totalCost,
-    newBalance: consumeResult.balance,
+    newBalance: consumeResult.remaining,
     jobs: imagesData.map((img) => ({
       imageId: img.imageId,
       jobId: batchId, // Individual job IDs will be created by the workflow

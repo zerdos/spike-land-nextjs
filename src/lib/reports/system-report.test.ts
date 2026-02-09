@@ -24,15 +24,10 @@ vi.mock("@/lib/prisma", () => ({
       count: vi.fn(),
       groupBy: vi.fn(),
     },
-    tokenTransaction: {
+    workspace: {
       aggregate: vi.fn(),
-      groupBy: vi.fn(),
-    },
-    userTokenBalance: {
-      aggregate: vi.fn(),
-    },
-    voucher: {
       count: vi.fn(),
+      groupBy: vi.fn(),
     },
     visitorSession: {
       count: vi.fn(),
@@ -111,22 +106,15 @@ describe("System Report Aggregator", () => {
       ] as never);
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(500);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
-      vi.mocked(prisma.tokenTransaction.aggregate).mockResolvedValue({
-        _sum: { amount: 5000 },
-        _avg: { amount: null },
+      vi.mocked(prisma.workspace.aggregate).mockResolvedValue({
+        _sum: { monthlyAiCredits: 5000, usedAiCredits: 2000 },
+        _avg: { monthlyAiCredits: null, usedAiCredits: null },
         _count: { _all: 0 },
-        _max: { amount: null },
-        _min: { amount: null },
-      });
-      vi.mocked(prisma.tokenTransaction.groupBy).mockResolvedValue([]);
-      vi.mocked(prisma.userTokenBalance.aggregate).mockResolvedValue({
-        _sum: { balance: 10000 },
-        _avg: { balance: null },
-        _count: { _all: 0 },
-        _max: { balance: null },
-        _min: { balance: null },
-      });
-      vi.mocked(prisma.voucher.count).mockResolvedValue(5);
+        _max: { monthlyAiCredits: null, usedAiCredits: null },
+        _min: { monthlyAiCredits: null, usedAiCredits: null },
+      } as never);
+      vi.mocked(prisma.workspace.count).mockResolvedValue(10);
+      vi.mocked(prisma.workspace.groupBy).mockResolvedValue([]);
       vi.mocked(prisma.visitorSession.count).mockResolvedValue(1000);
       vi.mocked(prisma.visitorSession.groupBy).mockResolvedValue([]);
       vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);
@@ -303,21 +291,15 @@ describe("System Report Aggregator", () => {
       vi.mocked(prisma.account.groupBy).mockResolvedValue([]);
       vi.mocked(prisma.imageEnhancementJob.count).mockResolvedValue(500);
       vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValue([]);
-      vi.mocked(prisma.tokenTransaction.aggregate).mockResolvedValue({
-        _sum: { amount: 5000 },
-        _avg: { amount: null },
+      vi.mocked(prisma.workspace.aggregate).mockResolvedValue({
+        _sum: { monthlyAiCredits: 5000, usedAiCredits: 2000 },
+        _avg: { monthlyAiCredits: null, usedAiCredits: null },
         _count: { _all: 0 },
-        _max: { amount: null },
-        _min: { amount: null },
-      });
-      vi.mocked(prisma.userTokenBalance.aggregate).mockResolvedValue({
-        _sum: { balance: 10000 },
-        _avg: { balance: null },
-        _count: { _all: 0 },
-        _max: { balance: null },
-        _min: { balance: null },
-      });
-      vi.mocked(prisma.voucher.count).mockResolvedValue(5);
+        _max: { monthlyAiCredits: null, usedAiCredits: null },
+        _min: { monthlyAiCredits: null, usedAiCredits: null },
+      } as never);
+      vi.mocked(prisma.workspace.count).mockResolvedValue(10);
+      vi.mocked(prisma.workspace.groupBy).mockResolvedValue([]);
       vi.mocked(prisma.visitorSession.count).mockResolvedValue(1000);
       vi.mocked(prisma.visitorSession.groupBy).mockResolvedValue([]);
       vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([]);

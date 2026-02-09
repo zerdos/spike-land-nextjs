@@ -127,7 +127,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.4,
     },
     {
-      url: `${BASE_URL}/admin/tokens`,
+      url: `${BASE_URL}/admin/credits`,
       lastModified: currentDate,
       changeFrequency: "daily",
       priority: 0.4,

@@ -106,7 +106,7 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
         id: testJobId,
         type: McpJobType.GENERATE,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.COMPLETED,
         prompt: "A beautiful sunset",
         inputImageUrl: null,
@@ -131,7 +131,7 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
       expect(body.id).toBe(testJobId);
       expect(body.type).toBe(McpJobType.GENERATE);
       expect(body.tier).toBe("TIER_1K");
-      expect(body.tokensCost).toBe(2);
+      expect(body.creditsCost).toBe(2);
       expect(body.status).toBe(JobStatus.COMPLETED);
       expect(body.prompt).toBe("A beautiful sunset");
       expect(body.inputImageUrl).toBeNull();
@@ -151,7 +151,7 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
         id: testJobId,
         type: McpJobType.MODIFY,
         tier: "TIER_2K",
-        tokensCost: 5,
+        creditsCost: 5,
         status: JobStatus.PROCESSING,
         prompt: "Add a rainbow",
         inputImageUrl: "https://example.com/input.jpg",
@@ -185,7 +185,7 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
         id: testJobId,
         type: McpJobType.GENERATE,
         tier: "TIER_4K",
-        tokensCost: 10,
+        creditsCost: 10,
         status: JobStatus.FAILED,
         prompt: "Test",
         inputImageUrl: null,
@@ -265,7 +265,7 @@ describe("GET /api/mcp/jobs/[jobId]", () => {
         id: testJobId,
         type: McpJobType.GENERATE,
         tier: "TIER_1K",
-        tokensCost: 2,
+        creditsCost: 2,
         status: JobStatus.COMPLETED,
         prompt: "Test",
         inputImageUrl: null,

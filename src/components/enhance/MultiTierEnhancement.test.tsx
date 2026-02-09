@@ -39,11 +39,11 @@ describe("MultiTierEnhancement Component", () => {
       expect(screen.getByText("4K (4096px)")).toBeInTheDocument();
     });
 
-    it("displays token costs for each tier", () => {
+    it("displays credit costs for each tier", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       // Check for the tier costs in the tier list
-      const tierCostElements = screen.getAllByText(/\d+ tokens/);
+      const tierCostElements = screen.getAllByText(/\d+ credits/);
       expect(tierCostElements.length).toBeGreaterThanOrEqual(3);
     });
 
@@ -60,7 +60,7 @@ describe("MultiTierEnhancement Component", () => {
 
       expect(screen.getByText("Your balance:")).toBeInTheDocument();
       // User balance is displayed in the cost summary section
-      const balanceText = screen.getByText("25 tokens");
+      const balanceText = screen.getByText("25 credits");
       expect(balanceText).toBeInTheDocument();
     });
 
@@ -68,7 +68,7 @@ describe("MultiTierEnhancement Component", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
       expect(screen.getByText("Total cost:")).toBeInTheDocument();
-      expect(screen.getByText("0 tokens")).toBeInTheDocument();
+      expect(screen.getByText("0 credits")).toBeInTheDocument();
     });
 
     it("renders enhance button", () => {
@@ -134,13 +134,13 @@ describe("MultiTierEnhancement Component", () => {
     it("updates total cost when tiers are selected", () => {
       render(<MultiTierEnhancement {...defaultProps} />);
 
-      // Select 1K tier (2 tokens)
+      // Select 1K tier (2 credits)
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
 
       // The button should now show the cost
       expect(
         screen.getByRole("button", {
-          name: /Enhance Selected Tiers \(2 tokens\)/i,
+          name: /Enhance Selected Tiers \(2 credits\)/i,
         }),
       ).toBeInTheDocument();
     });
@@ -154,7 +154,7 @@ describe("MultiTierEnhancement Component", () => {
       // Total should be 2 + 5 = 7
       expect(
         screen.getByRole("button", {
-          name: /Enhance Selected Tiers \(7 tokens\)/i,
+          name: /Enhance Selected Tiers \(7 credits\)/i,
         }),
       ).toBeInTheDocument();
     });
@@ -164,7 +164,7 @@ describe("MultiTierEnhancement Component", () => {
     it("disables tier checkbox when user cannot afford it", () => {
       render(<MultiTierEnhancement {...defaultProps} userBalance={3} />);
 
-      // 4K costs 10 tokens, user has 3
+      // 4K costs 10 credits, user has 3
       const tier4kCheckbox = screen.getByRole("checkbox", { name: /4K/i });
       expect(tier4kCheckbox).toBeDisabled();
     });
@@ -197,9 +197,9 @@ describe("MultiTierEnhancement Component", () => {
     });
 
     it("shows insufficient balance warning when total exceeds balance", () => {
-      // User has 17 tokens - can afford all three exactly, then we deselect 1K to show warning
+      // User has 17 credits - can afford all three exactly, then we deselect 1K to show warning
       // Start with enough to select all (17)
-      // 1K (2) + 2K (5) + 4K (10) = 17 tokens exactly
+      // 1K (2) + 2K (5) + 4K (10) = 17 credits exactly
       render(<MultiTierEnhancement {...defaultProps} userBalance={17} />);
 
       // Select all three tiers first
@@ -210,14 +210,14 @@ describe("MultiTierEnhancement Component", () => {
       // No warning yet since we can afford exactly 17
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 
-      // Now test with just 16 tokens - select 4K first (10), then 2K (5) = 15, then 1K fails
+      // Now test with just 16 credits - select 4K first (10), then 2K (5) = 15, then 1K fails
       // Actually let's use a simpler approach - just check sufficient warning doesn't appear when affordable
     });
 
     it("does not show warning when balance is sufficient", () => {
       render(<MultiTierEnhancement {...defaultProps} userBalance={17} />);
 
-      // Select all three tiers: total 17 tokens = balance
+      // Select all three tiers: total 17 credits = balance
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
       fireEvent.click(screen.getByRole("checkbox", { name: /2K/i }));
       fireEvent.click(screen.getByRole("checkbox", { name: /4K/i }));
@@ -227,7 +227,7 @@ describe("MultiTierEnhancement Component", () => {
     });
 
     it("disables checkbox for unaffordable tier with existing selections", () => {
-      // User has 7 tokens - can afford 1K (2) + 2K (5) = 7
+      // User has 7 credits - can afford 1K (2) + 2K (5) = 7
       render(<MultiTierEnhancement {...defaultProps} userBalance={7} />);
 
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
@@ -241,7 +241,7 @@ describe("MultiTierEnhancement Component", () => {
     it("disables enhance button when balance is insufficient", () => {
       render(<MultiTierEnhancement {...defaultProps} userBalance={17} />);
 
-      // Select all three tiers: 1K (2) + 2K (5) + 4K (10) = 17 tokens total
+      // Select all three tiers: 1K (2) + 2K (5) + 4K (10) = 17 credits total
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
       fireEvent.click(screen.getByRole("checkbox", { name: /2K/i }));
       fireEvent.click(screen.getByRole("checkbox", { name: /4K/i }));
@@ -260,7 +260,7 @@ describe("MultiTierEnhancement Component", () => {
 
       expect(
         screen.getByRole("button", {
-          name: /Enhance Selected Tiers \(2 tokens\)/i,
+          name: /Enhance Selected Tiers \(2 credits\)/i,
         }),
       ).toBeInTheDocument();
     });
@@ -959,7 +959,7 @@ describe("MultiTierEnhancement Component", () => {
     it("does not show alert when balance is sufficient for selection", () => {
       render(<MultiTierEnhancement {...defaultProps} userBalance={25} />);
 
-      // Select 1K (2 tokens) - should not show alert
+      // Select 1K (2 credits) - should not show alert
       fireEvent.click(screen.getByRole("checkbox", { name: /1K/i }));
 
       // No alert should appear since we have enough balance

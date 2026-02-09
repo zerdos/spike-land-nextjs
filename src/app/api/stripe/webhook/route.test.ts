@@ -10,6 +10,8 @@ const {
   mockPrismaSubscriptionUpdate,
   mockPrismaSubscriptionUpdateMany,
   mockPrismaUserFindFirst,
+  mockPrismaWorkspaceUpdate,
+  mockResolveWorkspaceForUser,
 } = vi.hoisted(() => ({
   mockConstructEvent: vi.fn(),
   mockSubscriptionsRetrieve: vi.fn(),
@@ -18,6 +20,8 @@ const {
   mockPrismaSubscriptionUpdate: vi.fn(),
   mockPrismaSubscriptionUpdateMany: vi.fn(),
   mockPrismaUserFindFirst: vi.fn(),
+  mockPrismaWorkspaceUpdate: vi.fn(),
+  mockResolveWorkspaceForUser: vi.fn(),
 }));
 
 // Mock Stripe
@@ -37,6 +41,13 @@ vi.mock("@/lib/tracking/attribution", () => ({
   attributeConversion: vi.fn().mockResolvedValue(undefined),
 }));
 
+// Mock WorkspaceCreditManager
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: {
+    resolveWorkspaceForUser: mockResolveWorkspaceForUser,
+  },
+}));
+
 // Mock Prisma with dynamic mock implementation
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -48,6 +59,9 @@ vi.mock("@/lib/prisma", () => ({
     },
     user: {
       findFirst: mockPrismaUserFindFirst,
+    },
+    workspace: {
+      update: mockPrismaWorkspaceUpdate,
     },
   },
 }));
@@ -63,27 +77,18 @@ describe("POST /api/stripe/webhook", () => {
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_123";
 
     // Default mock implementations
+    mockResolveWorkspaceForUser.mockResolvedValue("workspace_123");
+    mockPrismaWorkspaceUpdate.mockResolvedValue({});
     mockPrismaTransaction.mockImplementation((fn) =>
       fn({
-        userTokenBalance: {
-          findUnique: vi.fn().mockResolvedValue({ balance: 10 }),
-          create: vi.fn().mockResolvedValue({ balance: 0 }),
-          update: vi.fn().mockResolvedValue({}),
-        },
-        tokenTransaction: {
-          create: vi.fn().mockResolvedValue({}),
-        },
-        tokensPackage: {
-          findFirst: vi.fn().mockResolvedValue(null),
-        },
-        stripePayment: {
-          create: vi.fn().mockResolvedValue({}),
-        },
         subscription: {
           upsert: vi.fn().mockResolvedValue({}),
           findUnique: vi.fn().mockResolvedValue(null),
           update: vi.fn().mockResolvedValue({}),
           updateMany: vi.fn().mockResolvedValue({}),
+        },
+        workspace: {
+          update: vi.fn().mockResolvedValue({}),
         },
       })
     );
@@ -214,28 +219,8 @@ describe("POST /api/stripe/webhook", () => {
       consoleSpy.mockRestore();
     });
 
-    it("handles token purchase when no balance exists (creates new balance)", async () => {
-      mockPrismaTransaction.mockImplementation((fn) =>
-        fn({
-          userTokenBalance: {
-            findUnique: vi.fn().mockResolvedValue(null),
-            create: vi.fn().mockResolvedValue({ balance: 0 }),
-            update: vi.fn().mockResolvedValue({}),
-          },
-          tokenTransaction: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          tokensPackage: {
-            findFirst: vi.fn().mockResolvedValue(null),
-          },
-          stripePayment: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          subscription: {
-            upsert: vi.fn().mockResolvedValue({}),
-          },
-        })
-      );
+    it("handles token purchase when no workspace exists (resolves null)", async () => {
+      mockResolveWorkspaceForUser.mockResolvedValue(null);
 
       mockConstructEvent.mockReturnValue({
         type: "checkout.session.completed",
@@ -269,35 +254,12 @@ describe("POST /api/stripe/webhook", () => {
 
       expect(response.status).toBe(200);
       expect(data.received).toBe(true);
+      // workspace.update should NOT be called when workspace is null
+      expect(mockPrismaWorkspaceUpdate).not.toHaveBeenCalled();
       consoleSpy.mockRestore();
     });
 
-    it("handles token purchase with existing package (creates StripePayment)", async () => {
-      mockPrismaTransaction.mockImplementation((fn) =>
-        fn({
-          userTokenBalance: {
-            findUnique: vi.fn().mockResolvedValue({ balance: 10 }),
-            create: vi.fn().mockResolvedValue({ balance: 0 }),
-            update: vi.fn().mockResolvedValue({}),
-          },
-          tokenTransaction: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          tokensPackage: {
-            findFirst: vi.fn().mockResolvedValue({
-              id: "pkg_123",
-              name: "Basic Pack",
-            }),
-          },
-          stripePayment: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          subscription: {
-            upsert: vi.fn().mockResolvedValue({}),
-          },
-        })
-      );
-
+    it("handles token purchase and increments workspace credits", async () => {
       mockConstructEvent.mockReturnValue({
         type: "checkout.session.completed",
         data: {
@@ -330,35 +292,14 @@ describe("POST /api/stripe/webhook", () => {
 
       expect(response.status).toBe(200);
       expect(data.received).toBe(true);
+      expect(mockPrismaWorkspaceUpdate).toHaveBeenCalledWith({
+        where: { id: "workspace_123" },
+        data: { monthlyAiCredits: { increment: 50 } },
+      });
       consoleSpy.mockRestore();
     });
 
-    it("handles token purchase with no payment_intent (uses session.id)", async () => {
-      mockPrismaTransaction.mockImplementation((fn) =>
-        fn({
-          userTokenBalance: {
-            findUnique: vi.fn().mockResolvedValue({ balance: 10 }),
-            create: vi.fn().mockResolvedValue({ balance: 0 }),
-            update: vi.fn().mockResolvedValue({}),
-          },
-          tokenTransaction: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          tokensPackage: {
-            findFirst: vi.fn().mockResolvedValue({
-              id: "pkg_123",
-              name: "Basic Pack",
-            }),
-          },
-          stripePayment: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          subscription: {
-            upsert: vi.fn().mockResolvedValue({}),
-          },
-        })
-      );
-
+    it("handles token purchase with no payment_intent (still credits workspace)", async () => {
       mockConstructEvent.mockReturnValue({
         type: "checkout.session.completed",
         data: {
@@ -451,31 +392,11 @@ describe("POST /api/stripe/webhook", () => {
       consoleSpy.mockRestore();
     });
 
-    it("handles subscription when no balance exists (creates new balance)", async () => {
+    it("handles subscription when no workspace exists (resolves null)", async () => {
       const subscriptionStart = Math.floor(Date.now() / 1000);
       const subscriptionEnd = subscriptionStart + 30 * 24 * 60 * 60;
 
-      mockPrismaTransaction.mockImplementation((fn) =>
-        fn({
-          userTokenBalance: {
-            findUnique: vi.fn().mockResolvedValue(null),
-            create: vi.fn().mockResolvedValue({ balance: 0 }),
-            update: vi.fn().mockResolvedValue({}),
-          },
-          tokenTransaction: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          tokensPackage: {
-            findFirst: vi.fn().mockResolvedValue(null),
-          },
-          stripePayment: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          subscription: {
-            upsert: vi.fn().mockResolvedValue({}),
-          },
-        })
-      );
+      mockResolveWorkspaceForUser.mockResolvedValue(null);
 
       mockConstructEvent.mockReturnValue({
         type: "checkout.session.completed",
@@ -670,22 +591,17 @@ describe("POST /api/stripe/webhook", () => {
         subscription: {
           id: "sub_db_123",
           stripeSubscriptionId: "sub_123",
-          tokensPerMonth: 30,
+          creditsPerMonth: 30,
           maxRollover: 30,
         },
       });
 
       mockPrismaTransaction.mockImplementation((fn) =>
         fn({
-          userTokenBalance: {
-            findUnique: vi.fn().mockResolvedValue({ balance: 25 }),
-            create: vi.fn().mockResolvedValue({ balance: 0 }),
+          subscription: {
             update: vi.fn().mockResolvedValue({}),
           },
-          tokenTransaction: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          subscription: {
+          workspace: {
             update: vi.fn().mockResolvedValue({}),
           },
         })
@@ -712,9 +628,11 @@ describe("POST /api/stripe/webhook", () => {
       consoleSpy.mockRestore();
     });
 
-    it("handles invoice.paid when no balance exists (creates new balance)", async () => {
+    it("handles invoice.paid when no workspace exists (resolves null)", async () => {
       const subscriptionStart = Math.floor(Date.now() / 1000);
       const subscriptionEnd = subscriptionStart + 30 * 24 * 60 * 60;
+
+      mockResolveWorkspaceForUser.mockResolvedValue(null);
 
       mockConstructEvent.mockReturnValue({
         type: "invoice.paid",
@@ -751,22 +669,17 @@ describe("POST /api/stripe/webhook", () => {
         subscription: {
           id: "sub_db_123",
           stripeSubscriptionId: "sub_123",
-          tokensPerMonth: 30,
+          creditsPerMonth: 30,
           maxRollover: 0,
         },
       });
 
       mockPrismaTransaction.mockImplementation((fn) =>
         fn({
-          userTokenBalance: {
-            findUnique: vi.fn().mockResolvedValue(null),
-            create: vi.fn().mockResolvedValue({ balance: 0 }),
+          subscription: {
             update: vi.fn().mockResolvedValue({}),
           },
-          tokenTransaction: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          subscription: {
+          workspace: {
             update: vi.fn().mockResolvedValue({}),
           },
         })
@@ -790,7 +703,7 @@ describe("POST /api/stripe/webhook", () => {
       consoleSpy.mockRestore();
     });
 
-    it("handles invoice.paid with unlimited rollover (maxRollover = 0)", async () => {
+    it("handles invoice.paid and resets workspace credits for renewal", async () => {
       const subscriptionStart = Math.floor(Date.now() / 1000);
       const subscriptionEnd = subscriptionStart + 30 * 24 * 60 * 60;
 
@@ -829,22 +742,17 @@ describe("POST /api/stripe/webhook", () => {
         subscription: {
           id: "sub_db_123",
           stripeSubscriptionId: "sub_123",
-          tokensPerMonth: 30,
+          creditsPerMonth: 30,
           maxRollover: 0,
         },
       });
 
       mockPrismaTransaction.mockImplementation((fn) =>
         fn({
-          userTokenBalance: {
-            findUnique: vi.fn().mockResolvedValue({ balance: 100 }),
-            create: vi.fn().mockResolvedValue({ balance: 0 }),
+          subscription: {
             update: vi.fn().mockResolvedValue({}),
           },
-          tokenTransaction: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          subscription: {
+          workspace: {
             update: vi.fn().mockResolvedValue({}),
           },
         })
@@ -1091,22 +999,17 @@ describe("POST /api/stripe/webhook", () => {
         subscription: {
           id: "sub_db_123",
           stripeSubscriptionId: "sub_123",
-          tokensPerMonth: 30,
+          creditsPerMonth: 30,
           maxRollover: 30,
         },
       });
 
       mockPrismaTransaction.mockImplementation((fn) =>
         fn({
-          userTokenBalance: {
-            findUnique: vi.fn().mockResolvedValue({ balance: 25 }),
-            create: vi.fn().mockResolvedValue({ balance: 0 }),
+          subscription: {
             update: vi.fn().mockResolvedValue({}),
           },
-          tokenTransaction: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          subscription: {
+          workspace: {
             update: vi.fn().mockResolvedValue({}),
           },
         })
@@ -1160,22 +1063,17 @@ describe("POST /api/stripe/webhook", () => {
         subscription: {
           id: "sub_db_123",
           stripeSubscriptionId: "sub_123",
-          tokensPerMonth: 30,
+          creditsPerMonth: 30,
           maxRollover: 30,
         },
       });
 
       mockPrismaTransaction.mockImplementation((fn) =>
         fn({
-          userTokenBalance: {
-            findUnique: vi.fn().mockResolvedValue({ balance: 25 }),
-            create: vi.fn().mockResolvedValue({ balance: 0 }),
+          subscription: {
             update: vi.fn().mockResolvedValue({}),
           },
-          tokenTransaction: {
-            create: vi.fn().mockResolvedValue({}),
-          },
-          subscription: {
+          workspace: {
             update: vi.fn().mockResolvedValue({}),
           },
         })
@@ -1457,20 +1355,13 @@ describe("POST /api/stripe/webhook", () => {
 
   describe("checkout.session.completed - tier_upgrade", () => {
     it("handles tier upgrade with valid metadata", async () => {
-      // Add upsert method to mock for tier upgrade handler
       mockPrismaTransaction.mockImplementation((fn) =>
         fn({
-          userTokenBalance: {
-            findUnique: vi.fn().mockResolvedValue({ balance: 10 }),
-            create: vi.fn().mockResolvedValue({ balance: 0 }),
-            update: vi.fn().mockResolvedValue({}),
-            upsert: vi.fn().mockResolvedValue({ balance: 20, tier: "BASIC" }),
-          },
-          tokenTransaction: {
-            create: vi.fn().mockResolvedValue({}),
-          },
           subscription: {
             upsert: vi.fn().mockResolvedValue({}),
+          },
+          workspace: {
+            update: vi.fn().mockResolvedValue({}),
           },
         })
       );
@@ -1669,23 +1560,13 @@ describe("POST /api/stripe/webhook", () => {
     });
 
     it("handles PREMIUM tier upgrade", async () => {
-      // Add upsert method to mock for tier upgrade handler
       mockPrismaTransaction.mockImplementation((fn) =>
         fn({
-          userTokenBalance: {
-            findUnique: vi.fn().mockResolvedValue({ balance: 50 }),
-            create: vi.fn().mockResolvedValue({ balance: 0 }),
-            update: vi.fn().mockResolvedValue({}),
-            upsert: vi.fn().mockResolvedValue({
-              balance: 100,
-              tier: "PREMIUM",
-            }),
-          },
-          tokenTransaction: {
-            create: vi.fn().mockResolvedValue({}),
-          },
           subscription: {
             upsert: vi.fn().mockResolvedValue({}),
+          },
+          workspace: {
+            update: vi.fn().mockResolvedValue({}),
           },
         })
       );
@@ -1763,7 +1644,7 @@ describe("POST /api/stripe/webhook", () => {
         },
       });
 
-      mockPrismaTransaction.mockRejectedValue(new Error("Database error"));
+      mockPrismaWorkspaceUpdate.mockRejectedValue(new Error("Database error"));
 
       const request = new NextRequest(
         "http://localhost:3000/api/stripe/webhook",

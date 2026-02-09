@@ -171,7 +171,7 @@ describe("GET /api/images/[id]/versions", () => {
           imageId: "img-1",
           userId: "user-1",
           tier: "TIER_1K",
-          tokensCost: 5,
+          creditsCost: 5,
           status: "COMPLETED",
           enhancedUrl: "https://example.com/enhanced-1k.jpg",
           enhancedR2Key: "enhanced-1k.jpg",
@@ -192,7 +192,7 @@ describe("GET /api/images/[id]/versions", () => {
           imageId: "img-1",
           userId: "user-1",
           tier: "TIER_2K",
-          tokensCost: 10,
+          creditsCost: 10,
           status: "COMPLETED",
           enhancedUrl: "https://example.com/enhanced-2k.jpg",
           enhancedR2Key: "enhanced-2k.jpg",
@@ -237,7 +237,7 @@ describe("GET /api/images/[id]/versions", () => {
     expect(data.versions[0].resultUrl).toBe(
       "https://example.com/enhanced-1k.jpg",
     );
-    expect(data.versions[0].tokensSpent).toBe(5);
+    expect(data.versions[0].creditsSpent).toBe(5);
     expect(data.versions[0].processingTimeMs).toBe(15000);
     expect(data.versions[0].width).toBe(1000);
     expect(data.versions[0].height).toBe(750);
@@ -280,7 +280,7 @@ describe("GET /api/images/[id]/versions", () => {
           imageId: "img-1",
           userId: "user-1",
           tier: "TIER_4K",
-          tokensCost: 20,
+          creditsCost: 20,
           status: "COMPLETED",
           enhancedUrl: "https://example.com/enhanced-4k.jpg",
           enhancedR2Key: "enhanced-4k.jpg",
@@ -343,7 +343,7 @@ describe("GET /api/images/[id]/versions", () => {
           imageId: "img-1",
           userId: "user-1",
           tier: "TIER_1K",
-          tokensCost: 5,
+          creditsCost: 5,
           status: "COMPLETED",
           enhancedUrl: "https://example.com/enhanced-1k.jpg",
           enhancedR2Key: "enhanced-1k.jpg",
@@ -364,7 +364,7 @@ describe("GET /api/images/[id]/versions", () => {
           imageId: "img-1",
           userId: "user-1",
           tier: "TIER_2K",
-          tokensCost: 10,
+          creditsCost: 10,
           status: "PENDING",
           enhancedUrl: null,
           enhancedR2Key: null,
@@ -385,7 +385,7 @@ describe("GET /api/images/[id]/versions", () => {
           imageId: "img-1",
           userId: "user-1",
           tier: "TIER_4K",
-          tokensCost: 20,
+          creditsCost: 20,
           status: "FAILED",
           enhancedUrl: null,
           enhancedR2Key: null,
@@ -449,7 +449,7 @@ describe("GET /api/images/[id]/versions", () => {
           imageId: "img-1",
           userId: "user-1",
           tier: "TIER_1K",
-          tokensCost: 5,
+          creditsCost: 5,
           status: "COMPLETED",
           enhancedUrl: "https://example.com/enhanced-1k.jpg",
           enhancedR2Key: "enhanced-1k.jpg",

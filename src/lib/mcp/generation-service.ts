@@ -4,12 +4,12 @@ import {
   generateImageWithGemini,
   modifyImageWithGemini,
 } from "@/lib/ai/gemini-client";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
+import type { EnhancementTier } from "@/lib/credits/costs";
+import { getMcpGenerationCost } from "@/lib/credits/costs";
 import { getImageDimensionsFromBuffer } from "@/lib/images/image-dimensions";
 import prisma from "@/lib/prisma";
 import { uploadToR2 } from "@/lib/storage/r2-client";
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import type { EnhancementTier } from "@/lib/tokens/costs";
-import { getMcpGenerationCost } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, McpJobType } from "@prisma/client";
 import { classifyError as classifyErrorImpl } from "./error-classifier";
@@ -68,7 +68,7 @@ interface CreateModificationJobParams {
 interface JobResult {
   success: boolean;
   jobId?: string;
-  tokensCost?: number;
+  creditsCost?: number;
   error?: string;
 }
 
@@ -105,21 +105,20 @@ export async function createGenerationJob(
     };
   }
 
-  // Atomic token consumption - handles balance check within transaction
+  // Atomic credit consumption - handles balance check within transaction
   // This prevents race conditions where two requests could both pass a separate balance check
-  const consumeResult = await TokenBalanceManager.consumeTokens({
+  const consumeResult = await WorkspaceCreditManager.consumeCredits({
     userId,
     amount: tokensCost,
     source: "mcp_generation",
     sourceId: "pending", // Will be job ID
-    metadata: { tier, type: "GENERATE" },
   });
 
   if (!consumeResult.success) {
     return {
       success: false,
       error: consumeResult.error ||
-        `Insufficient token balance. Required: ${tokensCost} tokens`,
+        `Insufficient AI credits. Required: ${tokensCost} credits`,
     };
   }
 
@@ -130,7 +129,7 @@ export async function createGenerationJob(
       apiKeyId: apiKeyId || null,
       type: McpJobType.GENERATE,
       tier,
-      tokensCost,
+      creditsCost: tokensCost,
       status: JobStatus.PROCESSING,
       prompt,
       geminiModel: DEFAULT_MODEL,
@@ -152,7 +151,7 @@ export async function createGenerationJob(
   return {
     success: true,
     jobId: job.id,
-    tokensCost,
+    creditsCost: tokensCost,
   };
 }
 
@@ -176,21 +175,20 @@ export async function createModificationJob(
     };
   }
 
-  // Atomic token consumption - handles balance check within transaction
+  // Atomic credit consumption - handles balance check within transaction
   // This prevents race conditions where two requests could both pass a separate balance check
-  const consumeResult = await TokenBalanceManager.consumeTokens({
+  const consumeResult = await WorkspaceCreditManager.consumeCredits({
     userId,
     amount: tokensCost,
     source: "mcp_generation",
     sourceId: "pending",
-    metadata: { tier, type: "MODIFY" },
   });
 
   if (!consumeResult.success) {
     return {
       success: false,
       error: consumeResult.error ||
-        `Insufficient token balance. Required: ${tokensCost} tokens`,
+        `Insufficient AI credits. Required: ${tokensCost} credits`,
     };
   }
 
@@ -201,7 +199,7 @@ export async function createModificationJob(
       apiKeyId: apiKeyId || null,
       type: McpJobType.MODIFY,
       tier,
-      tokensCost,
+      creditsCost: tokensCost,
       status: JobStatus.PROCESSING,
       prompt,
       geminiModel: DEFAULT_MODEL,
@@ -223,7 +221,7 @@ export async function createModificationJob(
   return {
     success: true,
     jobId: job.id,
-    tokensCost,
+    creditsCost: tokensCost,
   };
 }
 
@@ -331,12 +329,7 @@ async function handleGenerationJobFailure(
   );
 
   if (job) {
-    await TokenBalanceManager.refundTokens(
-      job.userId,
-      job.tokensCost,
-      jobId,
-      `Generation job failed: ${classifiedError.code}`,
-    );
+    await WorkspaceCreditManager.refundCredits(job.userId, job.creditsCost);
 
     await tryCatch(
       prisma.mcpGenerationJob.update({
@@ -500,12 +493,7 @@ async function handleModificationJobFailure(
   );
 
   if (job) {
-    await TokenBalanceManager.refundTokens(
-      job.userId,
-      job.tokensCost,
-      jobId,
-      `Modification job failed: ${classifiedError.code}`,
-    );
+    await WorkspaceCreditManager.refundCredits(job.userId, job.creditsCost);
 
     await tryCatch(
       prisma.mcpGenerationJob.update({
@@ -528,7 +516,7 @@ export async function getJob(jobId: string, userId?: string) {
       id: true,
       type: true,
       tier: true,
-      tokensCost: true,
+      creditsCost: true,
       status: true,
       prompt: true,
       inputImageUrl: true,
@@ -568,7 +556,7 @@ export async function getJobHistory(
         id: true,
         type: true,
         tier: true,
-        tokensCost: true,
+        creditsCost: true,
         status: true,
         prompt: true,
         inputImageUrl: true,
@@ -595,7 +583,7 @@ export async function getJobHistory(
       id: job.id,
       type: job.type,
       tier: job.tier,
-      tokensCost: job.tokensCost,
+      creditsCost: job.creditsCost,
       status: job.status,
       prompt: job.prompt,
       inputImageUrl: job.inputImageUrl,
@@ -618,7 +606,7 @@ export async function getJobHistory(
  */
 export async function cancelMcpJob(
   jobId: string,
-): Promise<{ success: boolean; error?: string; tokensRefunded?: number; }> {
+): Promise<{ success: boolean; error?: string; creditsRefunded?: number; }> {
   const job = await prisma.mcpGenerationJob.findUnique({
     where: { id: jobId },
   });
@@ -645,15 +633,10 @@ export async function cancelMcpJob(
     },
   });
 
-  // Refund tokens
-  await TokenBalanceManager.refundTokens(
-    job.userId,
-    job.tokensCost,
-    jobId,
-    "Admin cancelled job",
-  );
+  // Refund credits
+  await WorkspaceCreditManager.refundCredits(job.userId, job.creditsCost);
 
-  return { success: true, tokensRefunded: job.tokensCost };
+  return { success: true, creditsRefunded: job.creditsCost };
 }
 
 /**
@@ -681,20 +664,19 @@ export async function rerunMcpJob(
     };
   }
 
-  // Consume tokens for new job
-  const consumeResult = await TokenBalanceManager.consumeTokens({
+  // Consume credits for new job
+  const consumeResult = await WorkspaceCreditManager.consumeCredits({
     userId: job.userId,
-    amount: job.tokensCost,
+    amount: job.creditsCost,
     source: "mcp_generation",
     sourceId: "pending",
-    metadata: { tier: job.tier, type: job.type, rerunOf: jobId },
   });
 
   if (!consumeResult.success) {
     return {
       success: false,
       error: consumeResult.error ||
-        `Insufficient token balance. Required: ${job.tokensCost} tokens`,
+        `Insufficient AI credits. Required: ${job.creditsCost} credits`,
     };
   }
 
@@ -705,7 +687,7 @@ export async function rerunMcpJob(
       apiKeyId: job.apiKeyId,
       type: job.type,
       tier: job.tier,
-      tokensCost: job.tokensCost,
+      creditsCost: job.creditsCost,
       status: JobStatus.PROCESSING,
       prompt: job.prompt,
       inputImageUrl: job.inputImageUrl,

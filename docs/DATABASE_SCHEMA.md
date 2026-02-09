@@ -18,9 +18,6 @@ erDiagram
   DateTime updatedAt
   String stripeCustomerId UK "nullable"
   UserRole role
-  String referralCode UK "nullable"
-  String referredById FK "nullable"
-  Int referralCount
   String passwordHash "nullable"
 }
 "campaign_briefs" {
@@ -199,49 +196,6 @@ erDiagram
   String description "nullable"
   DateTime createdAt
 }
-"user_token_balances" {
-  String id PK
-  String userId FK,UK
-  Int balance
-  DateTime lastRegeneration
-  SubscriptionTier tier
-  DateTime createdAt
-  DateTime updatedAt
-}
-"token_transactions" {
-  String id PK
-  String userId FK
-  Int amount
-  TokenTransactionType type
-  String source "nullable"
-  String sourceId "nullable"
-  Int balanceAfter
-  Json metadata "nullable"
-  DateTime createdAt
-}
-"tokens_packages" {
-  String id PK
-  String name
-  Int tokens
-  Decimal(10) priceUSD
-  String stripePriceId UK
-  Boolean active
-  Int sortOrder
-  DateTime createdAt
-  DateTime updatedAt
-}
-"stripe_payments" {
-  String id PK
-  String userId FK
-  String packageId FK
-  Int tokensGranted
-  Decimal(10) amountUSD
-  String stripePaymentIntentId UK
-  StripePaymentStatus status
-  Json metadata "nullable"
-  DateTime createdAt
-  DateTime updatedAt
-}
 "enhanced_images" {
   String id PK
   String userId FK
@@ -266,7 +220,7 @@ erDiagram
   String userId FK
   EnhancementTier tier
   EnhancementType enhancementType
-  Int tokensCost
+  Int creditsCost
   JobStatus status
   PipelineStage currentStage "nullable"
   String enhancedUrl "nullable"
@@ -307,19 +261,16 @@ erDiagram
   DateTime currentPeriodEnd
   Boolean cancelAtPeriodEnd
   SubscriptionTier downgradeTo "nullable"
-  Int tokensPerMonth
-  Int rolloverTokens
-  Int maxRollover
+  Int creditsPerMonth
   DateTime createdAt
   DateTime updatedAt
 }
 "subscription_plans" {
   String id PK
   String name
-  Int tokensPerMonth
+  Int creditsPerMonth
   Decimal(10) priceGBP
   String stripePriceId UK
-  Int maxRollover
   Boolean priority
   Boolean apiAccess
   Boolean active
@@ -347,36 +298,6 @@ erDiagram
   String imageId FK
   Int sortOrder
   DateTime addedAt
-}
-"vouchers" {
-  String id PK
-  String code UK
-  VoucherType type
-  Int value
-  Int maxUses "nullable"
-  Int currentUses
-  DateTime expiresAt "nullable"
-  VoucherStatus status
-  Json metadata "nullable"
-  DateTime createdAt
-  DateTime updatedAt
-}
-"voucher_redemptions" {
-  String id PK
-  String voucherId FK
-  String userId FK
-  Int tokensGranted
-  DateTime redeemedAt
-}
-"referrals" {
-  String id PK
-  String referrerId FK
-  String refereeId FK
-  ReferralStatus status
-  Int tokensGranted
-  String ipAddress "nullable"
-  DateTime createdAt
-  DateTime completedAt "nullable"
 }
 "audit_logs" {
   String id PK
@@ -652,7 +573,7 @@ erDiagram
   String apiKeyId FK "nullable"
   McpJobType type
   EnhancementTier tier
-  Int tokensCost
+  Int creditsCost
   JobStatus status
   String prompt
   String inputImageUrl "nullable"
@@ -2240,11 +2161,18 @@ erDiagram
   String generatedById FK "nullable"
   DateTime generatedAt
 }
+"newsletter_subscribers" {
+  String id PK
+  String email UK
+  DateTime subscribedAt
+  Boolean unsubscribed
+  DateTime unsubscribedAt "nullable"
+  String source
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
 }
-"users" }o--o| "users" : referredBy
 "campaign_briefs" }o--o| "workspaces" : workspace
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
@@ -2265,10 +2193,6 @@ erDiagram
 "app_attachments" }o--|| "app_images" : image
 "app_code_versions" }o--|| "apps" : app
 "app_code_versions" |o--o| "app_messages" : message
-"user_token_balances" |o--|| "users" : user
-"token_transactions" }o--|| "users" : user
-"stripe_payments" }o--|| "tokens_packages" : package
-"stripe_payments" }o--|| "users" : user
 "enhanced_images" }o--|| "users" : user
 "image_enhancement_jobs" }o--o| "enhancement_pipelines" : pipeline
 "image_enhancement_jobs" }o--o| "enhanced_images" : sourceImage
@@ -2279,10 +2203,6 @@ erDiagram
 "albums" }o--|| "users" : user
 "album_images" }o--|| "albums" : album
 "album_images" }o--|| "enhanced_images" : image
-"voucher_redemptions" }o--|| "users" : user
-"voucher_redemptions" }o--|| "vouchers" : voucher
-"referrals" }o--|| "users" : referee
-"referrals" }o--|| "users" : referrer
 "audit_logs" }o--|| "users" : user
 "workspace_audit_logs" }o--|| "workspaces" : workspace
 "workspace_audit_logs" }o--|| "users" : user
@@ -2489,9 +2409,6 @@ Properties as follows:
 - `updatedAt`:
 - `stripeCustomerId`:
 - `role`:
-- `referralCode`:
-- `referredById`:
-- `referralCount`:
 - `passwordHash`:
 
 ### `campaign_briefs`
@@ -2718,61 +2635,6 @@ Properties as follows:
 - `description`:
 - `createdAt`:
 
-### `user_token_balances`
-
-Properties as follows:
-
-- `id`:
-- `userId`:
-- `balance`:
-- `lastRegeneration`:
-- `tier`:
-- `createdAt`:
-- `updatedAt`:
-
-### `token_transactions`
-
-Properties as follows:
-
-- `id`:
-- `userId`:
-- `amount`:
-- `type`:
-- `source`:
-- `sourceId`:
-- `balanceAfter`:
-- `metadata`:
-- `createdAt`:
-
-### `tokens_packages`
-
-Properties as follows:
-
-- `id`:
-- `name`:
-- `tokens`:
-- `priceUSD`:
-- `stripePriceId`:
-- `active`:
-- `sortOrder`:
-- `createdAt`:
-- `updatedAt`:
-
-### `stripe_payments`
-
-Properties as follows:
-
-- `id`:
-- `userId`:
-- `packageId`:
-- `tokensGranted`:
-- `amountUSD`:
-- `stripePaymentIntentId`:
-- `status`:
-- `metadata`:
-- `createdAt`:
-- `updatedAt`:
-
 ### `enhanced_images`
 
 Properties as follows:
@@ -2803,7 +2665,7 @@ Properties as follows:
 - `userId`:
 - `tier`:
 - `enhancementType`:
-- `tokensCost`:
+- `creditsCost`:
 - `status`:
 - `currentStage`:
 - `enhancedUrl`:
@@ -2847,9 +2709,7 @@ Properties as follows:
 - `currentPeriodEnd`:
 - `cancelAtPeriodEnd`:
 - `downgradeTo`:
-- `tokensPerMonth`:
-- `rolloverTokens`:
-- `maxRollover`:
+- `creditsPerMonth`:
 - `createdAt`:
 - `updatedAt`:
 
@@ -2859,10 +2719,9 @@ Properties as follows:
 
 - `id`:
 - `name`:
-- `tokensPerMonth`:
+- `creditsPerMonth`:
 - `priceGBP`:
 - `stripePriceId`:
-- `maxRollover`:
 - `priority`:
 - `apiAccess`:
 - `active`:
@@ -2896,45 +2755,6 @@ Properties as follows:
 - `imageId`:
 - `sortOrder`:
 - `addedAt`:
-
-### `vouchers`
-
-Properties as follows:
-
-- `id`:
-- `code`:
-- `type`:
-- `value`:
-- `maxUses`:
-- `currentUses`:
-- `expiresAt`:
-- `status`:
-- `metadata`:
-- `createdAt`:
-- `updatedAt`:
-
-### `voucher_redemptions`
-
-Properties as follows:
-
-- `id`:
-- `voucherId`:
-- `userId`:
-- `tokensGranted`:
-- `redeemedAt`:
-
-### `referrals`
-
-Properties as follows:
-
-- `id`:
-- `referrerId`:
-- `refereeId`:
-- `status`:
-- `tokensGranted`:
-- `ipAddress`:
-- `createdAt`:
-- `completedAt`:
 
 ### `audit_logs`
 
@@ -3273,7 +3093,7 @@ Properties as follows:
 - `apiKeyId`:
 - `type`:
 - `tier`:
-- `tokensCost`:
+- `creditsCost`:
 - `status`:
 - `prompt`:
 - `inputImageUrl`:
@@ -5282,6 +5102,17 @@ Properties as follows:
 - `outgoingLinks`:
 - `generatedById`:
 - `generatedAt`:
+
+### `newsletter_subscribers`
+
+Properties as follows:
+
+- `id`:
+- `email`:
+- `subscribedAt`:
+- `unsubscribed`:
+- `unsubscribedAt`:
+- `source`:
 
 ### `_ConnectionToConnectionTag`
 

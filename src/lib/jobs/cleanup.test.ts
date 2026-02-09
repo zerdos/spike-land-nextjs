@@ -2,7 +2,7 @@
  * Tests for Job Cleanup Utilities
  */
 
-import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
+import { WorkspaceCreditManager } from "@/lib/credits/workspace-credit-manager";
 import type { ImageEnhancementJob } from "@prisma/client";
 import { EnhancementTier, JobStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -19,9 +19,9 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: {
-    refundTokens: vi.fn(),
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: {
+    refundCredits: vi.fn(),
   },
 }));
 
@@ -50,7 +50,7 @@ function createMockJob(
   overrides: Partial<ImageEnhancementJob> & {
     id: string;
     userId: string;
-    tokensCost: number;
+    creditsCost: number;
   },
 ): ImageEnhancementJob {
   const now = new Date();
@@ -104,7 +104,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -136,7 +136,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job2",
           userId: "user2",
-          tokensCost: 5,
+          creditsCost: 5,
           processingStartedAt: null,
           updatedAt: stuckTime,
         }),
@@ -197,7 +197,7 @@ describe("Job Cleanup Utilities", () => {
         totalFound: 0,
         cleanedUp: 0,
         failed: 0,
-        tokensRefunded: 0,
+        creditsRefunded: 0,
         jobs: [],
         errors: [],
       });
@@ -211,14 +211,14 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
         createMockJob({
           id: "job2",
           userId: "user2",
-          tokensCost: 5,
+          creditsCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -232,10 +232,10 @@ describe("Job Cleanup Utilities", () => {
 
       expect(result.totalFound).toBe(2);
       expect(result.cleanedUp).toBe(0);
-      expect(result.tokensRefunded).toBe(0);
+      expect(result.creditsRefunded).toBe(0);
       expect(result.jobs).toHaveLength(2);
       expect(prisma.$transaction).not.toHaveBeenCalled();
-      expect(TokenBalanceManager.refundTokens).not.toHaveBeenCalled();
+      expect(WorkspaceCreditManager.refundCredits).not.toHaveBeenCalled();
     });
 
     it("should perform dry run with null processingStartedAt (uses updatedAt fallback)", async () => {
@@ -246,7 +246,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: null, // null to trigger updatedAt fallback
           updatedAt: stuckTime,
         }),
@@ -260,16 +260,16 @@ describe("Job Cleanup Utilities", () => {
 
       expect(result.totalFound).toBe(1);
       expect(result.cleanedUp).toBe(0);
-      expect(result.tokensRefunded).toBe(0);
+      expect(result.creditsRefunded).toBe(0);
       expect(result.jobs).toHaveLength(1);
       const firstJob = result.jobs[0];
       expect(firstJob).toBeDefined();
       expect(firstJob!.processingDuration).toBeGreaterThan(0);
       expect(prisma.$transaction).not.toHaveBeenCalled();
-      expect(TokenBalanceManager.refundTokens).not.toHaveBeenCalled();
+      expect(WorkspaceCreditManager.refundCredits).not.toHaveBeenCalled();
     });
 
-    it("should clean up stuck jobs and refund tokens", async () => {
+    it("should clean up stuck jobs and refund credits", async () => {
       const now = new Date();
       const stuckTime = new Date(now.getTime() - 10 * 60 * 1000);
 
@@ -277,7 +277,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           tier: EnhancementTier.TIER_4K,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
@@ -299,32 +299,18 @@ describe("Job Cleanup Utilities", () => {
         errorMessage: "Job timed out",
       } as never);
 
-      vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
-        success: true,
-        balance: 110,
-        transaction: {
-          id: "tx1",
-          userId: "user1",
-          amount: 10,
-          type: "REFUND",
-          source: "enhancement_failed",
-          sourceId: "job1",
-          balanceAfter: 110,
-          metadata: null,
-          createdAt: new Date(),
-        },
-      });
+      vi.mocked(WorkspaceCreditManager.refundCredits).mockResolvedValue(true);
 
       const result = await cleanupStuckJobs();
 
       expect(result.totalFound).toBe(1);
       expect(result.cleanedUp).toBe(1);
       expect(result.failed).toBe(0);
-      expect(result.tokensRefunded).toBe(10);
+      expect(result.creditsRefunded).toBe(10);
       expect(result.jobs).toHaveLength(1);
       const firstJob = result.jobs[0];
       expect(firstJob).toBeDefined();
-      expect(firstJob!.tokensRefunded).toBe(10);
+      expect(firstJob!.creditsRefunded).toBe(10);
       expect(result.errors).toHaveLength(0);
 
       expect(prisma.imageEnhancementJob.update).toHaveBeenCalledWith(
@@ -338,11 +324,9 @@ describe("Job Cleanup Utilities", () => {
         }),
       );
 
-      expect(TokenBalanceManager.refundTokens).toHaveBeenCalledWith(
+      expect(WorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
         "user1",
         10,
-        "job1",
-        expect.stringContaining("Job timeout cleanup"),
       );
     });
 
@@ -354,21 +338,21 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
         createMockJob({
           id: "job2",
           userId: "user2",
-          tokensCost: 5,
+          creditsCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
         createMockJob({
           id: "job3",
           userId: "user3",
-          tokensCost: 2,
+          creditsCost: 2,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -386,29 +370,15 @@ describe("Job Cleanup Utilities", () => {
         {} as never,
       );
 
-      vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
-        success: true,
-        balance: 100,
-        transaction: {
-          id: "tx",
-          userId: "user",
-          amount: 10,
-          type: "REFUND",
-          source: "enhancement_failed",
-          sourceId: "job",
-          balanceAfter: 100,
-          metadata: null,
-          createdAt: new Date(),
-        },
-      });
+      vi.mocked(WorkspaceCreditManager.refundCredits).mockResolvedValue(true);
 
       const result = await cleanupStuckJobs();
 
       expect(result.totalFound).toBe(3);
       expect(result.cleanedUp).toBe(3);
-      expect(result.tokensRefunded).toBe(17); // 10 + 5 + 2
+      expect(result.creditsRefunded).toBe(17); // 10 + 5 + 2
       expect(prisma.imageEnhancementJob.update).toHaveBeenCalledTimes(3);
-      expect(TokenBalanceManager.refundTokens).toHaveBeenCalledTimes(3);
+      expect(WorkspaceCreditManager.refundCredits).toHaveBeenCalledTimes(3);
     });
 
     it("should handle partial failures gracefully", async () => {
@@ -419,14 +389,14 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
         createMockJob({
           id: "job2",
           userId: "user2",
-          tokensCost: 5,
+          creditsCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -445,33 +415,16 @@ describe("Job Cleanup Utilities", () => {
       );
 
       // First refund succeeds, second fails
-      vi.mocked(TokenBalanceManager.refundTokens)
-        .mockResolvedValueOnce({
-          success: true,
-          balance: 110,
-          transaction: {
-            id: "tx1",
-            userId: "user1",
-            amount: 10,
-            type: "REFUND",
-            source: "enhancement_failed",
-            sourceId: "job1",
-            balanceAfter: 110,
-            metadata: null,
-            createdAt: new Date(),
-          },
-        })
-        .mockResolvedValueOnce({
-          success: false,
-          error: "Refund failed",
-        });
+      vi.mocked(WorkspaceCreditManager.refundCredits)
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false);
 
       const result = await cleanupStuckJobs();
 
       expect(result.totalFound).toBe(2);
       expect(result.cleanedUp).toBe(1);
       expect(result.failed).toBe(1);
-      expect(result.tokensRefunded).toBe(10); // Only first job refunded
+      expect(result.creditsRefunded).toBe(10); // Only first job refunded
       expect(result.errors).toHaveLength(1);
       const firstError = result.errors[0];
       expect(firstError).toBeDefined();
@@ -510,7 +463,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: null, // No timestamp
           updatedAt: stuckTime,
         }),
@@ -528,21 +481,7 @@ describe("Job Cleanup Utilities", () => {
         {} as never,
       );
 
-      vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
-        success: true,
-        balance: 110,
-        transaction: {
-          id: "tx1",
-          userId: "user1",
-          amount: 10,
-          type: "REFUND",
-          source: "enhancement_failed",
-          sourceId: "job1",
-          balanceAfter: 110,
-          metadata: null,
-          createdAt: new Date(),
-        },
-      });
+      vi.mocked(WorkspaceCreditManager.refundCredits).mockResolvedValue(true);
 
       const result = await cleanupStuckJobs();
 
@@ -561,7 +500,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -579,18 +518,15 @@ describe("Job Cleanup Utilities", () => {
         {} as never,
       );
 
-      const errorMessage = "Database connection failed";
-      vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
-        success: false,
-        error: errorMessage,
-      });
+      vi.mocked(WorkspaceCreditManager.refundCredits).mockResolvedValue(false);
 
       const result = await cleanupStuckJobs();
 
       const firstJob = result.jobs[0];
       expect(firstJob).toBeDefined();
       expect(firstJob!.error).toBeDefined();
-      expect(firstJob!.error).toContain(errorMessage);
+      // WorkspaceCreditManager.refundCredits returns boolean only, so we get a generic error message
+      expect(firstJob!.error).toContain("Credit refund failed");
       expect(result.errors).toHaveLength(1);
     });
 
@@ -602,7 +538,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -649,7 +585,7 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -682,14 +618,14 @@ describe("Job Cleanup Utilities", () => {
         createMockJob({
           id: "job1",
           userId: "user1",
-          tokensCost: 10,
+          creditsCost: 10,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
         createMockJob({
           id: "job2",
           userId: "user2",
-          tokensCost: 5,
+          creditsCost: 5,
           processingStartedAt: stuckTime,
           updatedAt: stuckTime,
         }),
@@ -707,7 +643,7 @@ describe("Job Cleanup Utilities", () => {
           return [
             {
               success: true,
-              tokensRefunded: 10,
+              creditsRefunded: 10,
               processingDuration: 1000,
             },
             // Second result is undefined to trigger the check

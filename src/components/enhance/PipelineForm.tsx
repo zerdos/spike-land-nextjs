@@ -164,13 +164,13 @@ export function PipelineForm({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="TIER_1K">
-                      1K (1024px) - 2 tokens
+                      1K (1024px) - 2 credits
                     </SelectItem>
                     <SelectItem value="TIER_2K">
-                      2K (2048px) - 5 tokens
+                      2K (2048px) - 5 credits
                     </SelectItem>
                     <SelectItem value="TIER_4K">
-                      4K (4096px) - 10 tokens
+                      4K (4096px) - 10 credits
                     </SelectItem>
                   </SelectContent>
                 </Select>

@@ -43,7 +43,7 @@ describe("PipelineForm", () => {
 
     expect(screen.getByLabelText("Name")).toHaveValue("");
     // Default tier 2K
-    expect(screen.getAllByText("2K (2048px) - 5 tokens")[0])
+    expect(screen.getAllByText("2K (2048px) - 5 credits")[0])
       .toBeInTheDocument();
     // Default visibility PRIVATE
     expect(screen.getAllByText("Private (only you)")[0]).toBeInTheDocument();
@@ -97,7 +97,7 @@ describe("PipelineForm", () => {
 
     expect(screen.getByText("Edit Pipeline")).toBeInTheDocument();
     expect(screen.getByLabelText("Name")).toHaveValue("Existing Pipeline");
-    expect(screen.getAllByText("4K (4096px) - 10 tokens")[0])
+    expect(screen.getAllByText("4K (4096px) - 10 credits")[0])
       .toBeInTheDocument();
     expect(screen.getAllByText("Public (visible to all)")[0])
       .toBeInTheDocument();

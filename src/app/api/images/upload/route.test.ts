@@ -38,21 +38,24 @@ vi.mock("@/lib/rate-limiter", () => ({
   rateLimitConfigs: { imageUpload: { maxRequests: 30, windowMs: 60000 } },
 }));
 
-// Mock TokenBalanceManager - hoisted to avoid initialization error
-const { mockTokenBalanceManager } = vi.hoisted(() => ({
-  mockTokenBalanceManager: {
-    hasEnoughTokens: vi.fn().mockResolvedValue(true),
+// Mock WorkspaceCreditManager - hoisted to avoid initialization error
+const { mockWorkspaceCreditManager } = vi.hoisted(() => ({
+  mockWorkspaceCreditManager: {
+    hasEnoughCredits: vi.fn().mockResolvedValue(true),
     getBalance: vi.fn().mockResolvedValue({
-      balance: 100,
-      lifetimeEarned: 100,
+      remaining: 100,
+      limit: 100,
+      used: 0,
+      tier: "FREE",
+      workspaceId: "workspace-123",
     }),
-    consumeTokens: vi.fn().mockResolvedValue({ success: true, balance: 98 }),
-    refundTokens: vi.fn().mockResolvedValue({ success: true, balance: 100 }),
+    consumeCredits: vi.fn().mockResolvedValue({ success: true, remaining: 98 }),
+    refundCredits: vi.fn().mockResolvedValue(true),
   },
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: mockTokenBalanceManager,
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: mockWorkspaceCreditManager,
 }));
 
 // Mock enhancement direct execution
@@ -180,20 +183,20 @@ function createMockRequest(
 describe("POST /api/images/upload", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset token manager mocks to defaults
-    mockTokenBalanceManager.hasEnoughTokens.mockResolvedValue(true);
-    mockTokenBalanceManager.getBalance.mockResolvedValue({
-      balance: 100,
-      lifetimeEarned: 100,
+    // Reset credit manager mocks to defaults
+    mockWorkspaceCreditManager.hasEnoughCredits.mockResolvedValue(true);
+    mockWorkspaceCreditManager.getBalance.mockResolvedValue({
+      remaining: 100,
+      limit: 100,
+      used: 0,
+      tier: "FREE",
+      workspaceId: "workspace-123",
     });
-    mockTokenBalanceManager.consumeTokens.mockResolvedValue({
+    mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
       success: true,
-      balance: 98,
+      remaining: 98,
     });
-    mockTokenBalanceManager.refundTokens.mockResolvedValue({
-      success: true,
-      balance: 100,
-    });
+    mockWorkspaceCreditManager.refundCredits.mockResolvedValue(true);
     // Reset album mock to default
     mockPrisma.album.findFirst.mockResolvedValue({
       id: "album-123",
@@ -537,15 +540,19 @@ describe("POST /api/images/upload", () => {
       expect(data.image.id).toBe("img-123");
     });
 
-    it("should return 402 if user has insufficient tokens (prepay model)", async () => {
-      // With prepay model, consumeTokens fails directly
-      mockTokenBalanceManager.consumeTokens.mockResolvedValueOnce({
+    it("should return 402 if user has insufficient credits (prepay model)", async () => {
+      // With prepay model, consumeCredits fails directly
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValueOnce({
         success: false,
-        error: "Insufficient tokens",
+        remaining: 0,
+        error: "Insufficient AI credits",
       });
-      mockTokenBalanceManager.getBalance.mockResolvedValueOnce({
-        balance: 0,
-        lifetimeEarned: 0,
+      mockWorkspaceCreditManager.getBalance.mockResolvedValueOnce({
+        remaining: 0,
+        limit: 100,
+        used: 100,
+        tier: "FREE",
+        workspaceId: "workspace-123",
       });
 
       const req = createMockRequest(createMockFile(), "album-123");
@@ -557,7 +564,7 @@ describe("POST /api/images/upload", () => {
       expect(data.balance).toBe(0);
     });
 
-    it("should refund tokens if upload processing fails", async () => {
+    it("should refund credits if upload processing fails", async () => {
       const { processAndUploadImage } = await import(
         "@/lib/storage/upload-handler"
       );
@@ -578,11 +585,9 @@ describe("POST /api/images/upload", () => {
 
       expect(res.status).toBe(500);
       // Verify refund was called since upload failed
-      expect(mockTokenBalanceManager.refundTokens).toHaveBeenCalledWith(
+      expect(mockWorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
         "user-123",
-        expect.any(Number), // tokenCost
-        expect.stringContaining("failed-upload"),
-        "Upload processing failed",
+        expect.any(Number), // creditCost
       );
     });
   });

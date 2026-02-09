@@ -23,9 +23,9 @@ export interface PlatformMetrics {
   adminCount: number;
   totalEnhancements: number;
   jobStatus: JobStatusMetrics;
-  tokensInCirculation: number;
-  tokensSpent: number;
-  activeVouchers: number;
+  totalAiCreditsAllocated: number;
+  totalAiCreditsUsed: number;
+  totalWorkspaces: number;
 }
 
 /**
@@ -49,22 +49,21 @@ export interface UserMetrics {
 }
 
 /**
- * Token package sales
+ * Workspace tier distribution
  */
-export interface PackageSales {
-  name: string;
-  tokens: number;
-  sales: number;
+export interface TierDistribution {
+  tier: string;
+  count: number;
 }
 
 /**
- * Token economics metrics
+ * Credit economics metrics
  */
 export interface TokenMetrics {
-  totalRevenue: number;
-  tokensInCirculation: number;
-  averageTokensPerUser: number;
-  packageSales: PackageSales[];
+  totalCreditsAllocated: number;
+  totalCreditsUsed: number;
+  averageCreditsPerWorkspace: number;
+  tierDistribution: TierDistribution[];
 }
 
 /**
@@ -275,7 +274,7 @@ export interface SystemReportSummary {
     totalEnhancements: number;
     pendingJobs: number;
     failedJobs: number;
-    tokensInCirculation: number;
+    totalAiCreditsUsed: number;
     errorsLast24Hours: number;
     conversionRate: number;
   };

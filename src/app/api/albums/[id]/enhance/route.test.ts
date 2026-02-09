@@ -17,20 +17,21 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(() => Promise.resolve(mockSession)),
 }));
 
-vi.mock("@/lib/tokens/balance-manager", () => ({
-  TokenBalanceManager: {
-    hasEnoughTokens: vi.fn().mockResolvedValue(true),
-    consumeTokens: vi.fn().mockResolvedValue({
+vi.mock("@/lib/credits/workspace-credit-manager", () => ({
+  WorkspaceCreditManager: {
+    hasEnoughCredits: vi.fn().mockResolvedValue(true),
+    consumeCredits: vi.fn().mockResolvedValue({
       success: true,
-      balance: 90,
+      remaining: 90,
     }),
     getBalance: vi.fn().mockResolvedValue({
-      success: true,
-      balance: 100,
+      remaining: 100,
+      limit: 100,
+      used: 0,
+      tier: "FREE",
+      workspaceId: "workspace-123",
     }),
-    refundTokens: vi.fn().mockResolvedValue({
-      success: true,
-    }),
+    refundCredits: vi.fn().mockResolvedValue(true),
   },
 }));
 
@@ -323,26 +324,27 @@ describe("POST /api/albums/[id]/enhance", () => {
     expect(data.jobs).toEqual([]);
   });
 
-  it("should return 402 if insufficient tokens", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should return 402 if insufficient credits", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
-    vi.mocked(TokenBalanceManager.hasEnoughTokens).mockResolvedValueOnce(false);
+    vi.mocked(WorkspaceCreditManager.hasEnoughCredits).mockResolvedValueOnce(false);
 
     const req = createMockRequest({ tier: "TIER_2K" });
     const res = await POST(req, mockRouteParams);
     expect(res.status).toBe(402);
     const data = await res.json();
-    expect(data.error).toBe("Insufficient tokens");
-    expect(data.required).toBe(10); // 2 images * 5 tokens
+    expect(data.error).toBe("Insufficient credits");
+    expect(data.required).toBe(10); // 2 images * 5 credits
   });
 
-  it("should return 500 if token consumption fails", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should return 500 if credit consumption fails", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
-    vi.mocked(TokenBalanceManager.consumeTokens).mockResolvedValueOnce({
+    vi.mocked(WorkspaceCreditManager.consumeCredits).mockResolvedValueOnce({
       success: false,
+      remaining: 0,
       error: "Database error",
     });
 
@@ -399,30 +401,29 @@ describe("POST /api/albums/[id]/enhance", () => {
     expect(data4K.totalCost).toBe(20); // 2 * 10
   });
 
-  it("should consume correct amount of tokens", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should consume correct amount of credits", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
 
     const req = createMockRequest({ tier: "TIER_4K" });
     await POST(req, mockRouteParams);
 
-    expect(TokenBalanceManager.consumeTokens).toHaveBeenCalledWith({
+    expect(WorkspaceCreditManager.consumeCredits).toHaveBeenCalledWith({
       userId: "user-123",
-      amount: 20, // 2 images * 10 tokens
+      amount: 20, // 2 images * 10 credits
       source: "album_batch_enhancement",
       sourceId: expect.stringContaining("album-"),
-      metadata: { tier: "TIER_4K", albumId: "album-123", imageCount: 2 },
     });
   });
 
-  it("should return new balance after token consumption", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should return remaining credits after consumption", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
-    vi.mocked(TokenBalanceManager.consumeTokens).mockResolvedValueOnce({
+    vi.mocked(WorkspaceCreditManager.consumeCredits).mockResolvedValueOnce({
       success: true,
-      balance: 85,
+      remaining: 85,
     });
 
     const req = createMockRequest({ tier: "TIER_2K" });
@@ -505,9 +506,9 @@ describe("POST /api/albums/[id]/enhance", () => {
     expect(data.error).toBe("Database connection lost");
   });
 
-  it("should not refund tokens if enhancement starts successfully", async () => {
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+  it("should not refund credits if enhancement starts successfully", async () => {
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
 
     const req = createMockRequest({ tier: "TIER_1K" });
@@ -516,8 +517,8 @@ describe("POST /api/albums/[id]/enhance", () => {
     expect(res.status).toBe(200);
 
     // Verify refund was NOT called (only consume was called)
-    expect(TokenBalanceManager.consumeTokens).toHaveBeenCalled();
-    expect(TokenBalanceManager.refundTokens).not.toHaveBeenCalled();
+    expect(WorkspaceCreditManager.consumeCredits).toHaveBeenCalled();
+    expect(WorkspaceCreditManager.refundCredits).not.toHaveBeenCalled();
   });
 
   it("should return 429 when rate limit is exceeded", async () => {
@@ -580,10 +581,10 @@ describe("POST /api/albums/[id]/enhance", () => {
     );
   });
 
-  it("should not consume tokens when rate limited", async () => {
+  it("should not consume credits when rate limited", async () => {
     const { checkRateLimit } = await import("@/lib/rate-limiter");
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
+    const { WorkspaceCreditManager } = await import(
+      "@/lib/credits/workspace-credit-manager"
     );
 
     vi.mocked(checkRateLimit).mockResolvedValueOnce({
@@ -596,6 +597,6 @@ describe("POST /api/albums/[id]/enhance", () => {
     const res = await POST(req, mockRouteParams);
 
     expect(res.status).toBe(429);
-    expect(TokenBalanceManager.consumeTokens).not.toHaveBeenCalled();
+    expect(WorkspaceCreditManager.consumeCredits).not.toHaveBeenCalled();
   });
 });

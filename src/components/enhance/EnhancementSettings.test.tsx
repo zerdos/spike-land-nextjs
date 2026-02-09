@@ -35,7 +35,7 @@ describe("EnhancementSettings Component", () => {
     expect(screen.getByText("Your Balance")).toBeInTheDocument();
     const balanceSection = screen.getByText("Your Balance").parentElement
       ?.parentElement;
-    expect(balanceSection?.textContent).toContain("10 tokens");
+    expect(balanceSection?.textContent).toContain("10 credits");
   });
 
   it("renders all three tier selection cards with Standard/Pro/Ultra labels", () => {
@@ -101,11 +101,11 @@ describe("EnhancementSettings Component", () => {
     expect(screen.getByText("Enhancing...")).toBeInTheDocument();
   });
 
-  it("shows insufficient tokens warning when balance is low", () => {
+  it("shows insufficient credits warning when balance is low", () => {
     render(<EnhancementSettings {...defaultProps} currentBalance={3} />);
 
-    expect(screen.getByText("Insufficient Tokens")).toBeInTheDocument();
-    expect(screen.getByText(/You need 5 tokens but only have 3/i))
+    expect(screen.getByText("Insufficient Credits")).toBeInTheDocument();
+    expect(screen.getByText(/You need 5 credits but only have 3/i))
       .toBeInTheDocument();
   });
 
@@ -118,10 +118,10 @@ describe("EnhancementSettings Component", () => {
     expect(enhanceButton).toBeDisabled();
   });
 
-  it("shows Get Tokens button when balance is insufficient", () => {
+  it("shows Upgrade Plan link when balance is insufficient", () => {
     render(<EnhancementSettings {...defaultProps} currentBalance={3} />);
 
-    expect(screen.getByRole("button", { name: /Get Tokens/i }))
+    expect(screen.getByRole("link", { name: /Upgrade Plan/i }))
       .toBeInTheDocument();
   });
 
@@ -188,7 +188,7 @@ describe("EnhancementSettings Component", () => {
     fireEvent.click(ultraRadio);
 
     const enhanceButton = screen.getByRole("button", {
-      name: /Start Enhancement \(10 tokens\)/i,
+      name: /Start Enhancement \(10 credits\)/i,
     });
     fireEvent.click(enhanceButton);
 
@@ -197,14 +197,14 @@ describe("EnhancementSettings Component", () => {
     });
   });
 
-  it("displays correct token cost in enhance button for selected tier", () => {
+  it("displays correct credit cost in enhance button for selected tier", () => {
     render(<EnhancementSettings {...defaultProps} />);
 
     const standardRadio = screen.getByRole("radio", { name: /Standard/i });
     fireEvent.click(standardRadio);
 
     expect(
-      screen.getByRole("button", { name: /Start Enhancement \(2 tokens\)/i }),
+      screen.getByRole("button", { name: /Start Enhancement \(2 credits\)/i }),
     )
       .toBeInTheDocument();
   });
@@ -302,7 +302,7 @@ describe("EnhancementSettings Component", () => {
         />,
       );
 
-      expect(screen.getByText("Insufficient Tokens")).toBeInTheDocument();
+      expect(screen.getByText("Insufficient Credits")).toBeInTheDocument();
     });
   });
 

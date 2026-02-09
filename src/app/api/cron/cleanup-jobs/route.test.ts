@@ -33,18 +33,18 @@ describe("GET /api/cron/cleanup-jobs", () => {
       totalFound: 2,
       cleanedUp: 2,
       failed: 0,
-      tokensRefunded: 15,
+      creditsRefunded: 15,
       jobs: [
         {
           id: "job1",
           userId: "user1",
-          tokensRefunded: 10,
+          creditsRefunded: 10,
           processingDuration: 600000,
         },
         {
           id: "job2",
           userId: "user2",
-          tokensRefunded: 5,
+          creditsRefunded: 5,
           processingDuration: 480000,
         },
       ],
@@ -65,7 +65,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
     expect(data.success).toBe(true);
     expect(data.result.totalFound).toBe(2);
     expect(data.result.cleanedUp).toBe(2);
-    expect(data.result.tokensRefunded).toBe(15);
+    expect(data.result.creditsRefunded).toBe(15);
     expect(data.timestamp).toBeDefined();
 
     expect(cleanupStuckJobs).toHaveBeenCalledWith();
@@ -111,7 +111,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
       totalFound: 0,
       cleanedUp: 0,
       failed: 0,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       jobs: [],
       errors: [],
     });
@@ -135,7 +135,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
       totalFound: 0,
       cleanedUp: 0,
       failed: 0,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       jobs: [],
       errors: [],
     });
@@ -186,24 +186,24 @@ describe("GET /api/cron/cleanup-jobs", () => {
       totalFound: 3,
       cleanedUp: 2,
       failed: 1,
-      tokensRefunded: 15,
+      creditsRefunded: 15,
       jobs: [
         {
           id: "job1",
           userId: "user1",
-          tokensRefunded: 10,
+          creditsRefunded: 10,
           processingDuration: 600000,
         },
         {
           id: "job2",
           userId: "user2",
-          tokensRefunded: 5,
+          creditsRefunded: 5,
           processingDuration: 480000,
         },
         {
           id: "job3",
           userId: "user3",
-          tokensRefunded: 0,
+          creditsRefunded: 0,
           processingDuration: 0,
           error: "Refund failed",
         },
@@ -236,7 +236,7 @@ describe("GET /api/cron/cleanup-jobs", () => {
       totalFound: 0,
       cleanedUp: 0,
       failed: 0,
-      tokensRefunded: 0,
+      creditsRefunded: 0,
       jobs: [],
       errors: [],
     });

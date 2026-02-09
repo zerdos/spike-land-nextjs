@@ -106,7 +106,7 @@ const createMockJob = (
   imageId: "test-image-1",
   userId: "user-123",
   tier: "TIER_1K",
-  tokensCost: 2,
+  creditsCost: 2,
   status: "COMPLETED",
   currentStage: null,
   enhancedUrl: "https://example.com/enhanced.jpg",

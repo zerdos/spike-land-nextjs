@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -119,30 +119,46 @@ export function CreateSearch() {
 
   return (
     <div ref={containerRef} className="relative w-full max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="relative">
-        <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-        <Input
-          data-testid="create-search-input"
-          className="pl-10 py-6 text-lg shadow-sm"
-          placeholder="Describe an app to create (e.g. 'todo list', 'color picker')"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            if (classifyError) setClassifyError(null);
-          }}
-          onBlur={() => {
-            // Delay to allow click events on results to fire first
-            setTimeout(() => setResults([]), 200);
-          }}
-        />
-        <Button
-          type="submit"
-          className="absolute right-1.5 top-1.5 bottom-1.5"
-          disabled={isClassifying}
-        >
-          {isClassifying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
-        </Button>
-      </form>
+      <motion.div
+        animate={{
+          boxShadow: [
+            "0 0 0px rgba(6,182,212,0)",
+            "0 0 20px rgba(6,182,212,0.3)",
+            "0 0 0px rgba(6,182,212,0)",
+          ],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="relative rounded-lg"
+      >
+        <form onSubmit={handleSubmit} className="relative">
+          <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground z-10" />
+          <Input
+            data-testid="create-search-input"
+            className="pl-10 py-6 text-lg shadow-sm border-2 border-transparent focus:border-cyan-400/50 transition-all duration-300 bg-zinc-900/50 backdrop-blur-xl text-white placeholder:text-zinc-500"
+            placeholder="Describe an app to create (e.g. 'todo list', 'color picker')"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              if (classifyError) setClassifyError(null);
+            }}
+            onBlur={() => {
+              // Delay to allow click events on results to fire first
+              setTimeout(() => setResults([]), 200);
+            }}
+          />
+          <Button
+            type="submit"
+            className="absolute right-1.5 top-1.5 bottom-1.5 bg-cyan-500 hover:bg-cyan-400 text-black font-bold"
+            disabled={isClassifying}
+          >
+            {isClassifying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
+          </Button>
+        </form>
+      </motion.div>
 
       {classifyError && (
         <p

@@ -9,17 +9,17 @@ import {
   MixResultCard,
   type SelectedImage,
 } from "@/components/mix";
-import { PurchaseModal } from "@/components/tokens";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "@/components/ui/link";
 import { Separator } from "@/components/ui/separator";
 import { type MixHistoryItem, useMixHistory } from "@/hooks/useMixHistory";
-import { useTokenBalance } from "@/hooks/useTokenBalance";
-import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
+import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
+import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
 import { cn } from "@/lib/utils";
 import type { EnhancementTier } from "@prisma/client";
-import { AlertTriangle, ArrowLeft, Check, Coins, Crown, Sparkles, Upload } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, Crown, Sparkles, Upload, Zap } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useCallback, useState } from "react";
 
@@ -32,13 +32,13 @@ interface PhotoMixClientProps {
 
 export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
   const router = useRouter();
-  // Only fetch token balance for authenticated users
+  // Only fetch credit balance for authenticated users
   const {
-    balance,
-    isLowBalance,
+    remaining,
+    isLowCredits,
     isLoading: isBalanceLoading,
     refetch: refetchBalance,
-  } = useTokenBalance({
+  } = useWorkspaceCredits({
     autoRefreshOnFocus: !isAnonymous,
   });
   // Only fetch history for authenticated users
@@ -58,13 +58,13 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
   const [selectedTier, setSelectedTier] = useState<EnhancementTier>("FREE");
   // Force FREE tier for anonymous users
   const effectiveTier = isAnonymous ? "FREE" : selectedTier;
-  const tokenCost = ENHANCEMENT_COSTS[effectiveTier];
+  const creditCost = ENHANCEMENT_COSTS[effectiveTier];
 
   const canCreateMix = image1 !== null && image2 !== null && !activeJobId &&
     !isCreatingMix;
-  // FREE tier always has enough tokens (costs 0), anonymous users always have enough
-  const hasEnoughTokens = isAnonymous || tokenCost === 0 ||
-    balance >= tokenCost;
+  // FREE tier always has enough credits (costs 0), anonymous users always have enough
+  const hasEnoughCredits = isAnonymous || creditCost === 0 ||
+    remaining >= creditCost;
 
   // Check if we need to upload images first (both must be gallery images OR we handle uploads)
   // For anonymous users, we always need to upload
@@ -274,22 +274,16 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
   return (
     <div className="container mx-auto pt-24 pb-8 px-4 max-w-4xl">
       {/* Low balance warning - only for authenticated users */}
-      {!isAnonymous && !isBalanceLoading && isLowBalance && (
+      {!isAnonymous && !isBalanceLoading && isLowCredits && (
         <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
           <AlertTriangle className="h-4 w-4 text-yellow-600" />
           <AlertDescription className="flex items-center justify-between">
             <span className="text-sm">
-              Your token balance is running low ({balance} tokens remaining).
+              Your AI credit balance is running low ({remaining} credits remaining).
             </span>
-            <PurchaseModal
-              trigger={
-                <Button size="sm" variant="outline" className="ml-4">
-                  <Coins className="mr-2 h-4 w-4" />
-                  Get Tokens
-                </Button>
-              }
-              onPurchaseComplete={refetchBalance}
-            />
+            <Button size="sm" variant="outline" className="ml-4" asChild>
+              <Link href="/settings/billing">View Plans</Link>
+            </Button>
           </AlertDescription>
         </Alert>
       )}
@@ -300,7 +294,7 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
           <Sparkles className="h-4 w-4 text-blue-600" />
           <AlertDescription className="flex items-center justify-between">
             <span className="text-sm">
-              Try PhotoMix for free! Sign in to unlock premium features and save your creations.
+              Try PhotoMix for free with <strong>Nano Banana</strong>! Sign in to unlock <strong>Nano Banana Pro</strong> and save your creations.
             </span>
             <Button
               size="sm"
@@ -370,13 +364,13 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                 className={cn(
                   "relative flex items-center justify-center gap-2 rounded-full py-3 px-4 text-sm font-medium transition-all",
                   effectiveTier === "FREE"
-                    ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-2 border-emerald-500 text-emerald-400"
+                    ? "bg-gradient-to-r from-yellow-300 to-yellow-400 border-2 border-yellow-500 text-yellow-900 shadow-sm"
                     : "bg-muted/50 border border-border hover:bg-muted text-muted-foreground hover:text-foreground",
                   activeJobId !== null && "opacity-50 cursor-not-allowed",
                 )}
               >
                 {effectiveTier === "FREE" && <Check className="h-4 w-4" />}
-                Free (Nano)
+                Nano Banana
               </button>
               <button
                 type="button"
@@ -385,13 +379,13 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                 className={cn(
                   "relative flex items-center justify-center gap-2 rounded-full py-3 px-4 text-sm font-medium transition-all",
                   effectiveTier === "TIER_1K"
-                    ? "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border-2 border-amber-500 text-amber-400"
+                    ? "bg-gradient-to-r from-violet-600 to-indigo-600 border-2 border-violet-500 text-white shadow-md shadow-violet-500/20"
                     : "bg-muted/50 border border-border hover:bg-muted text-muted-foreground hover:text-foreground",
                   activeJobId !== null && "opacity-50 cursor-not-allowed",
                 )}
               >
-                <Crown className="h-4 w-4" />
-                Premium (2 tokens)
+                <Zap className="h-4 w-4 fill-current" />
+                Nano Banana Pro
               </button>
             </div>
           )}
@@ -402,11 +396,11 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
             className={cn(
               "w-full",
               effectiveTier === "FREE"
-                ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500"
-                : "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500",
+                ? "bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-yellow-950 font-bold"
+                : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-500/25",
             )}
             onClick={handleCreateMix}
-            disabled={!canCreateMix || !hasEnoughTokens}
+            disabled={!canCreateMix || !hasEnoughCredits}
           >
             {isCreatingMix
               ? (
@@ -419,7 +413,7 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                 <>
                   {hasUploadedImages && <Upload className="mr-2 h-4 w-4" />}
                   <Sparkles className="mr-2 h-4 w-4" />
-                  Create Mix {tokenCost > 0 ? `(${tokenCost} tokens)` : "(Free)"}
+                  Create Mix {creditCost > 0 ? `(${creditCost} AI credits)` : "(Free)"}
                 </>
               )}
           </Button>
@@ -443,11 +437,11 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                 <>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2 text-sm font-medium">
-                      <Coins className="h-5 w-5 text-yellow-500" />
-                      Your Balance
+                      <Sparkles className="h-5 w-5 text-indigo-500" />
+                      Your Credits
                     </span>
                     <span className="text-lg font-bold">
-                      {isBalanceLoading ? "..." : `${balance} tokens`}
+                      {isBalanceLoading ? "..." : `${remaining} AI credits`}
                     </span>
                   </div>
 
@@ -462,21 +456,21 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                   className={cn(
                     "flex items-center justify-between p-3 rounded-lg border transition-colors",
                     effectiveTier === "FREE"
-                      ? "border-emerald-500/50 bg-emerald-500/10"
+                      ? "border-yellow-400/50 bg-yellow-400/10"
                       : "border-border bg-muted/30",
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    {effectiveTier === "FREE" && <Check className="h-4 w-4 text-emerald-500" />}
+                    {effectiveTier === "FREE" && <Check className="h-4 w-4 text-yellow-500" />}
                     <span
                       className={cn(
                         "text-sm font-medium",
                         effectiveTier === "FREE"
-                          ? "text-emerald-400"
+                          ? "text-yellow-600 dark:text-yellow-400"
                           : "text-muted-foreground",
                       )}
                     >
-                      Free Tier
+                      Nano Banana
                     </span>
                     <span className="text-xs text-muted-foreground">
                       Nano Quality
@@ -486,11 +480,11 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                     className={cn(
                       "text-sm font-semibold",
                       effectiveTier === "FREE"
-                        ? "text-emerald-400"
+                        ? "text-yellow-600 dark:text-yellow-400"
                         : "text-muted-foreground",
                     )}
                   >
-                    0 tokens
+                    0 credits
                   </span>
                 </div>
                 {!isAnonymous && (
@@ -498,16 +492,16 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                     className={cn(
                       "flex items-center justify-between p-3 rounded-lg border transition-colors",
                       effectiveTier === "TIER_1K"
-                        ? "border-amber-500/50 bg-amber-500/10"
+                        ? "border-violet-500/50 bg-violet-500/10"
                         : "border-border bg-muted/30",
                     )}
                   >
                     <div className="flex items-center gap-2">
-                      <Crown
+                      <Zap
                         className={cn(
                           "h-4 w-4",
                           effectiveTier === "TIER_1K"
-                            ? "text-amber-500"
+                            ? "text-violet-500"
                             : "text-muted-foreground",
                         )}
                       />
@@ -515,11 +509,11 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                         className={cn(
                           "text-sm font-medium",
                           effectiveTier === "TIER_1K"
-                            ? "text-amber-400"
+                            ? "text-violet-400"
                             : "text-muted-foreground",
                         )}
                       >
-                        Premium Tier
+                        Nano Banana Pro
                       </span>
                       <span className="text-xs text-muted-foreground">
                         1K Quality
@@ -529,18 +523,18 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                       className={cn(
                         "text-sm font-semibold",
                         effectiveTier === "TIER_1K"
-                          ? "text-amber-400"
+                          ? "text-violet-400"
                           : "text-muted-foreground",
                       )}
                     >
-                      2 tokens
+                      {ENHANCEMENT_COSTS.TIER_1K} credits
                     </span>
                   </div>
                 )}
                 <p className="text-xs text-muted-foreground">
                   {isAnonymous
-                    ? "Sign in to unlock Premium tier with 1K quality for better results."
-                    : "Free tier uses Nano model for quick previews. Premium tier uses 1K quality for better results."}
+                    ? "Sign in to unlock Nano Banana Pro with 1K quality for better results."
+                    : "Nano Banana uses Nano model for quick previews. Nano Banana Pro uses 1K quality for better results."}
                 </p>
               </div>
 
@@ -557,28 +551,29 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                 </ol>
               </div>
 
-              {/* Only show "not enough tokens" for paid tiers - not for anonymous */}
-              {!isAnonymous && tokenCost > 0 && !hasEnoughTokens &&
+              {/* Only show "not enough credits" for paid tiers - not for anonymous */}
+              {!isAnonymous && creditCost > 0 && !hasEnoughCredits &&
                 !isBalanceLoading && (
-                <>
-                  <Separator />
-                  <div className="space-y-3">
-                    <p className="text-sm text-destructive">
-                      You need {tokenCost}{" "}
-                      tokens for Premium tier. Try Free tier or get more tokens.
-                    </p>
-                    <PurchaseModal
-                      trigger={
-                        <Button className="w-full">
-                          <Coins className="mr-2 h-4 w-4" />
-                          Get Tokens
-                        </Button>
-                      }
-                      onPurchaseComplete={refetchBalance}
-                    />
-                  </div>
-                </>
-              )}
+                  <>
+                    <Separator />
+                    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2">
+                      <div className="rounded-lg bg-red-500/10 border border-red-500/50 p-3">
+                        <p className="text-sm font-medium text-red-500 mb-1">
+                          Insufficient AI Credits
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          You need {creditCost} credits for Nano Banana Pro. You currently have {remaining}.
+                        </p>
+                      </div>
+                      <Button className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/20" asChild>
+                        <Link href="/settings/billing">
+                          <Crown className="mr-2 h-4 w-4" />
+                          Top Up AI Credits
+                        </Link>
+                      </Button>
+                    </div>
+                  </>
+                )}
             </CardContent>
           </Card>
         </div>
@@ -600,8 +595,8 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
           excludeImageId={selectorTarget === "image1"
             ? image2?.type === "gallery" ? image2.id : undefined
             : image1?.type === "gallery"
-            ? image1.id
-            : undefined}
+              ? image1.id
+              : undefined}
           title={selectorTarget === "image1"
             ? "Select Input Photo 1"
             : "Select Input Photo 2"}

@@ -6,8 +6,8 @@ import {
 import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { createGenerationJob } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
-import type { EnhancementTier } from "@/lib/tokens/costs";
-import { MCP_GENERATION_COSTS } from "@/lib/tokens/costs";
+import type { EnhancementTier } from "@/lib/credits/costs";
+import { MCP_GENERATION_COSTS } from "@/lib/credits/costs";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -47,7 +47,7 @@ const MAX_PROMPT_LENGTH = 4000;
  *   {
  *     success: true,
  *     jobId: string,
- *     tokensCost: number
+ *     creditsCost: number
  *   }
  */
 export async function POST(request: NextRequest) {
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     success: true,
     jobId: result.jobId,
-    tokensCost: result.tokensCost,
+    creditsCost: result.creditsCost,
     message: "Generation started. Poll /api/mcp/jobs/{jobId} for status.",
   });
 }

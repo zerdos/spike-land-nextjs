@@ -424,7 +424,7 @@ export async function POST(request: NextRequest) {
         imageId,
         userId: anonymousUserId,
         tier,
-        tokensCost: tokenCost,
+        creditsCost: tokenCost,
         status: JobStatus.PROCESSING,
         processingStartedAt: new Date(),
         sourceImageId: sourceImageId,

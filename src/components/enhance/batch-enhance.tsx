@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { EnhancementTier } from "@prisma/client";
-import { AlertTriangle, CheckCircle, Coins, Loader2, Sparkles, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Loader2, Sparkles, XCircle } from "lucide-react";
 import { useCallback, useState } from "react";
 
 const TIER_INFO = {
@@ -58,7 +58,7 @@ export function BatchEnhance({
 
   const tierCost = TIER_INFO[selectedTier].cost;
   const totalCost = selectedImages.size * tierCost;
-  const hasEnoughTokens = currentBalance >= totalCost;
+  const hasEnoughCredits = currentBalance >= totalCost;
 
   const toggleImageSelection = useCallback((imageId: string) => {
     setSelectedImages((prev) => {
@@ -164,7 +164,7 @@ export function BatchEnhance({
   }, [onEnhanceComplete]);
 
   const startBatchEnhancement = useCallback(async () => {
-    if (selectedImages.size === 0 || !hasEnoughTokens) {
+    if (selectedImages.size === 0 || !hasEnoughCredits) {
       return;
     }
 
@@ -245,7 +245,7 @@ export function BatchEnhance({
   }, [
     selectedImages,
     selectedTier,
-    hasEnoughTokens,
+    hasEnoughCredits,
     images,
     onBalanceRefresh,
     pollJobStatuses,
@@ -277,10 +277,10 @@ export function BatchEnhance({
         {/* Balance Display */}
         <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
           <div className="flex items-center gap-2">
-            <Coins className="h-5 w-5 text-yellow-500" />
+            <Sparkles className="h-5 w-5 text-primary" />
             <span className="text-sm font-medium">Your Balance</span>
           </div>
-          <span className="text-lg font-bold">{currentBalance} tokens</span>
+          <span className="text-lg font-bold">{currentBalance} credits</span>
         </div>
 
         {/* Tier Selection */}
@@ -307,7 +307,7 @@ export function BatchEnhance({
                           {info.description}
                         </p>
                       </div>
-                      <p className="text-sm font-medium">{info.cost} tokens</p>
+                      <p className="text-sm font-medium">{info.cost} credits</p>
                     </div>
                   </Label>
                 </div>
@@ -395,17 +395,17 @@ export function BatchEnhance({
             </div>
             <div className="flex justify-between text-sm">
               <span>Cost per Image:</span>
-              <span className="font-medium">{tierCost} tokens</span>
+              <span className="font-medium">{tierCost} credits</span>
             </div>
             <div className="flex justify-between text-sm font-bold">
               <span>Total Cost:</span>
-              <span>{totalCost} tokens</span>
+              <span>{totalCost} credits</span>
             </div>
-            {!hasEnoughTokens && (
+            {!hasEnoughCredits && (
               <div className="flex items-start gap-2 p-2 bg-destructive/10 rounded border border-destructive/20">
                 <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                 <p className="text-sm text-destructive">
-                  Insufficient tokens. You need {totalCost} but only have {currentBalance}.
+                  Insufficient credits. You need {totalCost} but only have {currentBalance}.
                 </p>
               </div>
             )}
@@ -495,12 +495,12 @@ export function BatchEnhance({
               <Button
                 onClick={startBatchEnhancement}
                 disabled={isProcessing || selectedImages.size === 0 ||
-                  !hasEnoughTokens}
+                  !hasEnoughCredits}
                 className="flex-1"
               >
                 <Sparkles className="mr-2 h-4 w-4" />
                 Enhance {selectedImages.size} Image{selectedImages.size !== 1 ? "s" : ""}{" "}
-                ({totalCost} tokens)
+                ({totalCost} credits)
               </Button>
             )
             : (
