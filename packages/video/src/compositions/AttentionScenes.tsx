@@ -1,12 +1,12 @@
 import { AbsoluteFill, Sequence, interpolate, useCurrentFrame, staticFile, Img } from "remotion";
 import { COLORS } from "../lib/constants";
 import { GradientMesh } from "../components/branding/GradientMesh";
+import { TextOverlay } from "../components/ui/TextOverlay";
 import { KineticText } from "../components/ui/KineticText";
 
 // Helper for centered text with animation
 const CenteredHeader = ({ text, subtext, type = "scale" }: { text: string; subtext?: string; type?: "scale" | "reveal" }) => {
   const frame = useCurrentFrame();
-  
   const opacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: "clamp" });
 
   return (
@@ -45,41 +45,16 @@ const SceneBackground = ({ src, opacity = 0.3 }: { src: string; opacity?: number
   </AbsoluteFill>
 );
 
-export const IntroScene = () => {
-  const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: "clamp" });
-
-  return (
-    <AbsoluteFill>
-      <AbsoluteFill>
-        <Img 
-          src={staticFile("images/youtube_thumbnail_physics_of_attention_v2_1770632505603.png")} 
-          style={{ 
-            width: '100%', 
-            height: '100%', 
-            objectFit: 'cover',
-            opacity: 0.4,
-            filter: 'blur(5px) brightness(0.5)'
-          }} 
-        />
-        <GradientMesh animationSpeed={0.01} />
-      </AbsoluteFill>
-      
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        height: '100%', 
-        opacity,
-        zIndex: 10
-      }}>
-        <div style={{ fontSize: 100, color: COLORS.cyan, fontWeight: 700 }}>Context Engineering</div>
-        <div style={{ marginTop: 20, fontSize: 40, color: COLORS.textSecondary }}>and the Physics of Attention</div>
-      </div>
-    </AbsoluteFill>
-  );
-};
+export const IntroScene = () => (
+  <AbsoluteFill>
+    <SceneBackground src="images/youtube_thumbnail_physics_of_attention_v2_1770632505603.png" opacity={0.4} />
+    <CenteredHeader 
+      text="Context Engineering" 
+      subtext="and the Physics of Attention" 
+      type="reveal"
+    />
+  </AbsoluteFill>
+);
 
 export const UncertaintyScene = () => {
   return (
