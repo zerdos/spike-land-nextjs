@@ -71,7 +71,7 @@ export function QuoteBlock({ text, author, delay = 0, charsPerSecond = 25, color
       maxWidth: 800,
     }}>
       <p style={{
-        fontSize: 32,
+        fontSize: 40,
         fontStyle: 'italic',
         color: COLORS.textPrimary,
         lineHeight: 1.4,
@@ -83,7 +83,7 @@ export function QuoteBlock({ text, author, delay = 0, charsPerSecond = 25, color
       {author && visibleText.length === text.length && (
         <div style={{
           marginTop: 15,
-          fontSize: 24,
+          fontSize: 30,
           color: color,
           fontWeight: 600,
           textAlign: 'right',
@@ -123,11 +123,11 @@ export function AlertCard({ title, subtitle, type = 'error', delay = 0 }: {
       width: 450,
       boxShadow: `0 10px 30px rgba(0,0,0,0.3), 0 0 20px ${color}30`,
     }}>
-      <div style={{ fontSize: 28, fontWeight: 700, color, marginBottom: subtitle ? 8 : 0 }}>
+      <div style={{ fontSize: 36, fontWeight: 700, color, marginBottom: subtitle ? 8 : 0 }}>
         {title}
       </div>
       {subtitle && (
-        <div style={{ fontSize: 18, color: COLORS.textSecondary }}>
+        <div style={{ fontSize: 22, color: COLORS.textSecondary }}>
           {subtitle}
         </div>
       )}
@@ -165,10 +165,10 @@ export function SkillCard({ icon, name, value, color = COLORS.cyan, delay = 0 }:
       marginBottom: 16,
       width: 600,
     }}>
-      <div style={{ fontSize: 40 }}>{icon}</div>
+      <div style={{ fontSize: 50 }}>{icon}</div>
       <div style={{ flex: 1 }}>
-        <div style={{ 
-          fontSize: 20, 
+        <div style={{
+          fontSize: 26,
           fontWeight: 600, 
           color: COLORS.textPrimary, 
           marginBottom: 8,
@@ -200,8 +200,8 @@ export function ChapterTitle({ number, title, subtitle, delay = 0 }: {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
       <div style={{ 
         position: 'absolute', 
-        fontSize: 250, 
-        fontWeight: 900, 
+        fontSize: 300,
+        fontWeight: 900,
         color: COLORS.textPrimary, 
         opacity: interpolate(fadeIn(frame, fps, 1, delay), [0, 1], [0, 0.05]),
         zIndex: 0
@@ -209,10 +209,10 @@ export function ChapterTitle({ number, title, subtitle, delay = 0 }: {
         {number}
       </div>
       <div style={{ zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <KineticText text={title} fontSize={110} color={COLORS.cyan} type="reveal" delay={delay + 10} />
+        <KineticText text={title} fontSize={130} color={COLORS.cyan} type="reveal" delay={delay + 10} />
         {subtitle && (
           <div style={{ marginTop: 20 }}>
-            <KineticText text={subtitle} fontSize={40} color={COLORS.textSecondary} type="slide" direction="bottom" delay={delay + 40} />
+            <KineticText text={subtitle} fontSize={50} color={COLORS.textSecondary} type="slide" direction="bottom" delay={delay + 40} />
           </div>
         )}
       </div>

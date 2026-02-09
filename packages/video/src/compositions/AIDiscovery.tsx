@@ -279,7 +279,8 @@ type AIOrbProps = {
  */
 function AIOrb({ entryProgress, awakeningProgress, lookProgress }: AIOrbProps) {
   const frame = useCurrentFrame();
-  const glowPulse = pulse(frame, 30, 2);
+  const { fps } = useVideoConfig();
+  const glowPulse = pulse(frame, fps, 2);
 
   // Entry path - bezier curve from right side
   let orbX: number;

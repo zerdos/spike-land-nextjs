@@ -1,4 +1,4 @@
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig, Img, staticFile } from "remotion";
 import { AuroraBorealis } from "../components/branding/GradientMesh";
 import { SpikeLandLogo } from "../components/branding/SpikeLandLogo";
 import { typewriter } from "../lib/animations";
@@ -106,6 +106,23 @@ export function IntroHook() {
             </span>
           )}
         </div>
+      </AbsoluteFill>
+      
+      {/* Intro Photo - Fade in after logo */}
+      <AbsoluteFill style={{
+          opacity: interpolate(frame, [80, 110], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+          transform: `scale(${interpolate(frame, [80, 150], [0.95, 1.05], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })})`,
+          zIndex: 0 // Behind the hook text but above background
+      }}>
+          <Img 
+            src={staticFile("assets/intro-person.png")} 
+            style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                opacity: 0.6
+            }}
+          />
       </AbsoluteFill>
 
       {/* Hook question at bottom */}

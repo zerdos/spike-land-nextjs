@@ -326,7 +326,8 @@ function AfterPanel({
   platformCount,
 }: AfterPanelProps) {
   const frame = useCurrentFrame();
-  const glowPulse = pulse(frame, 30, 1.5);
+  const { fps } = useVideoConfig();
+  const glowPulse = pulse(frame, fps, 1.5);
 
   const opacity = interpolate(progress, [0, 0.5], [0, 1], {
     extrapolateRight: "clamp",
@@ -489,7 +490,8 @@ type RecoveryHighlightProps = {
 
 function RecoveryHighlight({ progress, recoveryCount }: RecoveryHighlightProps) {
   const frame = useCurrentFrame();
-  const glowPulse = pulse(frame, 30, 2);
+  const { fps } = useVideoConfig();
+  const glowPulse = pulse(frame, fps, 2);
 
   const scale = interpolate(progress, [0, 1], [0.5, 1]);
   const opacity = interpolate(progress, [0, 0.3], [0, 1], {
