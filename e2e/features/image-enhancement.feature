@@ -26,8 +26,6 @@ Feature: Image Enhancement
     And I should see "New Album" text
 
   @fast @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
-  @skip
   Scenario: View uploaded image details
     Given I have an uploaded image
     When I visit the image enhancement page
@@ -37,18 +35,16 @@ Feature: Image Enhancement
     And I should see "Back" button
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
-  @skip
   Scenario: Enhancement settings displays tier options
     Given I have an uploaded image
     When I visit the image enhancement page
     Then I should see "TIER_1K" enhancement option
     And I should see "TIER_2K" enhancement option
     And I should see "TIER_4K" enhancement option
-    And each tier should display token cost
+    And each tier should display credit cost
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
+  # SKIP REASON: UI uses per-tier "Start X Enhancement" CTA buttons, not generic tier selector + enhance button combo
   @skip
   Scenario: Enhance image with sufficient tokens
     Given I have an uploaded image
@@ -60,7 +56,7 @@ Feature: Image Enhancement
     And the enhancement should start processing
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
+  # SKIP REASON: UI uses per-tier disabled "Insufficient Credits" buttons, not generic tier selector + enhance button
   @skip
   Scenario: Cannot enhance without sufficient tokens
     Given I have an uploaded image
@@ -70,8 +66,6 @@ Feature: Image Enhancement
     And I should see a purchase prompt
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
-  @skip
   Scenario: Low balance warning displays correctly
     Given I have an uploaded image
     And I have less than 5 tokens
@@ -81,8 +75,6 @@ Feature: Image Enhancement
     And I should see "Get Credits" button
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
-  @skip
   Scenario: Compare original and enhanced versions
     Given I have an enhanced image
     When I view the image details
@@ -90,8 +82,6 @@ Feature: Image Enhancement
     And I can interact with the slider to compare versions
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
-  @skip
   Scenario: View enhancement versions grid
     Given I have multiple enhancement versions
     When I view the image details
