@@ -8,16 +8,20 @@ vi.mock("@prisma/client", () => ({
   },
 }));
 
-// Mock PrismaPg adapter
+// Mock PrismaPg adapter — capture constructor args for verification
+const prismaPgConstructorArgs: unknown[][] = [];
 vi.mock("@prisma/adapter-pg", () => ({
   PrismaPg: class MockPrismaPg {
-    constructor() {}
+    constructor(...args: unknown[]) {
+      prismaPgConstructorArgs.push(args);
+    }
   },
 }));
 
 describe("Prisma Client Singleton", () => {
   beforeEach(() => {
     vi.resetModules();
+    prismaPgConstructorArgs.length = 0;
     delete (globalThis as { prismaGlobal_LearnIt?: unknown; }).prismaGlobal_LearnIt;
     process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/testdb";
   });
@@ -96,6 +100,45 @@ describe("Prisma Client Singleton", () => {
     expect(prisma.default).toBeDefined();
 
     process.env.DATABASE_URL = originalDatabaseUrl;
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
+  });
+
+  it("should rewrite sslmode=require to sslmode=verify-full", async () => {
+    process.env.DATABASE_URL =
+      "postgresql://user:pass@host:5432/db?sslmode=require";
+
+    vi.resetModules();
+    prismaPgConstructorArgs.length = 0;
+    delete (globalThis as { prismaGlobal_LearnIt?: unknown; }).prismaGlobal_LearnIt;
+
+    await import("./prisma");
+
+    expect(prismaPgConstructorArgs.length).toBeGreaterThanOrEqual(1);
+    const opts = prismaPgConstructorArgs[0]?.[0] as {
+      connectionString: string;
+    } | undefined;
+    expect(opts?.connectionString).toContain("sslmode=verify-full");
+    expect(opts?.connectionString).not.toContain("sslmode=require");
+  });
+
+  it("should pass ssl: true in production mode", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
+    process.env.DATABASE_URL =
+      "postgresql://user:pass@host:5432/db?sslmode=require";
+
+    vi.resetModules();
+    prismaPgConstructorArgs.length = 0;
+    delete (globalThis as { prismaGlobal_LearnIt?: unknown; }).prismaGlobal_LearnIt;
+
+    await import("./prisma");
+
+    expect(prismaPgConstructorArgs.length).toBeGreaterThanOrEqual(1);
+    const opts = prismaPgConstructorArgs[0]?.[0] as {
+      ssl: unknown;
+    } | undefined;
+    expect(opts?.ssl).toBe(true);
+
     (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
   });
 });

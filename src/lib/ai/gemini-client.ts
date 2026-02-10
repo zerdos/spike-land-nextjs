@@ -1245,6 +1245,8 @@ export interface GenerateStructuredResponseParams {
   temperature?: number;
   /** Thinking budget in tokens — lets the model reason before generating output */
   thinkingBudget?: number;
+  /** Optional JSON schema to constrain Gemini's structured output */
+  responseJsonSchema?: Record<string, unknown>;
 }
 
 /**
@@ -1271,6 +1273,9 @@ export async function generateStructuredResponse<T>(
       ],
       config: {
         responseMimeType: "application/json",
+        ...(params.responseJsonSchema && {
+          responseJsonSchema: params.responseJsonSchema,
+        }),
         systemInstruction: params.systemPrompt,
         maxOutputTokens: params.maxTokens ?? 4096,
         temperature: params.temperature ?? 0.3,

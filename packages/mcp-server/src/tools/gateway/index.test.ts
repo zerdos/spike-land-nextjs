@@ -1,16 +1,37 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// We need to mock fetch and set env vars to control availability
+// Use vi.hoisted so mocks are available in vi.mock factories
+const bmMocks = vi.hoisted(() => ({
+  mockListTasks: vi.fn(),
+  mockCreateTask: vi.fn(),
+  mockUpdateTask: vi.fn(),
+  mockGetKnowledge: vi.fn(),
+  mockAddKnowledge: vi.fn(),
+  mockListSprints: vi.fn(),
+  mockGetCircuitBreakerState: vi.fn().mockReturnValue({ status: "closed", failures: 0 }),
+}));
+
+vi.mock("../../clients/bridgemind-client.js", () => ({
+  isBridgeMindAvailable: vi.fn(),
+  getBridgeMindClient: vi.fn().mockReturnValue({
+    listTasks: bmMocks.mockListTasks,
+    createTask: bmMocks.mockCreateTask,
+    updateTask: bmMocks.mockUpdateTask,
+    getKnowledge: bmMocks.mockGetKnowledge,
+    addKnowledge: bmMocks.mockAddKnowledge,
+    listSprints: bmMocks.mockListSprints,
+    getCircuitBreakerState: bmMocks.mockGetCircuitBreakerState,
+  }),
+}));
+
+const {
+  mockListTasks, mockCreateTask, mockUpdateTask,
+  mockGetKnowledge, mockAddKnowledge, mockListSprints,
+} = bmMocks;
+
+// Mock fetch for GitHub client (still uses raw fetch)
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
-
-// Helper to create a JSON-RPC success response for BridgeMind
-function bmSuccess<T>(result: T) {
-  return new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
-}
 
 // Helper to create a GraphQL success response for GitHub
 function ghSuccess<T>(data: T) {
@@ -24,18 +45,24 @@ function ghSuccess<T>(data: T) {
   });
 }
 
+import { isBridgeMindAvailable } from "../../clients/bridgemind-client.js";
 import { getGatewayTools, handleGatewayToolCall, isBoltPaused, isGatewayAvailable } from "./index.js";
+
+const mockedIsBridgeMindAvailable = vi.mocked(isBridgeMindAvailable);
 
 describe("Gateway Tools", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Set env vars for both BridgeMind and GitHub
-    vi.stubEnv("BRIDGEMIND_MCP_URL", "https://bridgemind.test/mcp");
-    vi.stubEnv("BRIDGEMIND_API_KEY", "test-bm-key");
+    // Set BridgeMind as available via the mock
+    mockedIsBridgeMindAvailable.mockReturnValue(true);
+    // Set env vars for GitHub
     vi.stubEnv("GH_PAT_TOKEN", "ghp_test123");
     vi.stubEnv("GITHUB_PROJECT_ID", "PVT_test");
     vi.stubEnv("GITHUB_OWNER", "testowner");
     vi.stubEnv("GITHUB_REPO", "testrepo");
+    // Also set BridgeMind env vars (for any direct env checks)
+    vi.stubEnv("BRIDGEMIND_MCP_URL", "https://bridgemind.test/mcp");
+    vi.stubEnv("BRIDGEMIND_API_KEY", "test-bm-key");
   });
 
   afterEach(() => {
@@ -55,8 +82,7 @@ describe("Gateway Tools", () => {
     });
 
     it("returns false when neither is available", () => {
-      vi.stubEnv("BRIDGEMIND_MCP_URL", "");
-      vi.stubEnv("BRIDGEMIND_API_KEY", "");
+      mockedIsBridgeMindAvailable.mockReturnValue(false);
       vi.stubEnv("GH_PAT_TOKEN", "");
       vi.stubEnv("GITHUB_PROJECT_ID", "");
       expect(isGatewayAvailable()).toBe(false);
@@ -93,8 +119,7 @@ describe("Gateway Tools", () => {
     });
 
     it("only returns bolt tools when neither system configured", () => {
-      vi.stubEnv("BRIDGEMIND_MCP_URL", "");
-      vi.stubEnv("BRIDGEMIND_API_KEY", "");
+      mockedIsBridgeMindAvailable.mockReturnValue(false);
       vi.stubEnv("GH_PAT_TOKEN", "");
       vi.stubEnv("GITHUB_PROJECT_ID", "");
 
@@ -119,11 +144,13 @@ describe("Gateway Tools", () => {
 
   describe("BridgeMind tool handlers", () => {
     it("bridgemind_list_tasks returns formatted task list", async () => {
-      const tasks = [
-        { id: "1", title: "Task 1", status: "ready", priority: "high", labels: ["bug"] },
-        { id: "2", title: "Task 2", status: "done", priority: "low", labels: [] },
-      ];
-      mockFetch.mockResolvedValueOnce(bmSuccess(tasks));
+      mockListTasks.mockResolvedValueOnce({
+        data: [
+          { id: "1", title: "Task 1", status: "ready", priority: "high", labels: ["bug"] },
+          { id: "2", title: "Task 2", status: "done", priority: "low", labels: [] },
+        ],
+        error: null,
+      });
 
       const result = await handleGatewayToolCall("bridgemind_list_tasks", { limit: 10 });
       expect(result.isError).toBeFalsy();
@@ -132,18 +159,21 @@ describe("Gateway Tools", () => {
     });
 
     it("bridgemind_list_tasks handles errors", async () => {
-      // Use rejected value for fast failure (avoids retry delays)
-      mockFetch.mockRejectedValue(new Error("Connection refused"));
+      mockListTasks.mockResolvedValueOnce({
+        data: null,
+        error: "Connection refused",
+      });
 
       const result = await handleGatewayToolCall("bridgemind_list_tasks", {});
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain("Error");
-    }, 15000);
+    });
 
     it("bridgemind_create_task creates and returns task", async () => {
-      mockFetch.mockResolvedValueOnce(
-        bmSuccess({ id: "new-1", title: "New Task", status: "backlog" }),
-      );
+      mockCreateTask.mockResolvedValueOnce({
+        data: { id: "new-1", title: "New Task", status: "backlog" },
+        error: null,
+      });
 
       const result = await handleGatewayToolCall("bridgemind_create_task", {
         title: "New Task",
@@ -154,9 +184,10 @@ describe("Gateway Tools", () => {
     });
 
     it("bridgemind_update_task updates a task", async () => {
-      mockFetch.mockResolvedValueOnce(
-        bmSuccess({ id: "1", status: "done" }),
-      );
+      mockUpdateTask.mockResolvedValueOnce({
+        data: { id: "1", status: "done" },
+        error: null,
+      });
 
       const result = await handleGatewayToolCall("bridgemind_update_task", {
         task_id: "1",
@@ -167,9 +198,10 @@ describe("Gateway Tools", () => {
     });
 
     it("bridgemind_get_knowledge returns results", async () => {
-      mockFetch.mockResolvedValueOnce(
-        bmSuccess([{ id: "k1", title: "Arch", content: "Details", tags: ["arch"] }]),
-      );
+      mockGetKnowledge.mockResolvedValueOnce({
+        data: [{ id: "k1", title: "Arch", content: "Details", tags: ["arch"] }],
+        error: null,
+      });
 
       const result = await handleGatewayToolCall("bridgemind_get_knowledge", { query: "arch" });
       expect(result.isError).toBeFalsy();
@@ -177,9 +209,10 @@ describe("Gateway Tools", () => {
     });
 
     it("bridgemind_add_knowledge adds entry", async () => {
-      mockFetch.mockResolvedValueOnce(
-        bmSuccess({ id: "k2", title: "Patterns" }),
-      );
+      mockAddKnowledge.mockResolvedValueOnce({
+        data: { id: "k2", title: "Patterns" },
+        error: null,
+      });
 
       const result = await handleGatewayToolCall("bridgemind_add_knowledge", {
         title: "Patterns",
@@ -190,9 +223,10 @@ describe("Gateway Tools", () => {
     });
 
     it("bridgemind_list_sprints returns sprints", async () => {
-      mockFetch.mockResolvedValueOnce(
-        bmSuccess([{ id: "s1", name: "Sprint 1", status: "active", startDate: "2024-01-01", endDate: "2024-01-14", goals: ["Ship v2"] }]),
-      );
+      mockListSprints.mockResolvedValueOnce({
+        data: [{ id: "s1", name: "Sprint 1", status: "active", startDate: "2024-01-01", endDate: "2024-01-14", goals: ["Ship v2"] }],
+        error: null,
+      });
 
       const result = await handleGatewayToolCall("bridgemind_list_sprints", {});
       expect(result.isError).toBeFalsy();
@@ -200,8 +234,7 @@ describe("Gateway Tools", () => {
     });
 
     it("returns error when BridgeMind not configured", async () => {
-      vi.stubEnv("BRIDGEMIND_MCP_URL", "");
-      vi.stubEnv("BRIDGEMIND_API_KEY", "");
+      mockedIsBridgeMindAvailable.mockReturnValue(false);
 
       const result = await handleGatewayToolCall("bridgemind_list_tasks", {});
       expect(result.isError).toBe(true);
@@ -321,10 +354,11 @@ describe("Gateway Tools", () => {
 
   describe("Sync tool handlers", () => {
     it("sync_bridgemind_to_github dry run shows preview", async () => {
-      // BridgeMind listTasks
-      mockFetch.mockResolvedValueOnce(
-        bmSuccess([{ id: "1", title: "BM Task 1", status: "ready", description: "Desc", labels: [] }]),
-      );
+      // BridgeMind listTasks via mocked client
+      mockListTasks.mockResolvedValueOnce({
+        data: [{ id: "1", title: "BM Task 1", status: "ready", description: "Desc", labels: [] }],
+        error: null,
+      });
       // GitHub listAllItems (paginated - first page)
       mockFetch.mockResolvedValueOnce(
         ghSuccess({
@@ -351,8 +385,7 @@ describe("Gateway Tools", () => {
     });
 
     it("sync returns error when systems not configured", async () => {
-      vi.stubEnv("BRIDGEMIND_MCP_URL", "");
-      vi.stubEnv("BRIDGEMIND_API_KEY", "");
+      mockedIsBridgeMindAvailable.mockReturnValue(false);
 
       const result = await handleGatewayToolCall("sync_bridgemind_to_github", {});
       expect(result.isError).toBe(true);

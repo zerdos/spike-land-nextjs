@@ -2,15 +2,15 @@ import { PrismaClient } from "@/generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const prismaClientSingleton = () => {
-  const connectionString = process.env.DATABASE_URL;
+  const rawConnectionString = process.env.DATABASE_URL;
 
-  if (!connectionString) {
+  if (!rawConnectionString) {
     // If we're in a build environment (like Vercel) or E2E test context,
     // the DB might not be available. Instead of throwing, we'll return a mock client.
     // This allows the build/tests to succeed. If any code *actually* tries to query
     // the DB, it will fail, which is the desired behavior.
     const isBuild = process.env.NEXT_PHASE === "phase-production-build";
-    const isE2ETestContext = process.env.CI === "true" && process.env.BASE_URL && !connectionString;
+    const isE2ETestContext = process.env.CI === "true" && process.env.BASE_URL && !rawConnectionString;
 
     if (isBuild || isE2ETestContext) {
       if (isBuild) {
@@ -41,11 +41,15 @@ const prismaClientSingleton = () => {
     );
   }
 
+  // Rewrite sslmode=require → sslmode=verify-full to suppress pg v9 deprecation warning
+  const connectionString = rawConnectionString.replace(
+    /sslmode=require\b/,
+    "sslmode=verify-full",
+  );
+
   const adapter = new PrismaPg({
     connectionString,
-    ssl: process.env.NODE_ENV === "production"
-      ? { rejectUnauthorized: false }
-      : undefined,
+    ssl: process.env.NODE_ENV === "production" ? true : undefined,
   });
   return new PrismaClient({
     adapter,

@@ -1,29 +1,50 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BridgeMindClient, isBridgeMindAvailable } from "./bridgemind-client.js";
 
-// Mock fetch globally
-const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
+// Use vi.hoisted so mocks are available in vi.mock factories
+const mocks = vi.hoisted(() => {
+  const mockConnect = vi.fn();
+  const mockCallTool = vi.fn();
+  const mockClose = vi.fn();
+  return {
+    mockConnect,
+    mockCallTool,
+    mockClose,
+    MockStreamableHTTPTransport: vi.fn(),
+    MockSSETransport: vi.fn(),
+  };
+});
 
-function jsonRpcSuccess<T>(result: T, id: number = 1) {
-  return new Response(JSON.stringify({ jsonrpc: "2.0", id, result }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
-}
+vi.mock("@modelcontextprotocol/sdk/client/index.js", () => ({
+  Client: class MockClient {
+    connect = mocks.mockConnect;
+    callTool = mocks.mockCallTool;
+    close = mocks.mockClose;
+  },
+}));
 
-function jsonRpcError(code: number, message: string, id: number = 1) {
-  return new Response(
-    JSON.stringify({ jsonrpc: "2.0", id, error: { code, message } }),
-    { status: 200, headers: { "Content-Type": "application/json" } },
-  );
-}
+vi.mock("@modelcontextprotocol/sdk/client/streamableHttp.js", () => ({
+  StreamableHTTPClientTransport: mocks.MockStreamableHTTPTransport,
+}));
+
+vi.mock("@modelcontextprotocol/sdk/client/sse.js", () => ({
+  SSEClientTransport: mocks.MockSSETransport,
+}));
+
+const { mockConnect, mockCallTool, mockClose, MockStreamableHTTPTransport, MockSSETransport } = mocks;
+
+import {
+  BridgeMindClient,
+  getBridgeMindClient,
+  isBridgeMindAvailable,
+  resetBridgeMindClient,
+} from "./bridgemind-client.js";
 
 describe("BridgeMindClient", () => {
   let client: BridgeMindClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockConnect.mockResolvedValue(undefined);
     client = new BridgeMindClient({
       baseUrl: "https://bridgemind.example.com/mcp",
       apiKey: "test-api-key",
@@ -54,115 +75,117 @@ describe("BridgeMindClient", () => {
     });
   });
 
-  describe("listTools", () => {
-    it("returns tools from BridgeMind MCP server", async () => {
-      const tools = [
-        { name: "list_tasks", description: "List tasks", inputSchema: { type: "object" } },
-        { name: "create_task", description: "Create task", inputSchema: { type: "object" } },
-      ];
+  describe("transport fallback", () => {
+    it("uses StreamableHTTP transport by default", async () => {
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: "[]" }],
+        isError: false,
+      });
 
-      mockFetch.mockResolvedValueOnce(jsonRpcSuccess({ tools }));
-
-      const result = await client.listTools();
-      expect(result.error).toBeNull();
-      expect(result.data).toHaveLength(2);
-      expect(result.data?.[0].name).toBe("list_tasks");
+      await client.listTasks();
+      expect(MockStreamableHTTPTransport).toHaveBeenCalledTimes(1);
+      expect(MockSSETransport).not.toHaveBeenCalled();
     });
 
-    it("returns error on HTTP failure", async () => {
-      mockFetch.mockImplementation(() =>
-        Promise.resolve(new Response("Server Error", { status: 500 })),
-      );
+    it("falls back to SSE when StreamableHTTP fails", async () => {
+      // First connect call (StreamableHTTP) rejects, second (SSE) succeeds
+      mockConnect
+        .mockRejectedValueOnce(new Error("StreamableHTTP not supported"))
+        .mockResolvedValueOnce(undefined);
 
-      const result = await client.listTools();
-      expect(result.error).toContain("failed after");
-      expect(result.data).toBeNull();
-    });
-  });
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: "[]" }],
+        isError: false,
+      });
 
-  describe("callTool", () => {
-    it("sends JSON-RPC request and returns result", async () => {
-      const taskData = { id: "task-1", title: "Test Task" };
-      mockFetch.mockResolvedValueOnce(jsonRpcSuccess(taskData));
-
-      const result = await client.callTool("list_tasks", { limit: 10 });
-      expect(result.error).toBeNull();
-      expect(result.data).toEqual(taskData);
-
-      // Verify request body
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.jsonrpc).toBe("2.0");
-      expect(body.method).toBe("tools/call");
-      expect(body.params).toEqual({ name: "list_tasks", arguments: { limit: 10 } });
-    });
-
-    it("sends Authorization header", async () => {
-      mockFetch.mockResolvedValueOnce(jsonRpcSuccess({}));
-      await client.callTool("test", {});
-
-      const headers = mockFetch.mock.calls[0][1].headers;
-      expect(headers.Authorization).toBe("Bearer test-api-key");
-    });
-
-    it("returns error on JSON-RPC error response", async () => {
-      // Return fresh Response for each retry
-      mockFetch.mockImplementation(() => Promise.resolve(jsonRpcError(-32000, "Task not found")));
-
-      const result = await client.callTool("get_task", { id: "x" });
-      expect(result.error).toContain("Task not found");
-    });
-
-    it("does not retry client errors (invalid request/method)", async () => {
-      mockFetch.mockImplementation(() => Promise.resolve(jsonRpcError(-32600, "Invalid Request")));
-
-      const result = await client.callTool("invalid", {});
-      expect(result.error).toContain("Invalid Request");
-      // Should only call once (no retry for client errors)
-      expect(mockFetch).toHaveBeenCalledTimes(1);
+      await client.listTasks();
+      expect(MockStreamableHTTPTransport).toHaveBeenCalledTimes(1);
+      expect(MockSSETransport).toHaveBeenCalledTimes(1);
     });
   });
 
   describe("listTasks", () => {
     it("calls list_tasks tool with parameters", async () => {
       const tasks = [{ id: "1", title: "Task 1", status: "ready" }];
-      mockFetch.mockResolvedValueOnce(jsonRpcSuccess(tasks));
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: JSON.stringify(tasks) }],
+        isError: false,
+      });
 
       const result = await client.listTasks({ status: "ready", limit: 10 });
       expect(result.data).toEqual(tasks);
+      expect(result.error).toBeNull();
+      expect(mockCallTool).toHaveBeenCalledWith({
+        name: "list_tasks",
+        arguments: { status: "ready", sprint_id: undefined, limit: 10 },
+      });
+    });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.params.arguments.status).toBe("ready");
-      expect(body.params.arguments.limit).toBe(10);
+    it("uses default limit of 50", async () => {
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: "[]" }],
+        isError: false,
+      });
+
+      await client.listTasks();
+      expect(mockCallTool).toHaveBeenCalledWith(
+        expect.objectContaining({
+          arguments: expect.objectContaining({ limit: 50 }),
+        }),
+      );
     });
   });
 
   describe("createTask", () => {
     it("creates a task with required fields", async () => {
       const task = { id: "new-1", title: "New Task", status: "backlog" };
-      mockFetch.mockResolvedValueOnce(jsonRpcSuccess(task));
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: JSON.stringify(task) }],
+        isError: false,
+      });
 
       const result = await client.createTask({
         title: "New Task",
         description: "A new task",
       });
       expect(result.data).toEqual(task);
+      expect(mockCallTool).toHaveBeenCalledWith({
+        name: "create_task",
+        arguments: {
+          title: "New Task",
+          description: "A new task",
+          priority: "medium",
+          labels: [],
+          sprint_id: undefined,
+        },
+      });
     });
   });
 
   describe("updateTask", () => {
     it("updates a task", async () => {
       const task = { id: "1", title: "Updated", status: "done" };
-      mockFetch.mockResolvedValueOnce(jsonRpcSuccess(task));
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: JSON.stringify(task) }],
+        isError: false,
+      });
 
       const result = await client.updateTask("1", { status: "done" });
       expect(result.data).toEqual(task);
+      expect(mockCallTool).toHaveBeenCalledWith({
+        name: "update_task",
+        arguments: { task_id: "1", status: "done" },
+      });
     });
   });
 
   describe("getKnowledge", () => {
     it("searches knowledge base", async () => {
       const entries = [{ id: "k1", title: "Architecture", content: "...", tags: ["arch"] }];
-      mockFetch.mockResolvedValueOnce(jsonRpcSuccess(entries));
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: JSON.stringify(entries) }],
+        isError: false,
+      });
 
       const result = await client.getKnowledge("architecture");
       expect(result.data).toEqual(entries);
@@ -172,7 +195,10 @@ describe("BridgeMindClient", () => {
   describe("addKnowledge", () => {
     it("adds a knowledge entry", async () => {
       const entry = { id: "k2", title: "Patterns", content: "...", tags: ["dev"] };
-      mockFetch.mockResolvedValueOnce(jsonRpcSuccess(entry));
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: JSON.stringify(entry) }],
+        isError: false,
+      });
 
       const result = await client.addKnowledge({
         title: "Patterns",
@@ -186,43 +212,89 @@ describe("BridgeMindClient", () => {
   describe("listSprints", () => {
     it("returns sprints", async () => {
       const sprints = [{ id: "s1", name: "Sprint 1", status: "active" }];
-      mockFetch.mockResolvedValueOnce(jsonRpcSuccess(sprints));
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: JSON.stringify(sprints) }],
+        isError: false,
+      });
 
       const result = await client.listSprints();
       expect(result.data).toEqual(sprints);
     });
   });
 
-  describe("retry with exponential backoff", () => {
-    it("retries on HTTP error and succeeds", async () => {
-      mockFetch
-        .mockResolvedValueOnce(new Response("Error", { status: 503 }))
-        .mockResolvedValueOnce(jsonRpcSuccess({ ok: true }));
+  describe("extractData", () => {
+    it("returns null when content has no text blocks", async () => {
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "image", data: "..." }],
+        isError: false,
+      });
 
-      const result = await client.callTool("test", {});
-      expect(result.error).toBeNull();
-      expect(result.data).toEqual({ ok: true });
-      expect(mockFetch).toHaveBeenCalledTimes(2);
+      const result = await client.listTasks();
+      expect(result.data).toBeNull();
     });
 
-    it("retries on network error and succeeds", async () => {
-      mockFetch
-        .mockRejectedValueOnce(new Error("Network error"))
-        .mockResolvedValueOnce(jsonRpcSuccess({ ok: true }));
+    it("returns raw text when JSON parsing fails", async () => {
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: "not json" }],
+        isError: false,
+      });
 
-      const result = await client.callTool("test", {});
+      const result = await client.listTasks();
+      expect(result.data).toBe("not json");
+    });
+  });
+
+  describe("retry with exponential backoff", () => {
+    it("retries on connection error and succeeds", async () => {
+      // First callTool fails (connection error), causing reconnect on retry
+      mockCallTool
+        .mockRejectedValueOnce(new Error("Connection lost"))
+        .mockResolvedValueOnce({
+          content: [{ type: "text", text: '{"ok":true}' }],
+          isError: false,
+        });
+
+      const result = await client.listTasks();
       expect(result.error).toBeNull();
-      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(result.data).toEqual({ ok: true });
+    });
+
+    it("retries when tool returns isError", async () => {
+      mockCallTool
+        .mockResolvedValueOnce({
+          content: [{ type: "text", text: "Server error" }],
+          isError: true,
+        })
+        .mockResolvedValueOnce({
+          content: [{ type: "text", text: '{"ok":true}' }],
+          isError: false,
+        });
+
+      const result = await client.listTasks();
+      expect(result.error).toBeNull();
+      expect(result.data).toEqual({ ok: true });
     });
 
     it("returns error after all retries exhausted", async () => {
-      mockFetch.mockImplementation(() =>
-        Promise.resolve(new Response("Error", { status: 500 })),
-      );
+      mockCallTool.mockRejectedValue(new Error("Persistent failure"));
 
-      const result = await client.callTool("test", {});
+      const result = await client.listTasks();
       expect(result.error).toContain("failed after 2 attempts");
-      expect(mockFetch).toHaveBeenCalledTimes(2); // 1 initial + 1 retry
+    });
+
+    it("retries when isError has no text content", async () => {
+      mockCallTool
+        .mockResolvedValueOnce({
+          content: [{ type: "image", data: "..." }],
+          isError: true,
+        })
+        .mockResolvedValueOnce({
+          content: [{ type: "text", text: '{"ok":true}' }],
+          isError: false,
+        });
+
+      const result = await client.listTasks();
+      expect(result.error).toBeNull();
     });
   });
 
@@ -232,64 +304,57 @@ describe("BridgeMindClient", () => {
     });
 
     it("opens after threshold failures", async () => {
-      mockFetch.mockImplementation(() =>
-        Promise.resolve(new Response("Error", { status: 500 })),
-      );
+      mockCallTool.mockRejectedValue(new Error("Connection error"));
 
-      // Exhaust retries 3 times to trigger circuit breaker
-      await client.callTool("test", {});
+      await client.listTasks();
       expect(client.getCircuitBreakerState().status).toBe("closed");
       expect(client.getCircuitBreakerState().failures).toBe(1);
 
-      await client.callTool("test", {});
+      await client.listTasks();
       expect(client.getCircuitBreakerState().failures).toBe(2);
 
-      await client.callTool("test", {});
+      await client.listTasks();
       expect(client.getCircuitBreakerState().status).toBe("open");
       expect(client.getCircuitBreakerState().failures).toBe(3);
     });
 
     it("rejects immediately when open", async () => {
-      // Force circuit open
-      mockFetch.mockImplementation(() =>
-        Promise.resolve(new Response("Error", { status: 500 })),
-      );
-      await client.callTool("t", {});
-      await client.callTool("t", {});
-      await client.callTool("t", {});
+      mockCallTool.mockRejectedValue(new Error("Connection error"));
+      await client.listTasks();
+      await client.listTasks();
+      await client.listTasks();
       expect(client.getCircuitBreakerState().status).toBe("open");
 
-      mockFetch.mockClear();
-      const result = await client.callTool("test", {});
+      mockCallTool.mockClear();
+      const result = await client.listTasks();
       expect(result.error).toContain("Circuit breaker is open");
-      expect(mockFetch).not.toHaveBeenCalled();
+      expect(mockCallTool).not.toHaveBeenCalled();
     });
 
     it("transitions to half-open after timeout", async () => {
-      mockFetch.mockImplementation(() =>
-        Promise.resolve(new Response("Error", { status: 500 })),
-      );
-      await client.callTool("t", {});
-      await client.callTool("t", {});
-      await client.callTool("t", {});
+      mockCallTool.mockRejectedValue(new Error("Connection error"));
+      await client.listTasks();
+      await client.listTasks();
+      await client.listTasks();
 
       // Wait for circuit breaker timeout (100ms in test config)
       await new Promise((r) => setTimeout(r, 150));
 
       // Next call should go through (half-open)
-      mockFetch.mockResolvedValueOnce(jsonRpcSuccess({ ok: true }));
-      const result = await client.callTool("test", {});
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: '{"ok":true}' }],
+        isError: false,
+      });
+      const result = await client.listTasks();
       expect(result.error).toBeNull();
       expect(client.getCircuitBreakerState().status).toBe("closed");
     });
 
     it("resets circuit breaker on manual reset", async () => {
-      mockFetch.mockImplementation(() =>
-        Promise.resolve(new Response("Error", { status: 500 })),
-      );
-      await client.callTool("t", {});
-      await client.callTool("t", {});
-      await client.callTool("t", {});
+      mockCallTool.mockRejectedValue(new Error("Connection error"));
+      await client.listTasks();
+      await client.listTasks();
+      await client.listTasks();
 
       client.resetCircuitBreaker();
       expect(client.getCircuitBreakerState().status).toBe("closed");
@@ -297,20 +362,98 @@ describe("BridgeMindClient", () => {
     });
 
     it("closes on successful request after half-open", async () => {
-      mockFetch.mockImplementation(() =>
-        Promise.resolve(new Response("Error", { status: 500 })),
-      );
-      await client.callTool("t", {});
-      await client.callTool("t", {});
-      await client.callTool("t", {});
+      mockCallTool.mockRejectedValue(new Error("Connection error"));
+      await client.listTasks();
+      await client.listTasks();
+      await client.listTasks();
 
       await new Promise((r) => setTimeout(r, 150));
 
-      mockFetch.mockResolvedValueOnce(jsonRpcSuccess({ ok: true }));
-      await client.callTool("test", {});
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: '{"ok":true}' }],
+        isError: false,
+      });
+      await client.listTasks();
 
       expect(client.getCircuitBreakerState().status).toBe("closed");
       expect(client.getCircuitBreakerState().failures).toBe(0);
+    });
+  });
+
+  describe("connection management", () => {
+    it("reuses existing connection", async () => {
+      mockCallTool
+        .mockResolvedValueOnce({
+          content: [{ type: "text", text: "[]" }],
+          isError: false,
+        })
+        .mockResolvedValueOnce({
+          content: [{ type: "text", text: "[]" }],
+          isError: false,
+        });
+
+      await client.listTasks();
+      await client.listTasks();
+
+      // Only one transport created despite two calls
+      expect(MockStreamableHTTPTransport).toHaveBeenCalledTimes(1);
+      expect(mockConnect).toHaveBeenCalledTimes(1);
+    });
+
+    it("reconnects after disconnect", async () => {
+      mockCallTool.mockResolvedValue({
+        content: [{ type: "text", text: "[]" }],
+        isError: false,
+      });
+
+      await client.listTasks();
+      await client.disconnect();
+      await client.listTasks();
+
+      expect(mockConnect).toHaveBeenCalledTimes(2);
+    });
+
+    it("disconnect handles close errors gracefully", async () => {
+      mockCallTool.mockResolvedValueOnce({
+        content: [{ type: "text", text: "[]" }],
+        isError: false,
+      });
+
+      await client.listTasks();
+      mockClose.mockRejectedValueOnce(new Error("Close failed"));
+      await client.disconnect(); // Should not throw
+    });
+
+    it("disconnect is a no-op when not connected", async () => {
+      await client.disconnect(); // Should not throw
+      expect(mockClose).not.toHaveBeenCalled();
+    });
+
+    it("concurrent calls share the same connection attempt", async () => {
+      // Make connect take time to resolve
+      let resolveConnect: () => void;
+      mockConnect.mockImplementationOnce(() => new Promise<void>((r) => { resolveConnect = r; }));
+      mockCallTool.mockResolvedValue({
+        content: [{ type: "text", text: "[]" }],
+        isError: false,
+      });
+
+      const p1 = client.listTasks();
+      const p2 = client.listTasks();
+
+      // Resolve the connect
+      resolveConnect!();
+
+      await Promise.all([p1, p2]);
+      expect(mockConnect).toHaveBeenCalledTimes(1);
+    });
+
+    it("throws when connection attempt fails for waiting calls", async () => {
+      // Both connect calls fail (StreamableHTTP and SSE)
+      mockConnect.mockRejectedValue(new Error("All transports failed"));
+
+      const result = await client.listTasks();
+      expect(result.error).toContain("failed after");
     });
   });
 });
@@ -343,5 +486,31 @@ describe("isBridgeMindAvailable", () => {
   it("returns false when only key is set", () => {
     vi.stubEnv("BRIDGEMIND_API_KEY", "key");
     expect(isBridgeMindAvailable()).toBe(false);
+  });
+});
+
+describe("singleton", () => {
+  afterEach(() => {
+    resetBridgeMindClient();
+    vi.unstubAllEnvs();
+  });
+
+  it("getBridgeMindClient returns the same instance", () => {
+    vi.stubEnv("BRIDGEMIND_MCP_URL", "https://example.com");
+    vi.stubEnv("BRIDGEMIND_API_KEY", "key");
+
+    const a = getBridgeMindClient();
+    const b = getBridgeMindClient();
+    expect(a).toBe(b);
+  });
+
+  it("resetBridgeMindClient creates fresh instance next call", () => {
+    vi.stubEnv("BRIDGEMIND_MCP_URL", "https://example.com");
+    vi.stubEnv("BRIDGEMIND_API_KEY", "key");
+
+    const a = getBridgeMindClient();
+    resetBridgeMindClient();
+    const b = getBridgeMindClient();
+    expect(a).not.toBe(b);
   });
 });

@@ -246,8 +246,18 @@ describe("classifyInput", () => {
     expect(mockGenerate).toHaveBeenCalledWith({
       prompt: "todo list",
       systemPrompt: expect.stringContaining("classify user app ideas"),
-      maxTokens: 256,
+      maxTokens: 512,
       temperature: 0.1,
+      responseJsonSchema: {
+        type: "object",
+        properties: {
+          status: { type: "string", enum: ["ok", "blocked", "unclear"] },
+          slug: { type: "string" },
+          category: { type: "string" },
+          reason: { type: "string", nullable: true },
+        },
+        required: ["status", "slug", "category", "reason"],
+      },
     });
   });
 });
