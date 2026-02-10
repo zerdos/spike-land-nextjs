@@ -463,26 +463,19 @@ When("I configure generation settings", async function(this: CustomWorld) {
 });
 
 When("I click on the tier selector", async function(this: CustomWorld) {
-  // Use multiple fallback selectors for tier selection
-  const tierSelector = this.page
-    .locator('[data-testid="tier-selector"]')
-    .or(this.page.locator('[data-testid="tier-select"]'))
-    .or(this.page.locator('[name="tier"]'))
-    .or(this.page.getByLabel(/tier/i))
-    .or(
-      this.page.getByRole("combobox").filter({
-        has: this.page.getByText(/tier|1k|2k|4k/i),
-      }),
-    )
-    .or(this.page.getByRole("combobox").first());
-  await tierSelector.click();
+  // The tier Select is the first combobox inside the dialog
+  const dialog = this.page.locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])');
+  const tierCombobox = dialog.getByRole("combobox").first();
+  await expect(tierCombobox).toBeVisible({ timeout: 10000 });
+  await tierCombobox.click();
 });
 
 When("I click on the visibility selector", async function(this: CustomWorld) {
-  const visibilitySelector = this.page
-    .locator('[data-testid="visibility-selector"]')
-    .or(this.page.getByRole("combobox").nth(1));
-  await visibilitySelector.click();
+  // The visibility Select is the second combobox inside the dialog
+  const dialog = this.page.locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])');
+  const visibilityCombobox = dialog.getByRole("combobox").nth(1);
+  await expect(visibilityCombobox).toBeVisible({ timeout: 10000 });
+  await visibilityCombobox.click();
 });
 
 When(
@@ -790,10 +783,10 @@ Then(
 Then(
   "I should see a validation error for the name field",
   async function(this: CustomWorld) {
-    const errorMessage = this.page.getByText(
-      /required|name.*required|enter.*name/i,
-    );
-    await expect(errorMessage).toBeVisible();
+    // PipelineForm disables the submit button when name is empty (no error text shown)
+    const dialog = this.page.locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])');
+    const submitButton = dialog.getByRole("button", { name: /create|save|submit/i });
+    await expect(submitButton).toBeDisabled();
   },
 );
 

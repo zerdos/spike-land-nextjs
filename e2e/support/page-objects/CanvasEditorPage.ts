@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
-import { TIMEOUTS, waitForElementWithRetry, waitForPageLoad } from "../helpers/retry-helper";
+import { TIMEOUTS, waitForPageLoad } from "../helpers/retry-helper";
 
 export class CanvasEditorPage {
   constructor(private page: Page) {}

@@ -223,47 +223,9 @@ They all share the reason: `failing - needs to investigate`.
 | `e2e/features/authentication.feature`            | "Unauthenticated user sees login options"                                  | Investigate |
 | `e2e/features/authentication.feature`            | "User avatar shows custom image when available"                            | Investigate |
 | `e2e/features/authentication.feature`            | "User can sign out from dropdown menu"                                     | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "All images already enhanced"                                              | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Batch enhancement permission check"                                       | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Batch enhancement progress tracking"                                      | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Batch enhancement with insufficient tokens"                               | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Batch enhancement with maximum batch size"                                | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Cancel batch enhancement dialog"                                          | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Close dialog during enhancement processing"                               | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Empty album shows no enhance button"                                      | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Handle batch enhancement errors gracefully"                               | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Navigate away during batch processing"                                    | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Poll job status until completion"                                         | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Real-time status updates via polling"                                     | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Refresh token balance after enhancement"                                  | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Retry failed batch enhancements"                                          | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Select different enhancement tier"                                        | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Skip already enhanced images"                                             | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "Successfully enhance all images in album"                                 | Investigate |
-| `e2e/features/batch-enhancement.feature`         | "View tier selection with cost preview"                                    | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch delete multiple images"                                             | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch enhance with tier selection"                                        | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch enhancement progress tracking"                                      | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch enhancement shows insufficient tokens warning"                      | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch enhancement tier cost preview"                                      | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch operations show loading state"                                      | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch upload displays file names"                                         | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch upload handles mixed success and failure"                           | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch upload maximum file limit"                                          | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch upload shows individual progress"                                   | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch upload validates file sizes"                                        | Investigate |
-| `e2e/features/batch-operations.feature`          | "Batch upload validates file types"                                        | Investigate |
-| `e2e/features/batch-operations.feature`          | "Cancel batch deletion"                                                    | Investigate |
-| `e2e/features/batch-operations.feature`          | "Cancel batch enhancement"                                                 | Investigate |
-| `e2e/features/batch-operations.feature`          | "Cancel individual upload in batch"                                        | Investigate |
-| `e2e/features/batch-operations.feature`          | "Confirm batch enhancement with sufficient tokens"                         | Investigate |
-| `e2e/features/batch-operations.feature`          | "Deselect all images in batch"                                             | Investigate |
-| `e2e/features/batch-operations.feature`          | "Resume failed batch enhancements"                                         | Investigate |
-| `e2e/features/batch-operations.feature`          | "Select all images in batch"                                               | Investigate |
-| `e2e/features/batch-operations.feature`          | "Select multiple images for batch enhancement"                             | Investigate |
-| `e2e/features/batch-operations.feature`          | "Upload multiple images at once"                                           | Investigate |
-| `e2e/features/batch-operations.feature`          | "View batch enhancement history"                                           | Investigate |
-| `e2e/features/batch-operations.feature`          | "View batch uploaded images in list"                                       | Investigate |
+| `e2e/features/batch-enhancement.feature`         | All 18 scenarios                                                           | Album page needs "Enhance All" button wired to `/api/albums/[id]/enhance`. API exists but `AlbumDetailClient` does not pass `onEnhanceSelected` to `ImageSelectionToolbar`. Step definition URLs fixed from `/apps/pixel/albums/` to `/albums/`, mock shapes updated. |
+| `e2e/features/batch-operations.feature`          | 7 upload scenarios                                                         | `/apps/pixel` shows albums grid, not a file upload UI. Upload lives in album detail page at `/albums/[id]`. |
+| `e2e/features/batch-operations.feature`          | 16 selection/enhance/delete scenarios                                      | `/apps/pixel` shows albums grid, not image grid with checkboxes. Selection lives in `/apps/pixel/library` and `/albums/[id]`. |
 | `e2e/features/boxes-management.feature`          | "Box name validation - minimum length"                                     | Investigate |
 | `e2e/features/boxes-management.feature`          | "Box name validation - required field"                                     | Investigate |
 | `e2e/features/boxes-management.feature`          | "Boxes list displays existing boxes"                                       | Investigate |

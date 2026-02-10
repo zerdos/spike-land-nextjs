@@ -26,8 +26,7 @@ Feature: Pixel Pipeline Management
     And I should see "System Defaults" section
     And I should see "Public Pipelines" section
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @fast
   Scenario: Navigate back to pixel app
     When I visit "/apps/pixel/pipelines"
     And I click "Back to Pixel" button
@@ -45,8 +44,7 @@ Feature: Pixel Pipeline Management
     And I type "landscape" in the search input
     Then I should only see pipelines with "landscape" in their description
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @fast
   Scenario: Create new pipeline dialog
     When I visit "/apps/pixel/pipelines"
     And I click "New Pipeline" button
