@@ -9,6 +9,7 @@ import {
 } from "@/lib/create/content-service";
 import { type StreamEvent } from "@/lib/create/types";
 import logger from "@/lib/logger";
+import { checkGenerationRateLimit, getClientIp } from "@/lib/rate-limit";
 import { CreatedAppStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -22,8 +23,15 @@ const CreateRequestSchema = z.object({
 
 export async function POST(req: Request) {
   const session = await auth();
-  if (!session?.user?.id) {
-    return new NextResponse("Unauthorized", { status: 401 });
+  const userId = session?.user?.id;
+  const ip = getClientIp(req);
+
+  const { allowed, retryAfterSeconds } = await checkGenerationRateLimit(ip, !!userId);
+  if (!allowed) {
+    return new NextResponse(
+      JSON.stringify({ error: "Rate limit exceeded", retryAfterSeconds }),
+      { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } },
+    );
   }
 
   let json: unknown;
@@ -71,13 +79,13 @@ export async function POST(req: Request) {
   }
 
   // Start streaming response
-  return createSSEResponse(generateStream(slug, path, session.user.id));
+  return createSSEResponse(generateStream(slug, path, userId));
 }
 
 async function* generateStream(
   slug: string,
   path: string[],
-  userId: string,
+  userId: string | undefined,
 ): AsyncGenerator<StreamEvent> {
   const codespaceId = generateCodespaceId(slug);
   const codespaceUrl = `https://testing.spike.land/live/${codespaceId}/`;

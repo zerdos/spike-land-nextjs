@@ -44,6 +44,8 @@ Feature: Pricing Page Verification
     And I should see "What are AI credits used for?" text
     And I should see "Do credits roll over?" text
 
+  # SKIP REASON: Coming Soon text removed from pricing page
+  @skip
   Scenario: No subscription options active yet
     Then I should see "Coming Soon" text
 

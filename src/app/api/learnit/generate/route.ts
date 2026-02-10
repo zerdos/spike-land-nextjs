@@ -10,13 +10,21 @@ import {
 } from "@/lib/learnit/content-service";
 import { generateMdxFromResponse } from "@/lib/learnit/mdx-generator";
 import { generateTopicSchema } from "@/lib/learnit/validations";
+import { checkGenerationRateLimit, getClientIp } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    const userId = session?.user?.id;
+    const ip = getClientIp(req);
+
+    const { allowed, retryAfterSeconds } = await checkGenerationRateLimit(ip, !!userId);
+    if (!allowed) {
+      return new NextResponse(
+        JSON.stringify({ error: "Rate limit exceeded", retryAfterSeconds }),
+        { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } },
+      );
     }
 
     const json = await req.json();
@@ -38,7 +46,7 @@ export async function POST(req: Request) {
     }
 
     // Mark as generating immediately to prevent race conditions
-    await markAsGenerating(slug, path, session.user.id);
+    await markAsGenerating(slug, path, userId);
 
     // Trigger AI generation
     // We intentionally await this for Vercel functions unless we use background jobs using triggers/queues.
@@ -59,7 +67,7 @@ export async function POST(req: Request) {
       title: generated.title,
       description: generated.description,
       content: generateMdxFromResponse(generated), // Helper to stitch sections
-      generatedById: session.user.id,
+      generatedById: userId,
       aiModel: "gemini-3-flash-preview",
     });
 

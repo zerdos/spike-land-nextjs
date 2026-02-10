@@ -12,6 +12,7 @@ import {
 import { generateTopicSchema } from "@/lib/learnit/validations";
 import { parseWikiLinks } from "@/lib/learnit/wiki-links";
 import logger from "@/lib/logger";
+import { checkGenerationRateLimit, getClientIp } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 
 /**
@@ -20,8 +21,15 @@ import { NextResponse } from "next/server";
  */
 export async function POST(req: Request) {
   const session = await auth();
-  if (!session?.user?.id) {
-    return new NextResponse("Unauthorized", { status: 401 });
+  const userId = session?.user?.id;
+  const ip = getClientIp(req);
+
+  const { allowed, retryAfterSeconds } = await checkGenerationRateLimit(ip, !!userId);
+  if (!allowed) {
+    return new NextResponse(
+      JSON.stringify({ error: "Rate limit exceeded", retryAfterSeconds }),
+      { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } },
+    );
   }
 
   let json: unknown;
@@ -67,16 +75,16 @@ export async function POST(req: Request) {
   }
 
   // Mark as generating
-  await markAsGenerating(slug, path, session.user.id);
+  await markAsGenerating(slug, path, userId);
 
   // Create SSE stream
-  return createSSEResponse(generateStreamContent(path, slug, session.user.id));
+  return createSSEResponse(generateStreamContent(path, slug, userId));
 }
 
 async function* generateStreamContent(
   path: string[],
   slug: string,
-  userId: string,
+  userId: string | undefined,
 ): AsyncGenerator<StreamEvent> {
   const topic = path.join(" > ");
 

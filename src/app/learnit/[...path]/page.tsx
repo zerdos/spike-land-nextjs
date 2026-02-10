@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { ReadAloudArticle } from "@/components/blog/ReadAloudArticle";
 import { LearnItContent } from "@/components/learnit/content";
-import { GenerateButton } from "@/components/learnit/generate-button";
 import { Prerequisites } from "@/components/learnit/prerequisites";
 import { RegenerateButton } from "@/components/learnit/regenerate-button";
 import { RelatedTopics } from "@/components/learnit/related-topics";
@@ -62,35 +61,19 @@ export default async function LearnItTopicPage({ params }: PageProps) {
   });
 
   if (!content) {
-    // If user is logged in, start streaming immediately
-    // Otherwise, show the generate button which will prompt login
-    if (session?.user?.id) {
-      return (
-        <div className="max-w-3xl mx-auto py-8 space-y-8">
-          <Breadcrumbs items={breadcrumbs} />
-          <header className="mb-6">
-            <h1 className="text-3xl font-bold capitalize">
-              {path[path.length - 1]?.replace(/-/g, " ") ?? "Topic"}
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Generating content...
-            </p>
-          </header>
-          <StreamingContent path={normalizedPath} />
-        </div>
-      );
-    }
-
+    // Stream content for all users (anonymous included with rate limiting)
     return (
       <div className="max-w-3xl mx-auto py-8 space-y-8">
         <Breadcrumbs items={breadcrumbs} />
-
-        <div className="py-12">
-          <GenerateButton
-            path={path}
-            topicName={path[path.length - 1]?.replace(/-/g, " ") ?? "Topic"}
-          />
-        </div>
+        <header className="mb-6">
+          <h1 className="text-3xl font-bold capitalize">
+            {path[path.length - 1]?.replace(/-/g, " ") ?? "Topic"}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Generating content...
+          </p>
+        </header>
+        <StreamingContent path={normalizedPath} />
       </div>
     );
   }
