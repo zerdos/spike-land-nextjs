@@ -43,7 +43,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Install Vercel CLI
-        run: yarn global add vercel@latest
+        run: npm install -g vercel@latest
 
       - name: Pull Vercel Environment Info
         run: vercel pull --yes --environment=${{ github.event.inputs.environment == 'production' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
