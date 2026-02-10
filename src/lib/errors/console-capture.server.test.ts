@@ -62,7 +62,7 @@ describe("console-capture.server", () => {
       vi.advanceTimersByTime(2500);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors).toHaveLength(1);
       expect(body.errors[0].message).toBe("Something went wrong");
       expect(body.errors[0].environment).toBe("BACKEND");
@@ -78,7 +78,7 @@ describe("console-capture.server", () => {
       vi.advanceTimersByTime(2500);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors).toHaveLength(1);
       expect(body.errors[0].message).toBe("Test error");
       expect(body.errors[0].errorType).toBe("Error");
@@ -94,7 +94,7 @@ describe("console-capture.server", () => {
       vi.advanceTimersByTime(2500);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors).toHaveLength(3);
     });
 
@@ -138,7 +138,7 @@ describe("console-capture.server", () => {
       vi.advanceTimersByTime(2500);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors).toHaveLength(1);
     });
   });
@@ -155,7 +155,7 @@ describe("console-capture.server", () => {
       vi.advanceTimersByTime(2500);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       // Only 1 should pass through dedup
       expect(body.errors).toHaveLength(1);
       expect(body.errors[0].message).toBe("Repeated error");
@@ -177,7 +177,7 @@ describe("console-capture.server", () => {
       vi.advanceTimersByTime(2500);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors).toHaveLength(1);
     });
 
@@ -191,7 +191,7 @@ describe("console-capture.server", () => {
       vi.advanceTimersByTime(2500);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors).toHaveLength(3);
     });
 
@@ -211,7 +211,7 @@ describe("console-capture.server", () => {
       vi.advanceTimersByTime(2500);
 
       // The error after cleanup should have been captured
-      const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1];
+      const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1]!;
       const body = JSON.parse(lastCall[1].body);
       const messages = body.errors.map((e: { message: string }) => e.message);
       expect(messages).toContain("After cleanup error");
@@ -251,7 +251,7 @@ describe("console-capture.server", () => {
       vi.advanceTimersByTime(2500);
 
       // Only the error after reset should be reported
-      const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1];
+      const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1]!;
       const body = JSON.parse(lastCall[1].body);
       expect(body.errors).toHaveLength(1);
       expect(body.errors[0].message).toBe("Error after reset");
@@ -319,7 +319,7 @@ describe("console-capture.server", () => {
       // The error should be captured (unless isFromStructuredLogger catches it first)
       // but the source location should point to route.ts, not structured-logger.ts
       if (mockFetch.mock.calls.length > 0) {
-        const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+        const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
         if (body.errors.length > 0) {
           expect(body.errors[0].sourceFile).not.toContain("structured-logger");
         }
@@ -334,7 +334,7 @@ describe("console-capture.server", () => {
       console.error("Error:", "something failed", "badly");
       vi.advanceTimersByTime(2500);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors[0].message).toBe("Error: something failed badly");
     });
 
@@ -344,7 +344,7 @@ describe("console-capture.server", () => {
       console.error("Error:", { code: 500, detail: "internal" });
       vi.advanceTimersByTime(2500);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors[0].message).toContain("500");
     });
   });

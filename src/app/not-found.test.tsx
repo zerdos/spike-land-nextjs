@@ -50,7 +50,7 @@ describe("NotFound (404 Page)", () => {
     );
 
     const callBody = JSON.parse(
-      mockFetch.mock.calls[0][1].body as string,
+      mockFetch.mock.calls[0]![1].body as string,
     );
     expect(callBody.errors).toHaveLength(1);
     expect(callBody.errors[0].errorType).toBe("NotFound");

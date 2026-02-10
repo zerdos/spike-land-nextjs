@@ -66,7 +66,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors).toHaveLength(1);
       expect(body.errors[0].message).toBe("Something went wrong");
       expect(body.errors[0].environment).toBe("FRONTEND");
@@ -80,7 +80,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors[0].message).toBe("Error object");
       expect(body.errors[0].errorType).toBe("Error");
     });
@@ -124,7 +124,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors).toHaveLength(1);
     });
 
@@ -143,7 +143,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors).toHaveLength(1);
     });
 
@@ -156,7 +156,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors).toHaveLength(3);
     });
 
@@ -172,7 +172,7 @@ describe("console-capture.client", () => {
       console.error("After cleanup error");
       vi.advanceTimersByTime(6000);
 
-      const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1];
+      const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1]!;
       const body = JSON.parse(lastCall[1].body);
       const messages = body.errors.map((e: { message: string }) => e.message);
       expect(messages).toContain("After cleanup error");
@@ -207,7 +207,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       if (mockFetch.mock.calls.length > 0) {
-        const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+        const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
         expect(body.errors).toHaveLength(1);
       }
     });
@@ -234,7 +234,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       if (mockFetch.mock.calls.length > 0) {
-        const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+        const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
         expect(body.errors).toHaveLength(1);
       }
     });
@@ -247,7 +247,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors[0].message).toBe("Boundary error");
       expect(body.errors[0].metadata.source).toBe("error-boundary");
       expect(body.errors[0].metadata.componentStack).toBe("<App>");
@@ -261,7 +261,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       expect(mockFetch).toHaveBeenCalledOnce();
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors).toHaveLength(1);
     });
   });
@@ -279,7 +279,7 @@ describe("console-capture.client", () => {
       console.error("Error after reset");
       vi.advanceTimersByTime(6000);
 
-      const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1];
+      const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1]!;
       const body = JSON.parse(lastCall[1].body);
       expect(body.errors).toHaveLength(1);
       expect(body.errors[0].message).toBe("Error after reset");
@@ -299,7 +299,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       if (mockFetch.mock.calls.length > 0) {
-        const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+        const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
         if (body.errors.length > 0 && body.errors[0].sourceFile) {
           expect(body.errors[0].sourceFile).not.toContain("structured-logger");
         }
@@ -314,7 +314,7 @@ describe("console-capture.client", () => {
       console.error("Error:", "detail", "here");
       vi.advanceTimersByTime(6000);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors[0].message).toBe("Error: detail here");
     });
 
@@ -324,7 +324,7 @@ describe("console-capture.client", () => {
       console.error("Error:", { code: 500 });
       vi.advanceTimersByTime(6000);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
       expect(body.errors[0].message).toContain("500");
     });
   });
@@ -350,7 +350,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       if (mockFetch.mock.calls.length > 0) {
-        const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+        const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
         expect(body.errors[0].message).toBe("string rejection");
         expect(body.errors[0].errorType).toBe("UnhandledRejection");
       }
@@ -384,7 +384,7 @@ describe("console-capture.client", () => {
       vi.advanceTimersByTime(6000);
 
       if (mockFetch.mock.calls.length > 0) {
-        const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+        const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
         expect(body.errors[0].message).toBe("Script error");
         expect(body.errors[0].errorType).toBe("UncaughtException");
       }

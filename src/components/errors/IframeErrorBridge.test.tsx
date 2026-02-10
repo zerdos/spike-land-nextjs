@@ -62,7 +62,7 @@ describe("IframeErrorBridge", () => {
     expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledTimes(1);
     const [error, componentStack] = (
       consoleCaptureModule.reportErrorBoundary as ReturnType<typeof vi.fn>
-    ).mock.calls[0];
+    ).mock.calls[0]!;
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe("Component crashed");
     expect(error.stack).toBe("Error: Component crashed\n    at Foo");
@@ -180,7 +180,7 @@ describe("IframeErrorBridge", () => {
     expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledTimes(1);
     const [error] = (
       consoleCaptureModule.reportErrorBoundary as ReturnType<typeof vi.fn>
-    ).mock.calls[0];
+    ).mock.calls[0]!;
     expect(error.message).toBe("No stack");
   });
 

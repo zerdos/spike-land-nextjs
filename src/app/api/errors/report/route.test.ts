@@ -140,7 +140,7 @@ describe("/api/errors/report", () => {
     );
     expect(response.status).toBe(200);
 
-    const callArgs = mockReportErrorToDatabase.mock.calls[0][0];
+    const callArgs = mockReportErrorToDatabase.mock.calls[0]![0];
     expect(callArgs.message.length).toBe(10000);
   });
 

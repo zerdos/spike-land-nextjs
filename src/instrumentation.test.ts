@@ -52,10 +52,10 @@ describe("instrumentation", () => {
     await register();
 
     const sigTermCalls = processOnSpy.mock.calls.filter(
-      ([event]) => event === "SIGTERM",
+      ([event]: [string, ...unknown[]]) => event === "SIGTERM",
     );
     const sigIntCalls = processOnSpy.mock.calls.filter(
-      ([event]) => event === "SIGINT",
+      ([event]: [string, ...unknown[]]) => event === "SIGINT",
     );
 
     expect(sigTermCalls.length).toBeGreaterThanOrEqual(1);
@@ -68,7 +68,7 @@ describe("instrumentation", () => {
 
     // Find the SIGTERM handler we registered
     const sigTermCall = processOnSpy.mock.calls.find(
-      ([event]) => event === "SIGTERM",
+      ([event]: [string, ...unknown[]]) => event === "SIGTERM",
     );
     expect(sigTermCall).toBeDefined();
 
@@ -97,14 +97,14 @@ describe("instrumentation", () => {
 
   it("starts vibe watcher only in development", async () => {
     process.env.NEXT_RUNTIME = "nodejs";
-    process.env.NODE_ENV = "development";
+    (process.env as Record<string, string>)["NODE_ENV"] = "development";
     await register();
     expect(mockStartVibeWatcher).toHaveBeenCalledTimes(1);
   });
 
   it("does not start vibe watcher in production", async () => {
     process.env.NEXT_RUNTIME = "nodejs";
-    process.env.NODE_ENV = "production";
+    (process.env as Record<string, string>)["NODE_ENV"] = "production";
     await register();
     expect(mockStartVibeWatcher).not.toHaveBeenCalled();
   });
