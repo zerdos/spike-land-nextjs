@@ -7,7 +7,7 @@
 
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { BridgeMindClient, isBridgeMindAvailable } from "../../clients/bridgemind-client.js";
+import { getBridgeMindClient, isBridgeMindAvailable } from "../../clients/bridgemind-client.js";
 import { GitHubProjectsClient, isGitHubProjectsAvailable } from "../../clients/github-projects-client.js";
 
 // ========================================
@@ -322,7 +322,7 @@ async function handleBridgeMindTool(name: string, args: unknown): Promise<ToolRe
     };
   }
 
-  const client = new BridgeMindClient();
+  const client = getBridgeMindClient();
 
   switch (name) {
     case "bridgemind_list_tasks": {
@@ -556,7 +556,7 @@ async function handleSyncTool(name: string, args: unknown): Promise<ToolResult> 
         };
       }
 
-      const bmClient = new BridgeMindClient();
+      const bmClient = getBridgeMindClient();
       const ghClient = new GitHubProjectsClient();
 
       // Fetch BridgeMind tasks
@@ -621,7 +621,7 @@ async function handleSyncTool(name: string, args: unknown): Promise<ToolResult> 
       const statusParts: string[] = [];
 
       if (isBridgeMindAvailable()) {
-        const bmClient = new BridgeMindClient();
+        const bmClient = getBridgeMindClient();
         const state = bmClient.getCircuitBreakerState();
         statusParts.push(
           `**BridgeMind:** ${state.status === "closed" ? "healthy" : state.status}` +
@@ -667,7 +667,7 @@ async function handleBoltTool(name: string, _args: unknown): Promise<ToolResult>
       services.push(`**Orchestrator:** ${boltPaused ? "PAUSED" : "RUNNING"}`);
 
       if (isBridgeMindAvailable()) {
-        const bm = new BridgeMindClient();
+        const bm = getBridgeMindClient();
         services.push(`**BridgeMind:** ${bm.getCircuitBreakerState().status}`);
       } else {
         services.push("**BridgeMind:** not configured");
