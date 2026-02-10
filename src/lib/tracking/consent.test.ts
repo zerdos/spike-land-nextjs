@@ -51,17 +51,12 @@ describe("consent", () => {
   });
 
   describe("caching", () => {
-    let originalNodeEnv: string;
-
     beforeEach(() => {
-      originalNodeEnv = process.env.NODE_ENV;
-      // @ts-ignore
-      process.env.NODE_ENV = "production";
+      vi.stubEnv("NODE_ENV", "production");
     });
 
     afterEach(() => {
-      // @ts-ignore
-      process.env.NODE_ENV = originalNodeEnv;
+      vi.unstubAllEnvs();
     });
 
     it("should cache the result", () => {

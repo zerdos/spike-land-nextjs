@@ -7,7 +7,6 @@
 
 import { nanoid } from "nanoid";
 import { cookies } from "next/headers";
-import { hasConsent } from "./consent";
 
 /** Storage key for visitor ID in localStorage */
 const VISITOR_ID_STORAGE_KEY = "spike_visitor_id";
@@ -17,6 +16,17 @@ const VISITOR_ID_COOKIE_NAME = "spike_visitor_id";
 
 /** Cookie expiry in seconds (1 year) */
 const VISITOR_ID_COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
+
+/**
+ * Check if cookie consent has been given
+ * @returns true if cookies are accepted
+ */
+function hasCookieConsent(): boolean {
+  if (typeof window === "undefined") {
+    return true; // Server-side, assume consent for operations
+  }
+  return localStorage.getItem("cookie-consent") === "accepted";
+}
 
 /**
  * Generate a new unique visitor ID
@@ -86,7 +96,7 @@ export function getVisitorId(): string {
     localStorage.setItem(VISITOR_ID_STORAGE_KEY, visitorId);
 
     // Store in cookie if consent given
-    if (hasConsent()) {
+    if (hasCookieConsent()) {
       setVisitorIdCookie(visitorId);
     }
   }
@@ -122,7 +132,7 @@ export function setVisitorId(id: string): void {
   localStorage.setItem(VISITOR_ID_STORAGE_KEY, id);
 
   // Store in cookie if consent given
-  if (hasConsent()) {
+  if (hasCookieConsent()) {
     setVisitorIdCookie(id);
   }
 }
@@ -231,7 +241,7 @@ export function syncVisitorIdToCookie(): void {
   }
 
   const visitorId = localStorage.getItem(VISITOR_ID_STORAGE_KEY);
-  if (visitorId && hasConsent()) {
+  if (visitorId && hasCookieConsent()) {
     setVisitorIdCookie(visitorId);
   }
 }
