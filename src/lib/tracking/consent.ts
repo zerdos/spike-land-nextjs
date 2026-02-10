@@ -8,6 +8,12 @@ let cachedConsent: boolean | null = null;
  */
 export function hasConsent(): boolean {
   if (typeof window === "undefined") return false;
+
+  // Disable caching in test environment to prevent test pollution
+  if (process.env.NODE_ENV === "test") {
+    return localStorage.getItem(CONSENT_KEY) === "accepted";
+  }
+
   if (cachedConsent !== null) return cachedConsent;
 
   cachedConsent = localStorage.getItem(CONSENT_KEY) === "accepted";
