@@ -9,13 +9,13 @@ type ContextSection = {
 };
 
 type ContextWindowProps = {
-  sections: ContextSection[];
+  sections?: ContextSection[];
   fillLevel?: number; // 0 to 1
   delay?: number;
 };
 
 export function ContextWindow({
-  sections,
+  sections = [],
   fillLevel = 1,
   delay = 0,
 }: ContextWindowProps) {

@@ -7,6 +7,7 @@ type CodeBlockProps = {
   language?: string;
   delay?: number;
   typingSpeed?: number;
+  borderColor?: string;
 };
 
 // Token types for simple syntax highlighting
@@ -87,6 +88,7 @@ export function CodeBlock({
   language = "tsx",
   delay = 0,
   typingSpeed = 60,
+  borderColor = COLORS.darkBorder,
 }: CodeBlockProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -114,7 +116,7 @@ export function CodeBlock({
         backgroundColor: "#1a1a2e",
         borderRadius: 8,
         overflow: "hidden",
-        border: `1px solid ${COLORS.darkBorder}`,
+        border: `1px solid ${borderColor}`,
         fontFamily: "JetBrains Mono, monospace",
       }}
     >

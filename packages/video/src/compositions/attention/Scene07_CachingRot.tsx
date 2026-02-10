@@ -50,12 +50,12 @@ export const Scene07_CachingRot = () => {
             <div style={{ fontSize: 76, fontWeight: 900, color: COLORS.error }}>CONTEXT ROT</div>
 
             <div style={{ width: '800px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <ChatBubble isAgent message="I'll use getUserDataV2() to fetch that." />
+                <ChatBubble isAi message="I'll use getUserDataV2() to fetch that." />
                 <div style={{ opacity: interpolate(frame, [1400, 1420], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }), marginLeft: 40 }}>
                     <ChatBubble message="Wait, that function doesn't exist..." />
                 </div>
                 <div style={{ opacity: interpolate(frame, [1600, 1620], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) }}>
-                    <ChatBubble isAgent message="Actually, getUserDataV2() is defined in your API docs. [HALLUCINATION]" />
+                    <ChatBubble isAi message="Actually, getUserDataV2() is defined in your API docs. [HALLUCINATION]" />
                     <div style={{
                         position: 'absolute',
                         top: 0,

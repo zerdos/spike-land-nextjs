@@ -1,3 +1,4 @@
+import path from "path";
 import { Config } from "@remotion/cli/config";
 import { enableTailwind } from "@remotion/tailwind";
 

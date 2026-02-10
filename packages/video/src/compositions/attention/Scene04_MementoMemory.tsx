@@ -36,7 +36,7 @@ export const Scene04_MementoMemory = () => {
                             transform: 'translate(-50%, -50%)',
                             opacity
                         }}>
-                            <ChatBubble message="Hello, I'm new here. How can I help?" isAgent />
+                            <ChatBubble message="Hello, I'm new here. How can I help?" isAi />
                         </div>
                     );
                 })}

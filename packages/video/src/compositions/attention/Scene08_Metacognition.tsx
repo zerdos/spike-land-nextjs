@@ -32,7 +32,7 @@ export const Scene08_Metacognition = () => {
             right={
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
                     <div style={{ fontSize: 50, color: COLORS.error, fontWeight: 800 }}>AI 🤖</div>
-                    <ChatBubble isAgent message="Absolutely! I have completed the login logic using the provided v3 API." />
+                    <ChatBubble isAi message="Absolutely! I have completed the login logic using the provided v3 API." />
                     <div style={{ color: COLORS.error, fontSize: 22, fontStyle: 'italic' }}>ZERO DOUBT (EVEN WHEN WRONG)</div>
                 </div>
             }

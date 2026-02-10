@@ -64,7 +64,7 @@ export const Scene09_Tactics = () => {
                 left={
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                         <div style={{ color: COLORS.error, fontSize: 30, fontWeight: 800 }}>VAGUE DESCRIPTION ❌</div>
-                        <ChatBubble isAgent message="Fix the indentation in the entire file." />
+                        <ChatBubble isAi message="Fix the indentation in the entire file." />
                         <div style={{ color: COLORS.textMuted, fontStyle: 'italic', fontSize: 26 }}>AI is guessing...</div>
                     </div>
                 }
