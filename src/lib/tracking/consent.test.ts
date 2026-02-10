@@ -1,14 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CONSENT_CHANGED_EVENT, CONSENT_KEY, hasConsent, notifyConsentChanged } from "./consent";
+import {
+  CONSENT_CHANGED_EVENT,
+  CONSENT_KEY,
+  hasConsent,
+  notifyConsentChanged,
+  resetConsentCache,
+} from "./consent";
 
 describe("consent", () => {
   beforeEach(() => {
     localStorage.clear();
+    resetConsentCache();
   });
 
   afterEach(() => {
     localStorage.clear();
+    resetConsentCache();
   });
 
   describe("constants", () => {
@@ -38,6 +46,58 @@ describe("consent", () => {
 
     it("should return false for invalid consent value", () => {
       localStorage.setItem(CONSENT_KEY, "invalid");
+      expect(hasConsent()).toBe(false);
+    });
+  });
+
+  describe("caching", () => {
+    beforeEach(() => {
+      vi.stubEnv("NODE_ENV", "production");
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it("should cache the result", () => {
+      // Setup initial state
+      localStorage.setItem(CONSENT_KEY, "accepted");
+      expect(hasConsent()).toBe(true);
+
+      // Directly modify localStorage (simulating external change without notification)
+      localStorage.setItem(CONSENT_KEY, "declined");
+
+      // Should still return true due to cache
+      expect(hasConsent()).toBe(true);
+    });
+
+    it("should update cache when notifyConsentChanged is called", () => {
+      // Setup initial state
+      localStorage.setItem(CONSENT_KEY, "accepted");
+      expect(hasConsent()).toBe(true);
+
+      // Modify localStorage
+      localStorage.setItem(CONSENT_KEY, "declined");
+
+      // Notify change
+      notifyConsentChanged();
+
+      // Should now return false
+      expect(hasConsent()).toBe(false);
+    });
+
+    it("should clear cache when resetConsentCache is called", () => {
+      // Setup initial state
+      localStorage.setItem(CONSENT_KEY, "accepted");
+      expect(hasConsent()).toBe(true);
+
+      // Modify localStorage
+      localStorage.setItem(CONSENT_KEY, "declined");
+
+      // Reset cache
+      resetConsentCache();
+
+      // Should check localStorage again
       expect(hasConsent()).toBe(false);
     });
   });

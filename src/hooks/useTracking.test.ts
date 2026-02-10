@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { resetConsentCache } from "@/lib/tracking/consent";
 import { useTracking } from "./useTracking";
 
 // Mock fetch globally
@@ -49,6 +50,7 @@ Object.defineProperty(window, "sessionStorage", {
 describe("useTracking", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetConsentCache();
     mockFetch.mockClear();
     mockLocalStorage.clear();
     mockSessionStorage.clear();

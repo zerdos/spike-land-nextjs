@@ -1,4 +1,5 @@
 import { track } from "@vercel/analytics";
+import { hasConsent } from "@/lib/tracking/consent";
 
 type AnalyticsEvent =
   // Wizard events
@@ -28,12 +29,7 @@ export function trackEvent(
   event: AnalyticsEvent,
   properties?: AnalyticsEventProperties,
 ): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const consent = localStorage.getItem("cookie-consent");
-  if (consent !== "accepted") {
+  if (!hasConsent()) {
     return;
   }
 
