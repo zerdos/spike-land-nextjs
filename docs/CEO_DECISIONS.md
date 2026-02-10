@@ -64,7 +64,7 @@ eliminating AR mismatches in the comparison slider.
 #### DEC-001: No Sentry in Tech Stack
 
 **Decision Date**: December 11, 2025 **Decision Maker**: Zoltan Erdos (CEO)
-**Status**: ACTIVE
+**Status**: SUPERSEDED (February 2026)
 
 **Decision**: Sentry shall NOT be included in the Spike Land tech stack for
 error tracking and monitoring.
@@ -75,6 +75,11 @@ error tracking and monitoring.
 - Vercel Analytics and built-in logging provide sufficient observability
 - Cost optimization consideration
 - Reduced external dependencies
+
+**Superseded Note**: Sentry is now approved and integrated into the platform.
+The SDK is disabled in development (`enabled: process.env.NODE_ENV === "production"`)
+and trace sampling is set to 10% by default. See `sentry.server.config.ts`,
+`sentry.edge.config.ts`, and `instrumentation-client.ts`.
 
 **Impact**:
 
@@ -131,7 +136,7 @@ export const GEMINI_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 ### Technology Decisions
 
-- DEC-001: No Sentry in tech stack
+- DEC-001: ~~No Sentry in tech stack~~ SUPERSEDED — Sentry now approved
 - DEC-002: Gemini model for image enhancement
 - DEC-003: No Sharp dependency - client-side image optimization
 

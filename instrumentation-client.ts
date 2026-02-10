@@ -2,13 +2,9 @@ import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
   dsn: "https://7fb04b899f9ad3c3d0b9e606bf19e84a@o4510862377943040.ingest.de.sentry.io/4510862381613136",
-
+  enabled: process.env.NODE_ENV === "production",
+  environment: process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.NODE_ENV || "development",
   integrations: [Sentry.browserTracingIntegration()],
-
-  // Propagate traces to your API and spike.land backend
-  tracePropagationTargets: ["localhost", /^https:\/\/spike\.land\/api/],
-
-  // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
-  // Adjust this value in production for cost/performance balance.
-  tracesSampleRate: 1.0,
+  tracePropagationTargets: [/^https:\/\/spike\.land\/api/],
+  tracesSampleRate: parseFloat(process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE || "0.1"),
 });

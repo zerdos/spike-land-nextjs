@@ -189,6 +189,12 @@ declare global {
       // Workflow
       WORKFLOW_RUNTIME?: string;
       STANDALONE?: string;
+
+      // Sentry
+      SENTRY_AUTH_TOKEN?: string;
+      SENTRY_TRACES_SAMPLE_RATE?: string;
+      NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE?: string;
+      NEXT_PUBLIC_VERCEL_ENV?: "development" | "preview" | "production";
     }
   }
 }

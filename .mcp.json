@@ -32,6 +32,10 @@
         "-y",
         "@gongrzhe/server-gmail-autoauth-mcp"
       ]
+    },
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp"
     }
   }
 }
