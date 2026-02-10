@@ -144,8 +144,18 @@ export async function classifyInput(
     generateStructuredResponse<ClassificationResult>({
       prompt: trimmed,
       systemPrompt: CLASSIFY_SYSTEM_PROMPT,
-      maxTokens: 256,
+      maxTokens: 512,
       temperature: 0.1,
+      responseJsonSchema: {
+        type: "object",
+        properties: {
+          status: { type: "string", enum: ["ok", "blocked", "unclear"] },
+          slug: { type: "string" },
+          category: { type: "string" },
+          reason: { type: "string", nullable: true },
+        },
+        required: ["status", "slug", "category", "reason"],
+      },
     }),
   );
 
