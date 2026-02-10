@@ -1069,8 +1069,8 @@ When(
 
 // "I am on the home page" - Background step for scenarios starting on home page
 Given("I am on the home page", async function(this: CustomWorld) {
-  await this.page.goto(this.baseUrl, { waitUntil: "commit" });
-  await waitForPageReady(this.page, { strategy: "both", waitForSuspense: true });
+  await this.page.goto(this.baseUrl, { waitUntil: "commit", timeout: 30000 });
+  await waitForPageReady(this.page, { strategy: "both", timeout: 30000, waitForSuspense: true });
 });
 
 // "I should see a link to {string}" - Check for link by href
