@@ -25,6 +25,7 @@ export async function POST(req: Request) {
   const ip = getClientIp(req);
 
   const { allowed, retryAfterSeconds } = await checkGenerationRateLimit(ip, !!userId);
+  // Rate limit check
   if (!allowed) {
     return new NextResponse(
       JSON.stringify({ error: "Rate limit exceeded", retryAfterSeconds }),

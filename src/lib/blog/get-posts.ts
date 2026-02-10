@@ -34,12 +34,10 @@ export const getPostSlugs = cache(function getPostSlugs(): string[] {
 });
 
 /**
- * Get a single blog post by slug.
- * Validates frontmatter using Zod schema.
- * @param slug - The URL slug of the blog post
- * @returns The blog post with content, or null if not found or invalid
+ * Internal helper to read and parse a blog post file.
+ * NOT CACHED to avoid pinning large content strings in memory when iterating all posts.
  */
-export const getPostBySlug = cache(function getPostBySlug(slug: string): BlogPost | null {
+function readPostData(slug: string): BlogPost | null {
   // Validate slug to prevent path traversal
   if (!/^[a-zA-Z0-9_-]+$/.test(slug)) {
     console.error(`Invalid slug: ${slug}`);
@@ -100,19 +98,31 @@ export const getPostBySlug = cache(function getPostBySlug(slug: string): BlogPos
     slug,
     readingTime: stats.text,
   };
+}
+
+/**
+ * Get a single blog post by slug.
+ * Validates frontmatter using Zod schema.
+ * Cached to optimize repeated access to the same post in a request (e.g. metadata + page).
+ */
+export const getPostBySlug = cache(function getPostBySlug(slug: string): BlogPost | null {
+  return readPostData(slug);
 });
 
 /**
  * Get all blog posts with metadata (for listing pages)
  * Returns posts sorted by date (newest first)
  * Filters out unlisted posts (frontmatter.listed === false)
+ * Cached to avoid re-reading the file system multiple times per request.
+ * Uses `readPostData` directly to avoid populating `getPostBySlug` cache with full content.
  */
 export const getAllPosts = cache(function getAllPosts(): BlogPostMeta[] {
   const slugs = getPostSlugs();
 
   const posts = slugs
     .map((slug) => {
-      const post = getPostBySlug(slug);
+      // Use internal helper to avoid caching the full content in `getPostBySlug` cache
+      const post = readPostData(slug);
       if (!post) return null;
 
       return {
