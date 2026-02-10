@@ -39,6 +39,12 @@ export function getPostSlugs(): string[] {
  * @returns The blog post with content, or null if not found or invalid
  */
 export function getPostBySlug(slug: string): BlogPost | null {
+  // Validate slug to prevent path traversal
+  if (!/^[a-zA-Z0-9_-]+$/.test(slug)) {
+    console.error(`Invalid slug: ${slug}`);
+    return null;
+  }
+
   const filePath = path.join(BLOG_DIR, `${slug}.mdx`);
 
   if (!fs.existsSync(filePath)) {

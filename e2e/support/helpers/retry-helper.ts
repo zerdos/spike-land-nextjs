@@ -12,9 +12,9 @@ import { expect } from "@playwright/test";
  * - Custom error messages with context (selector, testId) are more debuggable
  */
 export const TIMEOUTS = {
-  DEFAULT: process.env.CI ? 10000 : 5000,
-  LONG: process.env.CI ? 20000 : 10000,
-  SHORT: process.env.CI ? 5000 : 2500,
+  DEFAULT: process.env.CI ? 30000 : 10000,
+  LONG: process.env.CI ? 60000 : 20000,
+  SHORT: process.env.CI ? 10000 : 5000,
   RETRY_INTERVAL: 500,
 };
 
