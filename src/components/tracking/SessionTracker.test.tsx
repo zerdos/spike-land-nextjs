@@ -1,5 +1,6 @@
 import { render, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { resetConsentCache } from "@/lib/tracking/consent";
 import { SessionTracker } from "./SessionTracker";
 
 // Mock next-auth/react
@@ -75,6 +76,7 @@ Object.defineProperty(navigator, "userAgent", {
 describe("SessionTracker", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetConsentCache();
     mockFetch.mockClear();
     mockLocalStorage.clear();
     mockSessionStorage.clear();

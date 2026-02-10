@@ -6,6 +6,7 @@
  */
 
 import { tryCatch } from "@/lib/try-catch";
+import { hasConsent } from "./consent";
 import { fireMetaPixelEvent } from "./MetaPixel";
 import type { UTMParams } from "./utm-capture";
 
@@ -67,16 +68,6 @@ interface TrackingEvent {
 }
 
 /**
- * Check if cookie consent has been given
- */
-function hasCookieConsent(): boolean {
-  if (typeof window === "undefined") {
-    return true;
-  }
-  return localStorage.getItem("cookie-consent") === "accepted";
-}
-
-/**
  * Get the active session ID from sessionStorage (client-side)
  *
  * Returns null if no session exists or if the session has timed out.
@@ -97,7 +88,7 @@ export function getActiveSession(): string | null {
   }
 
   // Check consent
-  if (!hasCookieConsent()) {
+  if (!hasConsent()) {
     return null;
   }
 
@@ -131,7 +122,7 @@ export function setActiveSession(sessionId: string): void {
     return;
   }
 
-  if (!hasCookieConsent()) {
+  if (!hasConsent()) {
     return;
   }
 

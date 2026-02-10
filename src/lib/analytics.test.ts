@@ -1,5 +1,6 @@
 import { track } from "@vercel/analytics";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { resetConsentCache } from "@/lib/tracking/consent";
 import { analytics, trackEvent } from "./analytics";
 
 vi.mock("@vercel/analytics", () => ({
@@ -9,11 +10,13 @@ vi.mock("@vercel/analytics", () => ({
 describe("analytics", () => {
   beforeEach(() => {
     localStorage.clear();
+    resetConsentCache();
     vi.clearAllMocks();
   });
 
   afterEach(() => {
     localStorage.clear();
+    resetConsentCache();
   });
 
   describe("trackEvent", () => {

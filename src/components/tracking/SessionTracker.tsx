@@ -4,10 +4,11 @@ import { useSession } from "next-auth/react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 
+import { hasConsent } from "@/lib/tracking/consent";
+
 // Constants
 const VISITOR_ID_KEY = "spike_visitor_id";
 const SESSION_ID_KEY = "spike_session_id";
-const CONSENT_KEY = "cookie-consent";
 const UTM_CAPTURED_KEY = "spike_utm_captured";
 
 // Scroll depth milestones to track
@@ -40,14 +41,6 @@ function getOrCreateVisitorId(): string | null {
     localStorage.setItem(VISITOR_ID_KEY, visitorId);
   }
   return visitorId;
-}
-
-/**
- * Check if user has given cookie consent
- */
-function hasConsent(): boolean {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem(CONSENT_KEY) === "accepted";
 }
 
 /**
