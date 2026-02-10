@@ -39,6 +39,7 @@ function getAudioR2Config() {
   const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID?.trim();
   const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY?.trim();
   const bucket = process.env.CLOUDFLARE_R2_AUDIO_BUCKET_NAME?.trim() ||
+    process.env.CLOUDFLARE_R2_BUCKET_NAME?.trim() ||
     "audio-mixer";
   const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT?.trim();
 
