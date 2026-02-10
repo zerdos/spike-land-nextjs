@@ -16,7 +16,7 @@ export const Scene05_Transformation: React.FC = () => {
         {[0, 1, 2].map(i => (
           <div key={i} style={{ flex: 1, transform: `translateY(${interpolate(frame, [i*10, 30+i*10], [50, 0], EC)}px)` }}>
             <AgentPanel header={`Agent #${i+1}`} borderColor={i === 1 ? COLORS.bridgemindPink : COLORS.bridgemindCyan}>
-              <div style={{ color: COLORS.textSecondary, fontFamily: "monospace", fontSize: 14 }}>
+              <div style={{ color: COLORS.textSecondary, fontFamily: "monospace", fontSize: 28 }}>
                  {i === 0 ? "> Resuming session #47..." : i === 1 ? "> Context loaded from BridgeMind" : "> Generating tests..."}
               </div>
               <div style={{ marginTop: 20 }}>
@@ -55,7 +55,7 @@ export const Scene05_Transformation: React.FC = () => {
              <div style={{
                position: "absolute", right: 200,
                padding: "10px 40px", background: COLORS.success, color: "white",
-               fontWeight: 900, fontSize: 40, borderRadius: 10,
+               fontWeight: 900, fontSize: 80, borderRadius: 10,
                opacity: interpolate(frame, [290, 300], [0, 1], EC),
                transform: `scale(${interpolate(frame, [290, 300], [0.5, 1], EC)})`,
                boxShadow: `0 0 30px ${COLORS.success}60`,

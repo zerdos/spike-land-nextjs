@@ -1,7 +1,6 @@
 import React from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
 import { TaskBoard, OrchestrationDiagram, ContextWindow, TokenFlow } from "../../components";
-import { GlitchTransition } from "../../components/effects/GlitchTransition";
 import { COLORS } from "../../lib/constants";
 
 const EC = { extrapolateLeft: "clamp" as const, extrapolateRight: "clamp" as const };
@@ -27,12 +26,17 @@ export const Scene04_Features: React.FC = () => {
             ]}
             fillLevel={interpolate(frame, [100, 170], [0.3, 0.95], EC)}
           />
-          <div style={{ color: COLORS.bridgemindCyan, fontWeight: 800, fontSize: 32 }}>CONTEXT RESTORED</div>
-          {frame > 165 && (
-            <GlitchTransition startFrame={165} duration={15} intensity={1}>
-              <AbsoluteFill style={{ background: "rgba(255,255,255,0.05)" }} />
-            </GlitchTransition>
-          )}
+          <div style={{
+            color: COLORS.bridgemindCyan,
+            fontWeight: 800,
+            fontSize: 64,
+            fontFamily: "Inter, sans-serif",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            filter: `drop-shadow(0 0 20px ${COLORS.bridgemindCyan}60)`,
+          }}>
+            CONTEXT RESTORED
+          </div>
         </AbsoluteFill>
       )}
 
@@ -52,7 +56,7 @@ export const Scene04_Features: React.FC = () => {
           transform: `scale(${interpolate(frame, [270, 285], [0.9, 1], EC)})`,
         }}>
           <div style={{
-            color: "white", fontSize: 48, fontWeight: 900,
+            color: "white", fontSize: 96, fontWeight: 900,
             background: `linear-gradient(to right, ${COLORS.bridgemindCyan}, ${COLORS.bridgemindPink})`,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",

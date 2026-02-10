@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Audio, staticFile, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Audio, staticFile } from "remotion";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { slide } from "@remotion/transitions/slide";
 import { 
@@ -11,7 +11,6 @@ import {
   Scene06_Testimony, 
   Scene07_CTA 
 } from "./index";
-import { WordHighlightCaption } from "../../components/captions/WordHighlightCaption";
 import { BRIDGEMIND_DURATIONS, BRIDGEMIND_TIMING } from "../../lib/constants";
 import { FormatProvider } from "../../lib/format-context";
 import { interpolate } from "remotion";
@@ -175,8 +174,6 @@ const NARRATION_DATA = {
 };
 
 export const BridgeMindPromo: React.FC = () => {
-  const frame = useCurrentFrame();
-
   return (
     <FormatProvider>
       <AbsoluteFill style={{ background: "#000" }}>
@@ -257,11 +254,7 @@ export const BridgeMindPromo: React.FC = () => {
           loop
         />
 
-        {/* Captions Overlay */}
-        <WordHighlightCaption 
-          words={NARRATION_DATA.words} 
-          currentTime={frame / BRIDGEMIND_TIMING.fps} 
-        />
+        {/* Captions removed — voiceover only */}
       </AbsoluteFill>
     </FormatProvider>
   );

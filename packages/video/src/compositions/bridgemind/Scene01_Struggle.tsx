@@ -1,13 +1,13 @@
 import React from "react";
-import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
-import { OrchestrationDiagram, ContextWindow, TokenFlow, CodeBlock, GlitchText } from "../../components";
-import { GlitchTransition } from "../../components/effects/GlitchTransition";
-import { COLORS } from "../../lib/constants";
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { OrchestrationDiagram, ContextWindow, TokenFlow, CodeBlock } from "../../components";
+import { COLORS, SPRING_CONFIGS } from "../../lib/constants";
 
 const EC = { extrapolateLeft: "clamp" as const, extrapolateRight: "clamp" as const };
 
 export const Scene01_Struggle: React.FC = () => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
   return (
     <AbsoluteFill style={{ background: COLORS.darkBg }}>
@@ -38,12 +38,6 @@ export const Scene01_Struggle: React.FC = () => {
         <div style={{ position: "absolute", bottom: 100, width: "100%", display: "flex", justifyContent: "center" }}>
            <TokenFlow text="LOST_CONTEXT DISCONNECTED SYNC_ERROR" delay={100} />
         </div>
-
-        {frame > 160 && (
-          <GlitchTransition startFrame={160} duration={20} intensity={2}>
-            <AbsoluteFill style={{ background: "rgba(255,0,0,0.1)" }} />
-          </GlitchTransition>
-        )}
       </AbsoluteFill>
 
       {/* 180-266f: Breaking point */}
@@ -53,8 +47,23 @@ export const Scene01_Struggle: React.FC = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          background: `radial-gradient(circle at center, ${COLORS.error}15 0%, transparent 60%)`,
         }}>
-          <GlitchText text="SOMETHING HAS TO CHANGE" fontSize={56} isGlitching={true} />
+          <div style={{
+            fontSize: 128,
+            fontWeight: 900,
+            fontFamily: "Inter, sans-serif",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            background: `linear-gradient(135deg, ${COLORS.error}, #ff8a80)`,
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            transform: `scale(${spring({ frame: frame - 185, fps, config: SPRING_CONFIGS.snappy })})`,
+            textShadow: "none",
+            filter: `drop-shadow(0 0 40px ${COLORS.error}40)`,
+          }}>
+            Something has to change.
+          </div>
         </AbsoluteFill>
       )}
     </AbsoluteFill>

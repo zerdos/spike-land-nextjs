@@ -22,7 +22,7 @@ export const Scene03_Revealed: React.FC = () => {
         opacity: interpolate(frame, [0, 15, 50, 65], [0, 1, 1, 0], EC),
       }}>
         <div style={{ transform: `scale(${logoSpring})`, position: "relative", zIndex: 2 }}>
-          <BridgeMindLogo size={120} />
+          <BridgeMindLogo size={240} />
         </div>
 
         {cards.map((card, i) => {
@@ -33,8 +33,8 @@ export const Scene03_Revealed: React.FC = () => {
 
           return (
             <div key={card} style={{ position: "absolute", transform: `translate(${x}px, ${y}px)` }}>
-              <GlassmorphismCard width={140} delay={15 + i * 5} animate={true}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "white", textAlign: "center" }}>{card}</div>
+              <GlassmorphismCard width={280} delay={15 + i * 5} animate={true}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: "white", textAlign: "center" }}>{card}</div>
               </GlassmorphismCard>
             </div>
           );
@@ -67,7 +67,7 @@ export const Scene03_Revealed: React.FC = () => {
             opacity: interpolate(frame, [150, 165], [0, 1], EC)
           }}
         >
-          <div style={{ fontSize: 64, fontWeight: 900, background: `linear-gradient(to right, white, ${COLORS.bridgemindCyan})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          <div style={{ fontSize: 128, fontWeight: 900, background: `linear-gradient(to right, white, ${COLORS.bridgemindCyan})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             This is the missing bridge.
           </div>
           <div style={{ marginTop: 50, transform: `rotate(5deg) scale(${interpolate(frame, [150, 270], [1, 1.2], EC)})` }}>

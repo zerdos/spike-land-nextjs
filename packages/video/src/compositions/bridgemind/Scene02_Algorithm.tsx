@@ -60,11 +60,11 @@ export const Scene02_Algorithm: React.FC = () => {
             }}
           />
           <div style={{ transform: `scale(${interpolate(frame, [105, 180], [0.8, 1.2], EC)})` }}>
-            <BridgeMindLogo size={160} />
+            <BridgeMindLogo size={320} />
             <div
               style={{
                 marginTop: 40,
-                fontSize: 32,
+                fontSize: 64,
                 fontWeight: 700,
                 color: "white",
                 textAlign: "center",

@@ -51,14 +51,32 @@ function sanitizeMdxContent(content: string): string {
     }
 
     // Outside code blocks: escape curly braces that aren't part of valid MDX components
-    // Replace `{` and `}` with their HTML entity equivalents
+    // We want to be careful not to break math blocks if they contain braces,
+    // but math blocks ($...$ or $$...$$) are often on the same line or spanned.
+    
     let sanitized = line;
+
+    // First, temporarily hide math blocks to avoid escaping their braces
+    // This is a simple heuristic: hide everything between $ or $$
+    const mathBlocks: string[] = [];
+    sanitized = sanitized.replace(/(\$\$[\s\S]+?\$\$|\$[\s\S]+?\$)/g, (match) => {
+      const placeholder = `__MATH_BLOCK_${mathBlocks.length}__`;
+      mathBlocks.push(match);
+      return placeholder;
+    });
+
+    // Escape `{` and `}` with their HTML entity equivalents
     sanitized = sanitized.replace(/\{/g, "&#123;");
     sanitized = sanitized.replace(/\}/g, "&#125;");
 
     // Escape `<` and `>` that look like math/comparison operators (not HTML tags)
     // Match `<` not followed by a valid HTML/JSX tag pattern (letter or /)
     sanitized = sanitized.replace(/<(?![a-zA-Z/!])/g, "&lt;");
+
+    // Restore math blocks
+    mathBlocks.forEach((block, i) => {
+      sanitized = sanitized.replace(`__MATH_BLOCK_${i}__`, block);
+    });
 
     result.push(sanitized);
   }
@@ -71,7 +89,16 @@ interface LearnItContentProps {
 }
 
 export async function LearnItContent({ content }: LearnItContentProps) {
-  const { default: rehypePrettyCode } = await import("rehype-pretty-code");
+  const [
+    { default: rehypePrettyCode },
+    { default: remarkMath },
+    { default: rehypeKatex },
+  ] = await Promise.all([
+    import("rehype-pretty-code"),
+    import("remark-math"),
+    import("rehype-katex"),
+  ]);
+
   // Parse wiki-links [[topic]] to markdown links before rendering
   const { content: parsedContent } = parseWikiLinks(content);
   // Sanitize content to escape MDX-problematic characters
@@ -85,8 +112,9 @@ export async function LearnItContent({ content }: LearnItContentProps) {
           components={components}
           options={{
             mdxOptions: {
-              remarkPlugins: [remarkGfm],
+              remarkPlugins: [remarkGfm, remarkMath],
               rehypePlugins: [
+                rehypeKatex,
                 [rehypePrettyCode, {
                   theme: "github-dark",
                   keepBackground: true,
