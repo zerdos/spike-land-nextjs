@@ -2,17 +2,19 @@
  * Next.js Instrumentation
  *
  * Runs once when the Next.js server starts.
- * Used to initialize server-side error capture and the vibe watcher.
- *
- * Note: As of Next.js 16.x, instrumentation.ts is supported natively without
- * requiring the experimental.instrumentationHook flag in next.config.ts.
+ * Used to initialize Sentry, server-side error capture, and the vibe watcher.
  *
  * @see https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
  */
 
+import * as Sentry from "@sentry/nextjs";
+
+export const onRequestError = Sentry.captureRequestError;
+
 export async function register() {
-  // Only run on Node.js runtime (not Edge)
   if (process.env.NEXT_RUNTIME === "nodejs") {
+    await import("./sentry.server.config");
+
     const { initializeServerConsoleCapture } = await import(
       "@/lib/errors/console-capture.server"
     );
@@ -23,5 +25,9 @@ export async function register() {
       const { startVibeWatcher } = await import("@/lib/vibe-watcher");
       startVibeWatcher();
     }
+  }
+
+  if (process.env.NEXT_RUNTIME === "edge") {
+    await import("./sentry.edge.config");
   }
 }
