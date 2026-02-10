@@ -28,7 +28,7 @@ Feature: Smoke Tests
     Then the page should load successfully
     And I should see "Privacy Policy" heading
 
-  @fast
+  @fast @requires-no-session
   Scenario: Sign in page loads
     When I visit "/auth/signin"
     Then the page should load successfully

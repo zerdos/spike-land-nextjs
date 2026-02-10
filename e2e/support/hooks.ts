@@ -12,13 +12,6 @@ setDefaultTimeout(30 * 1000);
 // Note: BeforeAll runs once for the entire test run, not per tag, so we check env vars
 // when running with the 'db' profile which only includes @requires-db scenarios
 BeforeAll(async function() {
-  // Only verify if we appear to be running database tests (db profile)
-  // const isDbProfile = process.env.npm_lifecycle_event?.includes("db") ||
-  //   process.argv.some((arg) =>
-  //     arg.includes("--profile") &&
-  //     process.argv[process.argv.indexOf(arg) + 1] === "db"
-  //   );
-
   // Always check DB safety when running E2E tests
   // if (!isDbProfile) return;
 

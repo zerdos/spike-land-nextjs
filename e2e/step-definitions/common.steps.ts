@@ -38,6 +38,21 @@ async function mockTokenBalance(
   });
 }
 
+// Clear cookies step
+Given("I have cleared all cookies", async function(this: CustomWorld) {
+  await this.context.clearCookies();
+});
+
+// Disable auth bypass header step
+Given("I disable auth bypass", async function(this: CustomWorld) {
+  // Explicitly reset extra headers to default, removing any bypass headers
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+  };
+  // Explicitly do NOT add x-e2e-auth-bypass
+  await this.context.setExtraHTTPHeaders(headers);
+});
+
 // Map of button text to data-testid for more reliable selection
 const BUTTON_TESTID_MAP: Record<string, string> = {
   "enhance all": "enhance-all-button",
