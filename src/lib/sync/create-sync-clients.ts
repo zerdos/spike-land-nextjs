@@ -5,8 +5,8 @@
  * from a path that vitest can mock via the @/ alias.
  */
 
-import { BridgeMindClient } from "../../../packages/mcp-server/src/clients/bridgemind-client";
-import { GitHubProjectsClient } from "../../../packages/mcp-server/src/clients/github-projects-client";
+import { BridgeMindClient } from "./clients/bridgemind-client";
+import { GitHubProjectsClient } from "./clients/github-projects-client";
 
 export function createBridgeMindClient() {
   return new BridgeMindClient();

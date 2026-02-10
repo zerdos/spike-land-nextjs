@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 // Mock the clients as classes (constructors)
-vi.mock("../../../packages/mcp-server/src/clients/bridgemind-client", () => {
+vi.mock("./clients/bridgemind-client", () => {
   return {
     BridgeMindClient: class MockBridgeMindClient {
       isAvailable() {
@@ -11,7 +11,7 @@ vi.mock("../../../packages/mcp-server/src/clients/bridgemind-client", () => {
   };
 });
 
-vi.mock("../../../packages/mcp-server/src/clients/github-projects-client", () => {
+vi.mock("./clients/github-projects-client", () => {
   return {
     GitHubProjectsClient: class MockGitHubProjectsClient {
       isAvailable() {
