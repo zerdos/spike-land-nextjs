@@ -17,9 +17,6 @@ Feature: Orbit Connections and Reminders
     When I update the meetup status to "INTERESTED"
     Then I should see the status "INTERESTED" on the page
 
-  @skip
-  # SKIP REASON: Missing step definitions for Orbit login and workspace background
-  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   Scenario: Managing Reminders
     Given I have a connection "Jane Doe"
     When I navigate to the Reminders page
