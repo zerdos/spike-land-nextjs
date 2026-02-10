@@ -50,4 +50,4 @@ Feature: Pricing Page Verification
     Then I should see "Coming Soon" text
 
   Scenario: Pricing page shows integrated AI enhancement info
-    Then I should see "Integrated AI Image Enhancement" text
+    Then I should see "Pixel AI Photo Enhancement" text
