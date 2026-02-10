@@ -1,8 +1,7 @@
 "use client";
 
-import { SignInButton } from "@/components/auth/sign-in-button";
 import { cn } from "@/lib/utils";
-import { ExternalLink, Loader2, LogIn } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -21,7 +20,6 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
   );
   const [error, setError] = useState<string | null>(null);
   const [errorCodespaceUrl, setErrorCodespaceUrl] = useState<string | null>(null);
-  const [isAuthError, setIsAuthError] = useState(false);
   const router = useRouter();
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasAttemptedGeneration = useRef(false);
@@ -31,7 +29,6 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
     setMessages([]);
     setError(null);
     setErrorCodespaceUrl(null);
-    setIsAuthError(false);
     hasAttemptedGeneration.current = true;
 
     const controller = new AbortController();
@@ -46,10 +43,9 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
+        if (response.status === 429) {
           setStatus("error");
-          setIsAuthError(true);
-          setError("Sign in to generate apps for free");
+          setError("Rate limit reached. Please try again later or sign in for more.");
           return;
         }
         if (response.status === 202) {
@@ -141,37 +137,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
     };
   }, [startStreaming]);
 
-  // Auth error UI with sign in button
-  if (status === "error" && isAuthError) {
-    const callbackUrl = `/create/${path.join("/")}`;
-    return (
-      <div className={cn("flex flex-col items-center justify-center min-h-[50vh] p-8", className)}>
-        <div className="bg-gradient-to-br from-indigo-500/10 to-purple-600/10 border border-indigo-500/30 rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-500/25">
-            <LogIn className="w-8 h-8 text-white" />
-          </div>
-          <h3 className="text-2xl font-bold text-foreground mb-3">Sign in to continue</h3>
-          <p className="text-muted-foreground mb-2">
-            App generation is <span className="font-semibold text-indigo-400">completely free</span>
-            {" "}
-            for logged-in users.
-          </p>
-          <p className="text-sm text-muted-foreground mb-6">
-            Create unlimited apps with AI-powered generation.
-          </p>
-          <SignInButton
-            callbackUrl={callbackUrl}
-            className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25 text-base font-medium"
-          >
-            <LogIn className="mr-2 h-5 w-5" />
-            Sign In to Generate
-          </SignInButton>
-        </div>
-      </div>
-    );
-  }
-
-  // Generic error UI
+  // Error UI
   if (status === "error") {
     return (
       <div className={cn("flex flex-col items-center justify-center min-h-[50vh] p-8", className)}>

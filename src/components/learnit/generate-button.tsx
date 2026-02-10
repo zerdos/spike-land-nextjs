@@ -25,9 +25,8 @@ export function GenerateButton({ path, topicName }: GenerateButtonProps) {
       });
 
       if (!res.ok) {
-        if (res.status === 401) {
-          toast.error("You must be logged in to generate content.");
-          // Optionally redirect to login
+        if (res.status === 429) {
+          toast.error("Rate limit reached. Please try again later or sign in for more.");
           return;
         }
         throw new Error("Generation failed");
