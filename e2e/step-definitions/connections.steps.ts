@@ -93,7 +93,7 @@ When(
       this.page!.getByLabel(/due date/i),
     );
     if (await dateInput.count() > 0) {
-      await dateInput.fill(tomorrow.toISOString().split("T")[0]);
+      await dateInput.fill(tomorrow.toISOString().split("T")[0] ?? "");
     }
     await this.page!.getByRole("button", { name: /Create|Save/i }).click();
   },

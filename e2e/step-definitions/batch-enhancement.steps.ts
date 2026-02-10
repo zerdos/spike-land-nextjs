@@ -10,7 +10,6 @@ import type { CustomWorld } from "../support/world";
 
 // Mock data
 const mockAlbumId = "test-album-123";
-const mockUserId = "user-123";
 
 interface MockImage {
   id: string;

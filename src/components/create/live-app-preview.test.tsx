@@ -2,16 +2,13 @@ import { render, screen, act } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { LiveAppPreview } from "./live-app-preview";
 
-// Track observer callbacks so we can trigger them manually
-let intersectionCallback: IntersectionObserverCallback;
-
 class IntersectionObserverMock implements IntersectionObserver {
   readonly root = null;
   readonly rootMargin = "";
   readonly thresholds: readonly number[] = [];
 
-  constructor(callback: IntersectionObserverCallback) {
-    intersectionCallback = callback;
+  constructor(_callback: IntersectionObserverCallback) {
+    // callback stored for potential future use in intersection tests
   }
 
   observe = vi.fn();
