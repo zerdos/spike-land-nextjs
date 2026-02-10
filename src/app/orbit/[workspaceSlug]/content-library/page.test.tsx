@@ -10,10 +10,10 @@ vi.mock("next/navigation", () => ({
   useParams: () => ({ workspaceSlug: "test-workspace" }),
 }));
 
-// Mock fetch for workspace API
+// Mock fetch for workspace API — the by-slug endpoint returns the workspace directly
 global.fetch = vi.fn().mockResolvedValue({
   ok: true,
-  json: async () => ({ workspace: { id: "test-workspace-id" } }),
+  json: async () => ({ id: "test-workspace-id", slug: "test-workspace", name: "Test Workspace" }),
 } as Response);
 
 // Mock hooks

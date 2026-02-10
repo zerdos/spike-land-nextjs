@@ -35,8 +35,8 @@ export default function ContentLibraryPage() {
       const { data } = await tryCatch(
         fetch(`/api/workspaces/by-slug/${workspaceSlug}`).then((r) => r.json()),
       );
-      if (data?.workspace?.id) {
-        setWorkspaceId(data.workspace.id);
+      if (data?.id) {
+        setWorkspaceId(data.id);
       }
     }
     fetchWorkspaceId();

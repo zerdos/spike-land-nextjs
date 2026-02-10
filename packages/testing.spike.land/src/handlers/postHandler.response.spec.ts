@@ -1,8 +1,7 @@
 import { type AnthropicProvider, createAnthropic } from "@ai-sdk/anthropic";
 import type { CoreMessage, StreamTextResult } from "ai";
-import { streamText } from "ai";
+import { jsonSchema, streamText, tool } from "ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { z } from "zod";
 import type { Code } from "../chatRoom";
 import type Env from "../env";
 import type { McpTool } from "../mcp";
@@ -44,6 +43,10 @@ describe("PostHandler - Response", () => {
     mockEnv = createMockEnv();
     mockStorageService = createMockStorageService();
     setupStorageServiceMock(StorageService, mockStorageService);
+
+    // Mock AI SDK helpers to pass through their config
+    vi.mocked(tool).mockImplementation((config: any) => config);
+    vi.mocked(jsonSchema).mockImplementation((schema: any) => schema);
 
     postHandler = new PostHandler(mockCode, mockEnv);
   });
@@ -128,11 +131,7 @@ describe("PostHandler - Response", () => {
   });
 
   describe("createStreamResponse", () => {
-    // SKIP REASON: Complex AI SDK streaming internals require mocking async generators
-    // CATEGORY: intentional
-    // TRACKING: #798
-    // ACTION: keep - Better covered by integration tests
-    it.skip("should create stream with correct parameters", async () => {
+    it("should create stream with correct parameters", async () => {
       const messages = [{ role: "user" as const, content: "Hello" }];
       const tools: McpTool[] = mockMcpServer.tools;
       const body: PostRequestBody = { messages: [] };
@@ -142,6 +141,8 @@ describe("PostHandler - Response", () => {
       );
       const mockStreamResponse = {
         toDataStreamResponse: mockToDataStreamResponse,
+        toUIMessageStreamResponse: mockToDataStreamResponse,
+        toTextStreamResponse: mockToDataStreamResponse,
         warnings: [],
         usage: {},
         sources: [],
@@ -208,22 +209,21 @@ describe("PostHandler - Response", () => {
         model: "claude-4-sonnet-20250514",
         system: expect.stringContaining("CodeSpace: test-space"),
         messages,
-        tools: tools.reduce((acc, tool) => {
-          acc[tool.name] = {
-            description: tool.description,
-            parameters: expect.any(Object), // Zod schema object
+        tools: tools.reduce((acc, t) => {
+          acc[t.name] = {
+            description: t.description,
+            parameters: expect.any(Object),
             execute: expect.any(Function),
           };
           return acc;
         }, {} as Record<string, {
           description: string;
-          parameters: z.ZodTypeAny;
+          parameters: unknown;
           execute: (
             args: Record<string, unknown>,
           ) => Promise<Record<string, unknown>>;
         }>),
         toolChoice: "auto",
-        maxSteps: 10,
         onStepFinish: expect.any(Function),
       });
 
@@ -231,7 +231,6 @@ describe("PostHandler - Response", () => {
         headers: expect.objectContaining({
           "Access-Control-Allow-Origin": "*",
         }),
-        getErrorMessage: expect.any(Function),
       });
     });
 

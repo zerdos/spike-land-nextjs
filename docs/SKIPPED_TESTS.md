@@ -35,8 +35,8 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 
 ## Current Inventory
 
-**Total Skipped Tests:** 18 unit tests + 21 E2E scenarios
-**Files with Skips:** 8 (unit) + 8 (E2E feature files)
+**Total Skipped Tests:** 16 unit tests + 21 E2E scenarios
+**Files with Skips:** 6 (unit) + 8 (E2E feature files)
 
 **Status Summary:**
 
@@ -81,12 +81,12 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 | ----------------------------------------------------- | ----------------------------------------- | --------------------------- | ------ |
 | `packages/code/src/@/lib/__tests__/lru-cache.spec.ts` | "should return false for expired entries" | TTL expiry with fake timers | Fixing |
 
-### Category F: Feature Under Review - 2 tests
+### Category F: Feature Under Review - ~~2~~ 0 tests (FIXED)
 
-| File                                                              | Test                                 | Reason                                      | Status        |
-| ----------------------------------------------------------------- | ------------------------------------ | ------------------------------------------- | ------------- |
-| `packages/code/src/__tests__/components/AutoSaveHistory.spec.tsx` | "CodeHistoryCarousel" (entire suite) | Monaco editor mocking or incomplete feature | Investigation |
-| `src/components/create/streaming-app.test.tsx`                    | "StreamingApp" (entire suite)        | Incomplete implementation                   | Fix           |
+All Category F tests have been fixed and un-skipped:
+
+- `packages/code/src/__tests__/components/AutoSaveHistory.spec.tsx` - Fixed by mocking Wrapper component
+- `src/components/create/streaming-app.test.tsx` - Fixed: added 401 handling, stable useRouter mock, sonner/lucide mocks
 
 ### Category G: E2E Tests - Missing Step Definitions - 13 scenarios
 
@@ -195,11 +195,6 @@ They all share the reason: `failing - needs to investigate`.
 
 | Feature File                                     | Scenario                                                                   | Status      |
 | ------------------------------------------------ | -------------------------------------------------------------------------- | ----------- |
-| `e2e/features/admin-dashboard.feature`           | "Admin sidebar navigation works"                                           | Investigate |
-| `e2e/features/admin-dashboard.feature`           | "Back to App link works"                                                   | Investigate |
-| `e2e/features/admin-dashboard.feature`           | "Navigate to System Health from dashboard"                                 | Investigate |
-| `e2e/features/admin-dashboard.feature`           | "Navigate to Token Economics from dashboard"                               | Investigate |
-| `e2e/features/admin-dashboard.feature`           | "Navigate to User Analytics from dashboard"                                | Investigate |
 | `e2e/features/admin-marketing-analytics.feature` | "Marketing page is accessible from admin sidebar"                          | Investigate |
 | `e2e/features/admin-sitemap.feature`             | "Open route in new tab"                                                    | Investigate |
 | `e2e/features/admin-sitemap.feature`             | "Route cards show loaded state after iframe loads"                         | Investigate |

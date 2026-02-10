@@ -26,9 +26,9 @@ export const serveWithCache = (
 
   const isAsset = (request: Request) => {
     const url = new URL(request.url);
-    const pathname = url.pathname.startsWith("/")
-      ? url.pathname.slice(1)
-      : url.pathname;
+    const pathname = decodeURIComponent(
+      url.pathname.startsWith("/") ? url.pathname.slice(1) : url.pathname,
+    );
     const assetPath = pathname.startsWith(ASSET_HASH + "/")
       ? pathname.slice(ASSET_HASH.length + 1)
       : pathname;
@@ -71,9 +71,9 @@ export const serveWithCache = (
       }
 
       const url = new URL(request.url);
-      const pathname = url.pathname.startsWith("/")
-        ? url.pathname.slice(1)
-        : url.pathname;
+      const pathname = decodeURIComponent(
+        url.pathname.startsWith("/") ? url.pathname.slice(1) : url.pathname,
+      );
       const filePath = pathname.startsWith(ASSET_HASH + "/")
         ? pathname.slice(ASSET_HASH.length + 1)
         : pathname;

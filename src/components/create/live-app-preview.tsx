@@ -2,7 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { AlertTriangle } from "lucide-react";
+import { Code2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const CDN_BASE = "https://testing.spike.land";
@@ -88,15 +88,18 @@ export function LiveAppPreview({
         </div>
       )}
 
-      {/* Error fallback */}
+      {/* Error fallback — styled placeholder matching app card design */}
       {state === "error" && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-muted/50 text-muted-foreground">
-          <AlertTriangle className="w-6 h-6" />
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-primary/10 via-muted to-primary/5">
+          <div className="rounded-full bg-primary/10 p-3">
+            <Code2 className="w-8 h-8 text-primary/60" />
+          </div>
           {fallbackTitle && (
-            <span className="text-xs text-center px-2 truncate max-w-full">
+            <span className="text-sm font-medium text-foreground/70 text-center px-4 line-clamp-2 max-w-[80%]">
               {fallbackTitle}
             </span>
           )}
+          <span className="text-xs text-muted-foreground">Preview unavailable</span>
         </div>
       )}
 

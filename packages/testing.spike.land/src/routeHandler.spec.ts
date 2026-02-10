@@ -98,11 +98,23 @@ describe("RouteHandler", () => {
     });
 
     describe("handleWebsocketRoute", () => {
-      // SKIP REASON: WebSocket upgrade (status 101) not supported in Node.js test environment
-      // CATEGORY: environment
-      // TRACKING: #798
-      // ACTION: keep - Requires Cloudflare Workers runtime, better tested via E2E
-      it.skip("should handle websocket upgrade", async () => {
+      it("should handle websocket upgrade", async () => {
+        // Mock Response to support Cloudflare Workers' webSocket property and 101 status
+        const OrigResponse = globalThis.Response;
+        vi.stubGlobal("Response", function(this: any, body: any, init: any) {
+          if (init?.status === 101) {
+            // Cloudflare Workers Response supports 101 + webSocket; Node.js doesn't
+            return {
+              status: 101,
+              statusText: init.statusText || "",
+              webSocket: init.webSocket,
+              headers: new Headers(),
+              body: null,
+            };
+          }
+          return new OrigResponse(body, init);
+        });
+
         const request = new Request("https://example.com/websocket", {
           headers: new Headers({ "Upgrade": "websocket" }),
         });
@@ -117,6 +129,9 @@ describe("RouteHandler", () => {
         expect(response.webSocket).toHaveProperty("send");
         expect(response.webSocket).toHaveProperty("close");
         expect(mockCode.wsHandler?.handleWebsocketSession).toHaveBeenCalled();
+
+        // Restore original Response
+        vi.stubGlobal("Response", OrigResponse);
       });
     });
 

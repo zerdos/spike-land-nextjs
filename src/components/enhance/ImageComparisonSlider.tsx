@@ -228,6 +228,7 @@ export function ImageComparisonSlider({
 
         {/* Divider line with cyan glow */}
         <div
+          data-testid="slider-divider"
           className="absolute top-0 bottom-0 w-1 bg-primary shadow-[0_0_12px_rgba(0,229,255,0.6)] pointer-events-none"
           style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
         >

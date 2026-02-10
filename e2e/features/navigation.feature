@@ -71,8 +71,7 @@ Feature: Site Navigation
     And I click outside the dropdown
     Then the dropdown menu should not be visible
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @flaky
   Scenario: Clicking avatar again closes dropdown
     When I am logged in as "Grace Green" with email "grace@example.com"
     And I click on the user avatar

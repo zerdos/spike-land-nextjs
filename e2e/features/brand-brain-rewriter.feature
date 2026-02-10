@@ -64,8 +64,6 @@ Feature: Brand Brain Content Rewriter
     Then the "Rewrite with AI" button should be enabled
 
   @brand-brain
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Submit content for rewriting
     When I navigate to the rewriter page
     And I enter draft content "Check out our cheap products today!"

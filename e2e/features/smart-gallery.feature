@@ -35,8 +35,6 @@ Feature: Pixel Smart Gallery
     Then the previous image should be selected
 
   @grid @keyboard
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Navigation wraps around at grid boundaries
     Given I am viewing an album gallery page
     And I have selected the first image
@@ -53,8 +51,6 @@ Feature: Pixel Smart Gallery
     And the image should have aria-selected true
 
   @grid
-  # SKIP REASON: expect(received).not.toBe(expected) // Object.is equality
-  @skip
   Scenario: Auto-cycle advances selection in grid mode
     Given I am viewing an album gallery page with auto-cycle interval of 3 seconds
     And I have selected the first image
@@ -108,16 +104,12 @@ Feature: Pixel Smart Gallery
     Then I should see the next image in the slideshow
 
   @slideshow @keyboard
-  # SKIP REASON: Error: Smart grid not visible after 15s. URL: http://localhost:3000/canvas/e2e-unlisted-album?tok...
-  @skip
   Scenario: Navigate slideshow with left arrow key
     Given I am in slideshow mode
     When I press the left arrow key
     Then I should see the previous image in the slideshow
 
   @slideshow @keyboard
-  # SKIP REASON: Error: Smart grid not visible after 15s. URL: http://localhost:3000/canvas/e2e-unlisted-album?tok...
-  @skip
   Scenario: Spacebar exits slideshow and returns to grid
     Given I am in slideshow mode
     When I press the spacebar key
@@ -125,8 +117,6 @@ Feature: Pixel Smart Gallery
     And the previously viewed image should still be selected
 
   @slideshow @keyboard
-  # SKIP REASON: Error: Smart grid not visible after 15s. URL: http://localhost:3000/canvas/e2e-unlisted-album?tok...
-  @skip
   Scenario: Escape key exits slideshow
     Given I am in slideshow mode
     When I press the Escape key
@@ -142,24 +132,18 @@ Feature: Pixel Smart Gallery
     Then I should see the enhanced image version again
 
   @slideshow @touch
-  # SKIP REASON: Error: Smart grid not visible after 15s on touch device. URL: http://localhost:3000/canvas/e2e-un...
-  @skip
   Scenario: Swipe left navigates to next image
     Given I am in slideshow mode on a touch device
     When I swipe left on the slideshow
     Then I should see the next image in the slideshow
 
   @slideshow @touch
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Swipe right navigates to previous image
     Given I am in slideshow mode on a touch device
     When I swipe right on the slideshow
     Then I should see the previous image in the slideshow
 
   @slideshow @touch
-  # SKIP REASON: Error: Smart grid not visible after 15s on touch device. URL: http://localhost:3000/canvas/e2e-un...
-  @skip
   Scenario: Long press shows original on touch device
     Given I am in slideshow mode on a touch device viewing an enhanced image
     When I long press on the slideshow image
@@ -207,8 +191,6 @@ Feature: Pixel Smart Gallery
   # =====================================
 
   @edge-case
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Single image album disables navigation
     Given I have an album with only one image
     When I enter slideshow mode
@@ -217,8 +199,6 @@ Feature: Pixel Smart Gallery
     And the arrow keys should not change the image
 
   @edge-case
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Empty album shows empty state message
     Given I have an empty album
     When I navigate to the album gallery page
@@ -226,8 +206,6 @@ Feature: Pixel Smart Gallery
     And I should see "No images in this album"
 
   @edge-case
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Images without enhanced versions use original in grid
     Given I have an album with images that have no enhanced versions
     When I am viewing the album gallery page
@@ -236,8 +214,6 @@ Feature: Pixel Smart Gallery
     And the image should still have a green glow border
 
   @edge-case
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Images without enhanced versions use original in slideshow
     Given I have an album with images that have no enhanced versions
     When I enter slideshow mode
@@ -245,8 +221,6 @@ Feature: Pixel Smart Gallery
     And the B key peek should have no visible effect
 
   @edge-case
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Image load error shows fallback
     Given I have an album with an image that fails to load
     When I am viewing the album gallery page
@@ -298,15 +272,11 @@ Feature: Pixel Smart Gallery
   # =====================================
 
   @rotation
-  # SKIP REASON: Error: Smart grid not visible after 15s with rotation 90. URL: http://localhost:3000/canvas/e2e-u...
-  @skip
   Scenario: Grid applies rotation transform
     Given I am viewing an album gallery page with rotation 90 degrees
     Then the grid should be rotated by 90 degrees
 
   @rotation
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Slideshow applies rotation transform
     Given I am in slideshow mode with rotation 90 degrees
     Then the slideshow image should be rotated by 90 degrees

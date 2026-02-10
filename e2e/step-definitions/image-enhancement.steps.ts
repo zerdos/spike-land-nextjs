@@ -143,7 +143,7 @@ Given("I have an uploaded image", async function(this: CustomWorld) {
   });
 
   await mockTokenBalance(this, 10);
-  await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
+  await this.page.goto(`${this.baseUrl}/apps/pixel/${mockImageId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -159,7 +159,7 @@ Given("I have an enhanced image", async function(this: CustomWorld) {
   }, imageWithEnhancement);
 
   await mockTokenBalance(this, 10);
-  await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
+  await this.page.goto(`${this.baseUrl}/apps/pixel/${mockImageId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -190,7 +190,7 @@ Given(
     }, imageWithMultipleVersions);
 
     await mockTokenBalance(this, 20);
-    await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
+    await this.page.goto(`${this.baseUrl}/apps/pixel/${mockImageId}`);
     await this.page.waitForLoadState("networkidle");
   },
 );
@@ -222,6 +222,15 @@ Given("I have no uploaded images", async function(this: CustomWorld) {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ images: [] }),
+    });
+  });
+
+  // Also mock albums API - the main page uses useUserAlbums() hook which fetches /api/albums
+  await this.page.route("**/api/albums", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ albums: [] }),
     });
   });
 
@@ -418,7 +427,7 @@ When("I start uploading an image", async function(this: CustomWorld) {
 });
 
 When("I visit the image enhancement page", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
+  await this.page.goto(`${this.baseUrl}/apps/pixel/${mockImageId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -579,7 +588,7 @@ When(
   "I try to access that image's enhancement page",
   async function(this: CustomWorld) {
     // Try to access another user's image
-    await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
+    await this.page.goto(`${this.baseUrl}/apps/pixel/${mockImageId}`);
     await this.page.waitForLoadState("networkidle");
   },
 );
@@ -588,7 +597,7 @@ When(
   "I return from successful Stripe checkout",
   async function(this: CustomWorld) {
     await this.page.goto(
-      `${this.baseUrl}/pixel/${mockImageId}?success=true&session_id=cs_test_123`,
+      `${this.baseUrl}/apps/pixel/${mockImageId}?success=true&session_id=cs_test_123`,
     );
     await this.page.waitForLoadState("networkidle");
   },
@@ -656,10 +665,10 @@ Then(
   "I should be redirected to the image enhancement page",
   async function(this: CustomWorld) {
     // Wait for navigation to complete
-    await this.page.waitForURL(/\/pixel\//, { timeout: 10000 }).catch(() => {
+    await this.page.waitForURL(/\/apps\/pixel\//, { timeout: 10000 }).catch(() => {
       // If navigation didn't happen, fail with current URL
       const url = this.page.url();
-      expect(url).toContain("/pixel/");
+      expect(url).toContain("/apps/pixel/");
     });
   },
 );

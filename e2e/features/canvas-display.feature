@@ -54,8 +54,6 @@ Feature: Canvas Smart Photo Frame Display
     Then I should NOT see the Canvas Display QR panel
 
   @qr-panel
-  # SKIP REASON: locator.click: Timeout 15000ms exceeded.
-  @skip
   Scenario: QR panel settings controls work
     Given I have an UNLISTED album with images
     And I am on my album detail page
@@ -75,8 +73,6 @@ Feature: Canvas Smart Photo Frame Display
     And the clipboard should contain the canvas URL
 
   @qr-panel
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Open Canvas button opens new tab
     Given I have an UNLISTED album with images
     And I am on my album detail page
@@ -85,8 +81,6 @@ Feature: Canvas Smart Photo Frame Display
 
   # Slideshow Behavior Tests
   @slideshow
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Slideshow advances automatically
     Given I have an UNLISTED album with multiple images
     When I navigate to the canvas page with interval "5"
@@ -94,16 +88,12 @@ Feature: Canvas Smart Photo Frame Display
     Then the displayed image should have changed
 
   @slideshow
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Random order shuffles images
     Given I have an UNLISTED album with multiple images
     When I navigate to the canvas page with order "random"
     Then the images should be displayed in a shuffled order
 
   @slideshow
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Album order preserves sequence
     Given I have an UNLISTED album with multiple images
     When I navigate to the canvas page with order "album"
@@ -111,8 +101,6 @@ Feature: Canvas Smart Photo Frame Display
 
   # Accessibility Tests
   @accessibility
-  # SKIP REASON: Error: expect(received).toBe(expected) // Object.is equality
-  @skip
   Scenario: Canvas page hides cursor after idle
     Given I have an UNLISTED album with images
     When I navigate to the canvas page

@@ -252,8 +252,13 @@ When(
     const pipelineCard = this.page.locator("[data-pipeline-id]").filter({
       has: this.page.getByText(pipelineName),
     });
-    const editButton = pipelineCard.getByRole("button", { name: /edit/i });
-    await editButton.click();
+    // Open the actions dropdown menu (MoreVertical "..." button)
+    const menuTrigger = pipelineCard.getByRole("button", { name: /open actions menu/i });
+    await menuTrigger.click();
+    // Click the Edit menu item
+    const editItem = this.page.getByRole("menuitem", { name: /edit/i });
+    await expect(editItem).toBeVisible({ timeout: 5000 });
+    await editItem.click();
     await this.page.waitForTimeout(300);
   },
 );
@@ -267,10 +272,13 @@ When(
         has: this.page.getByText(/default|system/i),
       })
       .first();
-    const forkButton = systemPipelineCard.getByRole("button", {
-      name: /fork|copy/i,
-    });
-    await forkButton.click();
+    // Open the actions dropdown menu
+    const menuTrigger = systemPipelineCard.getByRole("button", { name: /open actions menu/i });
+    await menuTrigger.click();
+    // Click the Fork menu item
+    const forkItem = this.page.getByRole("menuitem", { name: /fork/i });
+    await expect(forkItem).toBeVisible({ timeout: 5000 });
+    await forkItem.click();
     await this.page.waitForTimeout(300);
   },
 );
@@ -284,10 +292,13 @@ When(
         has: this.page.getByText(/community|public/i),
       })
       .first();
-    const forkButton = publicPipelineCard.getByRole("button", {
-      name: /fork|copy/i,
-    });
-    await forkButton.click();
+    // Open the actions dropdown menu
+    const menuTrigger = publicPipelineCard.getByRole("button", { name: /open actions menu/i });
+    await menuTrigger.click();
+    // Click the Fork menu item
+    const forkItem = this.page.getByRole("menuitem", { name: /fork/i });
+    await expect(forkItem).toBeVisible({ timeout: 5000 });
+    await forkItem.click();
     await this.page.waitForTimeout(300);
   },
 );
@@ -298,8 +309,13 @@ When(
     const pipelineCard = this.page.locator("[data-pipeline-id]").filter({
       has: this.page.getByText(pipelineName),
     });
-    const deleteButton = pipelineCard.getByRole("button", { name: /delete/i });
-    await deleteButton.click();
+    // Open the actions dropdown menu
+    const menuTrigger = pipelineCard.getByRole("button", { name: /open actions menu/i });
+    await menuTrigger.click();
+    // Click the Delete menu item
+    const deleteItem = this.page.getByRole("menuitem", { name: /delete/i });
+    await expect(deleteItem).toBeVisible({ timeout: 5000 });
+    await deleteItem.click();
     await this.page.waitForTimeout(300);
   },
 );

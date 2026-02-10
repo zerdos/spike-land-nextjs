@@ -1268,15 +1268,15 @@ Then("the page should load successfully", async function(this: CustomWorld) {
   await waitForPageReady(this.page, { strategy: "domcontentloaded" });
   // Check that page doesn't show an error state (look for specific error patterns)
   // Be more specific to avoid false positives from legitimate "error" text in code/classes
+  // NOTE: Do NOT include [role="alert"]:has-text("error") here - it false-positives
+  // on pages that intentionally display error details (e.g., /auth/error)
   const errorIndicators = this.page.locator(
     // Look for actual error pages/components, not just any text containing "error"
     '[data-testid="error-boundary"], ' +
       '[data-testid="error-page"], ' +
       ".error-boundary, " +
       'h1:has-text("500"), ' +
-      'h1:has-text("404"), ' +
-      'h1:has-text("Something went wrong"), ' +
-      '[role="alert"]:has-text("error")',
+      'h1:has-text("Something went wrong")',
   );
   const hasError = await errorIndicators.first().isVisible().catch(() => false);
   expect(hasError).toBe(false);

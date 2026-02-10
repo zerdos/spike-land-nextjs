@@ -267,6 +267,6 @@ Then(
 
 // "I view the image enhancement page"
 When("I view the image enhancement page", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/pixel/${mockImageId}`);
+  await this.page.goto(`${this.baseUrl}/apps/pixel/${mockImageId}`);
   await this.page.waitForLoadState("networkidle");
 });

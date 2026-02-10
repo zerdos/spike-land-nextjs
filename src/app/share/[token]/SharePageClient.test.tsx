@@ -199,7 +199,7 @@ describe("SharePageClient", () => {
     render(<SharePageClient {...defaultProps} />);
 
     const footerLink = screen.getByRole("link", {
-      name: /enhance your own photos with pixel/i,
+      name: /enhanced with pixel/i,
     });
     expect(footerLink).toBeInTheDocument();
     expect(footerLink).toHaveAttribute("href", "/apps/pixel");

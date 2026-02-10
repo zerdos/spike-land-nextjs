@@ -34,6 +34,46 @@ let originalConsoleError: typeof console.error;
 const BATCH_DELAY_MS = 2000;
 const MAX_BATCH_SIZE = 10;
 
+// Dedup: fingerprint -> last seen timestamp
+const recentErrors = new Map<string, number>();
+const DEDUP_WINDOW_MS = 60_000;
+const MAX_DEDUP_ENTRIES = 100;
+
+// Stack trace patterns to skip (internal logging infrastructure)
+const STACK_SKIP_PATTERNS = ["console-capture", "structured-logger", "node_modules"];
+
+function getErrorFingerprint(error: CapturedError): string {
+  return `${error.message}:${error.sourceFile || ""}:${error.sourceLine || ""}`;
+}
+
+function isDuplicate(error: CapturedError): boolean {
+  const fingerprint = getErrorFingerprint(error);
+  const now = Date.now();
+
+  // Clean expired entries if map is too large
+  if (recentErrors.size > MAX_DEDUP_ENTRIES) {
+    for (const [key, timestamp] of recentErrors) {
+      if (now - timestamp > DEDUP_WINDOW_MS) {
+        recentErrors.delete(key);
+      }
+    }
+  }
+
+  const lastSeen = recentErrors.get(fingerprint);
+  if (lastSeen && now - lastSeen < DEDUP_WINDOW_MS) {
+    return true;
+  }
+
+  recentErrors.set(fingerprint, now);
+  return false;
+}
+
+function isFromStructuredLogger(): boolean {
+  const stack = new Error().stack;
+  if (!stack) return false;
+  return stack.includes("structured-logger");
+}
+
 /**
  * Get base URL for internal API calls
  */
@@ -60,7 +100,7 @@ function parseStackTrace(stack?: string): {
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
     if (!line) continue;
-    if (line.includes("console-capture") || line.includes("node_modules")) {
+    if (STACK_SKIP_PATTERNS.some((pattern) => line.includes(pattern))) {
       continue;
     }
 
@@ -146,6 +186,9 @@ export function initializeServerConsoleCapture(): void {
     // Skip if in workflow environment
     if (process.env.WORKFLOW_RUNTIME) return;
 
+    // Skip structured logger output to avoid polluting error DB
+    if (isFromStructuredLogger()) return;
+
     // Create captured error
     const firstArg = args[0];
     let message: string;
@@ -179,6 +222,9 @@ export function initializeServerConsoleCapture(): void {
       environment: "BACKEND",
     };
 
+    // Skip duplicate errors within dedup window
+    if (isDuplicate(capturedError)) return;
+
     queueError(capturedError);
   };
 }
@@ -188,4 +234,17 @@ export function initializeServerConsoleCapture(): void {
  */
 export async function flushServerErrors(): Promise<void> {
   await flushErrors();
+}
+
+/**
+ * Reset internal state (for testing only)
+ */
+export function _resetForTesting(): void {
+  pendingErrors = [];
+  if (flushTimeout) {
+    clearTimeout(flushTimeout);
+    flushTimeout = null;
+  }
+  isInitialized = false;
+  recentErrors.clear();
 }

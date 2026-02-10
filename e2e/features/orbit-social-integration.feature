@@ -10,7 +10,8 @@ Feature: Orbit Social Media Integration
 
   # LinkedIn Connection Flow
   @linkedin
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: Settings page uses server-side Prisma queries requiring DB seeding
+  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   @skip
   Scenario: View LinkedIn connection option in settings
     When I navigate to the workspace settings page
@@ -20,6 +21,8 @@ Feature: Orbit Social Media Integration
 
   @skip @requires-oauth
   @linkedin
+  # SKIP REASON: Requires real LinkedIn OAuth flow infrastructure
+  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   Scenario: Initiate LinkedIn OAuth flow
     When I navigate to the workspace settings page
     And I click the "Connect LinkedIn" button
@@ -27,7 +30,8 @@ Feature: Orbit Social Media Integration
     And the authorization URL should include the correct scopes
 
   @linkedin
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: Settings page uses server-side Prisma queries requiring DB seeding
+  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   @skip
   Scenario: View connected LinkedIn account in settings
     Given I have a LinkedIn account "Test Company" connected
@@ -38,8 +42,6 @@ Feature: Orbit Social Media Integration
 
   # Unified Stream with LinkedIn
   @linkedin @streams
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: LinkedIn posts appear in unified stream
     Given I have a LinkedIn account "Test Company" connected
     And the account has recent posts
@@ -49,8 +51,6 @@ Feature: Orbit Social Media Integration
     And LinkedIn posts should have the LinkedIn icon badge
 
   @linkedin @streams
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Filter stream by LinkedIn platform
     Given I have multiple social accounts connected
     When I navigate to the streams page
@@ -59,8 +59,6 @@ Feature: Orbit Social Media Integration
     And other platform posts should be hidden
 
   @linkedin @streams
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View LinkedIn post details
     Given I have a LinkedIn account with posts
     When I navigate to the streams page
@@ -72,8 +70,6 @@ Feature: Orbit Social Media Integration
 
   # LinkedIn Engagement
   @linkedin @engagement
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Like a LinkedIn post from stream
     Given I have a LinkedIn account "Test Company" connected
     And there is a LinkedIn post in the stream
@@ -82,8 +78,6 @@ Feature: Orbit Social Media Integration
     And the post should show as liked
 
   @linkedin @engagement
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Reply to a LinkedIn post from stream
     Given I have a LinkedIn account "Test Company" connected
     And there is a LinkedIn post in the stream
@@ -96,6 +90,8 @@ Feature: Orbit Social Media Integration
 
   # LinkedIn Post Creation
   @skip @linkedin @create-post
+  # SKIP REASON: Missing step definitions for post creation flow
+  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   Scenario: Create a text post on LinkedIn
     Given I have a LinkedIn account "Test Company" connected
     When I navigate to create a new post
@@ -106,6 +102,8 @@ Feature: Orbit Social Media Integration
     And I should see a success message
 
   @skip @linkedin @create-post
+  # SKIP REASON: Missing step definitions for post creation flow
+  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   Scenario: Create a post with link on LinkedIn
     Given I have a LinkedIn account "Test Company" connected
     When I navigate to create a new post
@@ -137,8 +135,6 @@ Feature: Orbit Social Media Integration
 
   # Error Handling
   @linkedin @error-handling
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Handle expired LinkedIn token
     Given I have a LinkedIn account with expired token
     When I navigate to the streams page
@@ -146,18 +142,18 @@ Feature: Orbit Social Media Integration
     And I should see "Reconnect" option for LinkedIn
 
   @linkedin @error-handling
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Handle LinkedIn API rate limit
     Given I have a LinkedIn account connected
     And the LinkedIn API is rate limited
-    When I try to fetch LinkedIn posts
+    When I navigate to the streams page
+    And I try to fetch LinkedIn posts
     Then I should see a rate limit warning
     And posts from other platforms should still load
 
   # Account Management
   @linkedin @account-management
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: Settings page uses server-side Prisma queries requiring DB seeding
+  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   @skip
   Scenario: Disconnect LinkedIn account
     Given I have a LinkedIn account "Test Company" connected

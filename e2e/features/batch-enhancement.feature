@@ -7,8 +7,6 @@ Feature: Batch Image Enhancement
   Background:
     Given I am logged in as "Test User" with email "test@example.com"
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Successfully enhance all images in album
     Given I have an album with 3 unenhanced images
     And I have at least 50 tokens
@@ -20,8 +18,6 @@ Feature: Batch Image Enhancement
     And all images should show "completed" status when complete
     And my token balance should be reduced by 6 tokens
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Batch enhancement with insufficient tokens
     Given I have an album with 10 images
     And I have only 5 tokens
@@ -32,8 +28,6 @@ Feature: Batch Image Enhancement
     And the enhance button should be disabled
     And I should see "Get Tokens" button
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Cancel batch enhancement dialog
     Given I have an album with 5 images
     And I have at least 20 tokens
@@ -44,8 +38,6 @@ Feature: Batch Image Enhancement
     And no enhancements should start
     And no tokens should be deducted
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View tier selection with cost preview
     Given I have an album with 5 images
     When I navigate to my album
@@ -55,8 +47,6 @@ Feature: Batch Image Enhancement
     And I should see "TIER_4K" option with cost "50 tokens"
     And each tier should show tokens per image calculation
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Select different enhancement tier
     Given I have an album with 3 images
     And I have at least 30 tokens
@@ -67,8 +57,6 @@ Feature: Batch Image Enhancement
     When I select "TIER_4K" enhancement tier
     Then I should see total cost of "30 tokens"
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Batch enhancement progress tracking
     Given I have an album with 4 images
     And I have at least 20 tokens
@@ -82,8 +70,6 @@ Feature: Batch Image Enhancement
     And completed images should show checkmark icon
     And processing images should show spinner icon
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Skip already enhanced images
     Given I have an album with 5 images
     And 2 images are already enhanced at "TIER_1K"
@@ -97,8 +83,6 @@ Feature: Batch Image Enhancement
     Then only 3 images should be processed
     And already enhanced images should be skipped
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Handle batch enhancement errors gracefully
     Given I have an album with 5 images
     And I have at least 20 tokens
@@ -112,8 +96,6 @@ Feature: Batch Image Enhancement
     And I should see error count in summary
     And I should see "Retry Failed" button for failed images
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Refresh token balance after enhancement
     Given I have an album with 2 images
     And I have 20 tokens
@@ -125,8 +107,6 @@ Feature: Batch Image Enhancement
     Then my token balance should update to "16 tokens"
     And the balance should refresh automatically
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Close dialog during enhancement processing
     Given I have an album with 3 images
     And I have at least 10 tokens
@@ -141,8 +121,6 @@ Feature: Batch Image Enhancement
     And enhancements should continue in background
     And I should see toast notification about background processing
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Batch enhancement with maximum batch size
     Given I have an album with 25 images
     And I have at least 100 tokens
@@ -151,16 +129,12 @@ Feature: Batch Image Enhancement
     Then I should see a warning about maximum batch size of 20
     And I should see "Only first 20 images will be enhanced"
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Empty album shows no enhance button
     Given I have an empty album
     When I navigate to my album
     Then I should not see "Enhance All" button
     And I should see "No images in this album" message
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: All images already enhanced
     Given I have an album with 5 images
     And all 5 images are already enhanced at "TIER_2K"
@@ -171,8 +145,6 @@ Feature: Batch Image Enhancement
     And the enhance button should be disabled
     And total cost should be "0 tokens"
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Poll job status until completion
     Given I have an album with 2 images
     And I have at least 10 tokens
@@ -185,8 +157,6 @@ Feature: Batch Image Enhancement
     And polling interval should increase for long-running jobs
     And polling should stop when all jobs are complete
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Retry failed batch enhancements
     Given I have an album with 4 images
     And I have at least 20 tokens
@@ -198,8 +168,6 @@ Feature: Batch Image Enhancement
     And successful images should not be retried
     And my token balance should only be charged for retried images
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Real-time status updates via polling
     Given I have an album with 3 images
     And I have at least 10 tokens
@@ -209,8 +177,6 @@ Feature: Batch Image Enhancement
     And I should see transition from "pending" to "enhancing" to "completed"
     And completion percentage should increase progressively
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Navigate away during batch processing
     Given I have an album with 5 images
     And I have at least 20 tokens
@@ -221,8 +187,6 @@ Feature: Batch Image Enhancement
     Then I should see all enhancements completed
     And enhanced images should display properly
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Batch enhancement permission check
     Given another user has an album
     And I am logged in as a different user

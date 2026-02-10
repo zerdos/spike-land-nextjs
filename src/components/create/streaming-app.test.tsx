@@ -1,21 +1,30 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { StreamingApp } from "./streaming-app";
+
+const mockRouter = {
+  refresh: vi.fn(),
+  push: vi.fn(),
+};
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    refresh: vi.fn(),
-    push: vi.fn(),
-  }),
+  useRouter: () => mockRouter,
+}));
+
+vi.mock("sonner", () => ({
+  toast: {
+    error: vi.fn(),
+    info: vi.fn(),
+  },
+}));
+
+vi.mock("lucide-react", () => ({
+  ExternalLink: () => null,
+  Loader2: () => null,
 }));
 
 const fetchMock = vi.fn();
 
-// SKIP REASON: Fix tests for StreamingApp component
-// CATEGORY: unfinished
-// TRACKING: #1083
-// ACTION: fix
-describe.skip("StreamingApp", () => {
+describe("StreamingApp", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", fetchMock);
     fetchMock.mockReset();
@@ -25,11 +34,9 @@ describe.skip("StreamingApp", () => {
     vi.unstubAllGlobals();
   });
 
-  // SKIP REASON: Fix tests for StreamingApp component
-  // CATEGORY: unfinished
-  // TRACKING: #1083
-  // ACTION: fix
-  it.skip("renders building state initially", async () => {
+  it("renders building state initially", async () => {
+    const { StreamingApp } = await import("./streaming-app");
+
     let resolveProm: (value: any) => void;
     const promise = new Promise((resolve) => {
       resolveProm = resolve;
@@ -41,7 +48,7 @@ describe.skip("StreamingApp", () => {
 
     expect(screen.getByText("Building your app...")).toBeInTheDocument();
 
-    // cleanup
+    // cleanup - resolve the pending fetch
     resolveProm!({
       ok: true,
       body: {
@@ -55,6 +62,7 @@ describe.skip("StreamingApp", () => {
   });
 
   it("shows error when fetch fails", async () => {
+    const { StreamingApp } = await import("./streaming-app");
     fetchMock.mockRejectedValue(new Error("Network error"));
 
     render(<StreamingApp path={["test", "app"]} />);
@@ -66,6 +74,7 @@ describe.skip("StreamingApp", () => {
   });
 
   it("shows error when unauthorized", async () => {
+    const { StreamingApp } = await import("./streaming-app");
     fetchMock.mockResolvedValue({
       ok: false,
       status: 401,

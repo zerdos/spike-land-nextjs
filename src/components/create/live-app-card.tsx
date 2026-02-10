@@ -34,7 +34,7 @@ export function LiveAppCard({
   return (
     <Link
       href={`/create/${slug}`}
-      className="group relative block rounded-xl overflow-hidden bg-white shadow-sm border border-border/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/30"
+      className="group relative block rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-sm border border-border/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/30"
       style={{ viewTransitionName: `app-card-${slug}` }}
     >
       {/* Live preview fills the card */}

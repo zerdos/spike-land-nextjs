@@ -67,9 +67,7 @@ Feature: Pixel MCP Tools Interface
     And I should see "Token Costs" card
     And I should see tier pricing information
 
-  @requires-db
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @requires-db @flaky
   Scenario: Check balance as authenticated user
     Given I am logged in as "Test User" with email "test@example.com"
     And I mock token balance of 100 tokens
@@ -92,9 +90,7 @@ Feature: Pixel MCP Tools Interface
     And I enter "A beautiful sunset over mountains" in the prompt textarea
     Then the "Generate" button should be enabled
 
-  @slow @requires-db
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @slow @requires-db @flaky
   Scenario: Generate image successfully
     Given I am logged in as "Test User" with email "test@example.com"
     And I have at least 10 tokens
@@ -110,9 +106,7 @@ Feature: Pixel MCP Tools Interface
     And I should see "Completed" status badge
     And I should see the job details
 
-  @slow @requires-db
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @slow @requires-db @flaky
   Scenario: Modify image successfully
     Given I am logged in as "Test User" with email "test@example.com"
     And I have at least 10 tokens
@@ -127,9 +121,7 @@ Feature: Pixel MCP Tools Interface
     Then I should see the modified image in the result area
     And I should see "Completed" status badge
 
-  @requires-db
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @requires-db @flaky
   Scenario: Check job status by ID
     Given I am logged in as "Test User" with email "test@example.com"
     And I mock a job status response for job "test-job-123"

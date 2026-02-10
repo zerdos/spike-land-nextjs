@@ -73,6 +73,13 @@ describe("SignInContent", () => {
       expect(privacyLink).toBeInTheDocument();
       expect(privacyLink).toHaveAttribute("href", "/privacy");
     });
+
+    it("should have Back to home link", () => {
+      render(<SignInContent />);
+      const homeLink = screen.getByRole("link", { name: /back to home/i });
+      expect(homeLink).toBeInTheDocument();
+      expect(homeLink).toHaveAttribute("href", "/");
+    });
   });
 
   describe("Error Handling", () => {

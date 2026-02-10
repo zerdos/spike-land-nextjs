@@ -5,8 +5,6 @@ Feature: LearnIt Interactive Wiki
     When I directly access "/" via URL
 
   @learnit
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Search and Navigate
     When I directly access "/learnit" via URL
     Then I should see "Learn anything."
@@ -15,8 +13,6 @@ Feature: LearnIt Interactive Wiki
     Then I should be redirected to "/learnit/testing"
 
   @learnit
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Generate Content (Mocked)
     Given I am logged in as a test user
     When I directly access "/learnit/new-topic" via URL

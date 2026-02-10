@@ -36,13 +36,47 @@ let isInitialized = false;
 const BATCH_DELAY_MS = 5000;
 const MAX_BATCH_SIZE = 10;
 
+// Dedup: fingerprint -> last seen timestamp
+const recentErrors = new Map<string, number>();
+const DEDUP_WINDOW_MS = 60_000;
+const MAX_DEDUP_ENTRIES = 100;
+
 // Store original console.error
 let originalConsoleError: typeof console.error;
+
+function getErrorFingerprint(error: CapturedError): string {
+  return `${error.message}:${error.sourceFile || ""}:${error.sourceLine || ""}`;
+}
+
+function isDuplicate(error: CapturedError): boolean {
+  const fingerprint = getErrorFingerprint(error);
+  const now = Date.now();
+
+  // Clean expired entries if map is too large
+  if (recentErrors.size > MAX_DEDUP_ENTRIES) {
+    for (const [key, timestamp] of recentErrors) {
+      if (now - timestamp > DEDUP_WINDOW_MS) {
+        recentErrors.delete(key);
+      }
+    }
+  }
+
+  const lastSeen = recentErrors.get(fingerprint);
+  if (lastSeen && now - lastSeen < DEDUP_WINDOW_MS) {
+    return true;
+  }
+
+  recentErrors.set(fingerprint, now);
+  return false;
+}
 
 /**
  * Queue error for batched sending
  */
 function queueError(error: CapturedError): void {
+  // Skip duplicate errors within dedup window
+  if (isDuplicate(error)) return;
+
   pendingErrors.push(error);
 
   if (pendingErrors.length >= MAX_BATCH_SIZE) {
@@ -99,6 +133,7 @@ function parseStackTrace(stack?: string): {
     // Skip internal browser/framework lines
     if (
       line.includes("console-capture") ||
+      line.includes("structured-logger") ||
       line.includes("node_modules") ||
       line.includes("<anonymous>")
     ) {
@@ -258,4 +293,17 @@ export function reportErrorBoundary(
     environment: "FRONTEND",
   };
   queueError(capturedError);
+}
+
+/**
+ * Reset internal state (for testing only)
+ */
+export function _resetForTesting(): void {
+  pendingErrors = [];
+  if (flushTimeout) {
+    clearTimeout(flushTimeout);
+    flushTimeout = null;
+  }
+  isInitialized = false;
+  recentErrors.clear();
 }

@@ -63,6 +63,7 @@ export function PipelineCard({
 
   return (
     <Card
+      data-pipeline-id={pipeline.id}
       className={`relative transition-all ${
         onSelect ? "cursor-pointer hover:border-primary/50" : ""
       } ${selected ? "border-primary ring-2 ring-primary/20" : ""}`}

@@ -19,41 +19,32 @@ Feature: Landing Page - CTA and Feature Cards
     And I click the primary CTA button
     Then I should be redirected to sign-in page
 
-  # Featured Apps Section Tests
+  # App Showcase Section Tests
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Landing page displays Featured Applications section
+  Scenario: Landing page displays app showcase section
     When I visit "/"
     Then the page should load successfully
-    And I should see "See the Transformation" heading
-    And I should see "blurry photo" text
+    And I should see platform feature cards
 
+  # PhotoMix Demo Section Tests
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Landing page displays Pixel app card
+  Scenario: Landing page displays PhotoMix demo section
     When I visit "/"
     Then the page should load successfully
-    And I should see the Pixel feature card
-    And I should see "AI Photo Restoration" text
-    And I should see "60 seconds" text
+    And I should see "Beyond" text
+    And I should see "Hybridization" text
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Pixel feature card has comparison preview
+  Scenario: PhotoMix demo has Synthesize Now button
     When I visit "/"
     Then the page should load successfully
-    And the Pixel feature card should display an image
+    And I should see "Synthesize Now" link
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Pixel feature card links to Pixel landing page
+  Scenario: Synthesize Now button navigates to photo mixer
     When I visit "/"
-    And I click on the Pixel feature card
-    Then I should be on the "/pixel" page
+    And I click the "Synthesize Now" link
+    Then I should be on the "/apps/pixel/mix" page
 
   # Platform Features Section Tests
   @fast
@@ -104,24 +95,13 @@ Feature: Landing Page - CTA and Feature Cards
     And the mobile menu sheet should not be visible
     And I should see the public pages mobile menu button
 
-  # Scroll Navigation Tests
-  @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Apps section is scrollable via anchor
-    When I visit "/#apps"
-    Then the page should load successfully
-    And the apps section should be visible
-
   # Authenticated User Landing Page Tests
   @fast @requires-db
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Authenticated users can view landing page
     Given I am logged in as "Test User" with email "test@example.com"
     When I visit "/"
     Then the page should load successfully
-    And I should see "See the Transformation" heading
+    And I should see the hero section
 
   # Footer Tests
   @fast
@@ -133,64 +113,50 @@ Feature: Landing Page - CTA and Feature Cards
       | Terms   |
       | Privacy |
 
-  # CTASection Component Tests
+  # CreateCTASection Component Tests
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: CTASection displays main heading
+  Scenario: CreateCTASection displays main heading
     When I visit "/"
     Then the page should load successfully
-    And I should see "Blend your photos" text
+    And I should see "unthinkable" text
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: CTASection displays call-to-action message
+  Scenario: CreateCTASection displays call-to-action message
     When I visit "/"
     Then the page should load successfully
-    And I should see "Mix old with new" text
+    And I should see "No gatekeepers" text
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: CTASection Try Photo Mixer button navigates correctly
+  Scenario: CreateCTASection Begin Creation button is visible
     When I visit "/"
-    And I click the "Try Photo Mixer" link
-    Then I should be on the "/apps/pixel/mix" page
+    Then the page should load successfully
+    And I should see "Begin Creation" link
 
-  # PlatformHero Component Tests
+  # LandingHero Component Tests
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: PlatformHero displays main headline
+  Scenario: LandingHero displays main headline
     Given I am not logged in
     When I visit "/"
     Then the page should load successfully
-    And I should see "Old Photos" text
+    And I should see "Build the" text
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: PlatformHero displays subheadline
+  Scenario: LandingHero displays subheadline
     Given I am not logged in
     When I visit "/"
     Then the page should load successfully
-    And I should see "iPhone" text
+    And I should see "AI-powered universe" text
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: PlatformHero has Restore Your Photos CTA button
+  Scenario: LandingHero has Explore the Galaxy link
     Given I am not logged in
     When I visit "/"
     Then the page should load successfully
-    And I should see "Restore Your Photos" link
+    And I should see "Explore the Galaxy" link
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Featured app section displays image comparison slider
+  Scenario: LandingHero displays Impossible gradient text
     Given I am not logged in
     When I visit "/"
     Then the page should load successfully
-    And I should see the image comparison slider
+    And I should see "Impossible" text
