@@ -1246,7 +1246,7 @@ export interface GenerateStructuredResponseParams {
   /** Thinking budget in tokens — lets the model reason before generating output */
   thinkingBudget?: number;
   /** Optional JSON schema to constrain Gemini's structured output */
-  responseJsonSchema?: unknown;
+  responseJsonSchema?: Record<string, unknown>;
 }
 
 /**

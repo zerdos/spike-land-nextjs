@@ -114,11 +114,11 @@ describe("Prisma Client Singleton", () => {
     await import("./prisma");
 
     expect(prismaPgConstructorArgs.length).toBeGreaterThanOrEqual(1);
-    const opts = prismaPgConstructorArgs[0][0] as {
+    const opts = prismaPgConstructorArgs[0]?.[0] as {
       connectionString: string;
-    };
-    expect(opts.connectionString).toContain("sslmode=verify-full");
-    expect(opts.connectionString).not.toContain("sslmode=require");
+    } | undefined;
+    expect(opts?.connectionString).toContain("sslmode=verify-full");
+    expect(opts?.connectionString).not.toContain("sslmode=require");
   });
 
   it("should pass ssl: true in production mode", async () => {
@@ -134,10 +134,10 @@ describe("Prisma Client Singleton", () => {
     await import("./prisma");
 
     expect(prismaPgConstructorArgs.length).toBeGreaterThanOrEqual(1);
-    const opts = prismaPgConstructorArgs[0][0] as {
+    const opts = prismaPgConstructorArgs[0]?.[0] as {
       ssl: unknown;
-    };
-    expect(opts.ssl).toBe(true);
+    } | undefined;
+    expect(opts?.ssl).toBe(true);
 
     (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
   });
