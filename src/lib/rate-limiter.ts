@@ -39,9 +39,9 @@ async function isKVAvailable(): Promise<boolean> {
 
   // Check for required environment variables first (sync check)
   // Support both UPSTASH_REDIS_REST_* (standard) and KV_REST_API_* (Vercel integration)
-  const hasUpstashEnv = process.env.UPSTASH_REDIS_REST_URL &&
-    process.env.UPSTASH_REDIS_REST_TOKEN;
-  const hasKvEnv = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+  const hasUpstashEnv = process.env['UPSTASH_REDIS_REST_URL'] &&
+    process.env['UPSTASH_REDIS_REST_TOKEN'];
+  const hasKvEnv = process.env['KV_REST_API_URL'] && process.env['KV_REST_API_TOKEN'];
 
   if (!hasUpstashEnv && !hasKvEnv) {
     console.warn(
@@ -217,6 +217,15 @@ export async function checkRateLimit(
   remaining: number;
   resetAt: number;
 }> {
+  // Bypass rate limiting in E2E tests or if explicitly enabled
+  if (process.env['E2E_BYPASS_AUTH'] || process.env['SKIP_RATE_LIMIT']) {
+    return {
+      isLimited: false,
+      remaining: config.maxRequests,
+      resetAt: Date.now() + config.windowMs,
+    };
+  }
+
   const useKV = await isKVAvailable();
 
   if (useKV) {
