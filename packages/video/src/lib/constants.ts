@@ -84,6 +84,11 @@ export const COLORS = {
   // Chart colors for A/B testing
   variantA: "#00E5FF", // Cyan
   variantB: "#FF00FF", // Fuchsia
+
+  // BridgeMind Brand
+  bridgemindCyan: "#22d3ee",
+  bridgemindPink: "#f472b6",
+  bridgemindSlate: "#0f172a",
 } as const;
 
 /**
@@ -126,4 +131,23 @@ export const GLITCH_CONFIG = {
   scanLineGap: 4, // Gap between scan lines
   noiseIntensity: 0.1, // 0-1 noise overlay intensity
   duration: 15, // Frames for glitch transition
+} as const;
+
+/**
+ * BridgeMind Specific Timing
+ */
+export const BRIDGEMIND_DURATIONS = {
+  struggle: 225,
+  algorithm: 180,
+  revealed: 270,
+  features: 360,
+  transformation: 315,
+  testimony: 255,
+  cta: 285,
+} as const;
+
+export const BRIDGEMIND_TIMING = {
+  totalFrames: 1800,
+  fps: 30,
+  transitionFrames: 15,
 } as const;

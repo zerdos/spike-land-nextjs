@@ -4,7 +4,7 @@ import { COLORS, SPRING_CONFIGS } from "../../lib/constants";
 
 type ChatBubbleProps = {
   message: string;
-  isAgent?: boolean;
+  isAi?: boolean;
   delay?: number;
   showTyping?: boolean;
   typingSpeed?: number;
@@ -12,7 +12,7 @@ type ChatBubbleProps = {
 
 export function ChatBubble({
   message,
-  isAgent = false,
+  isAi = false,
   delay = 0,
   showTyping = true,
   typingSpeed = 40,
@@ -46,7 +46,7 @@ export function ChatBubble({
         opacity,
         transform: `translateY(${translateY}px) scale(${scale})`,
         display: "flex",
-        justifyContent: isAgent ? "flex-start" : "flex-end",
+        justifyContent: isAi ? "flex-start" : "flex-end",
         marginBottom: 12,
       }}
     >
@@ -54,15 +54,15 @@ export function ChatBubble({
         style={{
           maxWidth: "70%",
           padding: "16px 20px",
-          borderRadius: isAgent ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
-          backgroundColor: isAgent ? COLORS.darkCard : COLORS.purple,
-          border: `1px solid ${isAgent ? COLORS.darkBorder : "transparent"}`,
-          boxShadow: isAgent
+          borderRadius: isAi ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
+          backgroundColor: isAi ? COLORS.darkCard : COLORS.purple,
+          border: `1px solid ${isAi ? COLORS.darkBorder : "transparent"}`,
+          boxShadow: isAi
             ? "0 4px 12px rgba(0,0,0,0.3)"
             : `0 4px 20px ${COLORS.purple}40`,
         }}
       >
-        {isAgent && (
+        {isAi && (
           <div
             style={{
               fontSize: 12,

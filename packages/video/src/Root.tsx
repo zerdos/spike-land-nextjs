@@ -1,4 +1,5 @@
 import { Composition, Folder } from "remotion";
+import { BridgeMindPromo } from "./compositions/bridgemind/BridgeMindPromo";
 import {
   AIDiscovery,
   ChatSolution,
@@ -16,7 +17,8 @@ import {
   Transformation,
 } from "./Video";
 
-import { SCENE_DURATIONS, VIDEO_CONFIG } from "./lib/constants";
+import { BRIDGEMIND_TIMING, SCENE_DURATIONS, VIDEO_CONFIG } from "./lib/constants";
+import { FORMAT_CONFIGS } from "./lib/schemas";
 
 /**
  * Remotion Root - Composition Registry
@@ -24,6 +26,33 @@ import { SCENE_DURATIONS, VIDEO_CONFIG } from "./lib/constants";
 export const RemotionRoot = () => {
   return (
     <>
+      <Composition
+        id="BridgeMindPromo"
+        component={BridgeMindPromo}
+        durationInFrames={BRIDGEMIND_TIMING.totalFrames}
+        fps={BRIDGEMIND_TIMING.fps}
+        width={FORMAT_CONFIGS.landscape.width}
+        height={FORMAT_CONFIGS.landscape.height}
+      />
+
+      <Composition
+        id="BridgeMindPromo-Vertical"
+        component={BridgeMindPromo}
+        durationInFrames={BRIDGEMIND_TIMING.totalFrames}
+        fps={BRIDGEMIND_TIMING.fps}
+        width={FORMAT_CONFIGS.portrait.width}
+        height={FORMAT_CONFIGS.portrait.height}
+      />
+
+      <Composition
+        id="BridgeMindPromo-Square"
+        component={BridgeMindPromo}
+        durationInFrames={BRIDGEMIND_TIMING.totalFrames}
+        fps={BRIDGEMIND_TIMING.fps}
+        width={FORMAT_CONFIGS.square.width}
+        height={FORMAT_CONFIGS.square.height}
+      />
+
       <Composition
         id="Physics-of-Attention"
         component={PhysicsOfAttention}

@@ -135,7 +135,7 @@ export function ChatSolution() {
             <Sequence from={30}>
               <ChatBubble
                 message="Fix my engagement drop"
-                isAgent={false}
+                isAi={false}
                 delay={0}
                 typingSpeed={35}
               />
@@ -150,7 +150,7 @@ export function ChatSolution() {
             <Sequence from={120}>
               <ChatBubble
                 message="I've analyzed your data. Your Friday posts underperform due to timing. I recommend posting at 2PM when your audience is most active. Want me to optimize your dashboard?"
-                isAgent={true}
+                isAi={true}
                 delay={0}
                 typingSpeed={45}
               />
@@ -160,7 +160,7 @@ export function ChatSolution() {
             <Sequence from={210}>
               <ChatBubble
                 message="Yes, do it"
-                isAgent={false}
+                isAi={false}
                 delay={0}
                 typingSpeed={40}
               />
@@ -170,7 +170,7 @@ export function ChatSolution() {
             <Sequence from={270}>
               <ChatBubble
                 message="On it. Optimizing your dashboard now..."
-                isAgent={true}
+                isAi={true}
                 delay={0}
                 typingSpeed={35}
               />
