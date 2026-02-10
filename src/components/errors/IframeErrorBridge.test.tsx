@@ -50,7 +50,7 @@ describe("IframeErrorBridge", () => {
     render(<IframeErrorBridge />);
 
     const handler = addEventListenerSpy.mock.calls.find(
-      (call) => call[0] === "message",
+      (call: [string, ...unknown[]]) => call[0] === "message",
     )?.[1] as EventListener;
 
     const event = new MessageEvent("message", {
@@ -76,7 +76,7 @@ describe("IframeErrorBridge", () => {
     render(<IframeErrorBridge />);
 
     const handler = addEventListenerSpy.mock.calls.find(
-      (call) => call[0] === "message",
+      (call: [string, ...unknown[]]) => call[0] === "message",
     )?.[1] as EventListener;
 
     const event = new MessageEvent("message", {
@@ -96,7 +96,7 @@ describe("IframeErrorBridge", () => {
     render(<IframeErrorBridge />);
 
     const handler = addEventListenerSpy.mock.calls.find(
-      (call) => call[0] === "message",
+      (call: [string, ...unknown[]]) => call[0] === "message",
     )?.[1] as EventListener;
 
     const event = new MessageEvent("message", {
@@ -113,7 +113,7 @@ describe("IframeErrorBridge", () => {
     render(<IframeErrorBridge />);
 
     const handler = addEventListenerSpy.mock.calls.find(
-      (call) => call[0] === "message",
+      (call: [string, ...unknown[]]) => call[0] === "message",
     )?.[1] as EventListener;
 
     const event = new MessageEvent("message", {
@@ -137,7 +137,7 @@ describe("IframeErrorBridge", () => {
     render(<IframeErrorBridge />);
 
     const handler = addEventListenerSpy.mock.calls.find(
-      (call) => call[0] === "message",
+      (call: [string, ...unknown[]]) => call[0] === "message",
     )?.[1] as EventListener;
 
     const event = new MessageEvent("message", {

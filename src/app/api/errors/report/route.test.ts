@@ -6,7 +6,7 @@ vi.mock("@/lib/errors/error-reporter.server", () => ({
 }));
 
 vi.mock("@/lib/rate-limiter", () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ isLimited: false, remaining: 19 }),
+  checkRateLimit: vi.fn().mockResolvedValue({ isLimited: false, remaining: 19, resetAt: Date.now() + 60000 }),
 }));
 
 vi.mock("next/headers", () => ({
@@ -33,6 +33,7 @@ describe("POST /api/errors/report", () => {
     vi.mocked(checkRateLimit).mockResolvedValue({
       isLimited: false,
       remaining: 19,
+      resetAt: Date.now() + 60000,
     });
   });
 
@@ -66,6 +67,7 @@ describe("POST /api/errors/report", () => {
     vi.mocked(checkRateLimit).mockResolvedValue({
       isLimited: true,
       remaining: 0,
+      resetAt: Date.now() + 60000,
     });
 
     const response = await POST(

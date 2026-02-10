@@ -78,7 +78,9 @@ describe("NotFound (404 Page)", () => {
   it("should include correct error data in report", () => {
     render(<NotFound />);
 
-    const blobArg = mockSendBeacon.mock.calls[0][1] as Blob;
+    const calls = mockSendBeacon.mock.calls;
+    expect(calls.length).toBeGreaterThan(0);
+    const blobArg = calls[0]![1] as Blob;
     expect(blobArg.type).toBe("application/json");
   });
 
