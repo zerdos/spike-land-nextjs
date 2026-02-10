@@ -16,7 +16,13 @@
         "@spike-npm-land/mcp-server"
       ],
       "env": {
-        "SPIKE_LAND_API_KEY": "${SPIKE_LAND_API_KEY}"
+        "SPIKE_LAND_API_KEY": "${SPIKE_LAND_API_KEY}",
+        "BRIDGEMIND_MCP_URL": "${BRIDGEMIND_MCP_URL}",
+        "BRIDGEMIND_API_KEY": "${BRIDGEMIND_API_KEY}",
+        "GH_PAT_TOKEN": "${GH_PAT_TOKEN}",
+        "GITHUB_PROJECT_ID": "${GITHUB_PROJECT_ID}",
+        "GITHUB_OWNER": "${GITHUB_OWNER}",
+        "GITHUB_REPO": "${GITHUB_REPO}"
       }
     }
   }

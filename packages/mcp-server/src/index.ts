@@ -32,6 +32,11 @@ import {
   handleCodeSpaceToolCall,
   isCodeSpaceAvailable,
 } from "./tools/codespace/index.js";
+import {
+  getGatewayTools,
+  handleGatewayToolCall,
+  isGatewayAvailable,
+} from "./tools/gateway/index.js";
 import { getJulesTools, handleJulesToolCall, isJulesAvailable } from "./tools/jules/index.js";
 
 // Supported aspect ratios
@@ -262,8 +267,8 @@ async function main() {
     },
   );
 
-  // Get all available tools (including Jules and CodeSpace if configured)
-  const allTools = [...tools, ...getJulesTools(), ...getCodeSpaceTools()];
+  // Get all available tools (including Jules, CodeSpace, and Gateway if configured)
+  const allTools = [...tools, ...getJulesTools(), ...getCodeSpaceTools(), ...getGatewayTools()];
 
   // Handle list tools request
   server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -481,6 +486,16 @@ Get more tokens at: https://spike.land/settings`,
           if (name.startsWith("codespace_") && isCodeSpaceAvailable()) {
             return await handleCodeSpaceToolCall(name, args);
           }
+          // Check if it's a Gateway tool (bridgemind_, github_, sync_, bolt_)
+          if (
+            (name.startsWith("bridgemind_") ||
+              name.startsWith("github_") ||
+              name.startsWith("sync_") ||
+              name.startsWith("bolt_")) &&
+            isGatewayAvailable()
+          ) {
+            return await handleGatewayToolCall(name, args);
+          }
           return {
             content: [
               {
@@ -519,6 +534,9 @@ Get more tokens at: https://spike.land/settings`,
     console.error(
       "CodeSpace integration enabled (SPIKE_LAND_API_KEY detected)",
     );
+  }
+  if (isGatewayAvailable()) {
+    console.error("Gateway tools enabled (BridgeMind/GitHub Projects detected)");
   }
 }
 

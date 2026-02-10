@@ -31,6 +31,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/emails", label: "Email Logs", icon: "📧" },
   { href: "/admin/sitemap", label: "Sitemap Preview", icon: "🗺️" },
   { href: "/admin/merch", label: "Merch", icon: "🛍️" },
+  { href: "/admin/bolt", label: "Bolt", icon: "⚡" },
+  { href: "/admin/mcp-health", label: "MCP Health", icon: "🔌" },
 ];
 
 interface AdminSidebarProps {

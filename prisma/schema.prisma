@@ -5260,3 +5260,65 @@ model NewsletterSubscriber {
   @@index([email])
   @@map("newsletter_subscribers")
 }
+
+// ===== Bolt Sync Models =====
+
+enum SyncSource {
+  BRIDGEMIND
+  GITHUB
+}
+
+enum SyncStatus {
+  IDLE
+  SYNCING
+  ERROR
+}
+
+enum SyncEventType {
+  ITEM_CREATED
+  ITEM_UPDATED
+  ITEM_DELETED
+  SYNC_COMPLETED
+  SYNC_FAILED
+}
+
+model SyncState {
+  id                 String     @id @default(cuid())
+  source             SyncSource @default(BRIDGEMIND)
+  status             SyncStatus @default(IDLE)
+  lastSuccessfulSync DateTime?
+  lastAttemptedSync  DateTime?
+  consecutiveErrors  Int        @default(0)
+  syncCursor         String?
+  itemsSynced        Int        @default(0)
+  errorMessage       String?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+}
+
+model SyncItemMapping {
+  id                  String   @id @default(cuid())
+  bridgemindId        String   @unique
+  githubIssueNumber   Int
+  githubIssueId       String?
+  githubProjectItemId String?
+  bridgemindVersion   String?
+  lastSyncedAt        DateTime @default(now())
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([bridgemindId])
+  @@index([githubIssueNumber])
+}
+
+model SyncEvent {
+  id        String        @id @default(cuid())
+  eventType SyncEventType
+  source    SyncSource    @default(BRIDGEMIND)
+  itemId    String?
+  details   Json?
+  createdAt DateTime      @default(now())
+
+  @@index([eventType])
+  @@index([createdAt])
+}

@@ -1,0 +1,16 @@
+{
+  "activeTasks": [],
+  "config": {
+    "wipLimit": 3,
+    "iterationInterval": 5,
+    "autoMerge": false,
+    "autoApprove": true
+  },
+  "metrics": {
+    "tasksCompleted": 0,
+    "tasksFailed": 0,
+    "avgCycleTimeMinutes": 0,
+    "lastRunAt": null
+  },
+  "version": 1
+}

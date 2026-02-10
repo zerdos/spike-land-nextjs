@@ -2169,6 +2169,38 @@ erDiagram
   DateTime unsubscribedAt "nullable"
   String source
 }
+"SyncState" {
+  String id PK
+  SyncSource source
+  SyncStatus status
+  DateTime lastSuccessfulSync "nullable"
+  DateTime lastAttemptedSync "nullable"
+  Int consecutiveErrors
+  String syncCursor "nullable"
+  Int itemsSynced
+  String errorMessage "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"SyncItemMapping" {
+  String id PK
+  String bridgemindId UK
+  Int githubIssueNumber
+  String githubIssueId "nullable"
+  String githubProjectItemId "nullable"
+  String bridgemindVersion "nullable"
+  DateTime lastSyncedAt
+  DateTime createdAt
+  DateTime updatedAt
+}
+"SyncEvent" {
+  String id PK
+  SyncEventType eventType
+  SyncSource source
+  String itemId "nullable"
+  Json details "nullable"
+  DateTime createdAt
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
@@ -5113,6 +5145,47 @@ Properties as follows:
 - `unsubscribed`:
 - `unsubscribedAt`:
 - `source`:
+
+### `SyncState`
+
+Properties as follows:
+
+- `id`:
+- `source`:
+- `status`:
+- `lastSuccessfulSync`:
+- `lastAttemptedSync`:
+- `consecutiveErrors`:
+- `syncCursor`:
+- `itemsSynced`:
+- `errorMessage`:
+- `createdAt`:
+- `updatedAt`:
+
+### `SyncItemMapping`
+
+Properties as follows:
+
+- `id`:
+- `bridgemindId`:
+- `githubIssueNumber`:
+- `githubIssueId`:
+- `githubProjectItemId`:
+- `bridgemindVersion`:
+- `lastSyncedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `SyncEvent`
+
+Properties as follows:
+
+- `id`:
+- `eventType`:
+- `source`:
+- `itemId`:
+- `details`:
+- `createdAt`:
 
 ### `_ConnectionToConnectionTag`
 
