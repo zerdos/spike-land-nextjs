@@ -137,13 +137,13 @@ export const GLITCH_CONFIG = {
  * BridgeMind Specific Timing
  */
 export const BRIDGEMIND_DURATIONS = {
-  struggle: 225,
-  algorithm: 180,
-  revealed: 270,
-  features: 360,
-  transformation: 315,
-  testimony: 255,
-  cta: 285,
+  struggle: 266,
+  algorithm: 209,
+  revealed: 206,
+  features: 347,
+  transformation: 238,
+  testimony: 231,
+  cta: 180,
 } as const;
 
 export const BRIDGEMIND_TIMING = {
