@@ -491,11 +491,7 @@ describe("PostHandler", () => {
       consoleErrorSpy.mockRestore();
     });
 
-    // SKIP REASON: onStepFinish callback requires complex async mocking of AI SDK streaming internals
-    // CATEGORY: intentional
-    // TRACKING: #798
-    // ACTION: keep - Tool execution flow is better tested through integration tests
-    it.skip("should handle tool execution in onStepFinish", async () => {
+    it("should handle tool execution in onStepFinish", async () => {
       let onStepFinishCallback: Parameters<
         typeof streamText
       >[0]["onStepFinish"];
@@ -547,11 +543,7 @@ describe("PostHandler", () => {
       expect(mockStorageService.saveRequestBody).toHaveBeenCalledTimes(2);
     });
 
-    // SKIP REASON: Error handling during tool result persistence requires complex AI SDK streaming mocking
-    // CATEGORY: intentional
-    // TRACKING: #798
-    // ACTION: keep - Error scenarios are better validated through integration tests
-    it.skip("should handle errors during tool result saving", async () => {
+    it("should handle errors during tool result saving", async () => {
       const consoleErrorSpy = vi.spyOn(console, "error");
       let onStepFinishCallback: Parameters<
         typeof streamText

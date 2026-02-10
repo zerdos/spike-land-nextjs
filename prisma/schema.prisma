@@ -769,10 +769,9 @@ model ErrorLog {
   errorCode    String?
   metadata     Json?
 
-  @@index([timestamp])
+  @@index([environment, timestamp])
+  @@index([errorType, timestamp])
   @@index([sourceFile])
-  @@index([errorType])
-  @@index([environment])
   @@map("error_logs")
 }
 

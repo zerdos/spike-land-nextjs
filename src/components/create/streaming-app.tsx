@@ -43,6 +43,11 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          setStatus("error");
+          setError("Please log in to generate an app.");
+          return;
+        }
         if (response.status === 429) {
           setStatus("error");
           setError("Rate limit reached. Please try again later or sign in for more.");

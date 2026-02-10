@@ -236,6 +236,61 @@ Given("the user is an admin", async function(this: CustomWorld) {
       }),
     });
   });
+
+  // Mock the system health API for admin/system page
+  await this.page.route("**/api/admin/system/health", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        hourlyJobs: Array.from({ length: 24 }, (_, i) => ({
+          hour: `${i}:00`,
+          count: Math.floor(Math.random() * 20),
+        })),
+        avgProcessingTime: [
+          { tier: "basic", seconds: 30 },
+          { tier: "premium", seconds: 15 },
+        ],
+        tierStats: [
+          { tier: "basic", total: 100, failed: 5, failureRate: 0.05 },
+          { tier: "premium", total: 50, failed: 1, failureRate: 0.02 },
+        ],
+        uptime: 99.9,
+        lastChecked: new Date().toISOString(),
+      }),
+    });
+  });
+
+  // Mock the storage API for admin/system page
+  await this.page.route("**/api/admin/storage", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        totalStorage: 1073741824,
+        usedStorage: 536870912,
+        fileCount: 1500,
+      }),
+    });
+  });
+
+  // Mock the dashboard polling API
+  await this.page.route("**/api/admin/dashboard", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        totalUsers: 100,
+        adminCount: 3,
+        totalEnhancements: 500,
+        jobStatus: { pending: 2, processing: 1, completed: 450, failed: 10, active: 3 },
+        totalCreditsAllocated: 50000,
+        totalCreditsUsed: 15000,
+        totalWorkspaces: 25,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+  });
 });
 
 Given("the user is not an admin", async function(this: CustomWorld) {
@@ -274,13 +329,24 @@ When(
 
     const link = quickLinksSection.getByRole("link", { name: linkText });
     await expect(link).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    // Get the href to know what URL to expect after click
+    const href = await link.getAttribute("href");
+    const currentUrl = this.page.url();
+
     await link.click();
-    await this.page.waitForLoadState("domcontentloaded", { timeout: TIMEOUTS.DEFAULT });
-    // Try networkidle with short timeout, but don't fail if it times out
-    try {
-      await this.page.waitForLoadState("networkidle", { timeout: TIMEOUTS.SHORT });
-    } catch {
-      // Network may still be active, that's OK
+
+    // For SPA navigations, waitForLoadState may not fire. Instead, wait for
+    // either a URL change or a brief timeout, whichever comes first.
+    if (href && href !== currentUrl) {
+      try {
+        await this.page.waitForURL(
+          (url) => url.href.includes(href!),
+          { timeout: TIMEOUTS.DEFAULT },
+        );
+      } catch {
+        // URL change may already have happened or be handled by the next step
+      }
     }
   },
 );

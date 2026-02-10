@@ -213,11 +213,7 @@ describe("WebSocketManager", () => {
       expect(mockSessionSynchronizer.subscribe).toHaveBeenCalled();
     });
 
-    // SKIP REASON: Complex route handling requires full DOM environment setup and SessionSynchronizer mocking
-    // CATEGORY: unfinished
-    // TRACKING: #798
-    // ACTION: fix - Core routing functionality should be unit tested
-    it.skip("should handle dehydrated page route", async () => {
+    it("should handle dehydrated page route", async () => {
       location.pathname = "/live/test-space/dehydrated";
       const mockEmbed = document.createElement("div");
       mockEmbed.id = "embed";
@@ -226,48 +222,35 @@ describe("WebSocketManager", () => {
       await webSocketManager.init();
       await vi.runAllTimersAsync();
 
-      // expect(mockSessionSynchronizer.init).toHaveBeenCalled();
-      expect(mockSessionSynchronizer.subscribe).toHaveBeenCalled();
+      // Dehydrated route does NOT call sessionSynchronizer - it uses internal subscribe
+      expect(mockSessionSynchronizer.init).not.toHaveBeenCalled();
+      expect(mockSessionSynchronizer.subscribe).not.toHaveBeenCalled();
 
-      if (storedCallback) {
-        storedCallback({ html: "<div>test</div>", css: ".test{}" });
-        await vi.runAllTimersAsync();
-      }
-
-      // Add mock element to document body
-      const style = document.createElement("style");
-      style.textContent = ".test{}";
-      document.head.appendChild(style);
-      const div = document.createElement("div");
-      div.innerHTML = "<div>test</div>";
-      mockEmbed.appendChild(div);
-
-      expect(mockEmbed.innerHTML).toContain("<div>test</div>");
-      const styles = document.head.querySelector("style");
-      expect(styles?.textContent).toContain(".test{}");
+      // The manager should have initialized successfully
+      expect(webSocketManager).toBeDefined();
     });
 
-    // SKIP REASON: Complex route handling requires full DOM environment setup and SessionSynchronizer mocking
-    // CATEGORY: unfinished
-    // TRACKING: #798
-    // ACTION: fix - Core routing functionality should be unit tested
-    it.skip("should handle default route", async () => {
-      // Initialize and wait for setup
+    it("should handle default route", async () => {
+      // Set a path that doesn't match live, live-cms, or dehydrated routes
+      location.pathname = "/test-path";
+
       await webSocketManager.init();
       await vi.runAllTimersAsync();
 
-      // Send test message
-      const mockData = { html: "<div>test</div>", css: ".test{}" };
-      if (storedCallback) {
-        storedCallback(mockData);
-        await vi.runAllTimersAsync();
+      // Default route does NOT call sessionSynchronizer
+      expect(mockSessionSynchronizer.init).not.toHaveBeenCalled();
+      expect(mockSessionSynchronizer.subscribe).not.toHaveBeenCalled();
+
+      // Default route sets window.onmessage handler
+      expect(window.onmessage).not.toBeNull();
+
+      // Trigger window.onmessage and verify handleMessage is called
+      const mockEvent = { data: { html: "<div>test</div>", css: ".test{}" } };
+      if (window.onmessage) {
+        await (window.onmessage as (event: unknown) => Promise<void>)(mockEvent);
       }
 
-      // Verify message handling
-      expect(mockMessageHandler.handleMessage).toHaveBeenCalledWith({
-        type: "message",
-        data: mockData,
-      });
+      expect(mockMessageHandler.handleMessage).toHaveBeenCalledWith(mockEvent);
     });
   });
 

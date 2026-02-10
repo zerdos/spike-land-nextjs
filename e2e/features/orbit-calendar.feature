@@ -11,8 +11,6 @@ Feature: Orbit Calendar / Scheduled Posts
 
   # Calendar View
   @calendar @view
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View calendar page
     When I navigate to the calendar page
     Then I should see the calendar view
@@ -20,8 +18,6 @@ Feature: Orbit Calendar / Scheduled Posts
     And I should see navigation to previous and next months
 
   @calendar @view
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View scheduled posts on calendar
     Given I have scheduled posts for this week
     When I navigate to the calendar page
@@ -169,8 +165,6 @@ Feature: Orbit Calendar / Scheduled Posts
 
   # Calendar Navigation
   @calendar @navigation
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Navigate between months
     When I navigate to the calendar page
     And I click next month

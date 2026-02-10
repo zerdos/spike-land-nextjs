@@ -17,24 +17,18 @@ Feature: Orbit Allocator - Budget Recommendation Engine
     And the response should contain error "Unauthorized"
 
   @api
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Allocator API returns 404 for non-existent workspace
     When I call the Allocator recommendations API for workspace "non-existent"
     Then the API should return status 404
     And the response should contain error "not found"
 
   @api
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Allocator API validates lookbackDays parameter
     When I call the Allocator API with lookbackDays "invalid"
     Then the API should return status 400
     And the response should contain error "lookbackDays"
 
   @api
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Allocator API enforces lookbackDays range
     When I call the Allocator API with lookbackDays "200"
     Then the API should return status 400
@@ -42,8 +36,6 @@ Feature: Orbit Allocator - Budget Recommendation Engine
 
   # Recommendations without data
   @api
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Allocator returns empty recommendations when no ad accounts
     Given I have no marketing accounts connected
     When I call the Allocator recommendations API
@@ -54,8 +46,6 @@ Feature: Orbit Allocator - Budget Recommendation Engine
 
   # Campaign Analysis
   @api @campaigns
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Allocator analyzes connected ad campaigns
     Given I have a Facebook Ads account "Business Ads" connected
     And the account has campaign attribution data for the last 30 days
@@ -74,8 +64,6 @@ Feature: Orbit Allocator - Budget Recommendation Engine
 
   # Recommendation Types
   @api @recommendations
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Allocator generates SCALE_WINNER for high performers
     Given I have a high-performing Facebook campaign "Summer Sale"
     And the campaign has performance score above 70
@@ -85,8 +73,6 @@ Feature: Orbit Allocator - Budget Recommendation Engine
     And the recommendation should include projected impact
 
   @api @recommendations
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Allocator generates DECREASE_BUDGET for underperformers
     Given I have an underperforming Google Ads campaign "Old Promo"
     And the campaign has performance score below 40
@@ -95,8 +81,6 @@ Feature: Orbit Allocator - Budget Recommendation Engine
     And the recommendation should suggest a budget reduction
 
   @api @recommendations
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Allocator generates REALLOCATE between campaigns
     Given I have both high and low performing campaigns
     When I call the Allocator recommendations API
@@ -106,16 +90,12 @@ Feature: Orbit Allocator - Budget Recommendation Engine
 
   # Risk Tolerance
   @api @risk
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Conservative risk tolerance reduces budget change magnitude
     Given I have campaign data
     When I call the Allocator API with riskTolerance "conservative"
     Then recommendations should have smaller budget change suggestions
 
   @api @risk
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Aggressive risk tolerance increases budget change magnitude
     Given I have campaign data
     When I call the Allocator API with riskTolerance "aggressive"
@@ -130,8 +110,6 @@ Feature: Orbit Allocator - Budget Recommendation Engine
 
   # Summary and Impact
   @api @summary
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Allocator provides aggregate summary metrics
     Given I have multiple campaigns with attribution data
     When I call the Allocator recommendations API
@@ -141,8 +119,6 @@ Feature: Orbit Allocator - Budget Recommendation Engine
 
   # Data Quality
   @api @quality
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Allocator reports data quality score
     Given I have campaign data with varying completeness
     When I call the Allocator recommendations API
@@ -160,8 +136,6 @@ Feature: Orbit Allocator - Budget Recommendation Engine
     And each recommendation should include createdAt and expiresAt
 
   @api @details
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Recommendations include projected ROI impact
     Given I have a high-performing campaign
     When I call the Allocator recommendations API

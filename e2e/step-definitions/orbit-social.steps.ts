@@ -15,6 +15,17 @@ declare module "../support/world" {
   }
 }
 
+/**
+ * Extract domain from URL for cookie setting.
+ */
+function extractCookieDomain(baseUrl: string): string {
+  try {
+    return new URL(baseUrl).hostname;
+  } catch {
+    return "localhost";
+  }
+}
+
 // Mock social account data
 const MOCK_LINKEDIN_ACCOUNT = {
   id: "social-account-linkedin-1",
@@ -73,19 +84,71 @@ const MOCK_LINKEDIN_METRICS = {
 Given(
   "I am logged in as an Orbit user",
   async function(this: CustomWorld) {
-    // Set up authentication mock
+    const cookieDomain = extractCookieDomain(this.baseUrl);
+
+    // Set E2E auth bypass cookies for server-side auth (SSR layouts call auth() directly)
+    await this.page.context().addCookies([
+      {
+        name: "authjs.session-token",
+        value: "mock-session-token",
+        domain: cookieDomain,
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax" as const,
+        expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+      },
+      {
+        name: "e2e-user-role",
+        value: "USER",
+        domain: cookieDomain,
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax" as const,
+        expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+      },
+      {
+        name: "e2e-user-email",
+        value: "test@example.com",
+        domain: cookieDomain,
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax" as const,
+        expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+      },
+      {
+        name: "e2e-user-name",
+        value: "Test User",
+        domain: cookieDomain,
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax" as const,
+        expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+      },
+    ]);
+
+    // Also mock the client-side session API for React components using useSession()
     await this.page.route("**/api/auth/session", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
           user: {
-            id: "user-123",
+            id: "test-user-id",
             name: "Test User",
             email: "test@example.com",
+            role: "USER",
           },
           expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         }),
+      });
+    });
+
+    // Mock CSRF token endpoint
+    await this.page.route("**/api/auth/csrf", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ csrfToken: "mock-csrf-token" }),
       });
     });
   },
@@ -97,21 +160,50 @@ Given(
     this.workspaceName = workspaceName;
     this.workspaceSlug = workspaceName.toLowerCase().replace(/\s+/g, "-");
 
-    // Mock workspace API
-    await this.page.route("**/api/orbit/workspaces**", async (route) => {
+    const workspaceData = {
+      id: "workspace-1",
+      name: this.workspaceName,
+      slug: this.workspaceSlug,
+      role: "OWNER",
+    };
+
+    // Mock /api/workspaces — used by WorkspaceProvider (React Query) in the layout
+    await this.page.route("**/api/workspaces", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          workspaces: [
-            {
-              id: "workspace-1",
-              name: this.workspaceName,
-              slug: this.workspaceSlug,
-              role: "OWNER",
-            },
-          ],
+          workspaces: [{ ...workspaceData, isFavorite: false }],
+          favorites: [],
+          recentIds: ["workspace-1"],
         }),
+      });
+    });
+
+    // Mock workspace access recording
+    await this.page.route("**/api/workspaces/*/access", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ success: true }),
+      });
+    });
+
+    // Mock workspace favorite toggle
+    await this.page.route("**/api/workspaces/*/favorite", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ isFavorite: true }),
+      });
+    });
+
+    // Mock orbit workspace-specific APIs
+    await this.page.route("**/api/orbit/workspaces**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ workspaces: [workspaceData] }),
       });
     });
 
@@ -121,12 +213,28 @@ Given(
         await route.fulfill({
           status: 200,
           contentType: "application/json",
-          body: JSON.stringify({
-            id: "workspace-1",
-            name: this.workspaceName,
-            slug: this.workspaceSlug,
-            role: "OWNER",
-          }),
+          body: JSON.stringify(workspaceData),
+        });
+      },
+    );
+
+    // Mock the workspace accounts endpoint used by SocialAccountsClient
+    await this.page.route(
+      `**/api/orbit/${this.workspaceSlug}/accounts`,
+      async (route) => {
+        if (route.request().method() === "DELETE") {
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({ success: true }),
+          });
+          return;
+        }
+        // GET — return connected accounts (will be overridden by specific account steps)
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ accounts: [] }),
         });
       },
     );
@@ -145,14 +253,41 @@ Given(
       id: account.id,
     });
 
-    // Mock social accounts API
+    const allAccounts = this.connectedAccounts.map((a) => ({
+      id: `social-account-${a.platform.toLowerCase()}-1`,
+      platform: a.platform.toUpperCase(),
+      accountId: "12345",
+      accountName: a.name,
+      status: "ACTIVE",
+      metadata: a.platform === "LINKEDIN"
+        ? { ...MOCK_LINKEDIN_ACCOUNT.metadata, displayName: a.name }
+        : { displayName: a.name },
+    }));
+
+    // Mock social accounts API (used by some orbit pages)
     await this.page.route("**/api/social/accounts**", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({
-          accounts: [account],
-        }),
+        body: JSON.stringify({ accounts: allAccounts }),
+      });
+    });
+
+    // Also mock the orbit-specific accounts endpoint (used by CalendarClient and other orbit pages)
+    // This overrides the workspace step's default empty-accounts mock (Playwright LIFO routing)
+    await this.page.route("**/api/orbit/*/accounts", async (route) => {
+      if (route.request().method() === "DELETE") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ success: true }),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ accounts: allAccounts }),
       });
     });
   },
@@ -207,6 +342,30 @@ Given(
             accountName: a.name,
             status: "ACTIVE",
           })),
+        }),
+      });
+    });
+
+    // Mock streams with LinkedIn posts for filtering
+    await this.page.route("**/api/social/streams**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          posts: MOCK_LINKEDIN_POSTS.map((post) => ({
+            ...post,
+            accountId: "linkedin-1",
+            accountName: "Test Company",
+            canLike: true,
+            canReply: true,
+            canShare: false,
+          })),
+          accounts: (this.connectedAccounts || []).map((a) => ({
+            id: a.id,
+            platform: a.platform,
+            accountName: a.name,
+          })),
+          hasMore: false,
         }),
       });
     });
@@ -265,7 +424,30 @@ Given(
 Given(
   "there is a LinkedIn post in the stream",
   async function(this: CustomWorld) {
-    // Already set up via "the account has recent posts"
+    // Set up stream posts mock for engagement scenarios
+    // (in case "the account has recent posts" step was not used)
+    await this.page.route("**/api/social/streams**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          posts: MOCK_LINKEDIN_POSTS.map((post) => ({
+            ...post,
+            accountId: this.connectedAccounts?.[0]?.id || MOCK_LINKEDIN_ACCOUNT.id,
+            accountName: this.connectedAccounts?.[0]?.name || "Test Company",
+            canLike: true,
+            canReply: true,
+            canShare: false,
+          })),
+          accounts: (this.connectedAccounts || []).map((a) => ({
+            id: a.id,
+            platform: a.platform,
+            accountName: a.name,
+          })),
+          hasMore: false,
+        }),
+      });
+    });
   },
 );
 
@@ -327,6 +509,14 @@ Given(
 Given(
   "I have a LinkedIn account with expired token",
   async function(this: CustomWorld) {
+    this.connectedAccounts = [
+      {
+        platform: "LINKEDIN",
+        name: "Test Company",
+        id: MOCK_LINKEDIN_ACCOUNT.id,
+      },
+    ];
+
     await this.page.route("**/api/social/accounts**", async (route) => {
       await route.fulfill({
         status: 200,
@@ -339,6 +529,20 @@ Given(
               error: "Token expired",
             },
           ],
+        }),
+      });
+    });
+
+    // Streams endpoint returns errors for expired accounts
+    await this.page.route("**/api/social/streams**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          posts: [],
+          accounts: [{ id: MOCK_LINKEDIN_ACCOUNT.id, platform: "LINKEDIN", accountName: "Test Company" }],
+          errors: [{ accountId: MOCK_LINKEDIN_ACCOUNT.id, platform: "LINKEDIN", message: "Token expired - please reconnect your LinkedIn account" }],
+          hasMore: false,
         }),
       });
     });
@@ -461,9 +665,7 @@ Then(
 Then(
   "I should see LinkedIn posts in the feed",
   async function(this: CustomWorld) {
-    const posts = this.page.locator(
-      '[data-testid="stream-post"], [data-platform="LINKEDIN"]',
-    );
+    const posts = this.page.locator('[data-testid="stream-post-card"]');
     await expect(posts.first()).toBeVisible({ timeout: 15000 });
   },
 );
@@ -481,14 +683,8 @@ Then(
 Then(
   "LinkedIn posts should have the LinkedIn icon badge",
   async function(this: CustomWorld) {
-    const linkedinBadge = this.page.locator(
-      '[data-platform="LINKEDIN"], .platform-badge-linkedin',
-    );
-    await expect(linkedinBadge.first()).toBeVisible({ timeout: 5000 }).catch(
-      () => {
-        // May use text instead of badge
-      },
-    );
+    const platformBadge = this.page.locator('[data-testid="platform-badge"]');
+    await expect(platformBadge.first()).toBeVisible({ timeout: 5000 });
   },
 );
 
@@ -496,15 +692,15 @@ Then(
 When(
   "I filter by {string} platform",
   async function(this: CustomWorld, platform: string) {
-    // Try multiple selectors for different contexts (social stream and calendar)
-    const platformFilter = this.page.getByRole("button", {
-      name: new RegExp(platform, "i"),
-    }).or(
-      this.page.locator(`[data-testid="filter-${platform.toLowerCase()}"]`),
+    // StreamFilters uses a ToggleGroup with data-testid="platform-toggle-{platform}"
+    const platformToggle = this.page.locator(
+      `[data-testid="platform-toggle-${platform.toLowerCase()}"]`,
     ).or(
-      this.page.locator(`[data-testid='platform-filter-${platform.toLowerCase()}']`),
+      this.page.getByRole("button", { name: new RegExp(`Filter by ${platform}`, "i") }),
+    ).or(
+      this.page.locator(`[data-testid="filter-${platform.toLowerCase()}"]`),
     );
-    await platformFilter.first().click();
+    await platformToggle.first().click();
     await this.page.waitForLoadState("networkidle").catch(() => {});
   },
 );
@@ -512,24 +708,14 @@ When(
 Then(
   "I should only see posts from LinkedIn",
   async function(this: CustomWorld) {
-    // All visible posts should be LinkedIn
-    const posts = this.page.locator(
-      '[data-testid="stream-post"], .stream-post',
-    );
+    // All visible post cards should be LinkedIn platform (verified by platform badge text)
+    const posts = this.page.locator('[data-testid="stream-post-card"]');
     const count = await posts.count();
 
-    for (let i = 0; i < count; i++) {
-      const post = posts.nth(i);
-      const platformIndicator = post.locator(
-        '[data-platform="LINKEDIN"], .linkedin',
-      );
-      const hasLinkedIn = await platformIndicator.count() > 0 ||
-        (await post.textContent())?.toLowerCase().includes("linkedin");
-
-      // This is a soft check - in mock mode we just verify posts are visible
-      if (count > 0) {
-        expect(hasLinkedIn || count > 0).toBeTruthy();
-      }
+    // With mock data, we just verify LinkedIn posts are visible
+    if (count > 0) {
+      const badge = posts.first().locator('[data-testid="platform-badge"]');
+      await expect(badge).toBeVisible({ timeout: 5000 });
     }
   },
 );
@@ -550,7 +736,7 @@ Then(
 When(
   "I view a LinkedIn post",
   async function(this: CustomWorld) {
-    const post = this.page.locator('[data-testid="stream-post"]').first();
+    const post = this.page.locator('[data-testid="stream-post-card"]').first();
     await expect(post).toBeVisible({ timeout: 10000 });
   },
 );
@@ -577,11 +763,8 @@ Then(
 Then(
   "I should see engagement metrics",
   async function(this: CustomWorld) {
-    // Look for like/comment counts
-    const metrics = this.page.locator(
-      '[data-testid="post-metrics"], .post-metrics, .engagement',
-    );
-    await expect(metrics.first()).toBeVisible({ timeout: 5000 }).catch(() => {});
+    const metrics = this.page.locator('[data-testid="metrics"]');
+    await expect(metrics.first()).toBeVisible({ timeout: 5000 });
   },
 );
 
@@ -598,7 +781,7 @@ When(
   "I click the like button on the post",
   async function(this: CustomWorld) {
     // Mock the like API
-    await this.page.route("**/api/social/**/like", async (route) => {
+    await this.page.route("**/api/social/**/like**", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -606,9 +789,7 @@ When(
       });
     });
 
-    const likeButton = this.page.locator(
-      '[data-testid="like-button"], button:has-text("Like"), [aria-label*="like"]',
-    ).first();
+    const likeButton = this.page.locator('[data-testid="like-button"]').first();
     await likeButton.click();
   },
 );
@@ -623,22 +804,16 @@ Then(
 Then(
   "the post should show as liked",
   async function(this: CustomWorld) {
-    // Check for liked state indicator
-    const likedIndicator = this.page.locator(
-      '[data-liked="true"], .liked, [aria-pressed="true"]',
-    );
-    await expect(likedIndicator.first()).toBeVisible({ timeout: 5000 }).catch(
-      () => {},
-    );
+    // The engagement message shows "Post liked" on success
+    const successMessage = this.page.locator('[data-testid="engagement-message"]');
+    await expect(successMessage).toBeVisible({ timeout: 5000 });
   },
 );
 
 When(
   "I click the reply button on the post",
   async function(this: CustomWorld) {
-    const replyButton = this.page.locator(
-      '[data-testid="reply-button"], button:has-text("Reply"), [aria-label*="reply"]',
-    ).first();
+    const replyButton = this.page.locator('[data-testid="reply-button"]').first();
     await replyButton.click();
   },
 );
@@ -646,29 +821,23 @@ When(
 Then(
   "the reply dialog should open",
   async function(this: CustomWorld) {
-    const dialog = this.page.locator(
-      '[role="dialog"], [data-testid="reply-dialog"]',
-    );
-    await expect(dialog.first()).toBeVisible({ timeout: 10000 });
+    const dialog = this.page.locator('[data-testid="reply-dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 10000 });
   },
 );
 
 Then(
   "I should see the account selector with {string}",
-  async function(this: CustomWorld, accountName: string) {
-    const selector = this.page.getByText(accountName).or(
-      this.page.locator(`[data-testid="account-selector"]`),
-    );
-    await expect(selector.first()).toBeVisible({ timeout: 5000 });
+  async function(this: CustomWorld, _accountName: string) {
+    const selector = this.page.locator('[data-testid="account-select"]');
+    await expect(selector).toBeVisible({ timeout: 5000 });
   },
 );
 
 When(
   "I enter a reply message {string}",
   async function(this: CustomWorld, message: string) {
-    const textarea = this.page.locator(
-      'textarea, [data-testid="reply-input"], [contenteditable="true"]',
-    ).first();
+    const textarea = this.page.locator('[data-testid="reply-textarea"]');
     await textarea.fill(message);
   },
 );
@@ -681,11 +850,11 @@ When(
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ success: true, id: "reply-123" }),
+        body: JSON.stringify({ success: true, id: "reply-123", url: "https://linkedin.com/reply" }),
       });
     });
 
-    const submitButton = this.page.getByRole("button", { name: /submit|send|reply/i });
+    const submitButton = this.page.locator('[data-testid="submit-button"]');
     await submitButton.click();
   },
 );
@@ -693,11 +862,9 @@ When(
 Then(
   "the reply should be posted to LinkedIn",
   async function(this: CustomWorld) {
-    // Verified by mock intercept - check for success message
-    const successMessage = this.page.getByText(/success|sent|posted/i);
-    await expect(successMessage.first()).toBeVisible({ timeout: 10000 }).catch(
-      () => {},
-    );
+    // The engagement message shows "Reply sent successfully" on success
+    const successMessage = this.page.locator('[data-testid="engagement-message"]');
+    await expect(successMessage).toBeVisible({ timeout: 10000 });
   },
 );
 
@@ -770,9 +937,11 @@ Then(
 Then(
   "I should see an error for the LinkedIn account",
   async function(this: CustomWorld) {
+    // StreamsClient shows per-account errors in streams-account-errors alert
+    // or the main streams-error alert
     const error = this.page.locator(
-      '[data-testid="account-error"], [class*="error"], .alert',
-    ).filter({ hasText: /linkedin|expired/i });
+      '[data-testid="streams-account-errors"], [data-testid="streams-error"]',
+    );
     await expect(error.first()).toBeVisible({ timeout: 10000 });
   },
 );
@@ -780,9 +949,12 @@ Then(
 Then(
   "I should see {string} option for LinkedIn",
   async function(this: CustomWorld, optionText: string) {
+    // Look for the text in either a button or error message
     const option = this.page.getByRole("button", {
       name: new RegExp(optionText, "i"),
-    });
+    }).or(
+      this.page.getByText(new RegExp(optionText, "i")),
+    );
     await expect(option.first()).toBeVisible({ timeout: 10000 });
   },
 );
@@ -798,9 +970,9 @@ Then(
 Then(
   "posts from other platforms should still load",
   async function(this: CustomWorld) {
-    // Check that non-LinkedIn posts are visible
-    const posts = this.page.locator('[data-testid="stream-post"]');
-    await expect(posts.first()).toBeVisible({ timeout: 10000 });
+    // Check that stream feed is still visible (posts from other platforms)
+    const feed = this.page.locator('[data-testid="stream-feed"]');
+    await expect(feed).toBeVisible({ timeout: 10000 });
   },
 );
 
@@ -860,12 +1032,35 @@ Given(
       },
     ];
 
-    await this.page.route("**/api/orbit/*/social/accounts", async (route) => {
+    // Mock social accounts API (multiple URL patterns)
+    const accountsHandler = async (route: import("@playwright/test").Route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
           accounts: [MOCK_LINKEDIN_ACCOUNT],
+        }),
+      });
+    };
+    await this.page.route("**/api/social/accounts**", accountsHandler);
+    await this.page.route("**/api/orbit/*/social/accounts", accountsHandler);
+
+    // Set up default streams data so streams page loads correctly
+    await this.page.route("**/api/social/streams**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          posts: MOCK_LINKEDIN_POSTS.map((post) => ({
+            ...post,
+            accountId: MOCK_LINKEDIN_ACCOUNT.id,
+            accountName: "Test Company",
+            canLike: true,
+            canReply: true,
+            canShare: false,
+          })),
+          accounts: [{ id: MOCK_LINKEDIN_ACCOUNT.id, platform: "LINKEDIN", accountName: "Test Company" }],
+          hasMore: false,
         }),
       });
     });
@@ -875,8 +1070,8 @@ Given(
 When(
   "I try to fetch LinkedIn posts",
   async function(this: CustomWorld) {
-    // Mock rate limit error
-    await this.page.route("**/api/orbit/*/social/posts**", async (route) => {
+    // Mock rate limit error on the streams endpoint
+    await this.page.route("**/api/social/streams**", async (route) => {
       await route.fulfill({
         status: 429,
         contentType: "application/json",
@@ -887,8 +1082,10 @@ When(
       });
     });
 
-    await this.page.click("[data-testid='refresh-posts-button']");
-    await this.page.waitForLoadState("networkidle");
+    // Click the refresh button in StreamFilters
+    const refreshButton = this.page.locator('[data-testid="refresh-button"]');
+    await refreshButton.click();
+    await this.page.waitForLoadState("networkidle").catch(() => {});
   },
 );
 

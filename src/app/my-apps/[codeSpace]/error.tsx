@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Link } from "@/components/ui/link";
+import { reportErrorBoundary } from "@/lib/errors/console-capture.client";
 import { useEffect } from "react";
 
 interface ErrorProps {
@@ -19,8 +20,7 @@ interface ErrorProps {
 
 export default function CodeSpaceError({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // Log error to monitoring service
-    console.error("CodeSpace error:", error);
+    reportErrorBoundary(error);
   }, [error]);
 
   return (

@@ -1,5 +1,5 @@
 import { type AnthropicProvider, createAnthropic } from "@ai-sdk/anthropic";
-import { streamText, type StreamTextResult } from "ai";
+import { jsonSchema, streamText, tool, type StreamTextResult } from "ai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Code } from "../chatRoom";
 import type Env from "../env";
@@ -23,6 +23,10 @@ describe("PostHandler - Tool Schema Validation", () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks();
+
+    // Mock AI SDK helpers to pass through their config
+    vi.mocked(tool).mockImplementation((config: any) => config);
+    vi.mocked(jsonSchema).mockImplementation((schema: any) => schema);
 
     // Setup mock stream response
     mockToDataStreamResponse = vi.fn().mockReturnValue(new Response("stream"));
@@ -112,11 +116,7 @@ describe("PostHandler - Tool Schema Validation", () => {
       });
     });
 
-    // SKIP REASON: MCP to AI SDK tool format conversion requires mocking streamText internals
-    // CATEGORY: intentional
-    // TRACKING: #798
-    // ACTION: keep - Better tested through integration tests
-    it.skip("should convert tools to correct format for AI SDK", async () => {
+    it("should convert tools to correct format for AI SDK", async () => {
       let capturedTools: Record<string, unknown> | undefined;
 
       // Mock streamText to capture the tools being passed

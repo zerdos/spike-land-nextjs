@@ -15,9 +15,8 @@ Feature: Pixel Pipeline Management
     And I should see "New Pipeline" button
     And I should see the pipeline search input
 
-  @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, Given steps mock client-side routes only
+  @fast @skip @requires-db
   Scenario: View pipeline sections
     Given there are system default pipelines
     And I have custom pipelines
@@ -26,8 +25,7 @@ Feature: Pixel Pipeline Management
     And I should see "System Defaults" section
     And I should see "Public Pipelines" section
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @fast
   Scenario: Navigate back to pixel app
     When I visit "/apps/pixel/pipelines"
     And I click "Back to Pixel" button
@@ -45,8 +43,7 @@ Feature: Pixel Pipeline Management
     And I type "landscape" in the search input
     Then I should only see pipelines with "landscape" in their description
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @fast
   Scenario: Create new pipeline dialog
     When I visit "/apps/pixel/pipelines"
     And I click "New Pipeline" button
@@ -57,18 +54,18 @@ Feature: Pixel Pipeline Management
     And I should see "Tier" selector
     And I should see "Visibility" selector
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Create new pipeline successfully
     When I visit "/apps/pixel/pipelines"
     And I click "New Pipeline" button
     And I fill in pipeline name "My Custom Pipeline"
     And I fill in pipeline description "A custom enhancement pipeline"
-    And I select tier "TIER_2K"
+    And I select tier "2K"
     And I select visibility "Private"
     And I submit the pipeline form
     Then I should see "My Custom Pipeline" in "My Pipelines" section
-    And the pipeline should show tier "TIER_2K"
+    And the pipeline should show tier "2K"
 
   Scenario: Create pipeline with advanced configuration
     When I visit "/apps/pixel/pipelines"
@@ -81,8 +78,8 @@ Feature: Pixel Pipeline Management
     And I submit the pipeline form
     Then the pipeline should be created with all configurations
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Edit existing pipeline
     Given I have a custom pipeline named "My Pipeline"
     When I visit "/apps/pixel/pipelines"
@@ -99,8 +96,8 @@ Feature: Pixel Pipeline Management
     When I visit "/apps/pixel/pipelines"
     Then the system default pipelines should not have edit buttons
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Fork system default pipeline
     Given there are system default pipelines
     When I visit "/apps/pixel/pipelines"
@@ -113,8 +110,8 @@ Feature: Pixel Pipeline Management
     And I submit the pipeline form
     Then I should see the forked pipeline in "My Pipelines" section
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Fork public pipeline
     Given there is a public pipeline from another user
     When I visit "/apps/pixel/pipelines"
@@ -124,8 +121,8 @@ Feature: Pixel Pipeline Management
     When I submit the pipeline form
     Then I should see the forked pipeline in "My Pipelines" section
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Delete custom pipeline
     Given I have a custom pipeline named "Pipeline to Delete"
     When I visit "/apps/pixel/pipelines"
@@ -135,8 +132,8 @@ Feature: Pixel Pipeline Management
     When I confirm the deletion
     Then "Pipeline to Delete" should be removed from "My Pipelines"
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Cancel pipeline deletion
     Given I have a custom pipeline named "My Pipeline"
     When I visit "/apps/pixel/pipelines"
@@ -150,30 +147,29 @@ Feature: Pixel Pipeline Management
     When I visit "/apps/pixel/pipelines"
     Then the system default pipelines should not have delete buttons
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Pipeline card displays tier badge
     Given I have a custom pipeline with tier "TIER_4K"
     When I visit "/apps/pixel/pipelines"
-    Then the pipeline card should display "TIER_4K" badge
+    Then the pipeline card should display "4K" badge
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Pipeline card displays visibility badge
     Given I have a public pipeline
     When I visit "/apps/pixel/pipelines"
     Then the pipeline card should display "Public" visibility badge
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Pipeline card displays usage count
     Given I have a pipeline with 50 uses
     When I visit "/apps/pixel/pipelines"
     Then the pipeline card should display "50 uses"
 
-  @slow
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding and image upload infrastructure - complex multi-step workflow
+  @slow @skip @requires-db
   Scenario: Create and use pipeline for enhancement
     Given I have an uploaded image
     When I visit "/apps/pixel/pipelines"
@@ -184,16 +180,14 @@ Feature: Pixel Pipeline Management
     And I start enhancement
     Then the enhancement should use the selected pipeline
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Empty state when no custom pipelines
     Given I have no custom pipelines
     When I visit "/apps/pixel/pipelines"
     Then I should see "No pipelines found" in "My Pipelines" section
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Pipeline form validation - empty name
     When I visit "/apps/pixel/pipelines"
     And I click "New Pipeline" button
@@ -201,15 +195,14 @@ Feature: Pixel Pipeline Management
     And I try to submit the pipeline form
     Then I should see a validation error for the name field
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @fast
   Scenario: Pipeline form tier options
     When I visit "/apps/pixel/pipelines"
     And I click "New Pipeline" button
     And I click on the tier selector
-    Then I should see "TIER_1K" option
-    And I should see "TIER_2K" option
-    And I should see "TIER_4K" option
+    Then I should see "1K" option
+    And I should see "2K" option
+    And I should see "4K" option
 
   Scenario: Pipeline form visibility options
     When I visit "/apps/pixel/pipelines"
@@ -218,10 +211,10 @@ Feature: Pixel Pipeline Management
     Then I should see "Private" option
     And I should see "Public" option
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @fast
   Scenario: Unauthenticated user redirected from pipelines page
     Given I am not logged in
+    And I disable auth bypass
     When I visit "/apps/pixel/pipelines"
     Then I should be on the "/auth/signin" page
     And the callback URL should be "/apps/pixel/pipelines"

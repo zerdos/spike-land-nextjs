@@ -17,8 +17,6 @@ Feature: Smart Routing
     And I click the "Save Changes" button
     Then I should see a success toast "Settings saved successfully"
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Verify Message Analysis Badges
     Given Smart Routing is enabled for "orbit-test-workspace"
     And I have an inbox item with:
@@ -29,8 +27,6 @@ Feature: Smart Routing
     And I should see a "positive" sentiment badge on the item
     And I should see a priority badge on the item
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Verify Negative Sentiment Escalation
     Given Smart Routing is enabled for "orbit-test-workspace"
     And I have configured auto-escalation for negative sentiment
@@ -42,8 +38,6 @@ Feature: Smart Routing
     And I should see a "negative" sentiment badge on the item
     And the item should be marked as "ESCALATED"
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Manual Escalation
     Given Smart Routing is enabled for "orbit-test-workspace"
     And I have an inbox item with:

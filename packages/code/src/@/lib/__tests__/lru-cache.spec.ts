@@ -195,22 +195,25 @@ describe("LRUCache", () => {
       expect(cache.has("nonexistent")).toBe(false);
     });
 
-    // SKIP REASON: TTL expiration requires mocking performance.now at module load time
-    // CATEGORY: intentional
-    // TRACKING: #798
-    // ACTION: keep - TTL functionality is tested in upstream lru-cache package
-    it.skip("should return false for expired entries by default", () => {
-      const { advanceTime } = mockPerformanceNow();
+    it("should return false for expired entries by default", () => {
+      // Use real timers and mock performance.now directly on the perf
+      // object used by the LRU cache (captured from globalThis.performance at import time)
+      vi.useRealTimers();
+      let currentTime = 1000;
+      const originalNow = performance.now.bind(performance);
+      vi.spyOn(performance, "now").mockImplementation(() => currentTime);
+
       const cache = new LRUCache<string, { value: string; }>({
         max: 10,
         ttl: 100,
       });
       cache.set("key1", { value: "value1" });
 
-      advanceTime(150);
-      vi.advanceTimersByTime(150);
+      currentTime = 1200; // Advance 200ms past the start (> 100ms TTL)
 
       expect(cache.has("key1")).toBe(false);
+
+      vi.mocked(performance.now).mockImplementation(originalNow);
     });
   });
 

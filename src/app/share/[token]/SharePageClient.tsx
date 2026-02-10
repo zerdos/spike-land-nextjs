@@ -113,6 +113,11 @@ export function SharePageClient({
             maxWidth: aspectRatio > 1 ? "1200px" : "800px",
           }}
         >
+          {/* Image Name */}
+          <h1 className="text-white text-lg md:text-xl font-semibold text-center px-4 truncate max-w-full">
+            {imageName}
+          </h1>
+
           {/* Comparison Slider Container */}
           <div className="w-full relative shadow-2xl shadow-cyan-900/10 md:rounded-xl overflow-hidden ring-1 ring-white/10">
             <ImageComparisonSlider
@@ -137,7 +142,7 @@ export function SharePageClient({
       </main>
 
       {/* Bottom Actions Bar - Mobile Optimized */}
-      <div className="sticky bottom-0 left-0 right-0 z-50 p-4 border-t border-white/10 bg-black/80 backdrop-blur-xl animate-in slide-in-from-bottom duration-500 delay-200">
+      <footer className="sticky bottom-0 left-0 right-0 z-50 p-4 border-t border-white/10 bg-black/80 backdrop-blur-xl animate-in slide-in-from-bottom duration-500 delay-200">
         <div className="max-w-4xl mx-auto flex flex-col gap-3">
           {description && (
             <p className="text-xs text-white/60 text-center md:hidden line-clamp-1 mb-1">
@@ -175,11 +180,11 @@ export function SharePageClient({
               href="/apps/pixel"
               className="text-xs text-white/40 hover:text-white transition-colors"
             >
-              Enhance your own photos with Pixel ↗
+              Enhanced with Pixel ↗
             </Link>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

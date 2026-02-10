@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 
-// Mock the clients as classes (constructors)
+// Mock the clients
 vi.mock("./clients/bridgemind-client", () => {
   return {
-    BridgeMindClient: class MockBridgeMindClient {
+    getBridgeMindClient: () => ({
       isAvailable() {
         return false;
-      }
-    },
+      },
+    }),
   };
 });
 

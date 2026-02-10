@@ -82,6 +82,12 @@ function SignInContentInner() {
               <p className="text-xs text-muted-foreground/60 font-medium tracking-wide uppercase">
                 No spam. We never post to your accounts.
               </p>
+              <Link
+                href="/"
+                className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+              >
+                Back to home
+              </Link>
             </div>
           </CardContent>
         </Card>

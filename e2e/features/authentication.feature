@@ -8,8 +8,7 @@ Feature: User Authentication
     Given I am on the home page
 
   @smoke
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @flaky
   Scenario: Unauthenticated user sees login options
     When I am not logged in
     Then I should see "Sign In" link in the header
@@ -45,8 +44,7 @@ Feature: User Authentication
     And I should see "Settings" option in the dropdown
     And I should see "Log out" option in the dropdown
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @flaky
   Scenario: User can sign out from dropdown menu
     When I am logged in as "Alice Johnson" with email "alice@example.com"
     And I click on the user avatar
@@ -55,8 +53,7 @@ Feature: User Authentication
     And I should see "Sign In" link in the header
     And I should not see the user avatar
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @flaky
   Scenario: Loading state is displayed during authentication
     When authentication is loading
     Then I should see the loading spinner in the header
@@ -66,8 +63,7 @@ Feature: User Authentication
     Then I should see the user avatar
     And the avatar should display "BB" as initials
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @flaky
   Scenario: User avatar shows custom image when available
     When I am logged in as "Charlie Brown" with avatar image "https://example.com/avatar.jpg"
     Then I should see the user avatar
@@ -104,8 +100,6 @@ Feature: User Authentication
     Then I should be on the "/auth/signin" page
     And I should see error message "Sign in failed. Check your credentials"
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Sign-in page back to home link works
     When I visit "/auth/signin"
     And I click the "Back to home" link

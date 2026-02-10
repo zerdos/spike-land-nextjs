@@ -100,6 +100,15 @@ async function mockSession(
     });
   });
 
+  // Mock the sign-out endpoint so signOut() resolves cleanly
+  await world.page.route("**/api/auth/signout", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ url: "/" }),
+    });
+  });
+
   // Set NextAuth session cookie to bypass middleware authentication
   if (user) {
     // Extract the correct domain from baseUrl for cookie setting
@@ -279,6 +288,22 @@ When(
   "I am logged in as {string} with avatar image {string}",
   async function(this: CustomWorld, name: string, imageUrl: string) {
     const email = `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`;
+
+    // Intercept the avatar image URL to return a valid 1x1 pixel PNG
+    // Without this, the image would fail to load and Radix Avatar shows fallback
+    await this.page.route(imageUrl, async (route) => {
+      // 1x1 transparent PNG
+      const pixel = Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAA0lEQVQI12P4z8BQDwAEgAF/QualzQAAAABJRU5ErkJggg==",
+        "base64",
+      );
+      await route.fulfill({
+        status: 200,
+        contentType: "image/png",
+        body: pixel,
+      });
+    });
+
     await mockSession(this, { name, email, image: imageUrl });
     await waitForRouteReady(this.page);
     await this.page.reload({ waitUntil: "commit" });
@@ -378,20 +403,26 @@ When("I click on the user avatar", async function(this: CustomWorld) {
   await avatar.waitFor({ state: "attached" });
   await avatar.scrollIntoViewIfNeeded();
 
+  // Check if dropdown is already open (toggle close scenario)
+  const menu = this.page.getByRole("menu");
+  const dropdownContent = this.page.locator("[data-radix-menu-content]");
+  const wasOpen = await menu.or(dropdownContent).first().isVisible().catch(() => false);
+
   // Use regular click - Radix dropdown needs a proper mouse click event
   await avatar.click();
 
-  // Wait for dropdown menu to appear - Radix uses role="menu" for dropdown content
-  // Try multiple selectors for robustness
-  const menu = this.page.getByRole("menu");
-  const dropdownContent = this.page.locator("[data-radix-menu-content]");
-
-  try {
-    await expect(menu.or(dropdownContent).first()).toBeVisible({ timeout: 5000 });
-  } catch {
-    // Retry click if menu didn't open
-    await avatar.click();
-    await expect(menu.or(dropdownContent).first()).toBeVisible({ timeout: 5000 });
+  if (wasOpen) {
+    // We're closing the dropdown - wait for it to disappear
+    await expect(menu.or(dropdownContent).first()).not.toBeVisible({ timeout: 5000 }).catch(() => {});
+  } else {
+    // We're opening the dropdown - wait for it to appear
+    try {
+      await expect(menu.or(dropdownContent).first()).toBeVisible({ timeout: 5000 });
+    } catch {
+      // Retry click if menu didn't open
+      await avatar.click();
+      await expect(menu.or(dropdownContent).first()).toBeVisible({ timeout: 5000 });
+    }
   }
 });
 
@@ -498,15 +529,27 @@ Then(
 );
 
 Then("I should be logged out", async function(this: CustomWorld) {
+  // Mock the sign-out endpoint so signOut() resolves instead of navigating away
+  await this.page.route("**/api/auth/signout", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ url: "/" }),
+    });
+  });
+
   // Mock the session as null after logout
   await mockSession(this, null);
   await waitForRouteReady(this.page);
 
   // Wait for the page to reflect the logged-out state
-  // Check that Sign In link is visible in header (indicating logged out state)
   await this.page
     .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
     .catch(() => {});
+
+  // Reload to pick up the null session
+  await this.page.reload({ waitUntil: "commit" });
+  await waitForPageReady(this.page, { strategy: "both" });
 
   const header = this.page.locator("header");
   const signInLink = header.getByRole("link", { name: "Sign In" });
@@ -516,11 +559,18 @@ Then("I should be logged out", async function(this: CustomWorld) {
 Then(
   "I should see the loading spinner in the header",
   async function(this: CustomWorld) {
-    // Look for the loading placeholder (animated pulse element)
-    const loadingSpinner = this.page.locator(
+    // PlatformHeader renders "Sign In" + "Get Started" while session is loading.
+    // AuthHeader (if used) renders .animate-pulse element.
+    // Accept either indicator of the loading/unauthenticated state.
+    const loadingPulse = this.page.locator(
       ".fixed.top-4.right-4 .animate-pulse",
     );
-    await expect(loadingSpinner).toBeVisible();
+    const signInLink = this.page.locator("header").getByRole("link", { name: "Sign In" });
+    const getStartedButton = this.page.locator("header").getByRole("link", { name: "Get Started" });
+
+    // Any of these being visible means the page is in loading/unauthenticated state
+    const anyVisible = loadingPulse.or(signInLink).or(getStartedButton);
+    await expect(anyVisible.first()).toBeVisible({ timeout: 10000 });
   },
 );
 

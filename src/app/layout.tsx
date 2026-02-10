@@ -5,6 +5,7 @@ import "./globals.css";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { CookieConsent } from "@/components/CookieConsent";
 import { ConsoleCapture } from "@/components/errors/ConsoleCapture";
+import { IframeErrorBridge } from "@/components/errors/IframeErrorBridge";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { Footer } from "@/components/footer/Footer";
 import { ConditionalHeader } from "@/components/platform-landing";
@@ -107,6 +108,7 @@ export default async function RootLayout({
         <Analytics />
         <SpeedInsights />
         <ConsoleCapture />
+        <IframeErrorBridge />
         <MetaPixel nonce={nonce ?? undefined} />
       </body>
     </html>

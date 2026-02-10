@@ -10,16 +10,12 @@ Feature: Allocator Dashboard
 
   # Dashboard Access
   # NOTE: Not tagged as @smoke because these test complex feature UI that may not be fully implemented
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View Allocator dashboard
     When I navigate to the Allocator page
     Then I should see the Allocator dashboard
     And I should see the page title "Allocator"
     And I should see the description about AI-powered budget recommendations
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Access Allocator from sidebar navigation
     Given I am on the Orbit dashboard
     When I click on "Allocator" in the sidebar
@@ -28,8 +24,6 @@ Feature: Allocator Dashboard
 
   # Spend Overview
   @metrics
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View total spend overview
     When I navigate to the Allocator page
     Then I should see the "Total Spend" card
@@ -37,8 +31,6 @@ Feature: Allocator Dashboard
     And I should see the number of campaigns analyzed
 
   @metrics
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View platform breakdown
     Given I have campaigns on multiple platforms
     When I navigate to the Allocator page
@@ -47,8 +39,6 @@ Feature: Allocator Dashboard
     And platforms should have distinct color indicators
 
   @metrics
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View ROAS metrics
     When I navigate to the Allocator page
     Then I should see the "Average ROAS" card
@@ -56,8 +46,6 @@ Feature: Allocator Dashboard
     And I should see the projected improvement percentage
 
   @metrics
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View CPA metrics
     When I navigate to the Allocator page
     Then I should see the "Average CPA" card
@@ -65,8 +53,6 @@ Feature: Allocator Dashboard
     And I should see the projected savings percentage
 
   @metrics
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View data quality score
     When I navigate to the Allocator page
     Then I should see the "Data Quality" card
@@ -75,8 +61,6 @@ Feature: Allocator Dashboard
 
   # Performance Charts
   @charts
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View ROAS performance chart
     When I navigate to the Allocator page
     And I click on the "ROAS" tab
@@ -85,8 +69,6 @@ Feature: Allocator Dashboard
     And I should see trend badges for top campaigns
 
   @charts
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View CPA performance chart
     When I navigate to the Allocator page
     And I click on the "CPA" tab
@@ -95,8 +77,6 @@ Feature: Allocator Dashboard
     And lower CPA campaigns should appear first
 
   @charts
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View conversions chart
     When I navigate to the Allocator page
     And I click on the "Conversions" tab
@@ -104,8 +84,6 @@ Feature: Allocator Dashboard
     And campaigns should be sorted by conversion count
 
   @charts
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Chart displays trend indicators
     When I navigate to the Allocator page
     Then I should see trend badges for each campaign
@@ -115,8 +93,6 @@ Feature: Allocator Dashboard
 
   # Period Selection
   @filters
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Change analysis period to 7 days
     When I navigate to the Allocator page
     And I select "7 days" from the period dropdown
@@ -124,8 +100,6 @@ Feature: Allocator Dashboard
     And the chart should show "Last 7 days"
 
   @filters
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Change analysis period to 60 days
     When I navigate to the Allocator page
     And I select "60 days" from the period dropdown
@@ -133,8 +107,6 @@ Feature: Allocator Dashboard
     And the chart should show "Last 60 days"
 
   @filters
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Default period is 30 days
     When I navigate to the Allocator page
     Then the period dropdown should show "30 days"
@@ -142,8 +114,6 @@ Feature: Allocator Dashboard
 
   # Risk Tolerance
   @filters
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Change risk tolerance to conservative
     When I navigate to the Allocator page
     And I select "Conservative" from the risk dropdown
@@ -151,8 +121,6 @@ Feature: Allocator Dashboard
     And recommendations should be more cautious
 
   @filters
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Change risk tolerance to aggressive
     When I navigate to the Allocator page
     And I select "Aggressive" from the risk dropdown
@@ -160,16 +128,12 @@ Feature: Allocator Dashboard
     And recommendations should suggest larger budget changes
 
   @filters
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Default risk tolerance is moderate
     When I navigate to the Allocator page
     Then the risk dropdown should show "Moderate"
 
   # Recommendations
   @recommendations
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View scale winner recommendation
     Given I have a high-performing campaign
     When I navigate to the Allocator page
@@ -179,8 +143,6 @@ Feature: Allocator Dashboard
     And I should see projected impact metrics
 
   @recommendations
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View decrease budget recommendation
     Given I have an underperforming campaign
     When I navigate to the Allocator page
@@ -189,8 +151,6 @@ Feature: Allocator Dashboard
     And I should see the reason for the recommendation
 
   @recommendations
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View reallocation recommendation
     Given I have both high and low performing campaigns
     When I navigate to the Allocator page
@@ -200,8 +160,6 @@ Feature: Allocator Dashboard
     And I should see the suggested transfer amount
 
   @recommendations
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View recommendation confidence level
     When I navigate to the Allocator page
     And I have recommendations available
@@ -211,8 +169,6 @@ Feature: Allocator Dashboard
     And low confidence should show "Low Confidence"
 
   @recommendations
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: View recommendation supporting data
     When I navigate to the Allocator page
     And I have recommendations available
@@ -221,8 +177,6 @@ Feature: Allocator Dashboard
 
   # Apply Recommendations
   @recommendations @action
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Apply a recommendation
     When I navigate to the Allocator page
     And I have recommendations available
@@ -232,8 +186,6 @@ Feature: Allocator Dashboard
     And the apply button should be disabled
 
   @recommendations @action
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Expired recommendation cannot be applied
     Given I have an expired recommendation
     When I navigate to the Allocator page
@@ -242,16 +194,12 @@ Feature: Allocator Dashboard
 
   # Empty States
   @empty
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: No campaigns connected
     Given I have no marketing accounts connected
     When I navigate to the Allocator page
     Then I should see a message about connecting ad accounts
 
   @empty
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: No recommendations available
     Given all my campaigns are performing optimally
     When I navigate to the Allocator page
@@ -259,8 +207,6 @@ Feature: Allocator Dashboard
     And I should see a message that campaigns are performing well
 
   @empty
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Insufficient data warning
     Given I have limited campaign data
     When I navigate to the Allocator page
@@ -269,8 +215,6 @@ Feature: Allocator Dashboard
 
   # Responsive Design
   @responsive
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Dashboard displays correctly on mobile
     Given I am using a mobile device
     When I navigate to the Allocator page
@@ -287,8 +231,6 @@ Feature: Allocator Dashboard
 
   # Error Handling
   @error
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Handle API error gracefully
     Given the API is returning errors
     When I navigate to the Allocator page
@@ -296,8 +238,6 @@ Feature: Allocator Dashboard
     And the message should explain the failure
 
   @error
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Handle network timeout
     Given the network is slow
     When I navigate to the Allocator page

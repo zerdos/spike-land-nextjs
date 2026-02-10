@@ -1,9 +1,14 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import "@testing-library/jest-dom";
-import type * as Monaco from "@/workers/monaco-editor.worker";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CodeHistoryCarousel } from "../../components/AutoSaveHistory";
 import { cSessMock } from "../config/cSessMock";
+
+// Mock the Wrapper component to avoid complex renderApp setup
+vi.mock("@/components/app/wrapper", () => ({
+  Wrapper: ({ code }: { code?: string }) => (
+    <div data-testid="wrapper-mock">{code?.substring(0, 30) ?? ""}</div>
+  ),
+}));
 
 // Mock the useVirtualizer hook
 vi.mock("@tanstack/react-virtual", () => ({
@@ -21,39 +26,25 @@ vi.mock("@/hooks/getCodeSpace", () => ({
   getCodeSpace: () => "test-code-space",
 }));
 
-// SKIP REASON: CodeHistoryCarousel requires Monaco editor integration and complex async state
-// CATEGORY: unfinished
-// TRACKING: #798
-// ACTION: fix or remove - Component may be deprecated pending UI redesign
-describe.skip("CodeHistoryCarousel", () => {
-  (globalThis as unknown as { monaco: typeof Monaco; }).monaco = {
-    editor: {
-      createDeltaEditor: vi.fn().mockReturnValue({
-        setModel: vi.fn(),
-        dispose: vi.fn(),
-      }),
-      createModel: vi.fn(),
-    },
-  } as unknown as typeof Monaco;
+const mockHistoryData = [
+  { timestamp: 1625097600000, code: 'console.warn("Version 1");' },
+  { timestamp: 1625184000000, code: 'console.warn("Version 2");' },
+];
 
-  // Mock the fetch function
-  globalThis.fetch = vi.fn(() =>
-    Promise.resolve({
-      ok: true,
-      json: () =>
-        Promise.resolve([
-          { timestamp: 1625097600000, code: 'console.warn("Version 1");' },
-          { timestamp: 1625184000000, code: 'console.warn("Version 2");' },
-        ]),
-    })
-  ) as unknown as typeof fetch;
+describe("CodeHistoryCarousel", () => {
+  const mockOnRestore = vi.fn();
+  const mockOnClose = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mock fetch for loadVersionHistory and restore calls
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockHistoryData),
+      })
+    ) as unknown as typeof fetch;
   });
-
-  const mockOnRestore = vi.fn();
-  const mockOnClose = vi.fn();
 
   it("renders history items and handles restore", async () => {
     render(

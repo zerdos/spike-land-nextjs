@@ -32,6 +32,24 @@ export class ErrorBoundary extends React.Component<
       componentStack: errorInfo.componentStack,
       stack: error.stack,
     });
+
+    // Bridge error to parent window for error DB tracking
+    if (typeof window !== "undefined" && window.parent !== window) {
+      try {
+        window.parent.postMessage(
+          {
+            type: "iframe-error",
+            message: error.message,
+            stack: error.stack,
+            componentStack: errorInfo.componentStack,
+            codeSpace: this.props.codeSpace,
+          },
+          "*",
+        );
+      } catch {
+        // Silently fail if postMessage is blocked
+      }
+    }
   }
 
   override render() {

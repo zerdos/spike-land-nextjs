@@ -252,8 +252,13 @@ When(
     const pipelineCard = this.page.locator("[data-pipeline-id]").filter({
       has: this.page.getByText(pipelineName),
     });
-    const editButton = pipelineCard.getByRole("button", { name: /edit/i });
-    await editButton.click();
+    // Open the actions dropdown menu (MoreVertical "..." button)
+    const menuTrigger = pipelineCard.getByRole("button", { name: /open actions menu/i });
+    await menuTrigger.click();
+    // Click the Edit menu item
+    const editItem = this.page.getByRole("menuitem", { name: /edit/i });
+    await expect(editItem).toBeVisible({ timeout: 5000 });
+    await editItem.click();
     await this.page.waitForTimeout(300);
   },
 );
@@ -267,10 +272,13 @@ When(
         has: this.page.getByText(/default|system/i),
       })
       .first();
-    const forkButton = systemPipelineCard.getByRole("button", {
-      name: /fork|copy/i,
-    });
-    await forkButton.click();
+    // Open the actions dropdown menu
+    const menuTrigger = systemPipelineCard.getByRole("button", { name: /open actions menu/i });
+    await menuTrigger.click();
+    // Click the Fork menu item
+    const forkItem = this.page.getByRole("menuitem", { name: /fork/i });
+    await expect(forkItem).toBeVisible({ timeout: 5000 });
+    await forkItem.click();
     await this.page.waitForTimeout(300);
   },
 );
@@ -284,10 +292,13 @@ When(
         has: this.page.getByText(/community|public/i),
       })
       .first();
-    const forkButton = publicPipelineCard.getByRole("button", {
-      name: /fork|copy/i,
-    });
-    await forkButton.click();
+    // Open the actions dropdown menu
+    const menuTrigger = publicPipelineCard.getByRole("button", { name: /open actions menu/i });
+    await menuTrigger.click();
+    // Click the Fork menu item
+    const forkItem = this.page.getByRole("menuitem", { name: /fork/i });
+    await expect(forkItem).toBeVisible({ timeout: 5000 });
+    await forkItem.click();
     await this.page.waitForTimeout(300);
   },
 );
@@ -298,8 +309,13 @@ When(
     const pipelineCard = this.page.locator("[data-pipeline-id]").filter({
       has: this.page.getByText(pipelineName),
     });
-    const deleteButton = pipelineCard.getByRole("button", { name: /delete/i });
-    await deleteButton.click();
+    // Open the actions dropdown menu
+    const menuTrigger = pipelineCard.getByRole("button", { name: /open actions menu/i });
+    await menuTrigger.click();
+    // Click the Delete menu item
+    const deleteItem = this.page.getByRole("menuitem", { name: /delete/i });
+    await expect(deleteItem).toBeVisible({ timeout: 5000 });
+    await deleteItem.click();
     await this.page.waitForTimeout(300);
   },
 );
@@ -339,26 +355,12 @@ When(
 When(
   "I select tier {string}",
   async function(this: CustomWorld, tier: string) {
-    // Use multiple fallback selectors for tier selection
-    const tierSelector = this.page
-      .locator('[data-testid="tier-selector"]')
-      .or(this.page.locator('[data-testid="tier-select"]'))
-      .or(this.page.locator('[name="tier"]'))
-      .or(this.page.getByLabel(/tier/i))
-      .or(
-        this.page.getByRole("combobox").filter({
-          has: this.page.getByText(/tier|1k|2k|4k/i),
-        }),
-      )
-      .or(
-        this.page.locator("select").filter({
-          has: this.page.getByText(/tier/i),
-        }),
-      );
-    // Wait for the tier selector to be visible and clickable
-    await expect(tierSelector.first()).toBeVisible({ timeout: 15000 });
-    await tierSelector.first().click();
-    // Wait for dropdown options to appear
+    // The tier Select is the first combobox inside the dialog (under "Default Tier" label)
+    const dialog = this.page.locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])');
+    const tierCombobox = dialog.getByRole("combobox").first();
+    await expect(tierCombobox).toBeVisible({ timeout: 15000 });
+    await tierCombobox.click();
+    // Wait for dropdown options to appear and click matching option
     const option = this.page.getByRole("option", {
       name: new RegExp(tier, "i"),
     });
@@ -370,14 +372,11 @@ When(
 When(
   "I select visibility {string}",
   async function(this: CustomWorld, visibility: string) {
-    const visibilitySelector = this.page
-      .locator('[data-testid="visibility-selector"]')
-      .or(
-        this.page.getByRole("combobox").filter({
-          has: this.page.getByText(/visibility|private|public/i),
-        }),
-      );
-    await visibilitySelector.click();
+    // The visibility Select is the second combobox inside the dialog (under "Visibility" label)
+    const dialog = this.page.locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])');
+    const visibilityCombobox = dialog.getByRole("combobox").nth(1);
+    await expect(visibilityCombobox).toBeVisible({ timeout: 10000 });
+    await visibilityCombobox.click();
     await this.page
       .getByRole("option", { name: new RegExp(visibility, "i") })
       .click();
@@ -464,26 +463,19 @@ When("I configure generation settings", async function(this: CustomWorld) {
 });
 
 When("I click on the tier selector", async function(this: CustomWorld) {
-  // Use multiple fallback selectors for tier selection
-  const tierSelector = this.page
-    .locator('[data-testid="tier-selector"]')
-    .or(this.page.locator('[data-testid="tier-select"]'))
-    .or(this.page.locator('[name="tier"]'))
-    .or(this.page.getByLabel(/tier/i))
-    .or(
-      this.page.getByRole("combobox").filter({
-        has: this.page.getByText(/tier|1k|2k|4k/i),
-      }),
-    )
-    .or(this.page.getByRole("combobox").first());
-  await tierSelector.click();
+  // The tier Select is the first combobox inside the dialog
+  const dialog = this.page.locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])');
+  const tierCombobox = dialog.getByRole("combobox").first();
+  await expect(tierCombobox).toBeVisible({ timeout: 10000 });
+  await tierCombobox.click();
 });
 
 When("I click on the visibility selector", async function(this: CustomWorld) {
-  const visibilitySelector = this.page
-    .locator('[data-testid="visibility-selector"]')
-    .or(this.page.getByRole("combobox").nth(1));
-  await visibilitySelector.click();
+  // The visibility Select is the second combobox inside the dialog
+  const dialog = this.page.locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])');
+  const visibilityCombobox = dialog.getByRole("combobox").nth(1);
+  await expect(visibilityCombobox).toBeVisible({ timeout: 10000 });
+  await visibilityCombobox.click();
 });
 
 When(
@@ -791,10 +783,10 @@ Then(
 Then(
   "I should see a validation error for the name field",
   async function(this: CustomWorld) {
-    const errorMessage = this.page.getByText(
-      /required|name.*required|enter.*name/i,
-    );
-    await expect(errorMessage).toBeVisible();
+    // PipelineForm disables the submit button when name is empty (no error text shown)
+    const dialog = this.page.locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])');
+    const submitButton = dialog.getByRole("button", { name: /create|save|submit/i });
+    await expect(submitButton).toBeDisabled();
   },
 );
 

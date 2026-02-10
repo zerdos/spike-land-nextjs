@@ -55,24 +55,18 @@ Feature: Admin Dashboard
     And I should see "Voucher Management" quick link
     And I should see "User Management" quick link
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Navigate to User Analytics from dashboard
     Given the user is an admin
     And I am on the admin dashboard
     When I click the "User Analytics" quick link
     Then I should be on the "/admin/analytics" page
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Navigate to Credit Economics from dashboard
     Given the user is an admin
     And I am on the admin dashboard
     When I click the "Credit Economics" quick link
     Then I should be on the "/admin/credits" page
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Navigate to System Health from dashboard
     Given the user is an admin
     And I am on the admin dashboard
@@ -98,16 +92,12 @@ Feature: Admin Dashboard
     And the sidebar should contain navigation links
     And I should see "Back to App" link in sidebar
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Admin sidebar navigation works
     Given the user is an admin
     And I am on the admin dashboard
     When I click "User Analytics" in the sidebar
     Then I should be on the "/admin/analytics" page
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Back to App link works
     Given the user is an admin
     And I am on the admin dashboard

@@ -87,8 +87,8 @@ function getDateOffset(days: number, time: string): Date {
 When(
   "I navigate to the calendar page",
   async function(this: CustomWorld) {
-    // Set up calendar API mock
-    await this.page.route("**/api/orbit/calendar**", async (route) => {
+    // Mock the calendar view API (useCalendarView hook calls /api/calendar/view)
+    await this.page.route("**/api/calendar/view**", async (route) => {
       const posts = this.scheduledPosts ?? MOCK_SCHEDULED_POSTS;
       await route.fulfill({
         status: 200,
@@ -104,19 +104,44 @@ When(
       });
     });
 
-    // Set up scheduled posts API mock
-    await this.page.route("**/api/orbit/scheduled-posts**", async (route) => {
-      const posts = this.scheduledPosts ?? MOCK_SCHEDULED_POSTS;
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          posts,
-          total: posts.length,
-          hasMore: false,
-        }),
-      });
+    // Mock the calendar posts API (create/update/delete scheduled posts)
+    await this.page.route("**/api/calendar/posts**", async (route) => {
+      if (route.request().method() === "GET") {
+        const posts = this.scheduledPosts ?? MOCK_SCHEDULED_POSTS;
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            posts,
+            total: posts.length,
+            hasMore: false,
+          }),
+        });
+      } else {
+        await route.continue();
+      }
     });
+
+    // Override the workspace step's default empty accounts mock for the orbit-specific
+    // accounts endpoint (CalendarClient fetches /api/orbit/{slug}/accounts, not /api/social/accounts)
+    const connectedAccounts = this.connectedAccounts ?? [];
+    if (connectedAccounts.length > 0) {
+      await this.page.route("**/api/orbit/*/accounts", async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            accounts: connectedAccounts.map((a) => ({
+              id: `social-account-${a.platform.toLowerCase()}-1`,
+              platform: a.platform.toUpperCase(),
+              accountId: "12345",
+              accountName: a.name,
+              status: "ACTIVE",
+            })),
+          }),
+        });
+      });
+    }
 
     await this.page.goto(`/orbit/${this.workspaceSlug ?? "test-marketing"}/calendar`);
     await this.page.waitForLoadState("networkidle");
@@ -332,7 +357,45 @@ Then(
 When(
   "I navigate to create a scheduled post",
   async function(this: CustomWorld) {
+    // Set up API mocks needed for the calendar page to render fully
+    await this.page.route("**/api/calendar/view**", async (route) => {
+      const posts = this.scheduledPosts ?? MOCK_SCHEDULED_POSTS;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          posts: posts.map((p) => ({
+            ...p,
+            platforms: p.accounts.map((a) => a.platform),
+            accountNames: p.accounts.map((a) => a.accountName),
+            isRecurring: !!p.recurrenceRule,
+          })),
+        }),
+      });
+    });
+
+    // Override the workspace step's empty accounts default so the calendar renders
+    const connectedAccounts = this.connectedAccounts ?? [];
+    if (connectedAccounts.length > 0) {
+      await this.page.route("**/api/orbit/*/accounts", async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            accounts: connectedAccounts.map((a) => ({
+              id: `social-account-${a.platform.toLowerCase()}-1`,
+              platform: a.platform.toUpperCase(),
+              accountId: "12345",
+              accountName: a.name,
+              status: "ACTIVE",
+            })),
+          }),
+        });
+      });
+    }
+
     await this.page.goto(`/orbit/${this.workspaceSlug ?? "test-marketing"}/calendar`);
+    await this.page.waitForLoadState("networkidle");
     await this.page.click("[data-testid='create-post-button']");
     await expect(this.page.locator("[data-testid='create-post-dialog']")).toBeVisible();
   },
@@ -405,8 +468,8 @@ When(
 When(
   "I click the calendar {string} button",
   async function(this: CustomWorld, buttonText: string) {
-    // Mock the create/update API
-    await this.page.route("**/api/orbit/scheduled-posts", async (route) => {
+    // Mock the create/update API (CalendarClient calls /api/calendar/posts)
+    await this.page.route("**/api/calendar/posts", async (route) => {
       if (route.request().method() === "POST") {
         await route.fulfill({
           status: 200,
@@ -815,33 +878,48 @@ When(
 Given(
   "I have a Twitter account {string} connected",
   async function(this: CustomWorld, accountName: string) {
-    // Add Twitter account to the list of connected accounts
+    // Track connected accounts
+    this.connectedAccounts = this.connectedAccounts || [];
+    this.connectedAccounts.push({
+      platform: "TWITTER",
+      name: accountName,
+      id: "social-account-twitter-1",
+    });
+
+    const allAccounts = this.connectedAccounts.map((a) => ({
+      id: `social-account-${a.platform.toLowerCase()}-1`,
+      platform: a.platform.toUpperCase(),
+      accountId: a.platform === "LINKEDIN" ? "12345" : "67890",
+      accountName: a.name,
+      status: "ACTIVE",
+      metadata: a.platform === "TWITTER"
+        ? { displayName: a.name, handle: `@${a.name.toLowerCase().replace(/\s+/g, "")}` }
+        : { displayName: a.name },
+    }));
+
+    // Mock both social accounts APIs
     await this.page.route("**/api/social/accounts**", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({
-          accounts: [
-            {
-              id: "social-account-linkedin-1",
-              platform: "LINKEDIN",
-              accountId: "12345",
-              accountName: "Test Company",
-              status: "ACTIVE",
-            },
-            {
-              id: "social-account-twitter-1",
-              platform: "TWITTER",
-              accountId: "67890",
-              accountName: accountName,
-              status: "ACTIVE",
-              metadata: {
-                displayName: accountName,
-                handle: "@testtwitter",
-              },
-            },
-          ],
-        }),
+        body: JSON.stringify({ accounts: allAccounts }),
+      });
+    });
+
+    // Also mock the orbit-specific accounts endpoint
+    await this.page.route("**/api/orbit/*/accounts", async (route) => {
+      if (route.request().method() === "DELETE") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ success: true }),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ accounts: allAccounts }),
       });
     });
   },

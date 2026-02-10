@@ -7,7 +7,8 @@ Feature: Batch Image Operations
   Background:
     Given I am logged in as "Test User" with email "test@example.com"
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, not a file upload UI
+  # File upload lives inside album detail page (/albums/[id])
   @skip
   Scenario: Upload multiple images at once
     Given I am on the enhance page
@@ -15,7 +16,7 @@ Feature: Batch Image Operations
     Then I should see multiple images queued for upload
     And each image should show an upload progress indicator
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, not a file upload UI — see above
   @skip
   Scenario: Batch upload displays file names
     Given I am on the enhance page
@@ -23,7 +24,7 @@ Feature: Batch Image Operations
     Then I should see all 3 image file names listed
     And each file should have a status indicator
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, not a file upload UI — see above
   @skip
   Scenario: Batch upload shows individual progress
     Given I am on the enhance page
@@ -32,7 +33,7 @@ Feature: Batch Image Operations
     Then each image should show individual upload progress
     And faster uploads should complete before slower ones
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, not a file upload UI — see above
   @skip
   Scenario: Cancel individual upload in batch
     Given I am on the enhance page
@@ -41,7 +42,7 @@ Feature: Batch Image Operations
     Then that image should be removed from the queue
     And other images should continue uploading
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, not a file upload UI — see above
   @skip
   Scenario: Batch upload handles mixed success and failure
     Given I am on the enhance page
@@ -51,7 +52,7 @@ Feature: Batch Image Operations
     And failed uploads should show error status
     And I should see a summary of results
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, not a file upload UI — see above
   @skip
   Scenario: Batch upload validates file sizes
     Given I am on the enhance page
@@ -60,7 +61,7 @@ Feature: Batch Image Operations
     And valid images should proceed to upload
     And I should see size validation errors for rejected files
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, not a file upload UI — see above
   @skip
   Scenario: Batch upload validates file types
     Given I am on the enhance page
@@ -68,7 +69,8 @@ Feature: Batch Image Operations
     Then only valid image files should be queued
     And non-image files should show validation errors
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, not flat image list
+  # Image list with checkboxes lives in /apps/pixel/library
   @skip
   Scenario: View batch uploaded images in list
     Given I have uploaded 5 images in a batch
@@ -76,7 +78,8 @@ Feature: Batch Image Operations
     Then I should see all 5 images in the images list
     And images should be sorted by upload date
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, not image grid with checkboxes
+  # Selection with checkboxes exists in /apps/pixel/library and /albums/[id]
   @skip
   Scenario: Select multiple images for batch enhancement
     Given I have uploaded multiple images
@@ -85,7 +88,7 @@ Feature: Batch Image Operations
     Then I should see "3 selected" indicator
     And I should see "Enhance Selected" button
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: needs image selection UI at /apps/pixel — see above
   @skip
   Scenario: Batch enhance with tier selection
     Given I have 5 uploaded images
@@ -97,7 +100,7 @@ Feature: Batch Image Operations
     And I should see "TIER_4K" option
     And each tier should show total token cost for 3 images
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: needs image selection UI at /apps/pixel — see above
   @skip
   Scenario: Confirm batch enhancement with sufficient tokens
     Given I have 3 images selected for enhancement
@@ -107,7 +110,7 @@ Feature: Batch Image Operations
     Then all 3 images should start processing
     And my token balance should decrease by the total cost
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: needs image selection UI at /apps/pixel — see above
   @skip
   Scenario: Batch enhancement shows insufficient tokens warning
     Given I have 5 images selected for enhancement
@@ -117,7 +120,7 @@ Feature: Batch Image Operations
     And the enhancement should not proceed
     And I should see "Get Tokens" button
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: needs image selection UI at /apps/pixel — see above
   @skip
   Scenario: Cancel batch enhancement
     Given I have images selected for batch enhancement
@@ -127,7 +130,7 @@ Feature: Batch Image Operations
     And no enhancements should start
     And images should remain selected
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: needs image selection UI at /apps/pixel — see above
   @skip
   Scenario: Batch enhancement progress tracking
     Given I have started batch enhancement for 4 images
@@ -136,7 +139,7 @@ Feature: Batch Image Operations
     And I should see overall batch progress
     And completed enhancements should show before pending ones
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: needs image selection UI at /apps/pixel — see above
   @skip
   Scenario: Deselect all images in batch
     Given I have 5 images selected
@@ -144,7 +147,7 @@ Feature: Batch Image Operations
     Then no images should be selected
     And the "Enhance Selected" button should be disabled
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: needs image selection UI at /apps/pixel — see above
   @skip
   Scenario: Select all images in batch
     Given I have 10 uploaded images
@@ -152,7 +155,7 @@ Feature: Batch Image Operations
     Then all 10 images should be selected
     And I should see "10 selected" indicator
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: needs image selection + delete UI at /apps/pixel — see above
   @skip
   Scenario: Batch delete multiple images
     Given I have 6 uploaded images
@@ -162,7 +165,7 @@ Feature: Batch Image Operations
     Then all 3 selected images should be removed
     And I should see 3 images remaining
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: needs image selection + delete UI at /apps/pixel — see above
   @skip
   Scenario: Cancel batch deletion
     Given I have 4 images selected for deletion
@@ -171,7 +174,7 @@ Feature: Batch Image Operations
     Then all 4 images should remain in the list
     And images should remain selected
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: needs image selection UI at /apps/pixel — see above
   @skip
   Scenario: Batch operations show loading state
     Given I have started batch enhancement
@@ -179,7 +182,7 @@ Feature: Batch Image Operations
     Then the "Enhance Selected" button should be disabled
     And I should see "Processing batch..." indicator
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, not a file upload UI — see above
   @skip
   Scenario: Batch upload maximum file limit
     Given I am on the enhance page
@@ -187,7 +190,7 @@ Feature: Batch Image Operations
     Then I should see a warning about the limit
     And only the first 20 images should be queued
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, no failed enhancement status
   @skip
   Scenario: Resume failed batch enhancements
     Given I had a batch enhancement that partially failed
@@ -197,7 +200,7 @@ Feature: Batch Image Operations
     When I click "Retry Failed" button
     Then only failed images should be re-queued for enhancement
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: /apps/pixel shows albums grid, no enhancement history view
   @skip
   Scenario: View batch enhancement history
     Given I have completed several batch enhancements
@@ -205,7 +208,7 @@ Feature: Batch Image Operations
     Then I should see batch enhancement completion times
     And I should see which images were processed together
 
-  # SKIP REASON: failing - needs to investigate
+  # SKIP REASON: needs image selection UI with tier cost data-testids — see above
   @skip
   Scenario: Batch enhancement tier cost preview
     Given I have 5 images selected

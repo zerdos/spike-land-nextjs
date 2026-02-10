@@ -82,10 +82,12 @@ When("I click the mobile menu button", async function(this: CustomWorld) {
     name: /(toggle|open) menu/i,
   });
   await expect(menuButton).toBeVisible();
-  await menuButton.click();
-  // Wait for drawer to appear using Playwright's built-in waiting
-  const drawer = this.page.getByRole("dialog");
-  await expect(drawer).toBeVisible({ timeout: 5000 });
+  // Retry clicking until dialog appears — handles hydration race where the
+  // button is visible before the Sheet component mounts
+  await expect(async () => {
+    await menuButton.click();
+    await expect(this.page.getByRole("dialog")).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 10000 });
 });
 
 Then(

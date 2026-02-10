@@ -29,8 +29,6 @@ Feature: Pricing Page Verification
     And I should see "$29" text
     And I should see "1,000 AI credits/month" text
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Pro plan is marked as most popular
     Then I should see "Most Popular" text
 

@@ -70,6 +70,7 @@ export async function POST(request: Request) {
     const errorsToProcess = body.errors.slice(0, MAX_ERRORS_PER_REQUEST);
     let successCount = 0;
     let failCount = 0;
+    let firstDbError: unknown = null;
 
     // Process each error
     for (const error of errorsToProcess) {
@@ -111,10 +112,15 @@ export async function POST(request: Request) {
           : "FRONTEND";
         await reportErrorToDatabase(sanitizedError, env);
         successCount++;
-      } catch {
-        // Intentionally silent: Individual error logging failed - continue processing others.
-        // We track failCount but don't log to avoid noise.
+      } catch (dbError) {
         failCount++;
+        if (!firstDbError) {
+          firstDbError = dbError;
+          console.warn(
+            "[ErrorReport API] Database write failed:",
+            dbError instanceof Error ? dbError.message : dbError,
+          );
+        }
       }
     }
 
