@@ -27,7 +27,7 @@ export const BridgeMindLogo: React.FC<BridgeMindLogoProps> = ({
   const opacity = interpolate(entryProgress, [0, 1], [0, 1]);
   const scale = interpolate(entryProgress, [0, 1], [0.8, 1]);
 
-  const glowPulse = Math.sin((frame - delay) * 0.1) * 0.2 + 0.8;
+  const glowPulse = Math.sin(((frame - delay) / fps) * Math.PI * 2) * 0.2 + 0.8;
 
   return (
     <div

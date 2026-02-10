@@ -96,9 +96,16 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
               }}
             />
           </div>
-          <div style={{ display: "flex", gap: 20 }}>
-            <div style={{ width: 14, height: 14, background: "#fff", borderRadius: 2 }} />
-            <div style={{ width: 14, height: 14, borderLeft: "10px solid #fff", borderTop: "7px solid transparent", borderBottom: "7px solid transparent" }} />
+          <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+            <div style={{
+              width: 0, height: 0,
+              borderLeft: "12px solid #fff",
+              borderTop: "7px solid transparent",
+              borderBottom: "7px solid transparent",
+            }} />
+            <div style={{ color: "#aaa", fontSize: 12, fontFamily: "Roboto, sans-serif" }}>
+              3:47 / 13:22
+            </div>
           </div>
         </div>
       </div>

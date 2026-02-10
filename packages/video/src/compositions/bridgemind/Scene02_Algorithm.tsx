@@ -3,9 +3,11 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } fr
 import { BrowserFrame, YouTubePlayer, BridgeMindLogo } from "../../components";
 import { SPRING_CONFIGS, COLORS } from "../../lib/constants";
 
+const EC = { extrapolateLeft: "clamp" as const, extrapolateRight: "clamp" as const };
+
 export const Scene02_Algorithm: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width: _width, height } = useVideoConfig();
+  const { fps, height } = useVideoConfig();
 
   const upProgress = spring({
     frame,
@@ -13,14 +15,15 @@ export const Scene02_Algorithm: React.FC = () => {
     config: SPRING_CONFIGS.snappy,
   });
 
-  const zoomProgress = interpolate(frame, [45, 105], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const zoomProgress = interpolate(frame, [45, 105], [0, 1], EC);
   const scale = interpolate(zoomProgress, [0, 1], [1, 3.5]);
 
   return (
     <AbsoluteFill style={{ background: COLORS.darkBg, overflow: "hidden" }}>
-      <div 
-        style={{ 
-          transform: `translateY(${interpolate(upProgress, [0, 1], [height, 0])}px) scale(${scale})`,
+      <div
+        style={{
+          transform: `translateY(${interpolate(upProgress, [0, 1], [height, 0], EC)}px) scale(${scale})`,
+          opacity: interpolate(frame, [0, 15, 80, 105], [0, 1, 1, 0], EC),
           width: "100%",
           height: "100%",
           display: "flex",
@@ -36,34 +39,34 @@ export const Scene02_Algorithm: React.FC = () => {
 
       {/* Reveal BridgeMind after zoom */}
       {frame > 90 && (
-        <AbsoluteFill 
-          style={{ 
-            background: "#000", 
-            opacity: interpolate(frame, [90, 105], [0, 1]),
+        <AbsoluteFill
+          style={{
+            background: "#000",
+            opacity: interpolate(frame, [90, 105], [0, 1], EC),
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexDirection: "column",
           }}
         >
-          <div 
-            style={{ 
-              position: "absolute", 
-              width: "100%", 
-              height: "100%", 
-              backgroundImage: "radial-gradient(circle, #1e293b 1px, transparent 1px)", 
+          <div
+            style={{
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              backgroundImage: "radial-gradient(circle, #1e293b 1px, transparent 1px)",
               backgroundSize: "40px 40px",
               opacity: 0.3
-            }} 
+            }}
           />
-          <div style={{ transform: `scale(${interpolate(frame, [105, 180], [0.8, 1.2])})` }}>
+          <div style={{ transform: `scale(${interpolate(frame, [105, 180], [0.8, 1.2], EC)})` }}>
             <BridgeMindLogo size={160} />
-            <div 
-              style={{ 
-                marginTop: 40, 
-                fontSize: 32, 
-                fontWeight: 700, 
-                color: "white", 
+            <div
+              style={{
+                marginTop: 40,
+                fontSize: 32,
+                fontWeight: 700,
+                color: "white",
                 textAlign: "center",
                 background: `linear-gradient(to right, ${COLORS.bridgemindCyan}, ${COLORS.bridgemindPink})`,
                 WebkitBackgroundClip: "text",
