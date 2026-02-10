@@ -90,7 +90,7 @@ Feature: Image Enhancement
     And I can select different versions to compare
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
+  # SKIP REASON: EnhancementHistoryGrid uses aria-pressed not data-version-id; step selectors need updating
   @skip
   Scenario: Select different enhancement versions
     Given I have multiple enhancement versions
@@ -119,8 +119,6 @@ Feature: Image Enhancement
     Then the image should remain in the list
 
   @fast @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
-  @skip
   Scenario: Navigate back to albums list
     Given I have an uploaded image
     And I am on the image enhancement page
@@ -136,7 +134,7 @@ Feature: Image Enhancement
     And I should see an empty albums message
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
+  # SKIP REASON: Complex multi-step flow: trigger enhancement + verify balance change requires real API interaction
   @skip
   Scenario: Token balance updates after enhancement
     Given I have an uploaded image
@@ -147,7 +145,7 @@ Feature: Image Enhancement
     Then my token balance should decrease to 8 tokens
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
+  # SKIP REASON: "Get Credits" links to /settings/billing page, no purchase modal exists on enhancement page
   @skip
   Scenario: Purchase tokens from enhancement page
     Given I have an uploaded image
@@ -157,7 +155,7 @@ Feature: Image Enhancement
     And I can select token packages
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
+  # SKIP REASON: No real enhancement job triggered in mock; processing status requires actual job creation
   @skip
   Scenario: Enhancement processing displays progress
     Given I have an uploaded image
@@ -167,7 +165,7 @@ Feature: Image Enhancement
     And the enhance button should be disabled
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
+  # SKIP REASON: Error handling uses browser alert() which is not capturable as a visible DOM element
   @skip
   Scenario: Enhancement error handling
     Given I have an uploaded image
@@ -177,7 +175,7 @@ Feature: Image Enhancement
     And the enhancement status should show as failed
 
   @fast @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
+  # SKIP REASON: E2E bypass skips auth/ownership validation by design - cannot test ownership with bypass
   @skip
   Scenario: Image details page validates ownership
     Given I am logged in as "User A" with email "usera@example.com"
@@ -186,8 +184,6 @@ Feature: Image Enhancement
     Then I should be redirected to "/apps/pixel"
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
-  @skip
   Scenario: Return from Stripe checkout refreshes balance
     Given I have an uploaded image
     When I return from successful Stripe checkout
@@ -195,7 +191,7 @@ Feature: Image Enhancement
     And the URL parameters should be cleaned up
 
   @requires-db
-  # SKIP REASON: [imageId] page is a server component calling Prisma directly - page.route() cannot intercept server-side DB queries
+  # SKIP REASON: Slider uses div[role="slider"] with mouse events, not input[type="range"] - fill() won't work
   @skip
   Scenario: Image comparison slider is responsive
     Given I have an enhanced image
@@ -205,7 +201,7 @@ Feature: Image Enhancement
     And the slider should work on tablet
 
   @fast @requires-db
-  # SKIP REASON: main page E2E bypass returns empty images - filtering by user not testable without DB
+  # SKIP REASON: E2E bypass returns same mock data for all users - cannot test user isolation
   @skip
   Scenario: Enhancement page displays user's images only
     Given I am logged in as "User A" with email "usera@example.com"

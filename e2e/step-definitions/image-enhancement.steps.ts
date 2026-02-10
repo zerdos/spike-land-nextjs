@@ -148,49 +148,22 @@ Given("I have an uploaded image", async function(this: CustomWorld) {
 });
 
 Given("I have an enhanced image", async function(this: CustomWorld) {
-  const imageWithEnhancement = {
-    ...mockEnhancedImage,
-    enhancementJobs: [mockEnhancementJob],
-  };
-
-  // Store for use in steps
-  await this.page.evaluate((data) => {
-    (window as unknown as Record<string, unknown>)["__mockImage"] = data;
-  }, imageWithEnhancement);
+  // Use imageId containing "enhanced" to trigger E2E bypass mock with 1 completed job
+  const enhancedImageId = "test-image-enhanced-123";
 
   await mockTokenBalance(this, 10);
-  await this.page.goto(`${this.baseUrl}/apps/pixel/${mockImageId}`);
+  await this.page.goto(`${this.baseUrl}/apps/pixel/${enhancedImageId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
 Given(
   "I have multiple enhancement versions",
   async function(this: CustomWorld) {
-    const imageWithMultipleVersions = {
-      ...mockEnhancedImage,
-      enhancementJobs: [
-        mockEnhancementJob,
-        {
-          ...mockEnhancementJob,
-          id: "job-124",
-          tier: "TIER_2K",
-          tokensCost: 5,
-        },
-        {
-          ...mockEnhancementJob,
-          id: "job-125",
-          tier: "TIER_4K",
-          tokensCost: 10,
-        },
-      ],
-    };
-
-    await this.page.evaluate((data) => {
-      (window as unknown as Record<string, unknown>)["__mockImage"] = data;
-    }, imageWithMultipleVersions);
+    // Use imageId containing "multi" to trigger E2E bypass mock with 3 completed jobs
+    const multiImageId = "test-image-multi-123";
 
     await mockTokenBalance(this, 20);
-    await this.page.goto(`${this.baseUrl}/apps/pixel/${mockImageId}`);
+    await this.page.goto(`${this.baseUrl}/apps/pixel/${multiImageId}`);
     await this.page.waitForLoadState("networkidle");
   },
 );
@@ -596,6 +569,8 @@ When(
 When(
   "I return from successful Stripe checkout",
   async function(this: CustomWorld) {
+    // Navigate to image page with Stripe success params - use mockImageId for basic image
+    await mockTokenBalance(this, 10);
     await this.page.goto(
       `${this.baseUrl}/apps/pixel/${mockImageId}?success=true&session_id=cs_test_123`,
     );
@@ -704,11 +679,11 @@ Then(
 Then(
   "I should see {string} enhancement option",
   async function(this: CustomWorld, tier: string) {
-    // Map tier codes to display text patterns
+    // Map tier codes to display text patterns - UI shows "1K Tier", "2K Tier", "4K Tier"
     const tierDisplayMap: Record<string, string> = {
-      TIER_1K: "1K.*1024px|TIER_1K",
-      TIER_2K: "2K.*2048px|TIER_2K",
-      TIER_4K: "4K.*4096px|TIER_4K",
+      TIER_1K: "1K",
+      TIER_2K: "2K",
+      TIER_4K: "4K",
     };
 
     const pattern = tierDisplayMap[tier] || tier;
@@ -717,9 +692,10 @@ Then(
   },
 );
 
-Then("each tier should display token cost", async function(this: CustomWorld) {
-  const tokenCost = this.page.getByText(/tokens?/i);
-  await expect(tokenCost).toBeVisible();
+Then("each tier should display credit cost", async function(this: CustomWorld) {
+  // UI shows "X Credits" for each tier
+  const creditCost = this.page.getByText(/credits?/i);
+  await expect(creditCost.first()).toBeVisible();
 });
 
 Then(
@@ -762,26 +738,43 @@ Then("I should see the low balance banner", async function(this: CustomWorld) {
 
 Then("I should see the comparison slider", async function(this: CustomWorld) {
   const slider = this.page.locator('[data-testid="comparison-slider"]').or(
+    this.page.locator('[role="slider"]'),
+  ).or(
+    this.page.locator('[data-testid="slider-divider"]'),
+  ).or(
     this.page.locator('input[type="range"]'),
   );
-  await expect(slider).toBeVisible();
+  await expect(slider.first()).toBeVisible();
 });
 
 Then(
   "I can interact with the slider to compare versions",
   async function(this: CustomWorld) {
-    const slider = this.page.locator('input[type="range"]').first();
-    if (await slider.isVisible()) {
-      await slider.fill("75");
-      await this.page.waitForTimeout(200);
+    // Try div[role="slider"] first (ImageComparisonSlider), then input[type="range"]
+    const divSlider = this.page.locator('[role="slider"]').first();
+    const inputSlider = this.page.locator('input[type="range"]').first();
+
+    if (await divSlider.isVisible()) {
+      const box = await divSlider.boundingBox();
+      if (box) {
+        // Drag slider from center to 75% position
+        await this.page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.5);
+        await this.page.mouse.down();
+        await this.page.mouse.move(box.x + box.width * 0.75, box.y + box.height * 0.5);
+        await this.page.mouse.up();
+      }
+    } else if (await inputSlider.isVisible()) {
+      await inputSlider.fill("75");
     }
+    await this.page.waitForTimeout(200);
   },
 );
 
 Then(
   "I should see all enhancement versions",
   async function(this: CustomWorld) {
-    const versions = this.page.locator("[data-version-id]");
+    // EnhancementHistoryGrid items use role="button" with aria-pressed
+    const versions = this.page.locator('[role="button"][aria-pressed]');
     const count = await versions.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -790,7 +783,8 @@ Then(
 Then(
   "I can select different versions to compare",
   async function(this: CustomWorld) {
-    const versions = this.page.locator("[data-version-id]");
+    // EnhancementHistoryGrid items use role="button" with aria-pressed
+    const versions = this.page.locator('[role="button"][aria-pressed]');
     if (await versions.count() > 1) {
       await versions.nth(1).click();
       await this.page.waitForTimeout(200);
