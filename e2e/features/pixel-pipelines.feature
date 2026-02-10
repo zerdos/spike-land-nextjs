@@ -55,18 +55,18 @@ Feature: Pixel Pipeline Management
     And I should see "Tier" selector
     And I should see "Visibility" selector
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Create new pipeline successfully
     When I visit "/apps/pixel/pipelines"
     And I click "New Pipeline" button
     And I fill in pipeline name "My Custom Pipeline"
     And I fill in pipeline description "A custom enhancement pipeline"
-    And I select tier "TIER_2K"
+    And I select tier "2K"
     And I select visibility "Private"
     And I submit the pipeline form
     Then I should see "My Custom Pipeline" in "My Pipelines" section
-    And the pipeline should show tier "TIER_2K"
+    And the pipeline should show tier "2K"
 
   Scenario: Create pipeline with advanced configuration
     When I visit "/apps/pixel/pipelines"
@@ -79,8 +79,8 @@ Feature: Pixel Pipeline Management
     And I submit the pipeline form
     Then the pipeline should be created with all configurations
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Edit existing pipeline
     Given I have a custom pipeline named "My Pipeline"
     When I visit "/apps/pixel/pipelines"
@@ -97,8 +97,8 @@ Feature: Pixel Pipeline Management
     When I visit "/apps/pixel/pipelines"
     Then the system default pipelines should not have edit buttons
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Fork system default pipeline
     Given there are system default pipelines
     When I visit "/apps/pixel/pipelines"
@@ -111,8 +111,8 @@ Feature: Pixel Pipeline Management
     And I submit the pipeline form
     Then I should see the forked pipeline in "My Pipelines" section
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Fork public pipeline
     Given there is a public pipeline from another user
     When I visit "/apps/pixel/pipelines"
@@ -122,8 +122,8 @@ Feature: Pixel Pipeline Management
     When I submit the pipeline form
     Then I should see the forked pipeline in "My Pipelines" section
 
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  # SKIP REASON: requires DB seeding - page uses server-side Prisma, route mocking doesn't provide initial data
+  @skip @requires-db
   Scenario: Delete custom pipeline
     Given I have a custom pipeline named "Pipeline to Delete"
     When I visit "/apps/pixel/pipelines"
