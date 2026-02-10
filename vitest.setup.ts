@@ -22,6 +22,26 @@ if (typeof Element !== "undefined") {
     function() {};
   Element.prototype.scrollIntoView = Element.prototype.scrollIntoView ||
     function() {};
+  Element.prototype.animate = Element.prototype.animate ||
+    function() {
+      return {
+        finished: Promise.resolve(),
+        cancel: () => {},
+        pause: () => {},
+        play: () => {},
+        reverse: () => {},
+        finish: () => {},
+        onfinish: null,
+        oncancel: null,
+        currentTime: 0,
+        playState: "finished",
+        effect: null,
+        timeline: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => false,
+      };
+    };
 }
 
 // Polyfill for ResizeObserver (required by Radix UI)
