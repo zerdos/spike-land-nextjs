@@ -94,3 +94,15 @@ packages/video/out/
 /tmp/ralph-*
 ralph-worktrees/
 *.log
+
+# Database files
+*.db
+*.db-journal
+*.backup
+*.sql.gz
+*.dump
+.prisma/
+
+# E2E test screenshots (generated artifacts)
+e2e/mobile-test-screenshots/
+e2e/smoke-test-screenshots/
