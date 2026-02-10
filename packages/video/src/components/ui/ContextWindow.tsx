@@ -63,7 +63,6 @@ export function ContextWindow({
       
       <div style={{ flex: 1, display: "flex", flexDirection: "column-reverse", padding: "10px" }}>
         {sections.map((section, index) => {
-          const sectionHeight = `${section.percentage * 100 * fillLevel}%`;
           const sectionEntrance = spring({
             frame: frame - delay - index * 10 - 15,
             fps,
@@ -74,7 +73,7 @@ export function ContextWindow({
             <div
               key={section.label}
               style={{
-                height: `calc(${sectionHeight} * ${sectionEntrance})`,
+                height: `${section.percentage * 100 * fillLevel * sectionEntrance}%`,
                 backgroundColor: section.color,
                 margin: "2px 0",
                 borderRadius: "4px",
@@ -102,7 +101,7 @@ export function ContextWindow({
                 </div>
               )}
               {section.status === "cached" && (
-                <div style={{ position: "absolute", top: 5, right: 10, fontSize: 10, color: "white", opacity: 0.6 }}>CACHED ❄️</div>
+                <div style={{ position: "absolute", top: 5, right: 10, fontSize: 10, color: "white", opacity: 0.6 }}>CACHED {"\u2744"}</div>
               )}
               {section.status === "rotting" && (
                 <div style={{ 

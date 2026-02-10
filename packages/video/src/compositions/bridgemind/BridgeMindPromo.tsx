@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Audio, staticFile, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Audio, Sequence, staticFile, useCurrentFrame } from "remotion";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { slide } from "@remotion/transitions/slide";
 import { 
@@ -241,18 +241,32 @@ export const BridgeMindPromo: React.FC = () => {
           </TransitionSeries.Sequence>
         </TransitionSeries>
 
-        {/* Audio Layers */}
-        <Audio src={staticFile("audio/bridgemind-scene1.mp3")} startFrom={0} />
-        <Audio src={staticFile("audio/bridgemind-scene2.mp3")} startFrom={281} />
-        <Audio src={staticFile("audio/bridgemind-scene3.mp3")} startFrom={505} />
-        <Audio src={staticFile("audio/bridgemind-scene4.mp3")} startFrom={726} />
-        <Audio src={staticFile("audio/bridgemind-scene5.mp3")} startFrom={1088} />
-        <Audio src={staticFile("audio/bridgemind-scene6.mp3")} startFrom={1341} />
-        <Audio src={staticFile("audio/bridgemind-scene7.mp3")} startFrom={1587} />
-        
-        {/* Background Music Layer (Placeholder) */}
-        <Audio 
-          src={staticFile("audio/physics-of-attention.m4a")} 
+        {/* Voiceover Layers — each starts when its scene begins with 1s gap buffers */}
+        <Sequence from={0}>
+          <Audio src={staticFile("audio/bridgemind-scene1.mp3")} />
+        </Sequence>
+        <Sequence from={281}>
+          <Audio src={staticFile("audio/bridgemind-scene2.mp3")} />
+        </Sequence>
+        <Sequence from={505}>
+          <Audio src={staticFile("audio/bridgemind-scene3.mp3")} />
+        </Sequence>
+        <Sequence from={726}>
+          <Audio src={staticFile("audio/bridgemind-scene4.mp3")} />
+        </Sequence>
+        <Sequence from={1088}>
+          <Audio src={staticFile("audio/bridgemind-scene5.mp3")} />
+        </Sequence>
+        <Sequence from={1341}>
+          <Audio src={staticFile("audio/bridgemind-scene6.mp3")} />
+        </Sequence>
+        <Sequence from={1587}>
+          <Audio src={staticFile("audio/bridgemind-scene7.mp3")} />
+        </Sequence>
+
+        {/* Background Music */}
+        <Audio
+          src={staticFile("audio/physics-of-attention.m4a")}
           volume={(f) => musicVolumeAtFrame(f, BRIDGEMIND_TIMING.totalFrames, 0.4, 0.1)}
           loop
         />

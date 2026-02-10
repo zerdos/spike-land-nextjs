@@ -3,6 +3,8 @@ import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remo
 import { AgentPanel, DeploymentSequence, TaskBoard, ProgressBar, TokenFlow } from "../../components";
 import { COLORS } from "../../lib/constants";
 
+const EC = { extrapolateLeft: "clamp" as const, extrapolateRight: "clamp" as const };
+
 export const Scene05_Transformation: React.FC = () => {
   const frame = useCurrentFrame();
   const { width } = useVideoConfig();
@@ -10,11 +12,11 @@ export const Scene05_Transformation: React.FC = () => {
   return (
     <AbsoluteFill style={{ background: COLORS.darkBg }}>
       {/* 0-90f: Agent Panels */}
-      <AbsoluteFill style={{ display: "flex", flexDirection: "row", gap: 20, padding: 40, opacity: interpolate(frame, [0, 15, 75, 90], [0, 1, 1, 0]) }}>
+      <AbsoluteFill style={{ display: "flex", flexDirection: "row", gap: 20, padding: 40, opacity: interpolate(frame, [0, 15, 75, 90], [0, 1, 1, 0], EC) }}>
         {[0, 1, 2].map(i => (
-          <div key={i} style={{ flex: 1, transform: `translateY(${interpolate(frame, [i*10, 30+i*10], [50, 0], { extrapolateRight: "clamp" })}px)` }}>
+          <div key={i} style={{ flex: 1, transform: `translateY(${interpolate(frame, [i*10, 30+i*10], [50, 0], EC)}px)` }}>
             <AgentPanel header={`Agent #${i+1}`} borderColor={i === 1 ? COLORS.bridgemindPink : COLORS.bridgemindCyan}>
-              <div style={{ color: COLORS.textSecondary, fontFamily: "monospace", fontSize: 14 }}>
+              <div style={{ color: COLORS.textSecondary, fontFamily: "monospace", fontSize: 28 }}>
                  {i === 0 ? "> Resuming session #47..." : i === 1 ? "> Context loaded from BridgeMind" : "> Generating tests..."}
               </div>
               <div style={{ marginTop: 20 }}>
@@ -26,16 +28,16 @@ export const Scene05_Transformation: React.FC = () => {
       </AbsoluteFill>
 
       {/* 90-180f: Progress Overlaid */}
-      <AbsoluteFill style={{ opacity: interpolate(frame, [90, 105, 165, 180], [0, 1, 1, 0]), display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <AbsoluteFill style={{ opacity: interpolate(frame, [90, 105, 165, 180], [0, 1, 1, 0], EC), display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: width * 0.8 }}>
           <TaskBoard />
         </div>
         <div style={{ position: "absolute", bottom: 100, width: width * 0.6 }}>
-           <ProgressBar progress={interpolate(frame, [90, 180], [20, 85])} />
+           <ProgressBar progress={interpolate(frame, [105, 150], [20, 85], EC)} />
         </div>
       </AbsoluteFill>
 
-      {/* 180-315f: Deployment */}
+      {/* 180-238f: Deployment */}
       {frame > 180 && (
          <AbsoluteFill style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#050510" }}>
            <div style={{ width: 400 }}>
@@ -45,12 +47,19 @@ export const Scene05_Transformation: React.FC = () => {
                  { label: "Build Optimized", status: "success" },
                  { label: "Tests Passed", status: "success" },
                  { label: "Bridge Sync", status: "success" },
-                 { label: "Deploying...", status: frame > 280 ? "success" : "pending" },
+                 { label: "Deploying...", status: frame > 200 ? "success" : "pending" },
                ]} 
              />
            </div>
-           {frame > 290 && (
-             <div style={{ position: "absolute", right: 200, padding: "10px 40px", background: COLORS.success, color: "white", fontWeight: 900, fontSize: 40, borderRadius: 10 }}>
+           {frame > 205 && (
+             <div style={{ 
+               position: "absolute", right: 200, 
+               padding: "10px 40px", background: COLORS.success, color: "white", 
+               fontWeight: 900, fontSize: 80, borderRadius: 10,
+               opacity: interpolate(frame, [205, 213], [0, 1], EC),
+               transform: `scale(${interpolate(frame, [205, 213], [0.5, 1], EC)})`,
+               boxShadow: `0 0 30px ${COLORS.success}60`,
+             }}>
                LIVE
              </div>
            )}

@@ -1,6 +1,7 @@
 import { LearnItSearch } from "@/components/learnit/search";
 import { BookMarked } from "lucide-react";
 import Link from "next/link";
+import "katex/dist/katex.min.css";
 
 export default function LearnItLayout({
   children,

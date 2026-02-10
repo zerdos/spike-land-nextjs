@@ -24,48 +24,65 @@ export const BridgeMindLogo: React.FC<BridgeMindLogoProps> = ({
       })
     : 1;
 
-  const opacity = interpolate(entryProgress, [0, 1], [0, 1]);
-  const scale = interpolate(entryProgress, [0, 1], [0.8, 1]);
+  const scale = interpolate(entryProgress, [0, 1], [0, 1]);
+  const rotate = interpolate(entryProgress, [0, 1], [-90, 0]);
+  
+  // Continuous pulse
+  const glowPulse = Math.sin(((frame - delay) / fps) * Math.PI * 2) * 0.2 + 0.8;
 
-  const glowPulse = Math.sin((frame - delay) * 0.1) * 0.2 + 0.8;
+
 
   return (
     <div
       style={{
-        opacity,
-        transform: `scale(${scale})`,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        filter: `drop-shadow(0 0 ${15 * glowPulse}px ${COLORS.bridgemindCyan}40)`,
+        width: size,
+        height: size,
+        position: "relative",
+        opacity: interpolate(entryProgress, [0, 0.5], [0, 1]),
+        transform: `scale(${scale}) rotate(${rotate}deg)`,
+        filter: `drop-shadow(0 0 ${20 * glowPulse}px ${COLORS.bridgemindCyan}60)`,
       }}
     >
-      <div
-        style={{
-          fontSize: size,
-          fontWeight: 800,
-          fontFamily: "Inter, sans-serif",
-          letterSpacing: "-0.04em",
-          background: `linear-gradient(135deg, ${COLORS.bridgemindCyan}, ${COLORS.bridgemindPink})`,
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}
+      {/* Hexagon Background */}
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        style={{ overflow: "visible" }}
       >
-        BridgeMind
-      </div>
-      <div
-        style={{
-          fontSize: size * 0.25,
-          fontWeight: 500,
-          color: COLORS.textSecondary,
-          letterSpacing: "0.2em",
-          marginTop: -size * 0.1,
-          textTransform: "uppercase",
-        }}
-      >
-        dot AI
-      </div>
+        <defs>
+          <linearGradient id="boltGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={COLORS.bridgemindCyan} />
+            <stop offset="100%" stopColor={COLORS.bridgemindPink} />
+          </linearGradient>
+          <linearGradient id="borderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={COLORS.bridgemindCyan} />
+            <stop offset="100%" stopColor={COLORS.bridgemindSlate} />
+          </linearGradient>
+        </defs>
+
+        {/* Hexagon Shape */}
+        <path
+          d="M50 0 L93.3 25 V75 L50 100 L6.7 75 V25 Z"
+          fill={COLORS.darkCard}
+          stroke="url(#borderGradient)"
+          strokeWidth="3"
+          strokeLinejoin="round"
+        />
+        
+        {/* Bolt Icon Centered */}
+        <g transform={`translate(50, 50) scale(${0.04 * size}) translate(-12, -12)`}>
+            {/* Using the same path as SpikeLand but centered */}
+            <path 
+                d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" 
+                fill="url(#boltGradient)" 
+                stroke="white" 
+                strokeWidth="0.5"
+            />
+        </g>
+      </svg>
+      
+      {/* Optional: Text label below if needed, but the icon is the request */}
     </div>
   );
 };
