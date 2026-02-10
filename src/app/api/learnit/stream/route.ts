@@ -173,6 +173,7 @@ Begin with the title on the first line (just the title text, no heading markup),
     }
 
     // Process wiki links and save to database
+    // Ensure fullContent is treated as used by actually using it here explicitly if needed, but it is passed to parseWikiLinks.
     const { content: processedContent } = parseWikiLinks(fullContent);
 
     // Remove the title line from content since it's stored separately
