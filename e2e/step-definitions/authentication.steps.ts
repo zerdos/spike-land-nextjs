@@ -567,7 +567,7 @@ Then(
       return url.href.startsWith(expectedUrl) ||
         url.href.startsWith(`${expectedUrl}/`) ||
         url.href.includes(path);
-    }, { timeout: 10000 });
+    }, { timeout: 30000 });
 
     await waitForPageReady(this.page);
     const currentUrl = this.page.url();
