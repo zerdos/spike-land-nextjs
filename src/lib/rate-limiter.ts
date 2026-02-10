@@ -408,4 +408,9 @@ export const rateLimitConfigs = {
     maxRequests: 20,
     windowMs: 60 * 1000, // 1 minute
   },
+  /** Box messages: 20 requests per minute per user */
+  boxMessage: {
+    maxRequests: 20,
+    windowMs: 60 * 1000, // 1 minute
+  },
 } as const;

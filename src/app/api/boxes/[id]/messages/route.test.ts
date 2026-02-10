@@ -2,7 +2,7 @@ import { BoxMessageRole, BoxStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Use vi.hoisted to define mocks before they are hoisted
-const { mockAuth, mockPrisma, mockGemini } = vi.hoisted(() => ({
+const { mockAuth, mockPrisma, mockGemini, mockRateLimiter } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
   mockPrisma: {
     box: {
@@ -17,6 +17,15 @@ const { mockAuth, mockPrisma, mockGemini } = vi.hoisted(() => ({
     generateAgentResponse: vi.fn(),
     isGeminiConfigured: vi.fn(),
   },
+  mockRateLimiter: {
+    checkRateLimit: vi.fn(),
+    rateLimitConfigs: {
+      boxMessage: {
+        maxRequests: 20,
+        windowMs: 60000,
+      },
+    },
+  },
 }));
 
 vi.mock("@/auth", () => ({
@@ -29,6 +38,10 @@ vi.mock("@/lib/ai/gemini-client", () => ({
   generateAgentResponse: mockGemini.generateAgentResponse,
   isGeminiConfigured: mockGemini.isGeminiConfigured,
 }));
+vi.mock("@/lib/rate-limiter", () => ({
+  checkRateLimit: mockRateLimiter.checkRateLimit,
+  rateLimitConfigs: mockRateLimiter.rateLimitConfigs,
+}));
 
 // Import after mocks are set up
 import { POST } from "./route";
@@ -40,6 +53,11 @@ describe("/api/boxes/[id]/messages POST", () => {
     // Default happy path
     mockGemini.isGeminiConfigured.mockReturnValue(true);
     mockGemini.generateAgentResponse.mockResolvedValue("AI Response Content");
+    mockRateLimiter.checkRateLimit.mockResolvedValue({
+      isLimited: false,
+      remaining: 19,
+      resetAt: Date.now() + 60000,
+    });
   });
 
   it("returns 401 if user is not authenticated", async () => {
@@ -54,6 +72,29 @@ describe("/api/boxes/[id]/messages POST", () => {
     const response = await POST(req, { params });
 
     expect(response.status).toBe(401);
+  });
+
+  it("returns 429 when rate limit is exceeded", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "user-123" },
+    } as any);
+
+    mockRateLimiter.checkRateLimit.mockResolvedValue({
+      isLimited: true,
+      remaining: 0,
+      resetAt: Date.now() + 60000,
+    });
+
+    const req = new Request("http://localhost/api/boxes/box-123/messages", {
+      method: "POST",
+      body: JSON.stringify({ content: "Test message" }),
+    });
+    const params = Promise.resolve({ id: "box-123" });
+
+    const response = await POST(req, { params });
+
+    expect(response.status).toBe(429);
+    expect(await response.text()).toBe("Too many messages. Please try again later.");
   });
 
   it("returns 404 if box is not found", async () => {
