@@ -66,25 +66,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: ".nvmrc"
-          cache: "yarn"
-          cache-dependency-path: yarn.lock
-
-      - name: Cache node_modules
-        uses: actions/cache@v5
-        id: yarn-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies (if cache miss)
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+      - uses: ./.github/actions/setup
 
       - name: Run yarn audit
         run: yarn npm audit --all --severity moderate
