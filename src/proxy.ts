@@ -161,6 +161,7 @@ export async function proxy(request: NextRequest) {
     frame-src 'self' https://vercel.live http://localhost:3000 https://www.facebook.com https://staticxx.facebook.com https://testing.spike.land;
     connect-src 'self' blob: data: https://*.r2.dev https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-analytics.com https://vitals.vercel-insights.com https://www.facebook.com https://connect.facebook.net https://vercel.live https://fonts.gstatic.com https://fonts.googleapis.com wss://ws-us3.pusher.com wss://*.peerjs.com;
     worker-src 'self' blob: data:;
+    media-src 'self' blob: https://*.r2.dev https://*.r2.cloudflarestorage.com;
     frame-ancestors 'self';
     base-uri 'self';
     form-action 'self';
