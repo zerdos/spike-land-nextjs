@@ -33,6 +33,25 @@ let originalConsoleError: typeof console.error;
 
 const BATCH_DELAY_MS = 2000;
 const MAX_BATCH_SIZE = 10;
+const DEDUP_WINDOW_MS = 60000;
+const MAX_FINGERPRINTS = 100;
+
+// Deduplication map: fingerprint → timestamp
+const recentFingerprints = new Map<string, number>();
+
+function computeFingerprint(error: CapturedError): string {
+  return `${error.message.slice(0, 100)}|${error.sourceFile ?? ""}|${error.sourceLine ?? ""}`;
+}
+
+function cleanExpiredFingerprints(): void {
+  if (recentFingerprints.size <= MAX_FINGERPRINTS) return;
+  const now = Date.now();
+  for (const [key, ts] of recentFingerprints) {
+    if (now - ts > DEDUP_WINDOW_MS) {
+      recentFingerprints.delete(key);
+    }
+  }
+}
 
 /**
  * Get base URL for internal API calls
@@ -60,7 +79,11 @@ function parseStackTrace(stack?: string): {
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
     if (!line) continue;
-    if (line.includes("console-capture") || line.includes("node_modules")) {
+    if (
+      line.includes("console-capture")
+      || line.includes("node_modules")
+      || line.includes("structured-logger")
+    ) {
       continue;
     }
 
@@ -110,6 +133,15 @@ async function flushErrors(): Promise<void> {
  * Queue error for batched sending
  */
 function queueError(error: CapturedError): void {
+  const fingerprint = computeFingerprint(error);
+  const now = Date.now();
+  const lastSeen = recentFingerprints.get(fingerprint);
+  if (lastSeen && now - lastSeen < DEDUP_WINDOW_MS) {
+    return;
+  }
+  recentFingerprints.set(fingerprint, now);
+  cleanExpiredFingerprints();
+
   pendingErrors.push(error);
 
   if (pendingErrors.length >= MAX_BATCH_SIZE) {
@@ -145,6 +177,10 @@ export function initializeServerConsoleCapture(): void {
 
     // Skip if in workflow environment
     if (process.env.WORKFLOW_RUNTIME) return;
+
+    // Skip structured logger output to avoid pollution
+    const stackCheck = new Error().stack || "";
+    if (stackCheck.includes("structured-logger")) return;
 
     // Create captured error
     const firstArg = args[0];

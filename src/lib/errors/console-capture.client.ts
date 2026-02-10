@@ -35,14 +35,42 @@ let isInitialized = false;
 
 const BATCH_DELAY_MS = 5000;
 const MAX_BATCH_SIZE = 10;
+const DEDUP_WINDOW_MS = 60000;
+const MAX_FINGERPRINTS = 100;
 
 // Store original console.error
 let originalConsoleError: typeof console.error;
+
+// Deduplication map: fingerprint → timestamp
+const recentFingerprints = new Map<string, number>();
+
+function computeFingerprint(error: CapturedError): string {
+  return `${error.message.slice(0, 100)}|${error.sourceFile ?? ""}|${error.sourceLine ?? ""}`;
+}
+
+function cleanExpiredFingerprints(): void {
+  if (recentFingerprints.size <= MAX_FINGERPRINTS) return;
+  const now = Date.now();
+  for (const [key, ts] of recentFingerprints) {
+    if (now - ts > DEDUP_WINDOW_MS) {
+      recentFingerprints.delete(key);
+    }
+  }
+}
 
 /**
  * Queue error for batched sending
  */
 function queueError(error: CapturedError): void {
+  const fingerprint = computeFingerprint(error);
+  const now = Date.now();
+  const lastSeen = recentFingerprints.get(fingerprint);
+  if (lastSeen && now - lastSeen < DEDUP_WINDOW_MS) {
+    return;
+  }
+  recentFingerprints.set(fingerprint, now);
+  cleanExpiredFingerprints();
+
   pendingErrors.push(error);
 
   if (pendingErrors.length >= MAX_BATCH_SIZE) {

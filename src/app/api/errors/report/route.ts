@@ -111,10 +111,14 @@ export async function POST(request: Request) {
           : "FRONTEND";
         await reportErrorToDatabase(sanitizedError, env);
         successCount++;
-      } catch {
-        // Intentionally silent: Individual error logging failed - continue processing others.
-        // We track failCount but don't log to avoid noise.
+      } catch (dbError) {
         failCount++;
+        if (failCount === 1) {
+          console.warn(
+            "[ErrorReport] DB write failed:",
+            dbError instanceof Error ? dbError.message : dbError,
+          );
+        }
       }
     }
 

@@ -32,6 +32,23 @@ export class ErrorBoundary extends React.Component<
       componentStack: errorInfo.componentStack,
       stack: error.stack,
     });
+
+    // Bridge error to parent window (Next.js app) for DB tracking
+    try {
+      window.parent?.postMessage(
+        {
+          type: "code-editor-error",
+          payload: {
+            message: error.message,
+            stack: error.stack,
+            componentStack: errorInfo.componentStack,
+          },
+        },
+        "*",
+      );
+    } catch {
+      // Silently fail if postMessage is blocked
+    }
   }
 
   override render() {

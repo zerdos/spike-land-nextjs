@@ -13,10 +13,21 @@
 export async function register() {
   // Only run on Node.js runtime (not Edge)
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { initializeServerConsoleCapture } = await import(
+    const { initializeServerConsoleCapture, flushServerErrors } = await import(
       "@/lib/errors/console-capture.server"
     );
     initializeServerConsoleCapture();
+
+    // Flush pending errors on shutdown
+    const shutdown = async () => {
+      await Promise.race([
+        flushServerErrors(),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]);
+      process.exit(0);
+    };
+    process.on("SIGTERM", shutdown);
+    process.on("SIGINT", shutdown);
 
     // Start vibe watcher in development mode
     if (process.env.NODE_ENV === "development") {
