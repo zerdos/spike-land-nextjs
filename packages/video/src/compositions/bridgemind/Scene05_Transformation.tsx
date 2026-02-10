@@ -33,7 +33,7 @@ export const Scene05_Transformation: React.FC = () => {
           <TaskBoard />
         </div>
         <div style={{ position: "absolute", bottom: 100, width: width * 0.6 }}>
-           <ProgressBar progress={interpolate(frame, [90, 180], [20, 85], EC)} />
+           <ProgressBar progress={interpolate(frame, [105, 150], [20, 85], EC)} />
         </div>
       </AbsoluteFill>
 
@@ -47,17 +47,17 @@ export const Scene05_Transformation: React.FC = () => {
                  { label: "Build Optimized", status: "success" },
                  { label: "Tests Passed", status: "success" },
                  { label: "Bridge Sync", status: "success" },
-                 { label: "Deploying...", status: frame > 280 ? "success" : "pending" },
+                 { label: "Deploying...", status: frame > 200 ? "success" : "pending" },
                ]}
              />
            </div>
-           {frame > 290 && (
+           {frame > 205 && (
              <div style={{
                position: "absolute", right: 200,
                padding: "10px 40px", background: COLORS.success, color: "white",
                fontWeight: 900, fontSize: 80, borderRadius: 10,
-               opacity: interpolate(frame, [290, 300], [0, 1], EC),
-               transform: `scale(${interpolate(frame, [290, 300], [0.5, 1], EC)})`,
+               opacity: interpolate(frame, [205, 213], [0, 1], EC),
+               transform: `scale(${interpolate(frame, [205, 213], [0.5, 1], EC)})`,
                boxShadow: `0 0 30px ${COLORS.success}60`,
              }}>
                LIVE

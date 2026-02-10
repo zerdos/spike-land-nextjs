@@ -36,9 +36,9 @@ export const Scene06_Testimony: React.FC = () => {
           </div>
           <div style={{ flex: 1, background: "#05101a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 30 }}>
             <div style={{ fontSize: 64, fontWeight: 800, color: COLORS.bridgemindCyan }}>Unified Workflow</div>
-            <ProgressBar progress={interpolate(frame, [30, 75], [0, 100], EC)} color={COLORS.bridgemindCyan} />
+            <ProgressBar progress={interpolate(frame, [30, 55], [0, 100], EC)} color={COLORS.bridgemindCyan} />
             <div style={{ fontSize: 80, fontWeight: 900, color: COLORS.bridgemindCyan }}>
-              {Math.round(interpolate(frame, [30, 75], [0, 100], EC))}%
+              {Math.round(interpolate(frame, [30, 55], [0, 100], EC))}%
             </div>
           </div>
         </div>
@@ -59,7 +59,7 @@ export const Scene06_Testimony: React.FC = () => {
       {frame > 180 && (
          <AbsoluteFill style={{ display: "flex", alignItems: "center", justifyContent: "center", background: `radial-gradient(circle, ${COLORS.bridgemindCyan}20 0%, ${COLORS.darkBg} 100%)` }}>
             <div style={{ width: width * 0.6 }}>
-               <ProgressBar progress={interpolate(frame, [180, 240], [0, 100], EC)} />
+               <ProgressBar progress={interpolate(frame, [185, 205], [0, 100], EC)} />
             </div>
             <div style={{ marginTop: 100 }}>
                <div style={{ color: COLORS.bridgemindCyan, fontSize: 48, fontWeight: 700 }}>MAXIMUM VELOCITY</div>
