@@ -133,9 +133,7 @@ Feature: Pixel MCP Tools Interface
     And I should see the job type badge
     And I should see the job status badge
 
-  @requires-db
-  # SKIP REASON: failing - needs to investigate
-  @skip
+  @requires-db @flaky
   Scenario: Job status shows completed job with image
     Given I am logged in as "Test User" with email "test@example.com"
     And I mock a completed job status with output image

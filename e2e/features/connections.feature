@@ -4,9 +4,6 @@ Feature: Orbit Connections and Reminders
     Given I am logged in to Orbit
     And I am in a workspace
 
-  @skip
-  # SKIP REASON: Missing step definitions for Orbit login and workspace background
-  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   Scenario: Managing Connections
     When I navigate to the Connections page
     Then I should see the connections list header

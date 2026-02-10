@@ -355,26 +355,12 @@ When(
 When(
   "I select tier {string}",
   async function(this: CustomWorld, tier: string) {
-    // Use multiple fallback selectors for tier selection
-    const tierSelector = this.page
-      .locator('[data-testid="tier-selector"]')
-      .or(this.page.locator('[data-testid="tier-select"]'))
-      .or(this.page.locator('[name="tier"]'))
-      .or(this.page.getByLabel(/tier/i))
-      .or(
-        this.page.getByRole("combobox").filter({
-          has: this.page.getByText(/tier|1k|2k|4k/i),
-        }),
-      )
-      .or(
-        this.page.locator("select").filter({
-          has: this.page.getByText(/tier/i),
-        }),
-      );
-    // Wait for the tier selector to be visible and clickable
-    await expect(tierSelector.first()).toBeVisible({ timeout: 15000 });
-    await tierSelector.first().click();
-    // Wait for dropdown options to appear
+    // The tier Select is the first combobox inside the dialog (under "Default Tier" label)
+    const dialog = this.page.locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])');
+    const tierCombobox = dialog.getByRole("combobox").first();
+    await expect(tierCombobox).toBeVisible({ timeout: 15000 });
+    await tierCombobox.click();
+    // Wait for dropdown options to appear and click matching option
     const option = this.page.getByRole("option", {
       name: new RegExp(tier, "i"),
     });
@@ -386,14 +372,11 @@ When(
 When(
   "I select visibility {string}",
   async function(this: CustomWorld, visibility: string) {
-    const visibilitySelector = this.page
-      .locator('[data-testid="visibility-selector"]')
-      .or(
-        this.page.getByRole("combobox").filter({
-          has: this.page.getByText(/visibility|private|public/i),
-        }),
-      );
-    await visibilitySelector.click();
+    // The visibility Select is the second combobox inside the dialog (under "Visibility" label)
+    const dialog = this.page.locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])');
+    const visibilityCombobox = dialog.getByRole("combobox").nth(1);
+    await expect(visibilityCombobox).toBeVisible({ timeout: 10000 });
+    await visibilityCombobox.click();
     await this.page
       .getByRole("option", { name: new RegExp(visibility, "i") })
       .click();

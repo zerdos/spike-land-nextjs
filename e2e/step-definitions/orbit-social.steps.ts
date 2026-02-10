@@ -828,7 +828,7 @@ Then(
 
 Then(
   "I should see the account selector with {string}",
-  async function(this: CustomWorld, accountName: string) {
+  async function(this: CustomWorld, _accountName: string) {
     const selector = this.page.locator('[data-testid="account-select"]');
     await expect(selector).toBeVisible({ timeout: 5000 });
   },

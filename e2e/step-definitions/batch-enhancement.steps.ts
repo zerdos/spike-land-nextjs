@@ -14,7 +14,15 @@ const mockUserId = "user-123";
 
 interface MockImage {
   id: string;
+  name: string;
+  description: string | null;
   originalUrl: string;
+  enhancedUrl?: string;
+  enhancementTier?: string;
+  width: number;
+  height: number;
+  sortOrder: number;
+  createdAt: string;
   enhancementJobs: Array<{
     id: string;
     tier: string;
@@ -26,8 +34,15 @@ interface MockImage {
 interface MockAlbum {
   id: string;
   name: string;
-  userId: string;
+  description: string | null;
+  privacy: string;
+  coverImageId: string | null;
+  pipelineId: string | null;
+  imageCount: number;
+  isOwner: boolean;
   images: MockImage[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface MockJob {
@@ -47,14 +62,24 @@ interface BatchEnhancementWorld extends CustomWorld {
   currentTokenBalance?: number;
 }
 
-// Helper to create mock images
+// Helper to create mock images matching AlbumImage type from /api/albums/[id]
 function createMockImages(
   count: number,
   options?: { enhanced?: boolean; tier?: string; },
 ): MockImage[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `image-${i + 1}`,
+    name: `Test Image ${i + 1}`,
+    description: null,
     originalUrl: `https://example.com/image-${i + 1}.jpg`,
+    enhancedUrl: options?.enhanced
+      ? `https://example.com/enhanced-${i + 1}.jpg`
+      : undefined,
+    enhancementTier: options?.enhanced ? (options.tier || "TIER_1K") : undefined,
+    width: 1024,
+    height: 768,
+    sortOrder: i,
+    createdAt: new Date().toISOString(),
     enhancementJobs: options?.enhanced
       ? [
         {
@@ -68,7 +93,7 @@ function createMockImages(
   }));
 }
 
-// Helper to setup album mock
+// Helper to setup album mock — returns Album shape matching /api/albums/[id] response
 async function mockAlbum(
   world: CustomWorld,
   imageCount: number,
@@ -82,6 +107,8 @@ async function mockAlbum(
     for (let i = 0; i < options.enhanced && i < images.length; i++) {
       const image = images[i];
       if (image) {
+        image.enhancedUrl = `https://example.com/enhanced-${i + 1}.jpg`;
+        image.enhancementTier = options.tier || "TIER_1K";
         image.enhancementJobs = [
           {
             id: `job-${i + 1}`,
@@ -97,17 +124,34 @@ async function mockAlbum(
   const mockAlbumData: MockAlbum = {
     id: mockAlbumId,
     name: "Test Album",
-    userId: mockUserId,
+    description: null,
+    privacy: "PRIVATE",
+    coverImageId: null,
+    pipelineId: null,
+    imageCount: images.length,
+    isOwner: true,
     images,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
-  // Mock album API
+  // Mock album API — useAlbumData fetches from /api/albums/{id} and expects { album: Album }
   await world.page.route(`**/api/albums/${mockAlbumId}`, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(mockAlbumData),
-    });
+    const method = route.request().method();
+    if (method === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ album: mockAlbumData }),
+      });
+    } else {
+      // Let other methods (PATCH, DELETE) pass through or return defaults
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ album: mockAlbumData }),
+      });
+    }
   });
 
   // Store in world for later reference
@@ -353,7 +397,7 @@ Given(
   "I start batch enhancement",
   async function(this: CustomWorld) {
     await mockBatchEnhancement(this);
-    await this.page.goto(`${this.baseUrl}/apps/pixel/albums/${mockAlbumId}`);
+    await this.page.goto(`${this.baseUrl}/albums/${mockAlbumId}`);
     await this.page.waitForLoadState("networkidle");
     // Matches both "Enhance All" button and "Enhance All Photos" variants
     const enhanceButton = this.page.getByRole("button", {
@@ -384,7 +428,7 @@ Given("another user has an album", async function(this: CustomWorld) {
 
 // When steps
 When("I navigate to my album", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/apps/pixel/albums/${mockAlbumId}`);
+  await this.page.goto(`${this.baseUrl}/albums/${mockAlbumId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -445,14 +489,14 @@ When(
 );
 
 When("I return to my album", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/apps/pixel/albums/${mockAlbumId}`);
+  await this.page.goto(`${this.baseUrl}/albums/${mockAlbumId}`);
   await this.page.waitForLoadState("networkidle");
 });
 
 When(
   "I try to enhance that album",
   async function(this: CustomWorld) {
-    await this.page.goto(`${this.baseUrl}/apps/pixel/albums/${mockAlbumId}`);
+    await this.page.goto(`${this.baseUrl}/albums/${mockAlbumId}`);
     await this.page.waitForLoadState("networkidle");
     // Matches both "Enhance All" button and "Enhance All Photos" variants
     const enhanceButton = this.page.getByRole("button", {

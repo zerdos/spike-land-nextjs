@@ -1,16 +1,14 @@
 @requires-db
-Feature: Canvas Editor Tool
+Feature: Canvas Smart Gallery
   As a user
-  I want to use the canvas editor to view and interact with my album photos
-  So that I can create engaging photo displays
+  I want to use the canvas to view my album photos in a Smart Gallery
+  So that I can browse thumbnails and view images in a fullscreen slideshow
 
   Background:
     Given I am authenticated as a user with albums
 
   # Canvas Page Load Tests
   @fast @smoke
-  # SKIP REASON: Error: expect(locator).toBeVisible() failed
-  @skip
   Scenario: Canvas page loads with valid album and token
     Given I have an UNLISTED album with images
     When I navigate to the canvas page for that album
@@ -19,8 +17,6 @@ Feature: Canvas Editor Tool
     And the canvas should have fullscreen styling
 
   @fast
-  # SKIP REASON: Error: expect(locator).toBeVisible() failed
-  @skip
   Scenario: Canvas page displays album title
     Given I have an UNLISTED album with images
     When I navigate to the canvas page for that album
@@ -28,233 +24,140 @@ Feature: Canvas Editor Tool
     And the title should be visible on hover
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Canvas page handles missing images gracefully
     Given I have an album with no images
     When I navigate to the canvas page for that album
     Then I should see an empty album message
-    And I should see "Add photos to your album" text
 
-  # Canvas Tools Visibility Tests
+  # Slideshow Entry Tests
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Canvas toolbar appears on mouse movement
+  Scenario: Enter slideshow via Start Slideshow button
     Given I have an UNLISTED album with images
     When I navigate to the canvas page for that album
-    And I move the mouse over the canvas
-    Then the canvas toolbar should be visible
-    And I should see the zoom controls
-    And I should see the navigation arrows
+    And I click a thumbnail to select an image
+    And I click the Start Slideshow button
+    Then the slideshow view should be visible
+    And I should see the slideshow image
+    And I should see the image counter
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Canvas toolbar hides after inactivity
+  Scenario: Enter slideshow via Space bar
     Given I have an UNLISTED album with images
     When I navigate to the canvas page for that album
-    And I move the mouse over the canvas
-    Then the canvas toolbar should be visible
-    When I do not move the mouse for 3 seconds
-    Then the canvas toolbar should be hidden
+    And I click a thumbnail to select an image
+    And I press the space bar
+    Then the slideshow view should be visible
 
+  # Slideshow Controls Visibility Tests
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Canvas tools are displayed in fullscreen mode
+  Scenario: Slideshow controls appear on mouse movement
     Given I have an UNLISTED album with images
     When I navigate to the canvas page for that album
-    And I click the fullscreen button
-    Then I should see the exit fullscreen button
-    And I should see the slideshow controls
+    And I enter the slideshow
+    And I move the mouse over the slideshow
+    Then the slideshow navigation controls should be visible
 
-  # Canvas Navigation Tests
+  @slow
+  Scenario: Slideshow controls hide after inactivity
+    Given I have an UNLISTED album with images
+    When I navigate to the canvas page for that album
+    And I enter the slideshow
+    And I move the mouse over the slideshow
+    Then the slideshow navigation controls should be visible
+    When I do not move the mouse for 4 seconds
+    Then the slideshow navigation controls should be hidden
+
+  # Slideshow Navigation Tests
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Navigate to next image using arrow button
+  Scenario: Navigate to next image in slideshow
     Given I have an UNLISTED album with multiple images
     When I navigate to the canvas page for that album
-    And I click the next arrow button
+    And I enter the slideshow
+    And I move the mouse over the slideshow
+    And I click the slideshow next button
     Then the next image should be displayed
     And the image counter should update
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Navigate to previous image using arrow button
+  Scenario: Navigate to previous image in slideshow
     Given I have an UNLISTED album with multiple images
     When I navigate to the canvas page for that album
-    And I click the next arrow button
-    And I click the previous arrow button
+    And I enter the slideshow
+    And I move the mouse over the slideshow
+    And I click the slideshow next button
+    And I click the slideshow previous button
     Then the first image should be displayed
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Navigate using keyboard arrows
+  Scenario: Navigate using keyboard arrows in slideshow
     Given I have an UNLISTED album with multiple images
     When I navigate to the canvas page for that album
+    And I enter the slideshow
     And I press the right arrow key
     Then the next image should be displayed
     When I press the left arrow key
     Then the first image should be displayed
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Image counter shows current position
+  Scenario: Image counter shows current position in slideshow
     Given I have an UNLISTED album with multiple images
     When I navigate to the canvas page for that album
-    Then I should see the image counter showing "1 of 5"
-    When I click the next arrow button
-    Then I should see the image counter showing "2 of 5"
+    And I enter the slideshow
+    Then I should see the image counter showing "1 of"
+    When I move the mouse over the slideshow
+    And I click the slideshow next button
+    Then I should see the image counter showing "2 of"
 
-  # Canvas Zoom Controls Tests
+  # Exit Slideshow Tests
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Zoom in on image
+  Scenario: Exit slideshow with Escape key
     Given I have an UNLISTED album with images
     When I navigate to the canvas page for that album
-    And I click the zoom in button
-    Then the image should be zoomed in
-    And I should see the zoom level indicator
+    And I enter the slideshow
+    Then the slideshow view should be visible
+    When I press the "Escape" key
+    Then the slideshow view should not be visible
 
-  @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Zoom out on image
+  @fast @accessibility
+  Scenario: Space bar toggles slideshow mode
     Given I have an UNLISTED album with images
     When I navigate to the canvas page for that album
-    And I click the zoom in button
-    And I click the zoom out button
-    Then the image should return to original size
-
-  @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Double-click to zoom
-    Given I have an UNLISTED album with images
-    When I navigate to the canvas page for that album
-    And I double-click on the image
-    Then the image should be zoomed in
-    When I double-click on the image again
-    Then the image should return to original size
-
-  @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Reset zoom button
-    Given I have an UNLISTED album with images
-    When I navigate to the canvas page for that album
-    And I click the zoom in button multiple times
-    And I click the reset zoom button
-    Then the image should return to original size
-    And the zoom level should be "100%"
-
-  # Slideshow Controls Tests
-  @slow
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Start and stop slideshow
-    Given I have an UNLISTED album with multiple images
-    When I navigate to the canvas page for that album
-    And I click the play slideshow button
-    Then the slideshow should start
-    And the play button should change to pause
-    When I wait for 6 seconds
-    Then a different image should be displayed
-    When I click the pause button
-    Then the slideshow should stop
-
-  @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Slideshow interval selector
-    Given I have an UNLISTED album with images
-    When I navigate to the canvas page for that album
-    And I open the slideshow settings
-    Then I should see the interval selector
-    And I should see options for "5s", "10s", "15s", "30s"
-
-  @slow
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Custom slideshow interval
-    Given I have an UNLISTED album with multiple images
-    When I navigate to the canvas page for that album
-    And I open the slideshow settings
-    And I select "10" second interval
-    And I click the play slideshow button
-    And I wait for 11 seconds
-    Then the displayed image should have changed
+    And I click a thumbnail to select an image
+    And I press the space bar
+    Then the slideshow view should be visible
+    When I press the space bar
+    Then the slideshow view should not be visible
 
   # Rotation Controls Tests
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Rotate image clockwise
+  Scenario: Rotate image clockwise in slideshow
     Given I have an UNLISTED album with images
     When I navigate to the canvas page for that album
+    And I enter the slideshow
+    And I move the mouse over the slideshow
     And I click the rotate clockwise button
     Then the image should be rotated 90 degrees clockwise
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Rotate image counter-clockwise
+  Scenario: Rotate image counter-clockwise in slideshow
     Given I have an UNLISTED album with images
     When I navigate to the canvas page for that album
+    And I enter the slideshow
+    And I move the mouse over the slideshow
     And I click the rotate counter-clockwise button
     Then the image should be rotated 90 degrees counter-clockwise
 
   # Touch Interactions (Mobile Simulation)
   @fast @mobile
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Swipe to navigate images
+  Scenario: Swipe to navigate images in slideshow
     Given I have an UNLISTED album with multiple images
     And I am using a touch device
     When I navigate to the canvas page for that album
+    And I enter the slideshow via double-tap
     And I swipe left on the canvas
     Then the next image should be displayed
     When I swipe right on the canvas
     Then the first image should be displayed
-
-  @fast @mobile
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Pinch to zoom
-    Given I have an UNLISTED album with images
-    And I am using a touch device
-    When I navigate to the canvas page for that album
-    And I pinch to zoom in
-    Then the image should be zoomed in
-
-  # Keyboard Shortcuts Tests
-  @fast @accessibility
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Keyboard shortcuts are functional
-    Given I have an UNLISTED album with images
-    When I navigate to the canvas page for that album
-    And I press the "F" key
-    Then the canvas should enter fullscreen mode
-    When I press the "Escape" key
-    Then the canvas should exit fullscreen mode
-
-  @fast @accessibility
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Space bar toggles slideshow
-    Given I have an UNLISTED album with multiple images
-    When I navigate to the canvas page for that album
-    And I press the space bar
-    Then the slideshow should start
-    When I press the space bar again
-    Then the slideshow should stop
 
   # Loading States Tests
   @fast
@@ -265,33 +168,20 @@ Feature: Canvas Editor Tool
     And the loading indicator should disappear when image loads
 
   @fast
-  # SKIP REASON: locator.click: Error: strict mode violation: locator('[data-testid='slideshow-next-button'], [dat...
-  @skip
-  Scenario: Loading indicator during image transition
+  Scenario: Loading indicator during slideshow transition
     Given I have an UNLISTED album with multiple images
     When I navigate to the canvas page for that album
-    And I click the next arrow button
+    And I enter the slideshow
+    And I move the mouse over the slideshow
+    And I click the slideshow next button
     Then I should see the loading indicator during transition
 
   # Error Handling Tests
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Handle broken image gracefully
     Given I have an album with a broken image URL
     When I navigate to the canvas page for that album
     Then I should see the image error placeholder
-    And I should see "Image could not be loaded" text
-
-  @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Retry loading failed image
-    Given I have an album with a broken image URL
-    When I navigate to the canvas page for that album
-    And I see the image error placeholder
-    And I click the "Retry" button
-    Then the image should attempt to reload
 
   # Accessibility Tests
   @fast @accessibility
@@ -312,46 +202,13 @@ Feature: Canvas Editor Tool
 
   # URL Parameter Tests
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
   Scenario: Canvas respects rotation URL parameter
     Given I have an UNLISTED album with images
     When I navigate to the canvas page with rotation "180"
     Then the image should be rotated by 180 degrees
 
   @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Canvas respects interval URL parameter
-    Given I have an UNLISTED album with images
-    When I navigate to the canvas page with interval "20"
-    And I open the slideshow settings
-    Then the interval selector should show "20s" selected
-
-  @fast
   Scenario: Canvas respects order URL parameter
     Given I have an UNLISTED album with multiple images
     When I navigate to the canvas page with order "random"
     Then the slideshow order should be set to random
-
-  # Share Functionality Tests
-  @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Share button generates shareable URL
-    Given I have an UNLISTED album with images
-    When I navigate to the canvas page for that album
-    And I click the share button
-    Then I should see the share dialog
-    And I should see the shareable canvas URL
-    And I should see the copy URL button
-
-  @fast
-  # SKIP REASON: failing - needs to investigate
-  @skip
-  Scenario: Copy canvas URL to clipboard
-    Given I have an UNLISTED album with images
-    When I navigate to the canvas page for that album
-    And I click the share button
-    And I click the copy URL button
-    Then I should see "Copied!" feedback text

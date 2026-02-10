@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
-import { TIMEOUTS, waitForPageLoad } from "../helpers/retry-helper";
+import { TIMEOUTS, waitForElementWithRetry, waitForPageLoad } from "../helpers/retry-helper";
 
 export class CanvasEditorPage {
   constructor(private page: Page) {}
@@ -37,14 +37,11 @@ export class CanvasEditorPage {
 
   // Canvas Container Elements
   async getCanvasContainer() {
-    return this.page.locator(
-      '[data-testid="canvas-container"], .canvas-container, div.bg-black',
-    )
-      .first();
+    return this.page.locator('[data-testid="canvas-container"]').first();
   }
 
-  async getMainImage() {
-    return this.page.locator('[data-testid="canvas-image"], img').first();
+  async getCanvasEmpty() {
+    return this.page.locator('[data-testid="canvas-empty"]');
   }
 
   async getAlbumTitle() {
@@ -52,151 +49,119 @@ export class CanvasEditorPage {
   }
 
   async getEmptyAlbumMessage() {
-    return this.page.getByText(/Add photos to your album|No images/i);
+    return this.page.getByText(/No images in this album/i);
   }
 
-  // Toolbar Elements
+  // Grid Elements
+  async getSmartGrid() {
+    return this.page.locator('[data-testid="smart-grid"]');
+  }
+
+  async getFirstThumbnail() {
+    return this.page.locator('[data-testid^="grid-thumbnail-"]').first();
+  }
+
+  async getStartSlideshowButton() {
+    return this.page.locator('[data-testid="start-slideshow-button"]');
+  }
+
+  // Header / Toolbar Elements (visible in grid mode)
   async getToolbar() {
-    return this.page.locator('[data-testid="canvas-toolbar"], .canvas-toolbar');
+    return this.page.locator('[data-testid="canvas-toolbar"]');
   }
 
-  async getZoomInButton() {
-    return this.page.locator(
-      '[data-testid="zoom-in-button"], button[aria-label*="zoom in" i]',
-    );
+  // Slideshow Elements
+  async getSlideshowView() {
+    return this.page.locator('[data-testid="slideshow-view"]');
   }
 
-  async getZoomOutButton() {
-    return this.page.locator(
-      '[data-testid="zoom-out-button"], button[aria-label*="zoom out" i]',
-    );
-  }
-
-  async getResetZoomButton() {
-    return this.page.locator(
-      '[data-testid="reset-zoom-button"], button[aria-label*="reset" i]',
-    );
-  }
-
-  async getZoomLevelIndicator() {
-    return this.page.locator('[data-testid="zoom-level"]');
-  }
-
-  async getNextArrowButton() {
-    return this.page.locator(
-      '[data-testid="slideshow-next-button"], [data-testid="next-button"], button[aria-label*="next" i]',
-    );
-  }
-
-  async getPreviousArrowButton() {
-    return this.page.locator(
-      '[data-testid="slideshow-prev-button"], [data-testid="prev-button"], button[aria-label*="previous" i]',
-    );
+  async getSlideshowImage() {
+    return this.page.locator('[data-testid="slideshow-image"]');
   }
 
   async getImageCounter() {
     return this.page.locator('[data-testid="image-counter"]');
   }
 
-  async getFullscreenButton() {
-    return this.page.locator(
-      '[data-testid="fullscreen-button"], button[aria-label*="fullscreen" i]',
-    );
-  }
-
-  async getExitFullscreenButton() {
-    return this.page.locator(
-      '[data-testid="exit-fullscreen-button"], button[aria-label*="exit fullscreen" i]',
-    );
-  }
-
-  // Slideshow Controls
-  async getPlayButton() {
-    return this.page.locator(
-      '[data-testid="play-button"], button[aria-label*="play" i]',
-    );
-  }
-
-  async getPauseButton() {
-    return this.page.locator(
-      '[data-testid="pause-button"], button[aria-label*="pause" i]',
-    );
-  }
-
-  async getSlideshowSettings() {
-    return this.page.locator('[data-testid="slideshow-settings"]');
-  }
-
-  async getIntervalSelector() {
-    return this.page.locator(
-      '[data-testid="interval-selector"], [data-testid="interval-input"]',
-    );
-  }
-
   async getSlideshowControls() {
-    return this.page.locator(
-      '[data-testid="slideshow-controls"], [data-testid="canvas-toolbar"]',
-    );
+    return this.page.locator('[data-testid="slideshow-controls"]');
   }
 
-  // Rotation Controls
+  async getNextButton() {
+    return this.page.locator('[data-testid="slideshow-next-button"]');
+  }
+
+  async getPreviousButton() {
+    return this.page.locator('[data-testid="slideshow-prev-button"]');
+  }
+
+  async getExitButton() {
+    return this.page.locator('[data-testid="slideshow-exit-button"]');
+  }
+
+  // Rotation Controls (in slideshow)
   async getRotateClockwiseButton() {
-    return this.page.locator(
-      '[data-testid="rotate-cw-button"], button[aria-label*="clockwise" i]',
-    );
+    return this.page.locator('[data-testid="rotate-cw-button"]');
   }
 
   async getRotateCounterClockwiseButton() {
-    return this.page.locator(
-      '[data-testid="rotate-ccw-button"], button[aria-label*="counter" i]',
-    );
+    return this.page.locator('[data-testid="rotate-ccw-button"]');
   }
 
-  // Share Elements
-  async getShareButton() {
-    return this.page.locator(
-      '[data-testid="share-button"], button[aria-label*="share" i]',
-    );
-  }
-
-  async getShareDialog() {
-    return this.page.locator('[role="dialog"]', { hasText: /share/i });
-  }
-
-  async getShareableUrl() {
-    return this.page.locator('[data-testid="shareable-url"]');
-  }
-
-  async getCopyUrlButton() {
-    return this.page.locator('[data-testid="copy-url-button"]');
-  }
-
-  // Loading States
-  async getLoadingIndicator() {
-    return this.page.locator(
-      '[data-testid="loading-indicator"], .loading, .spinner',
-    );
-  }
-
+  // Error States
   async getImageErrorPlaceholder() {
-    return this.page.locator(
-      '[data-testid="image-error"], [data-testid="image-error-fallback"], .image-error',
-    );
+    return this.page.locator('[data-testid="image-error-fallback"]').first();
   }
 
-  async getRetryButton() {
-    return this.page.locator("button", { hasText: /retry/i });
+  // Floating Hint
+  async getFloatingHint() {
+    return this.page.locator('[data-testid="floating-hint"]');
   }
 
-  // Actions - Navigation
-  async clickNextArrow() {
-    const button = await this.getNextArrowButton();
+  // Actions - Thumbnail Selection
+  async clickFirstThumbnail() {
+    const thumbnail = await this.getFirstThumbnail();
+    await expect(thumbnail).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await thumbnail.click();
+    await this.page.waitForTimeout(300);
+  }
+
+  // Actions - Slideshow Entry
+  async clickStartSlideshow() {
+    const button = await this.getStartSlideshowButton();
+    await expect(button).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+    await button.click();
+    await this.page.waitForTimeout(500);
+  }
+
+  /**
+   * Enter slideshow by selecting first thumbnail then clicking Start Slideshow.
+   */
+  async enterSlideshow() {
+    await this.clickFirstThumbnail();
+    await this.clickStartSlideshow();
+  }
+
+  /**
+   * Enter slideshow via double-tap (for touch devices).
+   */
+  async enterSlideshowViaDoubleTap() {
+    const thumbnail = await this.getFirstThumbnail();
+    await expect(thumbnail).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await thumbnail.dblclick();
+    await this.page.waitForTimeout(500);
+  }
+
+  // Actions - Slideshow Navigation
+  async clickNextButton() {
+    const button = await this.getNextButton();
     await button.click();
     await this.page.waitForTimeout(300);
   }
 
-  async clickPreviousArrow() {
-    const button = await this.getPreviousArrowButton();
+  async clickPreviousButton() {
+    const button = await this.getPreviousButton();
     await button.click();
     await this.page.waitForTimeout(300);
   }
@@ -206,75 +171,6 @@ export class CanvasEditorPage {
       direction === "left" ? "ArrowLeft" : "ArrowRight",
     );
     await this.page.waitForTimeout(300);
-  }
-
-  // Actions - Zoom
-  async clickZoomIn() {
-    const button = await this.getZoomInButton();
-    await button.click();
-    await this.page.waitForTimeout(200);
-  }
-
-  async clickZoomOut() {
-    const button = await this.getZoomOutButton();
-    await button.click();
-    await this.page.waitForTimeout(200);
-  }
-
-  async clickResetZoom() {
-    const button = await this.getResetZoomButton();
-    await button.click();
-    await this.page.waitForTimeout(200);
-  }
-
-  async doubleClickImage() {
-    const image = await this.getMainImage();
-    await image.dblclick();
-    await this.page.waitForTimeout(300);
-  }
-
-  // Actions - Fullscreen
-  async clickFullscreen() {
-    const button = await this.getFullscreenButton();
-    await button.click();
-    await this.page.waitForTimeout(500);
-  }
-
-  async exitFullscreen() {
-    await this.page.keyboard.press("Escape");
-    await this.page.waitForTimeout(500);
-  }
-
-  // Actions - Slideshow
-  async clickPlaySlideshow() {
-    const button = await this.getPlayButton();
-    await button.click();
-  }
-
-  async clickPauseSlideshow() {
-    const button = await this.getPauseButton();
-    await button.click();
-  }
-
-  async openSlideshowSettings() {
-    const settings = await this.getSlideshowSettings();
-    if (await settings.isVisible()) {
-      await settings.click();
-    } else {
-      // Try a settings/gear icon button
-      const settingsButton = this.page.locator(
-        '[data-testid="settings-button"], button[aria-label*="settings" i]',
-      );
-      await settingsButton.click();
-    }
-    await this.page.waitForTimeout(300);
-  }
-
-  async selectInterval(seconds: string) {
-    const selector = await this.getIntervalSelector();
-    await selector.click();
-    const option = this.page.getByText(`${seconds}s`);
-    await option.click();
   }
 
   // Actions - Rotation
@@ -290,23 +186,10 @@ export class CanvasEditorPage {
     await this.page.waitForTimeout(200);
   }
 
-  // Actions - Share
-  async clickShare() {
-    const button = await this.getShareButton();
-    await button.click();
-    await this.page.waitForTimeout(300);
-  }
-
-  async clickCopyUrl() {
-    const button = await this.getCopyUrlButton();
-    await button.click();
-    await this.page.waitForTimeout(300);
-  }
-
   // Actions - Touch gestures (for mobile simulation)
   async swipeLeft() {
-    const canvas = await this.getCanvasContainer();
-    const box = await canvas.boundingBox();
+    const slideshow = await this.getSlideshowView();
+    const box = await slideshow.boundingBox();
     if (box) {
       await this.page.mouse.move(
         box.x + box.width * 0.8,
@@ -324,8 +207,8 @@ export class CanvasEditorPage {
   }
 
   async swipeRight() {
-    const canvas = await this.getCanvasContainer();
-    const box = await canvas.boundingBox();
+    const slideshow = await this.getSlideshowView();
+    const box = await slideshow.boundingBox();
     if (box) {
       await this.page.mouse.move(
         box.x + box.width * 0.2,
@@ -351,15 +234,24 @@ export class CanvasEditorPage {
     }
   }
 
+  async moveMouseOverSlideshow() {
+    const slideshow = await this.getSlideshowView();
+    const box = await slideshow.boundingBox();
+    if (box) {
+      await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    }
+    await this.page.waitForTimeout(200);
+  }
+
   // Verification Methods
   async verifyCanvasVisible() {
     const canvas = await this.getCanvasContainer();
     await expect(canvas).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   }
 
-  async verifyImageVisible() {
-    const image = await this.getMainImage();
-    await expect(image).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  async verifyEmptyState() {
+    const empty = await this.getCanvasEmpty();
+    await expect(empty).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   }
 
   async verifyToolbarVisible() {
@@ -367,9 +259,33 @@ export class CanvasEditorPage {
     await expect(toolbar).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   }
 
-  async verifyToolbarHidden() {
-    const toolbar = await this.getToolbar();
-    await expect(toolbar).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  async verifySlideshowVisible() {
+    const slideshow = await this.getSlideshowView();
+    await expect(slideshow).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  }
+
+  async verifySlideshowNotVisible() {
+    const slideshow = await this.getSlideshowView();
+    await expect(slideshow).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  }
+
+  async verifySlideshowControlsVisible() {
+    const controls = await this.getSlideshowControls();
+    // Controls have opacity-based visibility, check CSS opacity
+    await expect(controls).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    const opacity = await controls.evaluate((el) =>
+      window.getComputedStyle(el).opacity
+    );
+    expect(opacity).toBe("1");
+  }
+
+  async verifySlideshowControlsHidden() {
+    const controls = await this.getSlideshowControls();
+    // Controls use opacity-0 class when hidden, but element stays in DOM
+    const opacity = await controls.evaluate((el) =>
+      window.getComputedStyle(el).opacity
+    );
+    expect(opacity).toBe("0");
   }
 
   async verifyImageCounter(expected: string) {
@@ -379,30 +295,13 @@ export class CanvasEditorPage {
     });
   }
 
-  async verifyZoomLevel(level: string) {
-    const indicator = await this.getZoomLevelIndicator();
-    await expect(indicator).toContainText(level, { timeout: TIMEOUTS.DEFAULT });
-  }
-
-  async verifyImageZoomed() {
-    const image = await this.getMainImage();
-    const transform = await image.evaluate((el) => window.getComputedStyle(el).transform);
-    // Zoomed images typically have a scale transform
-    expect(transform).not.toBe("none");
-  }
-
-  async verifyImageAtOriginalSize() {
-    const image = await this.getMainImage();
-    const transform = await image.evaluate((el) => window.getComputedStyle(el).transform);
-    // Original size either has no transform or matrix(1, 0, 0, 1, 0, 0)
-    expect(transform === "none" || transform.includes("matrix(1, 0, 0, 1"))
-      .toBeTruthy();
-  }
-
   async verifyImageRotation(degrees: number) {
-    const image = await this.getMainImage();
-    const transform = await image.evaluate((el) => window.getComputedStyle(el).transform);
-    // Rotation transforms create matrix values
+    const slideshow = await this.getSlideshowView();
+    // The rotation is applied to a div wrapping the image
+    const imageWrapper = slideshow.locator('[data-testid="slideshow-image"]').locator("..");
+    const transform = await imageWrapper.evaluate((el) =>
+      window.getComputedStyle(el).transform
+    );
     if (degrees === 0) {
       expect(transform === "none" || transform.includes("matrix(1, 0, 0, 1"))
         .toBeTruthy();
@@ -411,23 +310,8 @@ export class CanvasEditorPage {
     }
   }
 
-  async verifySlideshowRunning() {
-    const pauseButton = await this.getPauseButton();
-    await expect(pauseButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  }
-
-  async verifySlideshowStopped() {
-    const playButton = await this.getPlayButton();
-    await expect(playButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  }
-
   async getDisplayedImageSrc() {
-    const image = await this.getMainImage();
+    const image = await this.getSlideshowImage();
     return image.getAttribute("src");
-  }
-
-  async verifyShareDialogVisible() {
-    const dialog = await this.getShareDialog();
-    await expect(dialog).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   }
 }
