@@ -42,7 +42,8 @@ describe("Live App Integration", () => {
     const html = await response.text();
     expect(html).toContain("<title>spike.land</title>");
     expect(html).toContain("<div>test</div>");
-    expect(html).toContain(`/live/${codeSpace}/index.mjs`);
+    expect(html).toContain(`import App from "/live/${codeSpace}/index.mjs"`);
+    expect(html).toContain("createRoot");
     // Import map should use absolute esm.sh URLs, not relative .mjs paths
     expect(html).toContain("https://esm.sh/react@");
     expect(html).not.toContain("/reactMod.mjs");

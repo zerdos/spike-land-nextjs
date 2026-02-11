@@ -177,12 +177,22 @@ export function buildEmbedHtml(opts: {
 }): string {
   const importMapJson = JSON.stringify(IMPORT_MAP, null, 2);
 
+  // Replace the default export with a createRoot().render() bootstrap.
+  // Transpiled code ends with: export { ComponentName as default };
+  // We capture the component name and use it in the render call.
+  let code = opts.transpiled || "";
+  code = code.replace(
+    /export\s*\{\s*(\w+)\s+as\s+default\s*\}\s*;?\s*$/,
+    `const {createRoot} = await import("react-dom/client");
+createRoot(document.getElementById("embed")).render(jsx($1, {}));`,
+  );
+
   return HTML_TEMPLATE
     .replace("// IMPORTMAP", importMapJson)
     .replace("<!-- HTML_CONTENT -->", opts.html || "")
     .replace("/* criticalCss */", opts.css || "")
     .replace(
       '<script type="module" src="/start.mjs"></script>',
-      `<script type="module">${opts.transpiled || ""}</script>`,
+      `<script type="module">${code}</script>`,
     );
 }

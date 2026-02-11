@@ -27,7 +27,15 @@ export async function GET(
   let html = HTML_TEMPLATE
     .replace("// IMPORTMAP", JSON.stringify(IMPORT_MAP))
     .replace("<!-- HTML_CONTENT -->", session.html || "")
-    .replace("/start.mjs", `/live/${codeSpace}/index.mjs`);
+    .replace(
+      '<script type="module" src="/start.mjs"></script>',
+      `<script type="module">
+import App from "/live/${codeSpace}/index.mjs";
+const {createRoot} = await import("react-dom/client");
+const {jsx} = await import("react/jsx-runtime");
+createRoot(document.getElementById("embed")).render(jsx(App, {}));
+</script>`,
+    );
 
   // Inject CSS link
   const cssLink = `
@@ -40,10 +48,10 @@ export async function GET(
     headers: {
       "Content-Type": "text/html; charset=UTF-8",
       "Access-Control-Allow-Origin": "*",
-      "Cross-Origin-Embedder-Policy": "require-corp",
       "Cross-Origin-Resource-Policy": "cross-origin",
-      "Cross-Origin-Opener-Policy": "same-origin",
       "Cache-Control": "no-cache, no-store, must-revalidate",
+      "Content-Security-Policy":
+        "default-src 'self'; script-src 'self' 'unsafe-inline' https://esm.sh data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src * data: blob:; connect-src *;",
     },
   });
 }
