@@ -150,6 +150,10 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  // Embed routes serve self-contained HTML with inline scripts and esm.sh
+  // imports. They set their own CSP — don't override it from middleware.
+  const isEmbedRoute = /^\/api\/codespace\/[^/]+\/(embed|version\/\d+\/embed)$/.test(pathname);
+
   // Generate CSP Nonce and Header
   const nonce = generateNonce();
   const cspHeader = `
@@ -169,11 +173,15 @@ export async function proxy(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(CSP_NONCE_HEADER, nonce);
-  requestHeaders.set("Content-Security-Policy", cspHeader);
+  if (!isEmbedRoute) {
+    requestHeaders.set("Content-Security-Policy", cspHeader);
+  }
 
   // Helper to apply headers to response
   const applyHeaders = (response: NextResponse) => {
-    response.headers.set("Content-Security-Policy", cspHeader);
+    if (!isEmbedRoute) {
+      response.headers.set("Content-Security-Policy", cspHeader);
+    }
     // Add CORS headers for API routes in development
     if (pathname.startsWith("/api/")) {
       addCorsHeaders(response, origin);
