@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockReportErrorToDatabase = vi.fn();
+const mockReportErrorsBatchToDatabase = vi.fn();
 
 vi.mock("@/lib/errors/error-reporter.server", () => ({
-  reportErrorToDatabase: mockReportErrorToDatabase,
+  reportErrorsBatchToDatabase: mockReportErrorsBatchToDatabase,
 }));
 
 vi.mock("@/lib/rate-limiter", () => ({
@@ -36,7 +36,7 @@ describe("/api/errors/report", () => {
       remaining: 19,
       resetAt: Date.now() + 60000,
     });
-    mockReportErrorToDatabase.mockResolvedValue(undefined);
+    mockReportErrorsBatchToDatabase.mockResolvedValue(undefined);
   });
 
   it("returns 429 when rate limited", async () => {
@@ -59,7 +59,7 @@ describe("/api/errors/report", () => {
     expect(json.error).toContain("errors array required");
   });
 
-  it("processes valid errors and returns success count", async () => {
+  it("processes valid errors via batch insert and returns success count", async () => {
     const response = await POST(
       makeRequest({
         errors: [
@@ -73,7 +73,20 @@ describe("/api/errors/report", () => {
     expect(json.success).toBe(true);
     expect(json.received).toBe(2);
     expect(json.failed).toBe(0);
-    expect(mockReportErrorToDatabase).toHaveBeenCalledTimes(2);
+    // Single batch call instead of N individual calls
+    expect(mockReportErrorsBatchToDatabase).toHaveBeenCalledTimes(1);
+    expect(mockReportErrorsBatchToDatabase).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          error: expect.objectContaining({ message: "Error 1" }),
+          environment: "FRONTEND",
+        }),
+        expect.objectContaining({
+          error: expect.objectContaining({ message: "Error 2" }),
+          environment: "FRONTEND",
+        }),
+      ]),
+    );
   });
 
   it("skips errors without message and increments failCount", async () => {
@@ -91,11 +104,11 @@ describe("/api/errors/report", () => {
     expect(json.failed).toBe(2);
   });
 
-  it("logs console.warn on first DB failure per batch", async () => {
+  it("logs console.warn on batch DB failure", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    mockReportErrorToDatabase
-      .mockRejectedValueOnce(new Error("DB connection lost"))
-      .mockRejectedValueOnce(new Error("DB still down"));
+    mockReportErrorsBatchToDatabase.mockRejectedValueOnce(
+      new Error("DB connection lost"),
+    );
 
     const response = await POST(
       makeRequest({
@@ -110,7 +123,6 @@ describe("/api/errors/report", () => {
     expect(json.received).toBe(0);
     expect(json.failed).toBe(2);
 
-    // Should log only once for the first failure
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(warnSpy).toHaveBeenCalledWith(
       "[ErrorReport API] Database write failed:",
@@ -128,7 +140,10 @@ describe("/api/errors/report", () => {
     const response = await POST(makeRequest({ errors }));
     const json = await response.json();
     expect(json.truncated).toBe(true);
-    expect(mockReportErrorToDatabase).toHaveBeenCalledTimes(20);
+    // Batch function called once with 20 items
+    expect(mockReportErrorsBatchToDatabase).toHaveBeenCalledTimes(1);
+    const batchArg = mockReportErrorsBatchToDatabase.mock.calls[0]![0];
+    expect(batchArg).toHaveLength(20);
   });
 
   it("sanitizes error fields to max length", async () => {
@@ -140,16 +155,14 @@ describe("/api/errors/report", () => {
     );
     expect(response.status).toBe(200);
 
-    const callArgs = mockReportErrorToDatabase.mock.calls[0]![0];
-    expect(callArgs.message.length).toBe(10000);
+    const batchArg = mockReportErrorsBatchToDatabase.mock.calls[0]![0];
+    expect(batchArg[0].error.message.length).toBe(10000);
   });
 
   it("defaults environment to FRONTEND", async () => {
     await POST(makeRequest({ errors: [{ message: "test" }] }));
-    expect(mockReportErrorToDatabase).toHaveBeenCalledWith(
-      expect.objectContaining({ environment: "FRONTEND" }),
-      "FRONTEND",
-    );
+    const batchArg = mockReportErrorsBatchToDatabase.mock.calls[0]![0];
+    expect(batchArg[0].environment).toBe("FRONTEND");
   });
 
   it("passes BACKEND environment when specified", async () => {
@@ -158,10 +171,8 @@ describe("/api/errors/report", () => {
         errors: [{ message: "test", environment: "BACKEND" }],
       }),
     );
-    expect(mockReportErrorToDatabase).toHaveBeenCalledWith(
-      expect.objectContaining({ environment: "BACKEND" }),
-      "BACKEND",
-    );
+    const batchArg = mockReportErrorsBatchToDatabase.mock.calls[0]![0];
+    expect(batchArg[0].environment).toBe("BACKEND");
   });
 
   it("returns 500 on unexpected request parsing error", async () => {
@@ -174,5 +185,21 @@ describe("/api/errors/report", () => {
     expect(response.status).toBe(500);
 
     errorSpy.mockRestore();
+  });
+
+  it("does not call batch insert when all errors are invalid", async () => {
+    const response = await POST(
+      makeRequest({
+        errors: [
+          { noMessage: true },
+          { message: 123 },
+        ],
+      }),
+    );
+    const json = await response.json();
+    expect(json.received).toBe(0);
+    expect(json.failed).toBe(2);
+    // createMany called with empty array is a no-op
+    expect(mockReportErrorsBatchToDatabase).toHaveBeenCalledWith([]);
   });
 });

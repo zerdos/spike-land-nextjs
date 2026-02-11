@@ -157,8 +157,8 @@ describe("Agent Sandbox Service", () => {
       });
     });
 
-    it("should include ANTHROPIC_API_KEY in agent environment", async () => {
-      process.env["ANTHROPIC_API_KEY"] = "test-api-key";
+    it("should include ANTHROPIC_AUTH_TOKEN in agent environment", async () => {
+      process.env["ANTHROPIC_AUTH_TOKEN"] = "test-auth-token";
 
       await spawnAgentSandbox(
         "app123",
@@ -174,7 +174,7 @@ describe("Agent Sandbox Service", () => {
           cmd: "node",
           args: ["agent-executor.js"],
           env: expect.objectContaining({
-            ANTHROPIC_API_KEY: "test-api-key",
+            ANTHROPIC_AUTH_TOKEN: "test-auth-token",
           }),
           detached: true,
         }),

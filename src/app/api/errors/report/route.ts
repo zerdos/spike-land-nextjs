@@ -5,7 +5,7 @@
  * Rate limited to prevent abuse.
  */
 
-import { reportErrorToDatabase } from "@/lib/errors/error-reporter.server";
+import { reportErrorsBatchToDatabase } from "@/lib/errors/error-reporter.server";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
@@ -68,11 +68,27 @@ export async function POST(request: Request) {
 
     // Limit errors per request
     const errorsToProcess = body.errors.slice(0, MAX_ERRORS_PER_REQUEST);
-    let successCount = 0;
     let failCount = 0;
-    let firstDbError: unknown = null;
 
-    // Process each error
+    // Validate and sanitize all errors first
+    const validErrors: Array<{
+      error: {
+        message: string;
+        stack?: string;
+        sourceFile?: string;
+        sourceLine?: number;
+        sourceColumn?: number;
+        callerName?: string;
+        errorType?: string;
+        errorCode?: string;
+        route?: string;
+        userId?: string;
+        metadata?: Record<string, unknown>;
+        timestamp: string;
+      };
+      environment: "FRONTEND" | "BACKEND";
+    }> = [];
+
     for (const error of errorsToProcess) {
       // Validate required fields
       if (!error.message || typeof error.message !== "string") {
@@ -80,48 +96,46 @@ export async function POST(request: Request) {
         continue;
       }
 
-      // Sanitize and validate fields
-      const sanitizedError = {
-        message: error.message.slice(0, 10000), // Limit message length
-        stack: error.stack?.slice(0, 50000),
-        sourceFile: error.sourceFile?.slice(0, 500),
-        sourceLine: typeof error.sourceLine === "number"
-          ? error.sourceLine
-          : undefined,
-        sourceColumn: typeof error.sourceColumn === "number"
-          ? error.sourceColumn
-          : undefined,
-        callerName: error.callerName?.slice(0, 200),
-        errorType: error.errorType?.slice(0, 100),
-        errorCode: error.errorCode?.slice(0, 100),
-        route: error.route?.slice(0, 500),
-        userId: error.userId?.slice(0, 100),
-        metadata: typeof error.metadata === "object"
-          ? error.metadata
-          : undefined,
-        timestamp: error.timestamp || new Date().toISOString(),
-        environment: error.environment === "BACKEND"
-          ? "BACKEND" as const
-          : "FRONTEND" as const,
-      };
+      const env: "FRONTEND" | "BACKEND" = error.environment === "BACKEND"
+        ? "BACKEND"
+        : "FRONTEND";
 
-      try {
-        // Use environment from payload, default to FRONTEND
-        const env = sanitizedError.environment === "BACKEND"
-          ? "BACKEND"
-          : "FRONTEND";
-        await reportErrorToDatabase(sanitizedError, env);
-        successCount++;
-      } catch (dbError) {
-        failCount++;
-        if (!firstDbError) {
-          firstDbError = dbError;
-          console.warn(
-            "[ErrorReport API] Database write failed:",
-            dbError instanceof Error ? dbError.message : dbError,
-          );
-        }
-      }
+      validErrors.push({
+        error: {
+          message: error.message.slice(0, 10000),
+          stack: error.stack?.slice(0, 50000),
+          sourceFile: error.sourceFile?.slice(0, 500),
+          sourceLine: typeof error.sourceLine === "number"
+            ? error.sourceLine
+            : undefined,
+          sourceColumn: typeof error.sourceColumn === "number"
+            ? error.sourceColumn
+            : undefined,
+          callerName: error.callerName?.slice(0, 200),
+          errorType: error.errorType?.slice(0, 100),
+          errorCode: error.errorCode?.slice(0, 100),
+          route: error.route?.slice(0, 500),
+          userId: error.userId?.slice(0, 100),
+          metadata: typeof error.metadata === "object"
+            ? error.metadata
+            : undefined,
+          timestamp: error.timestamp || new Date().toISOString(),
+        },
+        environment: env,
+      });
+    }
+
+    // Batch insert all valid errors in a single query
+    let successCount = 0;
+    try {
+      await reportErrorsBatchToDatabase(validErrors);
+      successCount = validErrors.length;
+    } catch (dbError) {
+      failCount += validErrors.length;
+      console.warn(
+        "[ErrorReport API] Database write failed:",
+        dbError instanceof Error ? dbError.message : dbError,
+      );
     }
 
     return NextResponse.json(

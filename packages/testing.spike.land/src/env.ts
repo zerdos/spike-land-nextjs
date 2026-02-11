@@ -9,7 +9,7 @@ export default interface Env {
   __STATIC_CONTENT: KVNamespace;
   NPM_REGISTRY?: string;
   REPLICATE_API_TOKEN: string;
-  ANTHROPIC_API_KEY: string;
+  ANTHROPIC_AUTH_TOKEN: string;
   CF_REAL_TURN_TOKEN: string;
   ESBUILD: Fetcher;
   NPM_TOKEN?: string;

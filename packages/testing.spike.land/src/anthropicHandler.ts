@@ -43,13 +43,13 @@ export async function handleAnthropicRequest(
       }
     }
 
-    // Set up headers with proper authorization format
+    // Set up headers with OAuth Bearer authorization
     const headers = new Headers(clonedRequest.headers);
-    // remove DUMMY_API_KEY
     headers.delete("Authorization");
     headers.delete("X-Api-Key");
 
-    headers.set("X-Api-Key", env.ANTHROPIC_API_KEY);
+    headers.set("Authorization", `Bearer ${env.ANTHROPIC_AUTH_TOKEN}`);
+    headers.set("anthropic-beta", "oauth-2025-04-20");
 
     // Create new request with all components
     const request = new Request(url.toString(), {

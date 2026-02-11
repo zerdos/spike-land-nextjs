@@ -50,8 +50,8 @@ of the error
 
 ### Common Issues:
 
-- **"ANTHROPIC_API_KEY not configured"**: Make sure `.dev.vars` has a valid API
-  key
+- **"ANTHROPIC_AUTH_TOKEN not configured"**: Make sure `.dev.vars` has a valid
+  OAuth token
 - **Network errors**: Ensure both frontend and backend servers are running
 - **CORS errors**: The backend should already handle CORS, but check if requests
   are reaching the backend

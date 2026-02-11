@@ -16,7 +16,7 @@ The `/my-apps` functionality is **fully operational** on localhost and ready for
 - ✅ **Backend Worker**: testing.spike.land health check passing
 - ✅ **Database & Redis**: Connected and operational
 
-Minor warnings (ANTHROPIC_API_KEY, DB test) are **non-blocking** and don't affect core functionality.
+Minor warnings (DB test) are **non-blocking** and don't affect core functionality.
 
 ---
 

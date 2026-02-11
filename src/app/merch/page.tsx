@@ -49,12 +49,16 @@ async function getProducts() {
 }
 
 async function getCategories() {
-  const categories = await prisma.merchCategory.findMany({
-    where: { isActive: true },
-    orderBy: { sortOrder: "asc" },
-  });
-
-  return categories;
+  try {
+    const categories = await prisma.merchCategory.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: "asc" },
+    });
+    return categories;
+  } catch (error) {
+    console.error("Failed to fetch merch categories:", error);
+    return [];
+  }
 }
 
 function ProductGridSkeleton() {

@@ -11,7 +11,7 @@ export interface Env {
   __STATIC_CONTENT: KVNamespace;
   NPM_REGISTRY: string;
   REPLICATE_API_TOKEN: string;
-  ANTHROPIC_API_KEY: string;
+  ANTHROPIC_AUTH_TOKEN: string;
   readonly caches: CloudflareCache;
 }
 

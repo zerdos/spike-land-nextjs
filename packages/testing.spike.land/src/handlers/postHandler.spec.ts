@@ -185,8 +185,8 @@ describe("PostHandler", () => {
       expect(body.details).toContain("Invalid JSON");
     });
 
-    it("should handle missing ANTHROPIC_API_KEY", async () => {
-      mockEnv.ANTHROPIC_API_KEY = "";
+    it("should handle missing ANTHROPIC_AUTH_TOKEN", async () => {
+      mockEnv.ANTHROPIC_AUTH_TOKEN = "";
 
       const requestBody: PostRequestBody = {
         messages: [{ role: "user", content: "Hello" }],
@@ -202,7 +202,7 @@ describe("PostHandler", () => {
 
       expect(response.status).toBe(503);
       const body = await response.json() as { error: string; };
-      expect(body.error).toContain("ANTHROPIC_API_KEY not configured");
+      expect(body.error).toContain("ANTHROPIC_AUTH_TOKEN not configured");
     });
 
     it("should log and ignore tools from request body", async () => {

@@ -12,11 +12,10 @@ vi.mock("@/lib/prisma", () => ({
       count: vi.fn(),
     },
     imageEnhancementJob: {
-      count: vi.fn(),
+      groupBy: vi.fn(),
     },
     workspace: {
       aggregate: vi.fn(),
-      count: vi.fn(),
     },
   },
 }));
@@ -60,18 +59,17 @@ describe("AdminDashboard", () => {
       .mockResolvedValueOnce(100)
       .mockResolvedValueOnce(5);
 
-    vi.mocked(prisma.imageEnhancementJob.count)
-      .mockResolvedValueOnce(500)
-      .mockResolvedValueOnce(10)
-      .mockResolvedValueOnce(5)
-      .mockResolvedValueOnce(480)
-      .mockResolvedValueOnce(5);
+    vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValueOnce([
+      { status: "PENDING", _count: 10 },
+      { status: "PROCESSING", _count: 5 },
+      { status: "COMPLETED", _count: 480 },
+      { status: "FAILED", _count: 5 },
+    ] as never);
 
-    vi.mocked(prisma.workspace.aggregate)
-      .mockResolvedValueOnce({ _sum: { monthlyAiCredits: 10000 } } as never)
-      .mockResolvedValueOnce({ _sum: { usedAiCredits: 8000 } } as never);
-
-    vi.mocked(prisma.workspace.count).mockResolvedValueOnce(3);
+    vi.mocked(prisma.workspace.aggregate).mockResolvedValueOnce({
+      _count: { _all: 3 },
+      _sum: { monthlyAiCredits: 10000, usedAiCredits: 8000 },
+    } as never);
 
     const result = await AdminDashboard();
     render(result);
@@ -99,18 +97,14 @@ describe("AdminDashboard", () => {
       .mockResolvedValueOnce(10)
       .mockResolvedValueOnce(1);
 
-    vi.mocked(prisma.imageEnhancementJob.count)
-      .mockResolvedValueOnce(0)
-      .mockResolvedValueOnce(0)
-      .mockResolvedValueOnce(0)
-      .mockResolvedValueOnce(0)
-      .mockResolvedValueOnce(0);
+    vi.mocked(prisma.imageEnhancementJob.groupBy).mockResolvedValueOnce(
+      [] as never,
+    );
 
-    vi.mocked(prisma.workspace.aggregate)
-      .mockResolvedValueOnce({ _sum: { monthlyAiCredits: null } } as never)
-      .mockResolvedValueOnce({ _sum: { usedAiCredits: null } } as never);
-
-    vi.mocked(prisma.workspace.count).mockResolvedValueOnce(0);
+    vi.mocked(prisma.workspace.aggregate).mockResolvedValueOnce({
+      _count: { _all: 0 },
+      _sum: { monthlyAiCredits: null, usedAiCredits: null },
+    } as never);
 
     const result = await AdminDashboard();
     render(result);
@@ -120,5 +114,7 @@ describe("AdminDashboard", () => {
 
     expect(metrics.totalCreditsAllocated).toBe(0);
     expect(metrics.totalCreditsUsed).toBe(0);
+    expect(metrics.totalEnhancements).toBe(0);
+    expect(metrics.totalWorkspaces).toBe(0);
   });
 });

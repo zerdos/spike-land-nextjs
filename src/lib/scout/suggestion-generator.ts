@@ -4,7 +4,7 @@
  * AI-powered content suggestion generator using Claude API.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import { getClaudeClient, isClaudeConfigured } from "@/lib/ai/claude-client";
 
 import type {
   BrandVoiceContext,
@@ -231,13 +231,11 @@ async function callClaudeForSuggestions(
   context: string,
   maxSuggestions: number,
 ): Promise<RawAISuggestion[]> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-
-  if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY environment variable is not set");
+  if (!isClaudeConfigured()) {
+    throw new Error("Claude is not configured. Set ANTHROPIC_AUTH_TOKEN or CLAUDE_CODE_OAUTH_TOKEN.");
   }
 
-  const client = new Anthropic({ apiKey });
+  const client = getClaudeClient();
 
   const systemPrompt =
     `You are an expert social media content strategist. Based on the provided context including brand voice guidelines, trending topics, and competitor analysis, generate creative and engaging content suggestions.

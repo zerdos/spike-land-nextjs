@@ -17,14 +17,8 @@ async function getDashboardMetrics() {
     const [
       totalUsers,
       adminCount,
-      totalEnhancements,
-      pendingJobs,
-      processingJobs,
-      completedJobs,
-      failedJobs,
-      creditsAllocated,
-      creditsUsed,
-      totalWorkspaces,
+      jobStatusGroups,
+      workspaceStats,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({
@@ -32,46 +26,40 @@ async function getDashboardMetrics() {
           OR: [{ role: UserRole.ADMIN }, { role: UserRole.SUPER_ADMIN }],
         },
       }),
-      prisma.imageEnhancementJob.count(),
-      prisma.imageEnhancementJob.count({
-        where: { status: JobStatus.PENDING },
-      }),
-      prisma.imageEnhancementJob.count({
-        where: { status: JobStatus.PROCESSING },
-      }),
-      prisma.imageEnhancementJob.count({
-        where: { status: JobStatus.COMPLETED },
-      }),
-      prisma.imageEnhancementJob.count({
-        where: { status: JobStatus.FAILED },
+      prisma.imageEnhancementJob.groupBy({
+        by: ["status"],
+        _count: true,
       }),
       prisma.workspace.aggregate({
-        _sum: {
-          monthlyAiCredits: true,
-        },
+        _count: { _all: true },
+        _sum: { monthlyAiCredits: true, usedAiCredits: true },
       }),
-      prisma.workspace.aggregate({
-        _sum: {
-          usedAiCredits: true,
-        },
-      }),
-      prisma.workspace.count(),
     ]);
+
+    // Build job status counts from groupBy result
+    const statusCounts = Object.fromEntries(
+      jobStatusGroups.map((g) => [g.status, g._count]),
+    ) as Partial<Record<JobStatus, number>>;
+    const pending = statusCounts[JobStatus.PENDING] || 0;
+    const processing = statusCounts[JobStatus.PROCESSING] || 0;
+    const completed = statusCounts[JobStatus.COMPLETED] || 0;
+    const failed = statusCounts[JobStatus.FAILED] || 0;
+    const totalEnhancements = jobStatusGroups.reduce((sum, g) => sum + g._count, 0);
 
     return {
       totalUsers,
       adminCount,
       totalEnhancements,
       jobStatus: {
-        pending: pendingJobs,
-        processing: processingJobs,
-        completed: completedJobs,
-        failed: failedJobs,
-        active: pendingJobs + processingJobs,
+        pending,
+        processing,
+        completed,
+        failed,
+        active: pending + processing,
       },
-      totalCreditsAllocated: creditsAllocated._sum.monthlyAiCredits || 0,
-      totalCreditsUsed: creditsUsed._sum.usedAiCredits || 0,
-      totalWorkspaces,
+      totalCreditsAllocated: workspaceStats._sum.monthlyAiCredits || 0,
+      totalCreditsUsed: workspaceStats._sum.usedAiCredits || 0,
+      totalWorkspaces: workspaceStats._count._all,
       timestamp: new Date().toISOString(),
     };
   } catch (error) {

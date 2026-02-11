@@ -37,8 +37,8 @@ EOF
 # Install dependencies
 npm install
 
-# Set API key and run
-ANTHROPIC_API_KEY=your-key node agent-executor.js
+# Set auth token and run
+ANTHROPIC_AUTH_TOKEN=your-token node agent-executor.js
 ```
 
 ## Note

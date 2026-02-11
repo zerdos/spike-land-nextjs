@@ -34,7 +34,7 @@ export function createMockEnv() {
     } as unknown as KVNamespace,
     NPM_REGISTRY: "test",
     REPLICATE_API_TOKEN: "test-replicate-api-token",
-    ANTHROPIC_API_KEY: "test-anthropic-api-key",
+    ANTHROPIC_AUTH_TOKEN: "test-anthropic-auth-token",
     CF_REAL_TURN_TOKEN: "test-cf-real-turn-token",
     ESBUILD: {
       fetch: vi.fn(),

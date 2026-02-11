@@ -2,7 +2,7 @@
  * Create Agent Server — "Spike"
  *
  * Generates app code via Anthropic SDK.
- * Auth: ANTHROPIC_API_KEY > ANTHROPIC_AUTH_TOKEN > CLAUDE_CODE_OAUTH_TOKEN
+ * Auth: ANTHROPIC_AUTH_TOKEN > CLAUDE_CODE_OAUTH_TOKEN (OAuth-only)
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -13,23 +13,20 @@ const AGENT_NAME = "Spike";
 const CLAUDE_MODEL = "claude-opus-4-6";
 const AGENT_SECRET = process.env["CREATE_AGENT_SECRET"] ?? "spike-create-2026";
 
-// Auth resolution: ANTHROPIC_API_KEY > ANTHROPIC_AUTH_TOKEN > CLAUDE_CODE_OAUTH_TOKEN
-const apiKey = process.env["ANTHROPIC_API_KEY"];
+// Auth resolution: ANTHROPIC_AUTH_TOKEN > CLAUDE_CODE_OAUTH_TOKEN (OAuth-only)
 const authToken = process.env["ANTHROPIC_AUTH_TOKEN"] ?? process.env["CLAUDE_CODE_OAUTH_TOKEN"];
 
-if (!apiKey && !authToken) {
-  console.error("No Anthropic credentials found. Set ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN.");
+if (!authToken) {
+  console.error("No Anthropic credentials found. Set ANTHROPIC_AUTH_TOKEN or CLAUDE_CODE_OAUTH_TOKEN.");
   process.exit(1);
 }
 
-const authMethod = apiKey ? "api-key" : "oauth-token";
+const authMethod = "oauth-token";
 
 const anthropic = new Anthropic({
-  apiKey: apiKey ?? null,
-  authToken: !apiKey ? (authToken ?? null) : null,
-  ...(!apiKey && authToken
-    ? { defaultHeaders: { "anthropic-beta": "oauth-2025-04-20" } }
-    : {}),
+  apiKey: null,
+  authToken,
+  defaultHeaders: { "anthropic-beta": "oauth-2025-04-20" },
 });
 
 const SYSTEM_PROMPT = `You are an expert React developer building polished, production-quality micro-apps.

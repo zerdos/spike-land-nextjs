@@ -477,7 +477,7 @@ export async function spawnAgentSandbox(
       cmd: "node",
       args: ["agent-executor.js"],
       env: {
-        ANTHROPIC_API_KEY: process.env["ANTHROPIC_API_KEY"] || "",
+        ANTHROPIC_AUTH_TOKEN: process.env["ANTHROPIC_AUTH_TOKEN"] ?? process.env["CLAUDE_CODE_OAUTH_TOKEN"] ?? "",
       },
       detached: true,
     });

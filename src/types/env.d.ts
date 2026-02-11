@@ -65,7 +65,8 @@ declare global {
       // AI Services
       GEMINI_API_KEY?: string;
       GEMINI_TIMEOUT_MS?: string;
-      ANTHROPIC_API_KEY?: string;
+      ANTHROPIC_AUTH_TOKEN?: string;
+      CLAUDE_CODE_OAUTH_TOKEN?: string;
 
       // Stripe
       STRIPE_SECRET_KEY?: string;

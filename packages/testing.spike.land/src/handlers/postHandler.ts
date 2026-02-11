@@ -187,9 +187,9 @@ export class PostHandler {
 
       await this.storageService.saveRequestBody(codeSpace, body);
 
-      if (!this.env.ANTHROPIC_API_KEY) {
+      if (!this.env.ANTHROPIC_AUTH_TOKEN) {
         return this.createErrorResponse(
-          "ANTHROPIC_API_KEY not configured. Please add your API key to .dev.vars file.",
+          "ANTHROPIC_AUTH_TOKEN not configured. Please add your OAuth token to .dev.vars file.",
           503,
         );
       }

@@ -13,7 +13,7 @@ import {
   generateSuggestions,
 } from "./suggestion-generator";
 
-// Mock Anthropic
+// Mock Anthropic via shared client
 const mockCreate = vi.fn().mockResolvedValue({
   content: [
     {
@@ -37,20 +37,20 @@ const mockCreate = vi.fn().mockResolvedValue({
   ],
 });
 
-vi.mock("@anthropic-ai/sdk", () => {
-  return {
-    default: class MockAnthropic {
-      messages = {
-        create: mockCreate,
-      };
-    },
-  };
-});
+vi.mock("@/lib/ai/claude-client", () => ({
+  getClaudeClient: vi.fn(() => ({
+    messages: { create: mockCreate },
+  })),
+  isClaudeConfigured: vi.fn(() => true),
+}));
+
+// Import the mocked module so we can control it per-test
+import { isClaudeConfigured } from "@/lib/ai/claude-client";
 
 describe("Suggestion Generator", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.ANTHROPIC_API_KEY = "test-key";
+    vi.mocked(isClaudeConfigured).mockReturnValue(true);
   });
 
   describe("buildAIContext", () => {
@@ -296,15 +296,15 @@ describe("Suggestion Generator", () => {
       expect(result.suggestions).toHaveLength(0);
     });
 
-    it("should throw error without API key", async () => {
-      delete process.env.ANTHROPIC_API_KEY;
+    it("should throw error when Claude is not configured", async () => {
+      vi.mocked(isClaudeConfigured).mockReturnValue(false);
 
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
       };
 
       await expect(generateSuggestions(input)).rejects.toThrow(
-        "ANTHROPIC_API_KEY environment variable is not set",
+        "Claude is not configured",
       );
     });
 
