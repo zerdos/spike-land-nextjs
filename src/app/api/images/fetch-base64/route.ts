@@ -84,7 +84,16 @@ export async function POST(request: NextRequest) {
 
   try {
     const parsedUrl = new URL(url);
-    if (!allowedDomains.some((domain) => parsedUrl.hostname.endsWith(domain))) {
+    // Security: Strict domain check to prevent SSRF
+    // Ensure hostname is exactly the domain or a subdomain (ends with .domain)
+    // Previous check `hostname.endsWith(domain)` was vulnerable to `evilspike.land`
+    if (
+      !allowedDomains.some(
+        (domain) =>
+          parsedUrl.hostname === domain ||
+          parsedUrl.hostname.endsWith("." + domain),
+      )
+    ) {
       return NextResponse.json(
         { error: "URL domain not allowed" },
         { status: 400 },
