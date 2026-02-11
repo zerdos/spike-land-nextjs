@@ -51,7 +51,7 @@ function getAdaptiveMaxTokens(topic: string): number {
 }
 
 /** Determine which model to use for generation based on topic complexity. */
-function getGenerationModel(topic: string): "opus" | "sonnet" {
+export function getGenerationModel(topic: string): "opus" | "sonnet" {
   const skills = getMatchedSkills(topic);
   // Simple apps (no matched skills) can use Sonnet — 5x cheaper, 40-60% faster
   return skills.length === 0 ? "sonnet" : "opus";
