@@ -25,4 +25,6 @@ export type StreamEvent =
     relatedApps: string[];
     agent?: string;
   }
-  | { type: "error"; message: string; codespaceUrl?: string };
+  | { type: "error"; message: string; codespaceUrl?: string }
+  | { type: "heartbeat"; timestamp: number }
+  | { type: "timeout"; message: string; codespaceUrl?: string };

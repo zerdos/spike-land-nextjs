@@ -231,9 +231,7 @@ export async function recordSuccess(noteIds: string[]): Promise<void> {
       data: { helpCount: { increment: 1 } },
     });
 
-    for (const id of noteIds) {
-      await recalculateConfidence(id);
-    }
+    await batchRecalculateConfidence(noteIds);
   } catch (err) {
     logger.warn("Failed to record success for notes", { error: err });
   }
@@ -252,46 +250,50 @@ export async function recordFailure(noteIds: string[]): Promise<void> {
       data: { failCount: { increment: 1 } },
     });
 
-    for (const id of noteIds) {
-      await recalculateConfidence(id);
-    }
+    await batchRecalculateConfidence(noteIds);
   } catch (err) {
     logger.warn("Failed to record failure for notes", { error: err });
   }
 }
 
 /**
- * Bayesian confidence: Beta-binomial posterior with uniform prior (alpha=1, beta=1).
- * Promotes CANDIDATE → ACTIVE at 3+ helps with >0.6 confidence.
- * Demotes to DEPRECATED if confidence drops below 0.3 after 5+ observations.
+ * Batch recalculate confidence scores for multiple notes at once.
+ * Replaces per-note recalculateConfidence to eliminate N+1 queries.
+ * Uses: 1 findMany + 1 $transaction instead of N findUnique + N update.
  */
-async function recalculateConfidence(noteId: string): Promise<void> {
-  const note = await prisma.agentLearningNote.findUnique({
-    where: { id: noteId },
+async function batchRecalculateConfidence(noteIds: string[]): Promise<void> {
+  if (noteIds.length === 0) return;
+
+  const notes = await prisma.agentLearningNote.findMany({
+    where: { id: { in: noteIds } },
   });
-  if (!note) return;
 
-  const alpha = 1; // Prior successes
-  const beta = 1; // Prior failures
-  const score =
-    (note.helpCount + alpha) / (note.helpCount + note.failCount + alpha + beta);
+  if (notes.length === 0) return;
 
-  let status = note.status;
+  const updates = notes.map((note) => {
+    const alpha = 1;
+    const beta = 1;
+    const score = (note.helpCount + alpha) / (note.helpCount + note.failCount + alpha + beta);
 
-  // Promote CANDIDATE → ACTIVE after 3+ helps with >0.6 confidence
-  if (status === "CANDIDATE" && note.helpCount >= 3 && score > 0.6) {
-    status = "ACTIVE";
-  }
+    let status = note.status;
 
-  // Demote to DEPRECATED if confidence drops below 0.3
-  if (score < 0.3 && note.helpCount + note.failCount >= 5) {
-    status = "DEPRECATED";
-  }
+    // Promote CANDIDATE → ACTIVE after 3+ helps with >0.6 confidence
+    if (status === "CANDIDATE" && note.helpCount >= 3 && score > 0.6) {
+      status = "ACTIVE";
+    }
 
-  await prisma.agentLearningNote.update({
-    where: { id: noteId },
-    data: { confidenceScore: score, status },
+    // Demote to DEPRECATED if confidence drops below 0.3
+    if (score < 0.3 && note.helpCount + note.failCount >= 5) {
+      status = "DEPRECATED";
+    }
+
+    return prisma.agentLearningNote.update({
+      where: { id: note.id },
+      data: { confidenceScore: score, status },
+    });
   });
+
+  await prisma.$transaction(updates);
 }
 
 /**
@@ -315,10 +317,7 @@ export async function recordUserBugFeedback(slug: string): Promise<void> {
       data: { failCount: { increment: 1 } },
     });
 
-    // Recalculate confidence for each affected note
-    for (const id of attempt.notesApplied) {
-      await recalculateConfidence(id);
-    }
+    await batchRecalculateConfidence(attempt.notesApplied);
 
     logger.info("Recorded user bug feedback for notes", {
       slug,

@@ -101,7 +101,7 @@ export const WordHighlightCaption: React.FC<WordHighlightCaptionProps> = ({
             <span
               key={i}
               style={{
-                color: isActive ? COLORS.bridgemindCyan : isPast ? "rgba(255,255,255,0.7)" : "white",
+                color: isActive ? COLORS.cyan : isPast ? "rgba(255,255,255,0.7)" : "white",
                 transform: isActive ? "scale(1.05)" : "scale(1)",
                 display: "inline-block",
               }}

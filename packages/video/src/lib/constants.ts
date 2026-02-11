@@ -5,54 +5,29 @@ export const VIDEO_CONFIG = {
   width: 1920,
   height: 1080,
   fps: 30,
-  durationInFrames: 24578, // 819.26s
+  durationInFrames: 19800, // 11 minutes
 } as const;
 
 /**
- * New Scene Structure (10 Scenes)
+ * Vibe Coding Paradox — Scene Durations (frames @ 30fps)
  */
-export const SCENE_CHAPTERS = {
-  hook:      { from: 6,     duration: 1352, label: "The Hook" },
-  defined:   { from: 1358,  duration: 2064, label: "Context Engineering Defined" },
-  planMode:  { from: 3422,  duration: 2472, label: "Plan Mode Deep Dive" },
-  memento:   { from: 5894,  duration: 2223, label: "The Memento / Zero Memory" },
-  physics:   { from: 8117,  duration: 2816, label: "Physics of Attention" },
-  economics: { from: 10933, duration: 2378, label: "Economics of Tokens" },
-  caching:   { from: 13311, duration: 3852, label: "Caching & Context Rot" },
-  metacog:   { from: 17163, duration: 1610, label: "Metacognition & Human Role" },
-  tactics:   { from: 18773, duration: 3531, label: "Practical Tactics" },
-  metaOutro: { from: 22304, duration: 2274, label: "Meta Revelation & Outro" },
+export const VCP_DURATIONS = {
+  hook: 1800,               // 60s
+  physicsOfAttention: 2700,  // 90s
+  beforeState: 1800,         // 60s
+  fiveLayerStack: 2700,      // 90s
+  fixLoop: 2250,             // 75s
+  agentMemory: 2250,         // 75s
+  skillMatching: 1800,       // 60s
+  metaBuild: 1350,           // 45s
+  results: 1800,             // 60s
+  endCard: 1350,             // 45s
 } as const;
 
-export const TIMING = {
-  scene1: { start: 0, end: 150 },
-  scene2: { start: 150, end: 390 },
-  scene3: { start: 390, end: 570 },
-  scene4: { start: 570, end: 930 },
-  scene5: { start: 930, end: 1230 },
-  scene6: { start: 1230, end: 1470 },
-  scene7: { start: 1470, end: 1650 },
-  scene8: { start: 1650, end: 1800 },
-} as const;
-
-/**
- * Scene durations in frames
- */
-export const SCENE_DURATIONS = {
-  // New scenes (using array index map for compat if needed, or just accessing array)
-  // For now, these are not directly used by name in the new array structure, 
-  // but if we need named access we should probably keep the object or add a helper.
-  // The plan said SCENE_CHAPTERS should be an array.
-  
-  // Backwards compatibility for PromoVideo
-  scene1: TIMING.scene1.end - TIMING.scene1.start,
-  scene2: TIMING.scene2.end - TIMING.scene2.start,
-  scene3: TIMING.scene3.end - TIMING.scene3.start,
-  scene4: TIMING.scene4.end - TIMING.scene4.start,
-  scene5: TIMING.scene5.end - TIMING.scene5.start,
-  scene6: TIMING.scene6.end - TIMING.scene6.start,
-  scene7: TIMING.scene7.end - TIMING.scene7.start,
-  scene8: TIMING.scene8.end - TIMING.scene8.start,
+export const VCP_TIMING = {
+  totalFrames: 19800,  // 11 minutes
+  fps: 30,
+  transitionFrames: 20,
 } as const;
 
 /**
@@ -84,11 +59,6 @@ export const COLORS = {
   // Chart colors for A/B testing
   variantA: "#00E5FF", // Cyan
   variantB: "#FF00FF", // Fuchsia
-
-  // BridgeMind Brand
-  bridgemindCyan: "#22d3ee",
-  bridgemindPink: "#f472b6",
-  bridgemindSlate: "#0f172a",
 } as const;
 
 /**
@@ -117,91 +87,43 @@ export const TYPOGRAPHY = {
  * Spring configurations for different animation feels
  */
 export const SPRING_CONFIGS = {
-  smooth: { damping: 200 }, // Smooth, no bounce (subtle reveals)
-  snappy: { damping: 20, stiffness: 200 }, // Snappy, minimal bounce (UI elements)
-  bouncy: { damping: 8 }, // Bouncy entrance (playful animations)
-  heavy: { damping: 15, stiffness: 80, mass: 2 }, // Heavy, slow, small bounce
+  smooth: { damping: 200 },
+  snappy: { damping: 20, stiffness: 200 },
+  bouncy: { damping: 8 },
+  heavy: { damping: 15, stiffness: 80, mass: 2 },
 } as const;
 
 /**
  * Glitch effect configuration
  */
 export const GLITCH_CONFIG = {
-  rgbOffset: 5, // Pixels to offset RGB channels
-  scanLineGap: 4, // Gap between scan lines
-  noiseIntensity: 0.1, // 0-1 noise overlay intensity
-  duration: 15, // Frames for glitch transition
+  rgbOffset: 5,
+  scanLineGap: 4,
+  noiseIntensity: 0.1,
+  duration: 15,
 } as const;
 
 /**
- * BridgeMind Specific Timing
- */
-export const BRIDGEMIND_DURATIONS = {
-  struggle: 266,
-  algorithm: 209,
-  revealed: 206,
-  features: 347,
-  transformation: 238,
-  testimony: 231,
-  cta: 180,
-} as const;
-
-export const BRIDGEMIND_TIMING = {
-  totalFrames: 1800,
-  fps: 30,
-  transitionFrames: 15,
-} as const;
-
-/**
- * Veritasium Pitch Video - "The AI That Remembers Every Mistake"
- * 4 minutes = 240s = 7200 frames @ 30fps
- *
- * Scene breakdown (from script):
- * 1. Hook (0:00-0:22)      - Story of failures → success
- * 2. Problem (0:22-0:50)   - Single-shot AI limitations
- * 3. Solution (0:50-1:50)  - Agent loop diagram
- * 4. Magic (1:50-2:55)     - Learning notes, lifecycle, Laplace (CENTERPIECE)
- * 5. Proof (2:55-3:20)     - Success rate chart + demo
- * 6. Implications (3:20-3:45) - Data flywheel
- * 7. CTA (3:45-4:00)       - Call to action
- */
-export const VERITASIUM_DURATIONS = {
-  hook: 660,          // 22s
-  problem: 840,       // 28s
-  solution: 1800,     // 60s
-  magic: 1950,        // 65s (centerpiece — longest scene)
-  proof: 750,         // 25s
-  implications: 750,  // 25s
-  cta: 450,           // 15s
-} as const;
-
-export const VERITASIUM_TIMING = {
-  totalFrames: 7200,
-  fps: 30,
-  transitionFrames: 20,
-} as const;
-
-/**
- * Veritasium-specific color accents
+ * Veritasium-specific color accents (reused for VCP)
  */
 export const VERITASIUM_COLORS = {
   // Agent states
-  planning: "#8B5CF6",    // purple
-  generating: "#3B82F6",  // blue
-  transpiling: "#06B6D4", // cyan
-  fixing: "#F59E0B",      // amber
-  learning: "#10B981",    // emerald
-  published: "#22C55E",   // green
-  failed: "#EF4444",      // red
+  planning: "#8B5CF6",
+  generating: "#3B82F6",
+  transpiling: "#06B6D4",
+  fixing: "#F59E0B",
+  learning: "#10B981",
+  published: "#22C55E",
+  failed: "#EF4444",
 
   // Note lifecycle
-  candidate: "#EAB308",   // yellow
-  active: "#22C55E",      // green
-  deprecated: "#6B7280",  // gray
+  candidate: "#EAB308",
+  active: "#22C55E",
+  deprecated: "#6B7280",
 
   // Laplace formula
-  bayesian: "#A78BFA",    // violet
+  bayesian: "#A78BFA",
 
   // Flywheel
-  flywheel: "#00E5FF",    // cyan (brand)
+  flywheel: "#00E5FF",
 } as const;

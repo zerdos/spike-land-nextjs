@@ -1,4 +1,9 @@
 import { auth } from "@/auth";
+import {
+  getCircuitState,
+  recordCircuitFailure,
+  recordCircuitSuccess,
+} from "@/lib/create/circuit-breaker";
 import { generateCodespaceId, updateCodespace } from "@/lib/create/codespace-service";
 import { attemptCodeCorrection, generateAppContent } from "@/lib/create/content-generator";
 import {
@@ -128,6 +133,15 @@ function createAgentProxyResponse(
 
   const stream = new ReadableStream({
     async start(controller) {
+      const heartbeatTimer = setInterval(() => {
+        try {
+          const heartbeat = { type: "heartbeat", timestamp: Date.now() };
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(heartbeat)}\n\n`));
+        } catch {
+          // Controller may be closed
+        }
+      }, 15_000);
+
       try {
         const res = await fetch(`${CREATE_AGENT_URL}/generate`, {
           method: "POST",
@@ -181,8 +195,6 @@ function createAgentProxyResponse(
             }
           }
         }
-
-        controller.close();
       } catch (error) {
         logger.warn("Create agent proxy failed, falling back to direct generation", {
           slug,
@@ -203,6 +215,8 @@ function createAgentProxyResponse(
             ),
           );
         }
+      } finally {
+        clearInterval(heartbeatTimer);
         controller.close();
       }
     },
@@ -219,7 +233,7 @@ function createAgentProxyResponse(
 
 /**
  * Main generation stream — delegates to the Claude agent loop,
- * with automatic fallback to Gemini if Claude is unavailable.
+ * with automatic fallback to Gemini if Claude is unavailable or circuit is open.
  */
 async function* generateStream(
   slug: string,
@@ -228,13 +242,25 @@ async function* generateStream(
 ): AsyncGenerator<StreamEvent> {
   // Use Claude agent loop when any Anthropic credential is available
   if (isClaudeConfigured()) {
+    const circuitState = await getCircuitState();
+
+    if (circuitState === "OPEN") {
+      logger.info("Circuit breaker OPEN, skipping Claude", { slug });
+      yield { type: "status", message: "Claude temporarily unavailable, using fallback..." };
+      yield* geminiFallbackStream(slug, path, userId);
+      return;
+    }
+
     try {
       yield* agentGenerateApp(slug, path, userId);
+      await recordCircuitSuccess();
       return;
     } catch (error) {
+      await recordCircuitFailure();
       logger.warn("Agent loop failed, falling back to Gemini generation", {
         error: error instanceof Error ? error.message : "Unknown error",
         slug,
+        circuitState,
       });
       yield { type: "status", message: "Switching to alternative provider..." };
       // Fall through to Gemini fallback
@@ -357,21 +383,46 @@ async function* geminiFallbackStream(
 
 function createSSEResponse(generator: AsyncGenerator<StreamEvent>): Response {
   const encoder = new TextEncoder();
+  const HEARTBEAT_INTERVAL_MS = 15_000;
+  const TIMEOUT_BUDGET_MS = 100_000; // 100s of 120s max
 
   const stream = new ReadableStream({
     async start(controller) {
+      const startTime = Date.now();
+
+      // Heartbeat interval
+      const heartbeatTimer = setInterval(() => {
+        try {
+          const heartbeat: StreamEvent = { type: "heartbeat", timestamp: Date.now() };
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(heartbeat)}\n\n`));
+        } catch {
+          // Controller may be closed
+        }
+      }, HEARTBEAT_INTERVAL_MS);
+
       try {
         for await (const event of generator) {
+          // Check timeout budget
+          if (Date.now() - startTime > TIMEOUT_BUDGET_MS) {
+            const timeoutEvent: StreamEvent = {
+              type: "timeout",
+              message: "Generation approaching time limit",
+            };
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(timeoutEvent)}\n\n`));
+            break;
+          }
+
           const data = JSON.stringify(event);
           controller.enqueue(encoder.encode(`data: ${data}\n\n`));
         }
-        controller.close();
       } catch (error) {
         const errorEvent = JSON.stringify({
           type: "error",
           message: error instanceof Error ? error.message : "Stream error",
         });
         controller.enqueue(encoder.encode(`data: ${errorEvent}\n\n`));
+      } finally {
+        clearInterval(heartbeatTimer);
         controller.close();
       }
     },
