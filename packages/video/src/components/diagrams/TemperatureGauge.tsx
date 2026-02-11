@@ -10,7 +10,7 @@ type TemperatureGaugeProps = {
 const THERM_WIDTH = 40;
 const THERM_HEIGHT = 260;
 const BULB_RADIUS = 30;
-const GAUGE_TOP = 40;
+const _GAUGE_TOP = 40;
 const GAUGE_SPACING = 260;
 
 type GaugeConfig = {

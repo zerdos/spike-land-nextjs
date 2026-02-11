@@ -120,7 +120,7 @@ export function TokenVisualization({
               }}
             >
               {tokenChars.map((tokenStr, ti) => {
-                const tokenIndex = wordTokenStartIndex + ti;
+                const _tokenIndex = wordTokenStartIndex + ti;
                 const color = TOKEN_PALETTE[hashString(tokenStr) % TOKEN_PALETTE.length];
 
                 const splitSpring = spring({
