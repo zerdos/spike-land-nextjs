@@ -233,7 +233,7 @@ export const SkillMatchingDiagram: React.FC<SkillMatchingDiagramProps> = ({
                 key={`path-${index}`}
                 points={points.join(" ")}
                 fill="none"
-                stroke={SKILLS[index].color}
+                stroke={SKILLS[index]!.color}
                 strokeWidth={2}
                 opacity={pathProgress * 0.7}
                 filter="url(#pathGlow)"
@@ -253,7 +253,7 @@ export const SkillMatchingDiagram: React.FC<SkillMatchingDiagramProps> = ({
           config: SPRING_CONFIGS.snappy,
         });
 
-        const isMatched = matchingIndices[i].matched;
+        const isMatched = matchingIndices[i]!.matched;
         const matchFadeDelay = delay + 35;
         const matchFade = interpolate(
           frame,

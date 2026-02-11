@@ -186,10 +186,26 @@ export function buildEmbedHtml(opts: {
   const importMap = JSON.stringify({ imports: absoluteImports }, null, 2);
 
   // Rewrite relative import paths in transpiled code to absolute URLs.
-  // Matches: from "/something" or from '/something'
-  const transpiled = (opts.transpiled || "").replace(
+  // data: URIs and inline scripts served from spike.land cannot resolve
+  // relative "/..." paths against testing.spike.land, so we make them absolute.
+  let transpiled = opts.transpiled || "";
+
+  // 1. Static imports: from "/something" or from '/something'
+  transpiled = transpiled.replace(
     /\bfrom\s+["'](\/[^"']+)["']/g,
     (_, path) => `from "${origin}${path}"`,
+  );
+
+  // 2. Dynamic imports: import("/something") or import('/something')
+  transpiled = transpiled.replace(
+    /\bimport\s*\(\s*["'](\/[^"']+)["']\s*\)/g,
+    (_, path) => `import("${origin}${path}")`,
+  );
+
+  // 3. Side-effect imports: import "/something" (no from clause)
+  transpiled = transpiled.replace(
+    /^(\s*import\s+)["'](\/[^"']+)["']/gm,
+    (_, pre, path) => `${pre}"${origin}${path}"`,
   );
 
   return HTML_TEMPLATE

@@ -1,4 +1,3 @@
-import React from "react";
 import { Series } from "remotion";
 import { Scene01_Hook } from "./Scene01_Hook";
 import { Scene02_Attention } from "./Scene02_Attention";

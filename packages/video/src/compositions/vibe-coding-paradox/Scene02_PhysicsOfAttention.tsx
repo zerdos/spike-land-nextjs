@@ -46,7 +46,7 @@ export const Scene02_PhysicsOfAttention: React.FC = () => {
       COLORS.cyan,
       COLORS.fuchsia,
       COLORS.amber,
-    ][i % 8],
+    ][i % 8]!,
   }));
 
   return (

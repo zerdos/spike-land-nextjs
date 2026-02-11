@@ -1,4 +1,3 @@
-import React from "react";
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { FiveLayerStackCore } from "../../components/core/FiveLayerStackCore";
 import { SPRING_CONFIGS } from "../../lib/constants";

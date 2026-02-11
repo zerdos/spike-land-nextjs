@@ -1,4 +1,3 @@
-import React from "react";
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { SPRING_CONFIGS } from "../../lib/constants";
 import { AttentionSpotlightCore } from "../core/AttentionSpotlightCore";

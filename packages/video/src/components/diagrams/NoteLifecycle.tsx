@@ -97,14 +97,14 @@ export const NoteLifecycle: React.FC<NoteLifecycleProps> = ({
                 <div style={{
                   width: 60,
                   height: 2,
-                  background: `linear-gradient(90deg, ${STAGES[i].color}60, ${STAGES[i + 1].color}60)`,
+                  background: `linear-gradient(90deg, ${STAGES[i]!.color}60, ${STAGES[i + 1]!.color}60)`,
                 }} />
                 <div style={{
                   width: 0,
                   height: 0,
                   borderTop: "8px solid transparent",
                   borderBottom: "8px solid transparent",
-                  borderLeft: `12px solid ${STAGES[i + 1].color}60`,
+                  borderLeft: `12px solid ${STAGES[i + 1]!.color}60`,
                 }} />
               </div>
             )}

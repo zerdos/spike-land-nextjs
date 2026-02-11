@@ -199,7 +199,7 @@ export class SessionService {
           html: current.html,
           css: current.css,
           requiresReRender: current.requiresReRender,
-          messages: (current.messages as Message[]) || [],
+          messages: (current.messages as unknown as Message[]) || [],
           hash: current.hash,
         },
       };

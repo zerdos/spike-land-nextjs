@@ -1,4 +1,3 @@
-import React from "react";
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { ModelCascadeCore } from "../../components/core/ModelCascadeCore";
 import { SPRING_CONFIGS } from "../../lib/constants";

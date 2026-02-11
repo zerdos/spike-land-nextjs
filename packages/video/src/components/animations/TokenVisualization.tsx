@@ -1,4 +1,3 @@
-import React from "react";
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS, SPRING_CONFIGS, VERITASIUM_COLORS } from "../../lib/constants";
 import { springScale, stagger } from "../../lib/animations";
@@ -83,7 +82,6 @@ export function TokenVisualization({
             tokenChars.push(word.slice(t * charsPerToken, (t + 1) * charsPerToken));
           }
 
-          const wordTokenStartIndex = globalTokenIndex;
           globalTokenIndex += tokenCount;
 
           // When not splitting, show as single word block
@@ -120,7 +118,6 @@ export function TokenVisualization({
               }}
             >
               {tokenChars.map((tokenStr, ti) => {
-                const _tokenIndex = wordTokenStartIndex + ti;
                 const color = TOKEN_PALETTE[hashString(tokenStr) % TOKEN_PALETTE.length];
 
                 const splitSpring = spring({

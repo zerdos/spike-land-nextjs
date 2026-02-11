@@ -176,7 +176,7 @@ export function glitchOffset(
  */
 export function progressBar(
   frame: number,
-  fps: number,
+  _fps: number,
   startFrame: number,
   endFrame: number,
   startValue: number = 0,

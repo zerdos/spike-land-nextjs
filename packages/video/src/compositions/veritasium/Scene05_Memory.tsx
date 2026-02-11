@@ -1,4 +1,3 @@
-import React from "react";
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { BayesianConfidenceCore } from "../../components/core/BayesianConfidenceCore";
 import { SPRING_CONFIGS } from "../../lib/constants";

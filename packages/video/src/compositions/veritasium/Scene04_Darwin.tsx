@@ -1,4 +1,3 @@
-import React from "react";
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { DarwinianTreeCore } from "../../components/core/DarwinianTreeCore";
 import { SPRING_CONFIGS } from "../../lib/constants";
