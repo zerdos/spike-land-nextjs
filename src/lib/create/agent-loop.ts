@@ -102,7 +102,9 @@ export async function* agentGenerateApp(
   );
 
   const topic = path.join("/");
-  const generationModel = getGenerationModel(topic);
+  // the traffic is so low that we can use opus for everything
+  
+  const generationModel = 'opus';// getGenerationModel(topic);
   const adaptiveMaxTokens = getAdaptiveMaxTokens(topic);
 
   const ctx: AgentContext = {

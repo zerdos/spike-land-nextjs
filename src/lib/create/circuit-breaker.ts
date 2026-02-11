@@ -16,12 +16,15 @@ import logger from "@/lib/logger";
 
 export type CircuitState = "CLOSED" | "OPEN" | "HALF_OPEN";
 
-const KEY_PREFIX = "circuit_breaker:create-agent";
-const KEYS = {
-  state: `${KEY_PREFIX}:state`,
-  failures: `${KEY_PREFIX}:failures`,
-  lastFailure: `${KEY_PREFIX}:last_failure`,
-} as const;
+const DEFAULT_PREFIX = "circuit_breaker:claude";
+
+function getKeys(prefix = DEFAULT_PREFIX) {
+  return {
+    state: `${prefix}:state`,
+    failures: `${prefix}:failures`,
+    lastFailure: `${prefix}:last_failure`,
+  };
+}
 
 const FAILURE_THRESHOLD = 3;
 const COOLDOWN_MS = 60_000; // 60s before OPEN -> HALF_OPEN
@@ -33,9 +36,10 @@ const TTL_SECONDS = 300; // 5 min auto-heal
  */
 export async function getCircuitState(): Promise<CircuitState> {
   try {
+    const keys = getKeys();
     const [state, lastFailure] = await Promise.all([
-      redis.get<string>(KEYS.state),
-      redis.get<number>(KEYS.lastFailure),
+      redis.get<string>(keys.state),
+      redis.get<number>(keys.lastFailure),
     ]);
 
     if (!state || state === "CLOSED") {
@@ -68,13 +72,14 @@ export async function getCircuitState(): Promise<CircuitState> {
  */
 export async function recordCircuitFailure(): Promise<void> {
   try {
-    const failures = await redis.incr(KEYS.failures);
-    await redis.expire(KEYS.failures, TTL_SECONDS);
+    const keys = getKeys();
+    const failures = await redis.incr(keys.failures);
+    await redis.expire(keys.failures, TTL_SECONDS);
 
     if (failures >= FAILURE_THRESHOLD) {
       await Promise.all([
-        redis.set(KEYS.state, "OPEN", { ex: TTL_SECONDS }),
-        redis.set(KEYS.lastFailure, Date.now(), { ex: TTL_SECONDS }),
+        redis.set(keys.state, "OPEN", { ex: TTL_SECONDS }),
+        redis.set(keys.lastFailure, Date.now(), { ex: TTL_SECONDS }),
       ]);
 
       logger.warn("Circuit breaker OPENED after consecutive failures", {
@@ -94,9 +99,10 @@ export async function recordCircuitFailure(): Promise<void> {
  */
 export async function recordCircuitSuccess(): Promise<void> {
   try {
+    const keys = getKeys();
     await Promise.all([
-      redis.set(KEYS.state, "CLOSED", { ex: TTL_SECONDS }),
-      redis.set(KEYS.failures, 0, { ex: TTL_SECONDS }),
+      redis.set(keys.state, "CLOSED", { ex: TTL_SECONDS }),
+      redis.set(keys.failures, 0, { ex: TTL_SECONDS }),
     ]);
   } catch (error) {
     logger.warn("Circuit breaker success recording failed", {

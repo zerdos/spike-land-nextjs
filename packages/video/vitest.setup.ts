@@ -1,8 +1,6 @@
-// @ts-expect-error
-import React from 'react';
-// @ts-expect-error
+// @ts-expect-error - Vitest expect and Testing Library compatibility
 import { expect } from 'vitest';
-// @ts-expect-error
+// @ts-expect-error - Jest-dom matchers types
 import * as matchers from '@testing-library/jest-dom/matchers';
 
 // Extends Vitest's expect method with methods from react-testing-library

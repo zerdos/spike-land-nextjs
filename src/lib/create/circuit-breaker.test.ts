@@ -110,10 +110,10 @@ describe("circuit-breaker", () => {
       mockRedis.incr.mockResolvedValue(1);
       await recordCircuitFailure();
       expect(mockRedis.incr).toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:failures",
+        "circuit_breaker:claude:failures",
       );
       expect(mockRedis.expire).toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:failures",
+        "circuit_breaker:claude:failures",
         300,
       );
     });
@@ -122,7 +122,7 @@ describe("circuit-breaker", () => {
       mockRedis.incr.mockResolvedValue(2); // Below 3
       await recordCircuitFailure();
       expect(mockRedis.set).not.toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:state",
+        "circuit_breaker:claude:state",
         "OPEN",
         expect.any(Object),
       );
@@ -132,12 +132,12 @@ describe("circuit-breaker", () => {
       mockRedis.incr.mockResolvedValue(3); // Exactly 3
       await recordCircuitFailure();
       expect(mockRedis.set).toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:state",
+        "circuit_breaker:claude:state",
         "OPEN",
         { ex: 300 },
       );
       expect(mockRedis.set).toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:last_failure",
+        "circuit_breaker:claude:last_failure",
         expect.any(Number),
         { ex: 300 },
       );
@@ -151,7 +151,7 @@ describe("circuit-breaker", () => {
       mockRedis.incr.mockResolvedValue(5);
       await recordCircuitFailure();
       expect(mockRedis.set).toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:state",
+        "circuit_breaker:claude:state",
         "OPEN",
         { ex: 300 },
       );
@@ -171,12 +171,12 @@ describe("circuit-breaker", () => {
     it("resets state to CLOSED and failures to 0", async () => {
       await recordCircuitSuccess();
       expect(mockRedis.set).toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:state",
+        "circuit_breaker:claude:state",
         "CLOSED",
         { ex: 300 },
       );
       expect(mockRedis.set).toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:failures",
+        "circuit_breaker:claude:failures",
         0,
         { ex: 300 },
       );
@@ -198,7 +198,7 @@ describe("circuit-breaker", () => {
       mockRedis.incr.mockResolvedValueOnce(1);
       await recordCircuitFailure();
       expect(mockRedis.set).not.toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:state",
+        "circuit_breaker:claude:state",
         "OPEN",
         expect.any(Object),
       );
@@ -209,7 +209,7 @@ describe("circuit-breaker", () => {
       mockRedis.incr.mockResolvedValueOnce(2);
       await recordCircuitFailure();
       expect(mockRedis.set).not.toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:state",
+        "circuit_breaker:claude:state",
         "OPEN",
         expect.any(Object),
       );
@@ -220,7 +220,7 @@ describe("circuit-breaker", () => {
       mockRedis.incr.mockResolvedValueOnce(3);
       await recordCircuitFailure();
       expect(mockRedis.set).toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:state",
+        "circuit_breaker:claude:state",
         "OPEN",
         { ex: 300 },
       );
@@ -237,7 +237,7 @@ describe("circuit-breaker", () => {
       // Success resets to CLOSED
       await recordCircuitSuccess();
       expect(mockRedis.set).toHaveBeenCalledWith(
-        "circuit_breaker:create-agent:state",
+        "circuit_breaker:claude:state",
         "CLOSED",
         { ex: 300 },
       );

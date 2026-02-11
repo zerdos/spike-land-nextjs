@@ -1,8 +1,19 @@
-export const maxDuration = 60; // Allow 60s for AI generation
+export const maxDuration = 90; // Allow 90s for Claude primary + Gemini fallback
 export const dynamic = "force-dynamic";
 
 import { auth } from "@/auth";
+import { isClaudeConfigured } from "@/lib/ai/claude-client";
 import { getGeminiClient } from "@/lib/ai/gemini-client";
+import {
+  getCircuitState,
+  recordCircuitFailure,
+  recordCircuitSuccess,
+} from "@/lib/create/circuit-breaker";
+import {
+  agentGenerateLearnIt,
+  buildLearnItPrompt,
+  type StreamEvent,
+} from "@/lib/learnit/agent-loop";
 import {
   createOrUpdateContent,
   getLearnItContent,
@@ -89,8 +100,8 @@ export async function POST(req: Request) {
     return createAgentProxyResponse(path, slug, userId);
   }
 
-  logger.info("LearnIt: falling back to Gemini", { slug });
-  return createSSEResponse(generateWithGemini(path, slug, userId));
+  logger.info("LearnIt: using AI generation", { slug });
+  return createSSEResponse(generateStream(path, slug, userId));
 }
 
 /**
@@ -225,9 +236,9 @@ function createAgentProxyResponse(
           error: error instanceof Error ? error.message : String(error),
         });
 
-        // Fall back to Gemini inline
+        // Fall back to Claude→Gemini pipeline
         try {
-          for await (const event of generateWithGemini(path, slug, userId)) {
+          for await (const event of generateStream(path, slug, userId)) {
             controller.enqueue(
               encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
             );
@@ -254,6 +265,41 @@ function createAgentProxyResponse(
 }
 
 /**
+ * Main generation stream — tries Claude Opus first (via circuit breaker),
+ * falls back to Gemini if Claude is unavailable or fails.
+ */
+async function* generateStream(
+  path: string[],
+  slug: string,
+  userId: string | undefined,
+): AsyncGenerator<StreamEvent> {
+  if (isClaudeConfigured()) {
+    const circuitState = await getCircuitState();
+
+    if (circuitState === "OPEN") {
+      logger.info("LearnIt: circuit breaker OPEN, skipping Claude", { slug });
+      yield* generateWithGemini(path, slug, userId);
+      return;
+    }
+
+    try {
+      yield* agentGenerateLearnIt(path, slug, userId);
+      await recordCircuitSuccess();
+      return;
+    } catch (error) {
+      await recordCircuitFailure();
+      logger.warn("LearnIt Claude failed, falling back to Gemini", {
+        slug,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // Fall through to Gemini
+    }
+  }
+
+  yield* generateWithGemini(path, slug, userId);
+}
+
+/**
  * Generate content directly with Gemini (fallback path).
  */
 async function* generateWithGemini(
@@ -266,24 +312,7 @@ async function* generateWithGemini(
   // Send agent identity
   yield { type: "agent", name: "Gemini Flash", model: "gemini-3-flash-preview" } as StreamEvent;
 
-  const prompt =
-    `You are an expert technical educator creating a high-quality, interactive learning wiki called LearnIt.
-
-Your task is to generate a comprehensive tutorial for the topic: "${topic}".
-
-The content should be:
-1. **Beginner-friendly but deep**: targeted at developers learning this specific concept.
-2. **Structured**: Broken into clear sections with H2 headings.
-3. **Interactive**: Include code examples where relevant.
-4. **Interconnected**: Use [[Wiki Link]] syntax to link to related concepts. For example, if you mention "State Management", write it as [[State Management]].
-
-Format requirements:
-- Start with a brief title and description
-- Use ## for section headings
-- Ensure code blocks have language tags (e.g. \`\`\`typescript).
-- At the end, include a "Related Topics" section with 3-5 [[Wiki Links]] to related concepts.
-
-Begin with the title on the first line (just the title text, no heading markup), followed by a brief description paragraph, then the main content.`;
+  const prompt = buildLearnItPrompt(topic);
 
   try {
     const ai = getGeminiClient();
@@ -375,12 +404,6 @@ Begin with the title on the first line (just the title text, no heading markup),
     yield { type: "error", message: errorMessage };
   }
 }
-
-type StreamEvent =
-  | { type: "agent"; name: string; model: string; }
-  | { type: "chunk"; content: string; }
-  | { type: "complete"; content: string; title: string; description: string; agent?: string; }
-  | { type: "error"; message: string; };
 
 function createSSEResponse(generator: AsyncGenerator<StreamEvent>): Response {
   const encoder = new TextEncoder();
