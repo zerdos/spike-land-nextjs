@@ -11,8 +11,8 @@ import {
   stopCleanupInterval,
 } from "./rate-limiter";
 
-// Mock the @/lib/upstash module
-vi.mock("@/lib/upstash", () => ({
+// Mock the @/lib/upstash/client module
+vi.mock("@/lib/upstash/client", () => ({
   redis: {
     ping: vi.fn(),
     get: vi.fn(),
@@ -22,7 +22,7 @@ vi.mock("@/lib/upstash", () => ({
 }));
 
 // Import the mocked redis after mocking
-import { redis } from "@/lib/upstash";
+import { redis } from "@/lib/upstash/client";
 
 const mockedRedis = vi.mocked(redis);
 

@@ -5,7 +5,7 @@
  */
 
 import { tryCatch } from "@/lib/try-catch";
-import { redis } from "@/lib/upstash";
+import { redis } from "@/lib/upstash/client";
 
 interface RateLimitEntry {
   count: number;
