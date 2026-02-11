@@ -53,6 +53,8 @@ const COMPONENT_PATTERNS = [
 
 const MAX_EXPORTS_PER_URL = 8;
 
+export const ESM_CDN = "https://esm.sh";
+
 export const REACT_VERSION = "19.2.4";
 export const DEPS_PARAM = `deps=react@${REACT_VERSION},react-dom@${REACT_VERSION}`;
 
@@ -260,7 +262,7 @@ function getMappedPath(
     return path;
   }
 
-  // Handle non-relative paths
+  // Handle non-relative paths — resolve directly to esm.sh CDN
   if (!basePath.startsWith(".") && !basePath.startsWith("/")) {
     const params = [
       "bundle=true",
@@ -270,7 +272,7 @@ function getMappedPath(
 
     if (exportsParam) params.push(`exports=${sortExports(exportsParam)}`);
 
-    return `/${basePath}?${params.join("&")}${query}${hash}`;
+    return `${ESM_CDN}/${basePath}?${params.join("&")}${query}${hash}`;
   }
 
   return `${basePath}${query}${hash}`;

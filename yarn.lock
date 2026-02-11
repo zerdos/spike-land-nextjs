@@ -8544,7 +8544,6 @@ __metadata:
     esbuild: "npm:0.27.3"
     esbuild-wasm: "npm:0.27.3"
     eslint: "npm:10.0.0"
-    esm-worker: "npm:0.135.18"
     globals: "npm:17.3.0"
     hono: "npm:4.11.9"
     immutable: "npm:5.1.4"
@@ -14388,13 +14387,6 @@ __metadata:
   bin:
     eslint: bin/eslint.js
   checksum: 10c9/53ff0e9c8264e7e8d40d50fdc0c0df0b701cfc5289beedfb686c214e3e7b199702f894bbd1bb48653727bb1ecbd1147cf5f555a4ae71e1daf35020cdc9072d9f
-  languageName: node
-  linkType: hard
-
-"esm-worker@npm:0.135.18":
-  version: 0.135.18
-  resolution: "esm-worker@npm:0.135.18"
-  checksum: 10c9/fabe2f5716666dcf62243a9292e97dd1b867592f0eaf8cd9dfead45ceca49e0558941fd8c7048aa30b6b65fba11c44edc47d546089daa7c4e95db7a2c94a9d27
   languageName: node
   linkType: hard
 

@@ -2,7 +2,6 @@ import { importMap } from "@spike-npm-land/code";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import type Env from "./env.js";
 import { handleFetchApi } from "./fetchHandler.js";
-import { handleEsmRequest } from "./handleEsmRequest.js";
 import { createMockEnv } from "./test-utils.js";
 import { handleCORS } from "./utils.js";
 
@@ -66,11 +65,6 @@ describe("FetchHandler", () => {
       passThroughOnException: () => {},
       props: {},
     } as unknown as ExecutionContext;
-
-    // Mock imported functions
-    vi.mock("./handleEsmRequest", () => ({
-      handleEsmRequest: vi.fn(),
-    }));
 
     vi.mock("./utils", () => ({
       handleCORS: vi.fn(),
@@ -265,27 +259,69 @@ describe("FetchHandler", () => {
     });
   });
 
-  describe("Fallback to ESM Request", () => {
-    it("should fallback to ESM request for unknown routes", async () => {
-      const mockRequest = new Request("https://example.com/unknown");
-      const mockEsmResponse = new Response("ESM response");
-
-      (handleEsmRequest as Mock).mockResolvedValue(mockEsmResponse);
+  describe("ESM CDN Redirect", () => {
+    it("should redirect unknown routes to esm.sh", async () => {
+      const mockRequest = new Request("https://example.com/react@19.0.0?bundle=true");
 
       const response = await handleFetchApi(
-        ["unknown"],
+        ["react@19.0.0"],
         mockRequest,
         mockEnv as Env,
         mockCtx,
       );
 
-      expect(handleEsmRequest).toHaveBeenCalledWith(
-        ["unknown"],
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toBe(
+        "https://esm.sh/react@19.0.0?bundle=true",
+      );
+    });
+
+    it("should redirect tailwindcss bare package to index.css", async () => {
+      const mockRequest = new Request("https://example.com/tailwindcss@4.0.0");
+
+      const response = await handleFetchApi(
+        ["tailwindcss@4.0.0"],
         mockRequest,
-        mockEnv,
+        mockEnv as Env,
         mockCtx,
       );
-      expect(response).toBe(mockEsmResponse);
+
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toBe(
+        "https://esm.sh/tailwindcss@4.0.0/index.css",
+      );
+    });
+
+    it("should redirect node polyfill URLs to esm.sh bare module", async () => {
+      const mockRequest = new Request("https://example.com/node@25.6.0/buffer.mjs");
+
+      const response = await handleFetchApi(
+        ["node@25.6.0", "buffer.mjs"],
+        mockRequest,
+        mockEnv as Env,
+        mockCtx,
+      );
+
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toBe(
+        "https://esm.sh/buffer",
+      );
+    });
+
+    it("should redirect empty path to esm.sh", async () => {
+      const mockRequest = new Request("https://example.com/some-package");
+
+      const response = await handleFetchApi(
+        ["some-package"],
+        mockRequest,
+        mockEnv as Env,
+        mockCtx,
+      );
+
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toBe(
+        "https://esm.sh/some-package",
+      );
     });
   });
 });

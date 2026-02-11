@@ -9,8 +9,6 @@ import { vi } from "vitest";
 // Create a reusable mock Env factory for tests
 export function createMockEnv() {
   return {
-    ESM_ORIGIN: "test",
-    ESM_TOKEN: "test",
     OPENAI_API_KEY: "test-api-key",
     AI: {
       run: vi.fn(),
@@ -32,7 +30,6 @@ export function createMockEnv() {
       delete: vi.fn(),
       getWithMetadata: vi.fn(),
     } as unknown as KVNamespace,
-    NPM_REGISTRY: "test",
     REPLICATE_API_TOKEN: "test-replicate-api-token",
     ANTHROPIC_AUTH_TOKEN: "test-anthropic-auth-token",
     CF_REAL_TURN_TOKEN: "test-cf-real-turn-token",
@@ -40,7 +37,6 @@ export function createMockEnv() {
       fetch: vi.fn(),
       connect: vi.fn(),
     } as unknown as Fetcher,
-    NPM_TOKEN: "test",
     CODE: {
       get: vi.fn(),
       newUniqueId: vi.fn(),

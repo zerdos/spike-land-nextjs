@@ -30,10 +30,6 @@ bindings = [
 [site]
 bucket = "../code/dist" # Add the directory with your static assets
 
-[vars]
-ESM_ORIGIN = "https://esm.sh" # change to your self-hosting esm.sh server if needed
-NPM_REGISTRY = "https://registry.npmjs.org/" # change to your private npm registry if needed
-
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "npmprod"
@@ -74,10 +70,6 @@ bindings = [
     { name = "CODE", class_name = "Code" },
     { name = "LIMITERS", class_name = "CodeRateLimiter" }
 ]
-
-[env.testing.vars]
-ESM_ORIGIN = "https://esm.sh" # change to your self-hosting esm.sh server if needed
-NPM_REGISTRY = "https://registry.npmjs.org/" # change to your private npm registry if needed
 
 [[env.testing.r2_buckets]]
 binding = "R2"
