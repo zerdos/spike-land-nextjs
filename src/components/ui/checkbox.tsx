@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
-import { CheckIcon } from "@radix-ui/react-icons";
+import { Check } from "lucide-react";
 import * as React from "react";
 
 const Checkbox = React.forwardRef<
@@ -21,7 +21,7 @@ const Checkbox = React.forwardRef<
       <CheckboxPrimitive.Indicator
         className={cn("grid place-content-center text-primary-foreground")}
       >
-        <CheckIcon className="h-4 w-4 stroke-[3px]" />
+        <Check className="h-4 w-4 stroke-[3px]" />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   </div>
