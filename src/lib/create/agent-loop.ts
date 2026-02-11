@@ -421,13 +421,9 @@ export async function* agentGenerateApp(
   } catch (error) {
     logger.error(`Agent loop failed for ${slug}:`, { error });
 
-    try {
-      await updateAppStatus(slug, CreatedAppStatus.FAILED);
-    } catch {
-      // Ignore
-    }
+    // Don't mark as FAILED — caller may retry with a different provider (Gemini fallback)
 
-    // Record the failed attempt
+    // Record the failed attempt (fire-and-forget)
     recordGenerationAttempt({
       slug,
       success: false,
@@ -448,11 +444,8 @@ export async function* agentGenerateApp(
       cachedTokens: ctx.totalCachedTokens,
     }).catch(() => {});
 
-    yield {
-      type: "error",
-      message: error instanceof Error ? error.message : "Generation failed",
-      codespaceUrl,
-    };
+    // Propagate to caller for fallback handling
+    throw error;
   }
 }
 

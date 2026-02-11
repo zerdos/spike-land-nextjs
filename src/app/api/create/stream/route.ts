@@ -161,6 +161,11 @@ function createAgentProxyResponse(
             try {
               const event = JSON.parse(data) as Record<string, unknown>;
 
+              // Agent failed — fall back to direct generation
+              if (event["type"] === "error") {
+                throw new Error(String(event["message"] || "Agent generation failed"));
+              }
+
               if (event["type"] === "agent") {
                 controller.enqueue(
                   encoder.encode(`data: ${data}\n\n`),
@@ -231,6 +236,7 @@ async function* generateStream(
         error: error instanceof Error ? error.message : "Unknown error",
         slug,
       });
+      yield { type: "status", message: "Switching to alternative provider..." };
       // Fall through to Gemini fallback
     }
   }
