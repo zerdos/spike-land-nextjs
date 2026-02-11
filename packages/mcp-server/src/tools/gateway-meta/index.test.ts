@@ -31,14 +31,12 @@ function createMockClient() {
 }
 
 describe("Gateway Meta Tools", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let registry: ToolRegistry;
   let mockClient: ReturnType<typeof createMockClient>;
   let handlers: Map<string, ToolHandler>;
 
   beforeEach(() => {
     const mockServer = createMockMcpServer();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registry = new ToolRegistry(mockServer as any);
     mockClient = createMockClient();
 
@@ -50,7 +48,6 @@ describe("Gateway Meta Tools", () => {
       originalRegister(def);
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerGatewayMetaTools(registry, mockClient as any);
   });
 

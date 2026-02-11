@@ -11,9 +11,7 @@ const envPath = fs.existsSync(path.join(__dirname, "../../../.env.local"))
 dotenv.config({ path: envPath });
 
 // Import narration text — keys match VCP_DURATIONS scene IDs
-const { NARRATION_TEXT } = require("../src/lib/narration") as {
-  NARRATION_TEXT: Record<string, string>;
-};
+import { NARRATION_TEXT } from "../src/lib/narration";
 
 const OUTPUT_DIR = path.join(__dirname, "../public/audio");
 const ROOT_AUDIO_DIR = path.join(__dirname, "../../../public/audio");
