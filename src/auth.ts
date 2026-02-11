@@ -482,7 +482,8 @@ export const auth = async () => {
     // Fallback: Check for bypass header in E2E mode
     // This handles cases where the test sets the header but the cookie isn't present yet
     const { data: headersList } = await tryCatch(headers());
-    if (headersList?.get("x-e2e-auth-bypass")) {
+    // Extra safety: Explicitly check NODE_ENV to ensure this never runs in production
+    if (process.env.NODE_ENV !== "production" && headersList?.get("x-e2e-auth-bypass")) {
       console.log(
         "[Auth] E2E bypass: Header found in E2E mode, returning mock session",
       );
