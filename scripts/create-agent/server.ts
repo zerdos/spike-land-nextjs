@@ -1,51 +1,18 @@
 /**
  * Create Agent Server — "Spike"
  *
- * Local streaming server that generates app code using Claude (Opus 4.6).
- * Uses OAuth stealth mode for Claude Max subscription.
- * Falls back to Gemini if Claude is unavailable.
+ * Generates app code via Claude Code CLI (Claude Max subscription).
+ * No API keys needed — uses the locally authenticated claude CLI.
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { spawn } from "node:child_process";
 
 const PORT = parseInt(process.env["CREATE_AGENT_PORT"] ?? "4892", 10);
-const ANTHROPIC_TOKEN = process.env["CLAUDE_CODE_OAUTH_TOKEN"] ?? process.env["ANTHROPIC_OAUTH_TOKEN"];
-const GEMINI_API_KEY = process.env["GEMINI_API_KEY"];
+const CLAUDE_PATH = process.env["CLAUDE_PATH"] ?? "/opt/homebrew/bin/claude";
+const CLAUDE_MODEL = "claude-opus-4-6";
 const AGENT_NAME = "Spike";
-const AGENT_MODEL = "claude-opus-4-6";
 const AGENT_SECRET = process.env["CREATE_AGENT_SECRET"] ?? "spike-create-2026";
-const CLAUDE_CODE_VERSION = "2.1.2";
-
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-
-if (!ANTHROPIC_TOKEN && !GEMINI_API_KEY) {
-  console.error("Either CLAUDE_CODE_OAUTH_TOKEN/ANTHROPIC_OAUTH_TOKEN or GEMINI_API_KEY is required");
-  process.exit(1);
-}
-
-function isOAuthToken(token: string): boolean {
-  return token.includes("sk-ant-oat");
-}
-
-function getAnthropicHeaders(): Record<string, string> {
-  if (!ANTHROPIC_TOKEN) return {};
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    "anthropic-version": "2023-06-01",
-  };
-
-  if (isOAuthToken(ANTHROPIC_TOKEN)) {
-    headers["Authorization"] = `Bearer ${ANTHROPIC_TOKEN}`;
-    headers["anthropic-beta"] = "claude-code-20250219,oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14";
-    headers["user-agent"] = `claude-cli/${CLAUDE_CODE_VERSION} (external, cli)`;
-    headers["x-app"] = "cli";
-  } else {
-    headers["x-api-key"] = ANTHROPIC_TOKEN;
-  }
-
-  return headers;
-}
 
 const SYSTEM_PROMPT = `You are an expert React developer building polished, production-quality micro-apps.
 
@@ -79,7 +46,9 @@ Available: Button, Card, Input, Label, Badge, Dialog, Tabs, Select, Tooltip, Ale
 7. No inline styles — Tailwind only`;
 
 function buildUserPrompt(topic: string): string {
-  return `Build an interactive app for: "/create/${topic}"
+  return `${SYSTEM_PROMPT}
+
+Build an interactive app for: "/create/${topic}"
 
 Interpret this path as user intent. Create a polished, fully functional micro-app.
 
@@ -88,60 +57,41 @@ Respond with JSON: { "title": "...", "description": "...", "code": "...", "relat
 - relatedApps: 3-5 related paths without "/create/" prefix`;
 }
 
-async function generateWithClaude(topic: string): Promise<string> {
-  const response = await fetch(ANTHROPIC_API_URL, {
-    method: "POST",
-    headers: getAnthropicHeaders(),
-    body: JSON.stringify({
-      model: AGENT_MODEL,
-      max_tokens: 16384,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: buildUserPrompt(topic) }],
-    }),
+function generateWithClaude(prompt: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(CLAUDE_PATH, [
+      "-p", "--model", CLAUDE_MODEL, "--output-format", "text",
+    ], {
+      stdio: ["pipe", "pipe", "pipe"],
+      env: {
+        HOME: "/Users/z",
+        PATH: "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin",
+        XDG_CONFIG_HOME: "/Users/z/.config",
+        LANG: "en_US.UTF-8",
+      },
+    });
+
+    let stdout = "";
+    let stderr = "";
+
+    child.stdout.on("data", (data: Buffer) => { stdout += data.toString(); });
+    child.stderr.on("data", (data: Buffer) => { stderr += data.toString(); });
+
+    child.on("close", (code: number | null) => {
+      if (code === 0) resolve(stdout);
+      else reject(new Error(`claude exited ${code}: stdout=${stdout.slice(0, 200)} stderr=${stderr.slice(0, 500)}`));
+    });
+
+    child.on("error", reject);
+
+    child.stdin.write(prompt);
+    child.stdin.end();
+
+    setTimeout(() => {
+      child.kill("SIGTERM");
+      reject(new Error("Claude CLI timed out after 120s"));
+    }, 120_000);
   });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Claude ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json() as {
-    content: Array<{ type: string; text?: string }>;
-  };
-
-  return data.content
-    .filter((block) => block.type === "text" && block.text)
-    .map((block) => block.text!)
-    .join("");
-}
-
-async function generateWithGemini(topic: string): Promise<string> {
-  const model = "gemini-2.5-flash-preview-05-20";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: [{ role: "user", parts: [{ text: buildUserPrompt(topic) }] }],
-      generationConfig: { maxOutputTokens: 32768, temperature: 0.5 },
-    }),
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json() as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-
-  return data.candidates?.[0]?.content?.parts
-    ?.filter((p) => p.text)
-    .map((p) => p.text!)
-    .join("") ?? "";
 }
 
 async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promise<void> {
@@ -186,35 +136,13 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
     Connection: "keep-alive",
   });
 
+  res.write(`data: ${JSON.stringify({ type: "agent", name: AGENT_NAME, model: CLAUDE_MODEL })}\n\n`);
+  res.write(`data: ${JSON.stringify({ type: "status", message: "Generating with Claude Opus 4.6 (Max subscription)..." })}\n\n`);
+
   try {
-    let text: string;
-    let usedModel = "unknown";
+    const text = await generateWithClaude(buildUserPrompt(topic));
+    if (!text.trim()) throw new Error("Empty response from Claude");
 
-    if (ANTHROPIC_TOKEN) {
-      try {
-        res.write(`data: ${JSON.stringify({ type: "agent", name: AGENT_NAME, model: AGENT_MODEL })}\n\n`);
-        res.write(`data: ${JSON.stringify({ type: "status", message: "Generating with Claude Opus 4.6..." })}\n\n`);
-        text = await generateWithClaude(topic);
-        usedModel = AGENT_MODEL;
-      } catch (claudeErr) {
-        console.warn(`[${new Date().toISOString()}] Claude failed:`, (claudeErr as Error).message);
-        if (!GEMINI_API_KEY) throw claudeErr;
-
-        res.write(`data: ${JSON.stringify({ type: "status", message: "Claude unavailable, switching to Gemini..." })}\n\n`);
-        res.write(`data: ${JSON.stringify({ type: "agent", name: "Gemini Flash", model: "gemini-2.5-flash" })}\n\n`);
-        text = await generateWithGemini(topic);
-        usedModel = "gemini-2.5-flash";
-      }
-    } else {
-      res.write(`data: ${JSON.stringify({ type: "agent", name: "Gemini Flash", model: "gemini-2.5-flash" })}\n\n`);
-      res.write(`data: ${JSON.stringify({ type: "status", message: "Generating with Gemini..." })}\n\n`);
-      text = await generateWithGemini(topic);
-      usedModel = "gemini-2.5-flash";
-    }
-
-    if (!text) throw new Error("Empty response from AI");
-
-    // Parse JSON response
     let appData: { title: string; description: string; code: string; relatedApps: string[] };
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -240,7 +168,7 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
       relatedApps: appData.relatedApps,
     })}\n\n`);
 
-    console.log(`[${new Date().toISOString()}] Completed: ${topic} (${text.length} chars, ${usedModel})`);
+    console.log(`[${new Date().toISOString()}] Completed: ${topic} (${text.length} chars)`);
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Error:`, error);
     res.write(`data: ${JSON.stringify({ type: "error", message: error instanceof Error ? error.message : "Generation failed" })}\n\n`);
@@ -254,8 +182,8 @@ function handleHealth(_req: IncomingMessage, res: ServerResponse): void {
   res.end(JSON.stringify({
     status: "ok",
     agent: AGENT_NAME,
-    model: AGENT_MODEL,
-    providers: { claude: !!ANTHROPIC_TOKEN, gemini: !!GEMINI_API_KEY },
+    model: CLAUDE_MODEL,
+    provider: "claude-cli (Max subscription)",
     timestamp: new Date().toISOString(),
   }));
 }
@@ -269,7 +197,5 @@ const server = createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`🤖 Create Agent (${AGENT_NAME}) listening on http://localhost:${PORT}`);
-  console.log(`   Model: ${AGENT_MODEL} (Claude=${!!ANTHROPIC_TOKEN}, Gemini=${!!GEMINI_API_KEY})`);
-  console.log(`   Health: http://localhost:${PORT}/health`);
-  console.log(`   Generate: POST http://localhost:${PORT}/generate`);
+  console.log(`   Model: ${CLAUDE_MODEL} via Claude CLI (Max subscription)`);
 });
