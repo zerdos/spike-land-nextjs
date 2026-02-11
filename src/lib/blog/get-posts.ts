@@ -103,7 +103,6 @@ function readPostData(slug: string): BlogPost | null {
 /**
  * Get a single blog post by slug.
  * Validates frontmatter using Zod schema.
- * Cached to optimize repeated access to the same post in a request (e.g. metadata + page).
  */
 export const getPostBySlug = cache(function getPostBySlug(slug: string): BlogPost | null {
   return readPostData(slug);
@@ -113,15 +112,12 @@ export const getPostBySlug = cache(function getPostBySlug(slug: string): BlogPos
  * Get all blog posts with metadata (for listing pages)
  * Returns posts sorted by date (newest first)
  * Filters out unlisted posts (frontmatter.listed === false)
- * Cached to avoid re-reading the file system multiple times per request.
- * Uses `readPostData` directly to avoid populating `getPostBySlug` cache with full content.
  */
 export const getAllPosts = cache(function getAllPosts(): BlogPostMeta[] {
   const slugs = getPostSlugs();
 
   const posts = slugs
     .map((slug) => {
-      // Use internal helper to avoid caching the full content in `getPostBySlug` cache
       const post = readPostData(slug);
       if (!post) return null;
 

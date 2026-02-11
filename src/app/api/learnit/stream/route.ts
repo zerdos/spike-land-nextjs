@@ -29,7 +29,6 @@ export async function POST(req: Request) {
   const ip = getClientIp(req);
 
   const { allowed, retryAfterSeconds } = await checkGenerationRateLimit(ip, !!userId);
-  // Rate limit check
   if (!allowed) {
     return new NextResponse(
       JSON.stringify({ error: "Rate limit exceeded", retryAfterSeconds }),
@@ -347,8 +346,6 @@ Begin with the title on the first line (just the title text, no heading markup),
       description = `Learn about ${title}`;
     }
 
-    // Process wiki links and save to database
-    // Ensure fullContent is treated as used by actually using it here explicitly if needed, but it is passed to parseWikiLinks.
     const { content: processedContent } = parseWikiLinks(fullContent);
 
     let finalContent = processedContent;
