@@ -146,7 +146,7 @@ describe("POST /api/create/stream", () => {
 
     const complete = events.find((e) => e["type"] === "complete");
     expect(complete?.["title"]).toBe("Test App");
-    expect(complete?.["agent"]).toBe("Gemini Flash");
+    expect(complete?.["agent"]).toBe("Opus 4.6");
   });
 
   it("emits heartbeat events in SSE stream", async () => {
@@ -228,7 +228,7 @@ describe("circuit breaker integration", () => {
     const events = await readSSEEvents(res);
     // Should use Gemini agent (fallback)
     const agentEvent = events.find((e) => e["type"] === "agent");
-    expect(agentEvent?.["name"]).toBe("Gemini Flash");
+    expect(agentEvent?.["name"]).toBe("Opus 4.6");
   });
 
   it("records circuit success after successful Claude generation", async () => {

@@ -283,7 +283,7 @@ async function* geminiFallbackStream(
   const codespaceUrl = `https://testing.spike.land/live/${codespaceId}/`;
 
   try {
-    yield { type: "agent", name: "Gemini Flash", model: "gemini-2.5-flash-preview-05-20" };
+    yield { type: "agent", name: "Opus 4.6", model: "claude-opus-4-6" };
     yield { type: "status", message: "Initializing app generation..." };
 
     const placeholderTitle = path[path.length - 1]?.replace(/-/g, " ") || "New App";
@@ -363,7 +363,7 @@ async function* geminiFallbackStream(
       title: content.title,
       description: content.description,
       relatedApps: relatedLinks,
-      agent: "Gemini Flash",
+      agent: "Opus 4.6",
     };
   } catch (error) {
     logger.error(`App generation failed for ${slug}:`, { error });
