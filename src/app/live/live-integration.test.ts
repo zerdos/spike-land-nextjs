@@ -43,6 +43,9 @@ describe("Live App Integration", () => {
     expect(html).toContain("<title>spike.land</title>");
     expect(html).toContain("<div>test</div>");
     expect(html).toContain(`/live/${codeSpace}/index.mjs`);
+    // Import map should use absolute esm.sh URLs, not relative .mjs paths
+    expect(html).toContain("https://esm.sh/react@");
+    expect(html).not.toContain("/reactMod.mjs");
   });
 
   it("should serve assets correctly", async () => {

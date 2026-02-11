@@ -1,3 +1,7 @@
+import { ESM_CDN, ESM_DEPS_PARAM, REACT_VERSION } from "./constants";
+
+const D = ESM_DEPS_PARAM;
+
 export const HTML_TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -128,7 +132,7 @@ export const HTML_TEMPLATE = `<!DOCTYPE html>
     <script type="importmap">
     // IMPORTMAP
     </script>
-    <script src="/@/workers/tw.worker.js"></script>
+    <script type="module">import "${ESM_CDN}/@tailwindcss/browser"</script>
     <!-- CSS_LINKS -->
   </head>
   <style>
@@ -143,29 +147,27 @@ export const HTML_TEMPLATE = `<!DOCTYPE html>
 
 export const IMPORT_MAP = {
   imports: {
-    "/@/": "/@/",
-    "@emotion/react/jsx-runtime": "/emotionJsxRuntime.mjs",
-    "@emotion/react/jsx-dev-runtime": "/emotionJsxRuntime.mjs",
-    "@emotion/styled": "/emotionStyled.mjs",
-    "react/jsx-runtime": "/jsx.mjs",
-    "react-dom/server": "/reactDomServer.mjs",
-    "react-dom/client": "/reactDomClient.mjs",
-    "@emotion/react": "/emotion.mjs",
-    "react": "/reactMod.mjs",
-    "framer-motion": "/@/workers/framer-motion.mjs",
-    "react-dom": "/reactDom.mjs",
-    "recharts": "/recharts.mjs",
+    "react": `${ESM_CDN}/react@${REACT_VERSION}`,
+    "react/jsx-runtime": `${ESM_CDN}/react@${REACT_VERSION}/jsx-runtime`,
+    "react/jsx-dev-runtime": `${ESM_CDN}/react@${REACT_VERSION}/jsx-dev-runtime`,
+    "react-dom": `${ESM_CDN}/react-dom@${REACT_VERSION}?${D}`,
+    "react-dom/client": `${ESM_CDN}/react-dom@${REACT_VERSION}/client?${D}`,
+    "react-dom/server": `${ESM_CDN}/react-dom@${REACT_VERSION}/server?${D}`,
+    "@emotion/react": `${ESM_CDN}/@emotion/react?${D}`,
+    "@emotion/react/jsx-runtime": `${ESM_CDN}/@emotion/react/jsx-runtime?${D}`,
+    "@emotion/react/jsx-dev-runtime": `${ESM_CDN}/@emotion/react/jsx-dev-runtime?${D}`,
+    "@emotion/styled": `${ESM_CDN}/@emotion/styled?${D}`,
+    "framer-motion": `${ESM_CDN}/framer-motion?${D}`,
+    "recharts": `${ESM_CDN}/recharts?${D}`,
   },
 };
 
 /**
  * Build a self-contained embed HTML page.
  *
- * The page is served from the Next.js origin but all module imports
- * (import map entries + paths in transpiled code) must resolve against
- * testing.spike.land where the ESM proxy lives. Because `<base>` does
- * NOT affect ES module `import` resolution, we rewrite every relative
- * URL to an absolute testing.spike.land URL.
+ * All module imports use absolute esm.sh CDN URLs via the import map,
+ * so no URL rewriting is needed. Transpiled code from js.spike.land uses
+ * bare specifiers (e.g. `from "react"`) that the import map resolves.
  */
 export function buildEmbedHtml(opts: {
   transpiled: string;
@@ -173,48 +175,14 @@ export function buildEmbedHtml(opts: {
   css: string;
   codeSpace: string;
 }): string {
-  const origin = "https://testing.spike.land";
-  const base = `${origin}/live/${opts.codeSpace}/`;
-
-  // Make import map values absolute so module resolution hits testing.spike.land
-  const absoluteImports: Record<string, string> = {};
-  for (const [key, value] of Object.entries(IMPORT_MAP.imports)) {
-    absoluteImports[key] = value.startsWith("/")
-      ? `${origin}${value}`
-      : value;
-  }
-  const importMap = JSON.stringify({ imports: absoluteImports }, null, 2);
-
-  // Rewrite relative import paths in transpiled code to absolute URLs.
-  // data: URIs and inline scripts served from spike.land cannot resolve
-  // relative "/..." paths against testing.spike.land, so we make them absolute.
-  let transpiled = opts.transpiled || "";
-
-  // 1. Static imports: from "/something" or from '/something'
-  transpiled = transpiled.replace(
-    /\bfrom\s+["'](\/[^"']+)["']/g,
-    (_, path) => `from "${origin}${path}"`,
-  );
-
-  // 2. Dynamic imports: import("/something") or import('/something')
-  transpiled = transpiled.replace(
-    /\bimport\s*\(\s*["'](\/[^"']+)["']\s*\)/g,
-    (_, path) => `import("${origin}${path}")`,
-  );
-
-  // 3. Side-effect imports: import "/something" (no from clause)
-  transpiled = transpiled.replace(
-    /^(\s*import\s+)["'](\/[^"']+)["']/gm,
-    (_, pre, path) => `${pre}"${origin}${path}"`,
-  );
+  const importMapJson = JSON.stringify(IMPORT_MAP, null, 2);
 
   return HTML_TEMPLATE
-    .replace("// IMPORTMAP", importMap)
-    .replace('<base href="/" />', `<base href="${base}" />`)
+    .replace("// IMPORTMAP", importMapJson)
     .replace("<!-- HTML_CONTENT -->", opts.html || "")
     .replace("/* criticalCss */", opts.css || "")
     .replace(
       '<script type="module" src="/start.mjs"></script>',
-      `<script type="module">${transpiled}</script>`,
+      `<script type="module">${opts.transpiled || ""}</script>`,
     );
 }
