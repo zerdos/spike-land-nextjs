@@ -169,7 +169,7 @@ async function executeTool(
     }
 
     case "update_code": {
-      const code = input.code as string;
+      const code = input["code"] as string;
       if (!code) return "Error: 'code' parameter is required";
 
       const { data: transpiled, error: transpileError } = await tryCatch(
@@ -191,7 +191,7 @@ async function executeTool(
     }
 
     case "edit_code": {
-      const edits = input.edits as Array<{
+      const edits = input["edits"] as Array<{
         startLine: number;
         endLine: number;
         content: string;
@@ -232,9 +232,9 @@ async function executeTool(
     }
 
     case "search_and_replace": {
-      const search = input.search as string;
-      const replace = input.replace as string;
-      const isRegex = input.isRegex as boolean | undefined;
+      const search = input["search"] as string;
+      const replace = input["replace"] as string;
+      const isRegex = input["isRegex"] as boolean | undefined;
 
       if (!search) return "Error: 'search' parameter is required";
       if (replace === undefined) {
@@ -273,7 +273,7 @@ async function executeTool(
     }
 
     case "find_lines": {
-      const search = input.search as string;
+      const search = input["search"] as string;
       if (!search) return "Error: 'search' parameter is required";
 
       const session = await getOrCreateSession(codeSpace);
@@ -411,9 +411,9 @@ function validateMessages(
     let textContent: string;
     if (typeof content === "string") {
       textContent = content;
-    } else if (Array.isArray((msg as Record<string, unknown>).parts)) {
+    } else if (Array.isArray((msg as Record<string, unknown>)["parts"])) {
       // Extract text from parts array (frontend format)
-      const parts = (msg as Record<string, unknown>).parts as Array<{
+      const parts = (msg as Record<string, unknown>)["parts"] as Array<{
         type: string;
         text?: string;
       }>;

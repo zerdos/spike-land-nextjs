@@ -691,12 +691,12 @@ export async function handleMcpRequest(
         };
 
       case "tools/call": {
-        if (!params?.name || typeof params.name !== "string") {
+        if (!params?.["name"] || typeof params["name"] !== "string") {
           throw new Error("Tool name is required and must be a string");
         }
         const result = await executeTool(
-          params.name,
-          (params.arguments as Record<string, unknown>) || {},
+          params["name"],
+          (params["arguments"] as Record<string, unknown>) || {},
           codeSpace,
           origin,
         );
@@ -746,7 +746,7 @@ async function executeTool(
   // Use the codeSpace from the URL route; args.codeSpace is accepted for
   // compatibility but the route param takes precedence.
   const effectiveCodeSpace =
-    (args.codeSpace as string) || codeSpace;
+    (args["codeSpace"] as string) || codeSpace;
 
   const session = await getOrCreateSession(effectiveCodeSpace);
 
@@ -765,26 +765,26 @@ async function executeTool(
       return executeReadSession(session, effectiveCodeSpace);
 
     case "update_code": {
-      if (!args.code || typeof args.code !== "string") {
+      if (!args["code"] || typeof args["code"] !== "string") {
         throw new Error("Code parameter is required and must be a string");
       }
-      return executeUpdateCode(session, effectiveCodeSpace, args.code, origin);
+      return executeUpdateCode(session, effectiveCodeSpace, args["code"], origin);
     }
 
     case "edit_code": {
-      if (!args.edits || !Array.isArray(args.edits)) {
+      if (!args["edits"] || !Array.isArray(args["edits"])) {
         throw new Error("Edits parameter is required and must be an array");
       }
       return executeEditCode(
         session,
         effectiveCodeSpace,
-        args.edits as LineEdit[],
+        args["edits"] as LineEdit[],
         origin,
       );
     }
 
     case "find_lines": {
-      if (!args.pattern || typeof args.pattern !== "string") {
+      if (!args["pattern"] || typeof args["pattern"] !== "string") {
         throw new Error(
           "Pattern parameter is required and must be a string",
         );
@@ -792,18 +792,18 @@ async function executeTool(
       return executeFindLines(
         session,
         effectiveCodeSpace,
-        args.pattern,
-        args.isRegex === true,
+        args["pattern"],
+        args["isRegex"] === true,
       );
     }
 
     case "search_and_replace": {
-      if (!args.search || typeof args.search !== "string") {
+      if (!args["search"] || typeof args["search"] !== "string") {
         throw new Error(
           "Search parameter is required and must be a string",
         );
       }
-      if (typeof args.replace !== "string") {
+      if (typeof args["replace"] !== "string") {
         throw new Error(
           "Replace parameter is required and must be a string",
         );
@@ -811,10 +811,10 @@ async function executeTool(
       return executeSearchAndReplace(
         session,
         effectiveCodeSpace,
-        args.search,
-        args.replace,
-        args.isRegex === true,
-        args.global !== false,
+        args["search"],
+        args["replace"],
+        args["isRegex"] === true,
+        args["global"] !== false,
         origin,
       );
     }

@@ -38,9 +38,6 @@ interface ContentPart {
   name?: string;
 }
 
-// Timeout for external fetches (5 seconds)
-const FETCH_TIMEOUT_MS = 5000;
-
 // Helper to emit stage events to stream
 function emitStage(
   controller: ReadableStreamDefaultController,
@@ -53,40 +50,6 @@ function emitStage(
     ...(tool && { tool }),
   });
   controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
-}
-
-// Custom error for fetch timeouts
-class FetchTimeoutError extends Error {
-  constructor(url: string, timeoutMs: number) {
-    super(`Fetch to ${url} timed out after ${timeoutMs}ms`);
-    this.name = "FetchTimeoutError";
-  }
-}
-
-// Fetch with timeout
-async function fetchWithTimeout(
-  url: string,
-  options: RequestInit = {},
-  timeoutMs: number = FETCH_TIMEOUT_MS,
-): Promise<Response> {
-  const abortController = new AbortController();
-  const timeout = setTimeout(() => abortController.abort(), timeoutMs);
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: abortController.signal,
-    });
-    return response;
-  } catch (error) {
-    // Distinguish timeout from other errors
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new FetchTimeoutError(url, timeoutMs);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeout);
-  }
 }
 
 export async function POST(
@@ -512,7 +475,7 @@ export async function POST(
 
           // Verify the update actually happened via session service
           const { data: verifySession } = await tryCatch(
-            getOrCreateSession(app.codespaceId),
+            getOrCreateSession(app.codespaceId!),
           );
 
           if (verifySession) {
