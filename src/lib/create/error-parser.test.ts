@@ -304,6 +304,8 @@ describe("categorizeErrorForNote", () => {
         type: "import",
         message: "Cannot find module 'react'",
         library: "react",
+        severity: "fixable",
+        fixStrategy: "patch",
       };
       const result = categorizeErrorForNote(error);
       expect(result.triggerType).toBe("library");
@@ -314,6 +316,8 @@ describe("categorizeErrorForNote", () => {
       const error: StructuredError = {
         type: "import",
         message: "Cannot find module",
+        severity: "fixable",
+        fixStrategy: "patch",
       };
       const result = categorizeErrorForNote(error);
       expect(result.triggerType).toBe("library");
@@ -325,6 +329,8 @@ describe("categorizeErrorForNote", () => {
         type: "import",
         message: "Cannot find module",
         library: "",
+        severity: "fixable",
+        fixStrategy: "patch",
       };
       const result = categorizeErrorForNote(error);
       expect(result.tags).toEqual(["imports", "unknown"]);
@@ -336,6 +342,8 @@ describe("categorizeErrorForNote", () => {
       const error: StructuredError = {
         type: "type",
         message: "Type 'string' is not assignable to 'number'",
+        severity: "fixable",
+        fixStrategy: "patch",
       };
       const result = categorizeErrorForNote(error);
       expect(result.triggerType).toBe("pattern");
@@ -348,6 +356,8 @@ describe("categorizeErrorForNote", () => {
       const error: StructuredError = {
         type: "transpile",
         message: "Unexpected token",
+        severity: "fixable",
+        fixStrategy: "patch",
       };
       const result = categorizeErrorForNote(error);
       expect(result.triggerType).toBe("error_class");
@@ -361,6 +371,8 @@ describe("categorizeErrorForNote", () => {
         type: "runtime",
         message: "React is not defined",
         component: "React",
+        severity: "fixable",
+        fixStrategy: "patch",
       };
       const result = categorizeErrorForNote(error);
       expect(result.triggerType).toBe("pattern");
@@ -371,6 +383,8 @@ describe("categorizeErrorForNote", () => {
       const error: StructuredError = {
         type: "runtime",
         message: "Cannot read property",
+        severity: "fixable",
+        fixStrategy: "patch",
       };
       const result = categorizeErrorForNote(error);
       expect(result.triggerType).toBe("pattern");
@@ -382,6 +396,8 @@ describe("categorizeErrorForNote", () => {
         type: "runtime",
         message: "Error",
         component: "",
+        severity: "fixable",
+        fixStrategy: "patch",
       };
       const result = categorizeErrorForNote(error);
       expect(result.tags).toEqual(["runtime", "unknown"]);
@@ -393,6 +409,8 @@ describe("categorizeErrorForNote", () => {
       const error: StructuredError = {
         type: "unknown",
         message: "Something went wrong",
+        severity: "fixable",
+        fixStrategy: "patch",
       };
       const result = categorizeErrorForNote(error);
       expect(result.triggerType).toBe("error_class");
@@ -409,6 +427,8 @@ describe("categorizeErrorForNote", () => {
         component: "Button",
         lineNumber: 42,
         suggestion: "Try this",
+        severity: "fixable",
+        fixStrategy: "patch",
       };
       const result = categorizeErrorForNote(error);
       expect(result.triggerType).toBe("library");
@@ -419,6 +439,8 @@ describe("categorizeErrorForNote", () => {
       const error: StructuredError = {
         type: "type",
         message: "Type error",
+        severity: "fixable",
+        fixStrategy: "patch",
       };
       const result = categorizeErrorForNote(error);
       expect(result.triggerType).toBe("pattern");

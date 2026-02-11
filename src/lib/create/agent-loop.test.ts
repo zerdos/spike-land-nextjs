@@ -20,10 +20,11 @@ vi.mock("./agent-client", () => ({
 }));
 
 vi.mock("./agent-memory", () => ({
-  extractAndSaveNote: vi.fn(),
+  batchExtractAndSaveNotes: vi.fn(),
   recordFailure: vi.fn(),
   recordGenerationAttempt: vi.fn(),
   recordSuccess: vi.fn(),
+  retrieveNotesForError: vi.fn(),
   retrieveRelevantNotes: vi.fn(),
 }));
 
@@ -41,6 +42,7 @@ vi.mock("./codespace-service", () => ({
 
 vi.mock("./content-generator", () => ({
   cleanCode: vi.fn(),
+  getMatchedSkills: vi.fn(),
 }));
 
 vi.mock("./content-service", () => ({
@@ -50,6 +52,7 @@ vi.mock("./content-service", () => ({
 }));
 
 vi.mock("./error-parser", () => ({
+  isUnrecoverableError: vi.fn(),
   parseTranspileError: vi.fn(),
 }));
 
@@ -70,10 +73,11 @@ import {
   parseGenerationResponse,
 } from "./agent-client";
 import {
-  extractAndSaveNote,
+  batchExtractAndSaveNotes,
   recordFailure,
   recordGenerationAttempt,
   recordSuccess,
+  retrieveNotesForError,
   retrieveRelevantNotes,
 } from "./agent-memory";
 import {
@@ -83,13 +87,13 @@ import {
   buildFixUserPrompt,
 } from "./agent-prompts";
 import { generateCodespaceId, updateCodespace } from "./codespace-service";
-import { cleanCode } from "./content-generator";
+import { cleanCode, getMatchedSkills } from "./content-generator";
 import {
   markAsGenerating,
   updateAppContent,
   updateAppStatus,
 } from "./content-service";
-import { parseTranspileError } from "./error-parser";
+import { isUnrecoverableError, parseTranspileError } from "./error-parser";
 import logger from "@/lib/logger";
 
 // ---- Helpers ----
@@ -134,6 +138,10 @@ const DEFAULT_CODE =
 function setupDefaultMocks() {
   vi.mocked(generateCodespaceId).mockReturnValue("test-codespace-123");
   vi.mocked(retrieveRelevantNotes).mockResolvedValue([]);
+  vi.mocked(retrieveNotesForError).mockResolvedValue([]);
+  vi.mocked(getMatchedSkills).mockReturnValue([{ id: "some-skill", name: "Some Skill", icon: "icon", description: "desc" }] as never);
+  vi.mocked(batchExtractAndSaveNotes).mockResolvedValue(undefined as never);
+  vi.mocked(isUnrecoverableError).mockReturnValue(false);
   vi.mocked(buildAgentSystemPrompt).mockReturnValue({
     full: "system prompt",
     stablePrefix: "stable prefix",
@@ -161,10 +169,11 @@ function setupDefaultMocks() {
   vi.mocked(recordSuccess).mockResolvedValue();
   vi.mocked(recordFailure).mockResolvedValue();
   vi.mocked(recordGenerationAttempt).mockResolvedValue();
-  vi.mocked(extractAndSaveNote).mockResolvedValue();
   vi.mocked(parseTranspileError).mockReturnValue({
     type: "transpile",
     message: "error",
+    severity: "fixable",
+    fixStrategy: "patch",
   } as never);
   vi.mocked(buildFixSystemPrompt).mockReturnValue({
     full: "fix system prompt",
@@ -246,7 +255,7 @@ describe("agentGenerateApp", () => {
       expect(events[2]).toEqual({
         type: "phase",
         phase: "GENERATING",
-        message: "Generating application with Claude...",
+        message: "Generating application with Claude Opus...",
       });
     });
 
@@ -298,7 +307,7 @@ describe("agentGenerateApp", () => {
       );
     });
 
-    it("calls callClaude with opus model for generation", async () => {
+    it("calls callClaude with correct model and adaptive maxTokens for generation", async () => {
       await collectEvents(
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
       );
@@ -309,7 +318,7 @@ describe("agentGenerateApp", () => {
         dynamicSuffix: undefined,
         userPrompt: "user prompt",
         model: "opus",
-        maxTokens: 32768,
+        maxTokens: 16384,
         temperature: 0.5,
       });
     });
@@ -426,7 +435,6 @@ describe("agentGenerateApp", () => {
         "error_detected",
         "phase", // FIXING
         "error_fixed",
-        "phase", // LEARNING
         "learning",
         "phase", // TRANSPILING (attempt 2 - succeeds)
         "phase", // PUBLISHED
@@ -481,15 +489,20 @@ describe("agentGenerateApp", () => {
       );
     });
 
-    it("calls extractAndSaveNote with the correct arguments when fix succeeds", async () => {
+    it("calls batchExtractAndSaveNotes on success with errorFixPairs", async () => {
       await collectEvents(
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
       );
 
-      expect(extractAndSaveNote).toHaveBeenCalledWith(
-        "fixed code here",
-        "SyntaxError: unexpected token",
-        "fixed code here", // fixed=true, so fixedCode is currentCode
+      expect(batchExtractAndSaveNotes).toHaveBeenCalledWith(
+        [
+          {
+            error: "SyntaxError: unexpected token",
+            code: DEFAULT_CODE,
+            fixedCode: "fixed code here",
+            fixed: true,
+          },
+        ],
         ["category", "my-app"],
       );
     });
@@ -1138,7 +1151,7 @@ describe("agentGenerateApp", () => {
       expect(errorEvent!.message).toBe("Failed after 3 fix attempts");
     });
 
-    it("respects custom AGENT_MAX_ITERATIONS value", async () => {
+    it("respects custom AGENT_MAX_ITERATIONS value capped at 5", async () => {
       process.env["AGENT_MAX_ITERATIONS"] = "5";
       vi.mocked(updateCodespace).mockResolvedValue({
         success: false,
@@ -1188,7 +1201,7 @@ describe("agentGenerateApp", () => {
       expect(findEvent(events, "error_fixed")).toBeUndefined();
     });
 
-    it("calls extractAndSaveNote with null fixedCode when fix not applied", async () => {
+    it("collects errorFixPair with null fixedCode when fix not applied", async () => {
       process.env["AGENT_MAX_ITERATIONS"] = "1";
       vi.mocked(updateCodespace).mockResolvedValue({
         success: false,
@@ -1216,17 +1229,23 @@ describe("agentGenerateApp", () => {
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
       );
 
-      expect(extractAndSaveNote).toHaveBeenCalledWith(
-        DEFAULT_CODE, // currentCode unchanged
-        "err",
-        null, // fixed=false, so fixedCode is null
+      // batchExtractAndSaveNotes is called after the loop with collected pairs
+      expect(batchExtractAndSaveNotes).toHaveBeenCalledWith(
+        [
+          {
+            error: "err",
+            code: DEFAULT_CODE,
+            fixedCode: null,
+            fixed: false,
+          },
+        ],
         ["category", "my-app"],
       );
     });
   });
 
-  describe("extractAndSaveNote failure", () => {
-    it("logs a warning when extractAndSaveNote rejects", async () => {
+  describe("batchExtractAndSaveNotes failure", () => {
+    it("logs a warning when batchExtractAndSaveNotes rejects", async () => {
       process.env["AGENT_MAX_ITERATIONS"] = "1";
       vi.mocked(updateCodespace).mockResolvedValue({
         success: false,
@@ -1234,7 +1253,7 @@ describe("agentGenerateApp", () => {
       } as never);
 
       const noteError = new Error("Note save failed");
-      vi.mocked(extractAndSaveNote).mockRejectedValue(noteError);
+      vi.mocked(batchExtractAndSaveNotes).mockRejectedValue(noteError);
 
       vi.mocked(callClaude)
         .mockResolvedValueOnce({
@@ -1259,9 +1278,10 @@ describe("agentGenerateApp", () => {
       // Allow the microtask to settle for fire-and-forget catch
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(logger.warn).toHaveBeenCalledWith("Note extraction failed", {
-        error: noteError,
-      });
+      expect(logger.warn).toHaveBeenCalledWith(
+        "Batch note extraction failed",
+        { error: noteError },
+      );
     });
   });
 
@@ -1367,7 +1387,7 @@ describe("agentGenerateApp", () => {
   });
 
   describe("learning notes passed to prompt builders", () => {
-    it("passes retrieved notes to buildAgentSystemPrompt and buildFixSystemPrompt", async () => {
+    it("passes retrieved notes to buildAgentSystemPrompt and merged notes to buildFixSystemPrompt", async () => {
       const notes = [
         { id: "n1", trigger: "SyntaxError", lesson: "Check parens", confidenceScore: 0.8 },
       ];
@@ -1399,6 +1419,8 @@ describe("agentGenerateApp", () => {
       );
 
       expect(buildAgentSystemPrompt).toHaveBeenCalledWith("tools/my-app", notes);
+      // buildFixSystemPrompt receives mergedNotes (general + error-specific)
+      // Since retrieveNotesForError returns [], merged = general notes only
       expect(buildFixSystemPrompt).toHaveBeenCalledWith("tools/my-app", notes);
     });
   });
@@ -1466,6 +1488,8 @@ describe("agentGenerateApp", () => {
       vi.mocked(parseTranspileError).mockReturnValue({
         type: "import",
         message: "Module not found",
+        severity: "fixable",
+        fixStrategy: "patch",
       } as never);
 
       vi.mocked(callClaude)
@@ -1671,6 +1695,276 @@ describe("agentGenerateApp", () => {
           { error: "err2", iteration: 1 },
         ],
         expect.objectContaining({ type: "transpile" }),
+      );
+    });
+  });
+
+  // ----------------------------------------------------------------
+  // Sprint 2: Smart model routing
+  // ----------------------------------------------------------------
+  describe("smart model routing", () => {
+    it("uses Sonnet for simple apps (0 matched skills)", async () => {
+      vi.mocked(getMatchedSkills).mockReturnValue([]);
+
+      const events = await collectEvents(
+        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+      );
+
+      expect(callClaude).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: "sonnet",
+          maxTokens: 8192,
+        }),
+      );
+
+      // Generating message should say Sonnet
+      const genPhase = findEvents(events, "phase").find(
+        (e) => e.phase === "GENERATING",
+      );
+      expect(genPhase!.message).toBe(
+        "Generating application with Claude Sonnet...",
+      );
+    });
+
+    it("uses Opus for complex apps (3+ matched skills)", async () => {
+      vi.mocked(getMatchedSkills).mockReturnValue([
+        { id: "a", name: "A", icon: "", description: "" },
+        { id: "b", name: "B", icon: "", description: "" },
+        { id: "c", name: "C", icon: "", description: "" },
+      ] as never);
+
+      await collectEvents(
+        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+      );
+
+      expect(callClaude).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: "opus",
+          maxTokens: 24576,
+        }),
+      );
+    });
+  });
+
+  // ----------------------------------------------------------------
+  // Sprint 2: Early termination on unrecoverable errors
+  // ----------------------------------------------------------------
+  describe("early termination on unrecoverable errors", () => {
+    it("breaks fix loop when isUnrecoverableError returns true", async () => {
+      process.env["AGENT_MAX_ITERATIONS"] = "3";
+      vi.mocked(updateCodespace).mockResolvedValue({
+        success: false,
+        error: "Cannot find module 'nonexistent-library'",
+      } as never);
+      vi.mocked(parseTranspileError).mockReturnValue({
+        type: "import",
+        message: "Cannot find module",
+        library: "nonexistent-library",
+        severity: "environmental",
+        fixStrategy: "regenerate",
+      } as never);
+      vi.mocked(isUnrecoverableError).mockReturnValue(true);
+
+      const events = await collectEvents(
+        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+      );
+
+      // Only 1 TRANSPILING phase (broke after first error)
+      const transpilePhases = findEvents(events, "phase").filter(
+        (e) => e.phase === "TRANSPILING",
+      );
+      expect(transpilePhases).toHaveLength(1);
+
+      // Fixing phase should show severity message
+      const fixingPhase = findEvents(events, "phase").find(
+        (e) => e.phase === "FIXING",
+      );
+      expect(fixingPhase!.message).toContain("environmental");
+      expect(fixingPhase!.message).toContain("cannot auto-fix");
+
+      // Should NOT call callClaude for fix (broke before fix call)
+      expect(callClaude).toHaveBeenCalledTimes(1); // only generation
+
+      // Should log early termination
+      expect(logger.info).toHaveBeenCalledWith(
+        "Early termination: unrecoverable error detected",
+        expect.objectContaining({
+          type: "import",
+          severity: "environmental",
+        }),
+      );
+    });
+  });
+
+  // ----------------------------------------------------------------
+  // Sprint 2: Token budget enforcement
+  // ----------------------------------------------------------------
+  describe("token budget enforcement", () => {
+    it("throws when token budget exceeded after generation", async () => {
+      vi.mocked(callClaude).mockResolvedValue({
+        text: "generated code",
+        inputTokens: 100000,
+        outputTokens: 60000,
+        cacheReadTokens: 0,
+        cacheCreationTokens: 0,
+      } as never);
+
+      const events = await collectEvents(
+        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+      );
+
+      const errorEvent = findEvent(events, "error");
+      expect(errorEvent).toBeDefined();
+      expect(errorEvent!.message).toContain("Token budget exceeded");
+    });
+
+    it("breaks fix loop when token budget exceeded during fix", async () => {
+      process.env["AGENT_MAX_ITERATIONS"] = "3";
+      vi.mocked(updateCodespace).mockResolvedValue({
+        success: false,
+        error: "err",
+      } as never);
+
+      vi.mocked(callClaude)
+        .mockResolvedValueOnce({
+          text: "gen",
+          inputTokens: 50000,
+          outputTokens: 40000,
+          cacheReadTokens: 0,
+          cacheCreationTokens: 0,
+        } as never)
+        .mockResolvedValueOnce({
+          text: "fix",
+          inputTokens: 40000,
+          outputTokens: 30000,
+          cacheReadTokens: 0,
+          cacheCreationTokens: 0,
+        } as never);
+
+      const events = await collectEvents(
+        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+      );
+
+      // Should break after first fix (50k+40k+40k+30k = 160k > 150k)
+      const transpilePhases = findEvents(events, "phase").filter(
+        (e) => e.phase === "TRANSPILING",
+      );
+      expect(transpilePhases).toHaveLength(1);
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        "Token budget exceeded during fix loop, breaking",
+        expect.objectContaining({ budget: 150000 }),
+      );
+    });
+  });
+
+  // ----------------------------------------------------------------
+  // Sprint 2: MAX_ITERATIONS_CAP
+  // ----------------------------------------------------------------
+  describe("MAX_ITERATIONS_CAP", () => {
+    it("clamps iterations to 5 even when env var is higher", async () => {
+      process.env["AGENT_MAX_ITERATIONS"] = "10";
+      vi.mocked(updateCodespace).mockResolvedValue({
+        success: false,
+        error: "err",
+      } as never);
+
+      const events = await collectEvents(
+        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+      );
+
+      const transpilePhases = findEvents(events, "phase").filter(
+        (e) => e.phase === "TRANSPILING",
+      );
+      expect(transpilePhases).toHaveLength(5);
+
+      const errorEvent = findEvent(events, "error");
+      expect(errorEvent!.message).toBe("Failed after 5 fix attempts");
+    });
+  });
+
+  // ----------------------------------------------------------------
+  // Sprint 2: retrieveNotesForError integration
+  // ----------------------------------------------------------------
+  describe("retrieveNotesForError integration", () => {
+    it("retrieves error-specific notes and merges them for fix prompt", async () => {
+      const generalNotes = [
+        { id: "g1", trigger: "general", lesson: "general lesson", confidenceScore: 0.9 },
+      ];
+      const errorNotes = [
+        { id: "e1", trigger: "import err", lesson: "fix imports", confidenceScore: 0.7 },
+      ];
+      vi.mocked(retrieveRelevantNotes).mockResolvedValue(generalNotes);
+      vi.mocked(retrieveNotesForError).mockResolvedValue(errorNotes);
+
+      process.env["AGENT_MAX_ITERATIONS"] = "1";
+      vi.mocked(updateCodespace).mockResolvedValue({
+        success: false,
+        error: "import error",
+      } as never);
+
+      vi.mocked(callClaude)
+        .mockResolvedValueOnce({
+          text: "gen",
+          inputTokens: 10,
+          outputTokens: 20,
+          cacheReadTokens: 5,
+          cacheCreationTokens: 0,
+        } as never)
+        .mockResolvedValueOnce({
+          text: "fix",
+          inputTokens: 10,
+          outputTokens: 20,
+          cacheReadTokens: 5,
+          cacheCreationTokens: 0,
+        } as never);
+
+      await collectEvents(
+        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+      );
+
+      // buildFixSystemPrompt should receive merged notes (general + error-specific)
+      expect(buildFixSystemPrompt).toHaveBeenCalledWith(
+        "category/my-app",
+        [...generalNotes, ...errorNotes],
+      );
+    });
+
+    it("deduplicates merged notes by ID", async () => {
+      const sharedNote = { id: "shared", trigger: "t", lesson: "l", confidenceScore: 0.8 };
+      vi.mocked(retrieveRelevantNotes).mockResolvedValue([sharedNote]);
+      vi.mocked(retrieveNotesForError).mockResolvedValue([sharedNote]);
+
+      process.env["AGENT_MAX_ITERATIONS"] = "1";
+      vi.mocked(updateCodespace).mockResolvedValue({
+        success: false,
+        error: "err",
+      } as never);
+
+      vi.mocked(callClaude)
+        .mockResolvedValueOnce({
+          text: "gen",
+          inputTokens: 10,
+          outputTokens: 20,
+          cacheReadTokens: 5,
+          cacheCreationTokens: 0,
+        } as never)
+        .mockResolvedValueOnce({
+          text: "fix",
+          inputTokens: 10,
+          outputTokens: 20,
+          cacheReadTokens: 5,
+          cacheCreationTokens: 0,
+        } as never);
+
+      await collectEvents(
+        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+      );
+
+      // Should deduplicate — only 1 note passed, not 2
+      expect(buildFixSystemPrompt).toHaveBeenCalledWith(
+        "category/my-app",
+        [sharedNote],
       );
     });
   });
