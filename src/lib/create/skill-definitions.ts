@@ -15,7 +15,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "Three.js",
     icon: "🧊",
     category: "3D",
-    colorClass: "border-blue-400 bg-blue-50 text-blue-700",
+    colorClass: "border-blue-400/30 bg-blue-500/10 text-blue-400",
     triggers: [
       "three",
       "3d",
@@ -38,7 +38,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "3D Performance",
     icon: "🎯",
     category: "3D",
-    colorClass: "border-blue-400 bg-blue-50 text-blue-700",
+    colorClass: "border-blue-400/30 bg-blue-500/10 text-blue-400",
     triggers: [
       "three",
       "3d",
@@ -62,7 +62,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "Recharts",
     icon: "📊",
     category: "Data Viz",
-    colorClass: "border-green-400 bg-green-50 text-green-700",
+    colorClass: "border-green-400/30 bg-green-500/10 text-green-400",
     triggers: [
       "chart",
       "charts",
@@ -87,7 +87,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "Chart UI",
     icon: "📈",
     category: "Data Viz",
-    colorClass: "border-green-400 bg-green-50 text-green-700",
+    colorClass: "border-green-400/30 bg-green-500/10 text-green-400",
     triggers: [
       "chart",
       "charts",
@@ -113,7 +113,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "Confetti",
     icon: "🎉",
     category: "Game",
-    colorClass: "border-purple-400 bg-purple-50 text-purple-700",
+    colorClass: "border-purple-400/30 bg-purple-500/10 text-purple-400",
     triggers: [
       "game",
       "games",
@@ -140,7 +140,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "Game Audio",
     icon: "🔊",
     category: "Game",
-    colorClass: "border-purple-400 bg-purple-50 text-purple-700",
+    colorClass: "border-purple-400/30 bg-purple-500/10 text-purple-400",
     triggers: [
       "game",
       "games",
@@ -168,7 +168,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "React Hook Form",
     icon: "📝",
     category: "Form",
-    colorClass: "border-orange-400 bg-orange-50 text-orange-700",
+    colorClass: "border-orange-400/30 bg-orange-500/10 text-orange-400",
     triggers: [
       "form",
       "forms",
@@ -189,7 +189,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "Form Components",
     icon: "🎛️",
     category: "Form",
-    colorClass: "border-orange-400 bg-orange-50 text-orange-700",
+    colorClass: "border-orange-400/30 bg-orange-500/10 text-orange-400",
     triggers: [
       "form",
       "forms",
@@ -211,7 +211,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "DnD Kit",
     icon: "🖱️",
     category: "DnD",
-    colorClass: "border-cyan-400 bg-cyan-50 text-cyan-700",
+    colorClass: "border-cyan-400/30 bg-cyan-500/10 text-cyan-400",
     triggers: [
       "kanban",
       "board",
@@ -239,7 +239,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "Rough.js",
     icon: "✏️",
     category: "Drawing",
-    colorClass: "border-pink-400 bg-pink-50 text-pink-700",
+    colorClass: "border-pink-400/30 bg-pink-500/10 text-pink-400",
     triggers: [
       "draw",
       "drawing",
@@ -262,7 +262,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "React Markdown",
     icon: "📄",
     category: "Content",
-    colorClass: "border-amber-400 bg-amber-50 text-amber-700",
+    colorClass: "border-amber-400/30 bg-amber-500/10 text-amber-400",
     triggers: [
       "blog",
       "blogging",
@@ -288,7 +288,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "Content UI",
     icon: "🗂️",
     category: "Content",
-    colorClass: "border-amber-400 bg-amber-50 text-amber-700",
+    colorClass: "border-amber-400/30 bg-amber-500/10 text-amber-400",
     triggers: [
       "blog",
       "blogging",
@@ -315,7 +315,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "Howler.js",
     icon: "🎵",
     category: "Audio",
-    colorClass: "border-red-400 bg-red-50 text-red-700",
+    colorClass: "border-red-400/30 bg-red-500/10 text-red-400",
     triggers: [
       "music",
       "musical",
@@ -340,7 +340,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "Web Audio",
     icon: "🎹",
     category: "Audio",
-    colorClass: "border-red-400 bg-red-50 text-red-700",
+    colorClass: "border-red-400/30 bg-red-500/10 text-red-400",
     triggers: [
       "music",
       "musical",
@@ -366,7 +366,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     name: "URL Params",
     icon: "🔗",
     category: "URL Params",
-    colorClass: "border-slate-400 bg-slate-50 text-slate-700",
+    colorClass: "border-slate-400/30 bg-slate-500/10 text-slate-400",
     triggers: ["dashboard", "tracker", "monitor", "analytics", "config", "settings"],
     description: "Shareable URL state",
   },
@@ -377,7 +377,7 @@ export const FALLBACK_SKILL: SkillDefinition = {
   name: "General",
   icon: "✨",
   category: "General",
-  colorClass: "border-gray-400 bg-gray-50 text-gray-700",
+  colorClass: "border-gray-400/30 bg-gray-500/10 text-gray-400",
   triggers: [],
   description: "General-purpose app",
 };

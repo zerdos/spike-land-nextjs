@@ -30,6 +30,7 @@ const AGENT_TIMEOUT_MS = 3000; // 3s to connect, fallback if unreachable
 
 const CreateRequestSchema = z.object({
   path: z.array(z.string()),
+  imageUrls: z.array(z.string().url()).max(4).optional(),
 });
 
 export async function POST(req: Request) {
@@ -57,7 +58,7 @@ export async function POST(req: Request) {
     return new NextResponse("Invalid request body", { status: 400 });
   }
 
-  const { path } = parsed.data;
+  const { path, imageUrls } = parsed.data;
   if (path.length === 0) {
     return new NextResponse("Path cannot be empty", { status: 400 });
   }
@@ -98,7 +99,7 @@ export async function POST(req: Request) {
   }
 
   logger.info("Create: falling back to direct generation", { slug });
-  return createSSEResponse(generateStream(slug, path, userId));
+  return createSSEResponse(generateStream(slug, path, userId, imageUrls));
 }
 
 /**
@@ -239,6 +240,7 @@ async function* generateStream(
   slug: string,
   path: string[],
   userId: string | undefined,
+  imageUrls?: string[],
 ): AsyncGenerator<StreamEvent> {
   // Use Claude agent loop when any Anthropic credential is available
   if (isClaudeConfigured()) {
@@ -252,7 +254,7 @@ async function* generateStream(
     }
 
     try {
-      yield* agentGenerateApp(slug, path, userId);
+      yield* agentGenerateApp(slug, path, userId, imageUrls);
       await recordCircuitSuccess();
       return;
     } catch (error) {
