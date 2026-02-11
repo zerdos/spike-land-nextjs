@@ -15,9 +15,13 @@ import logger from "@/lib/logger";
 import { checkGenerationRateLimit, getClientIp } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 
+const AGENT_URL = process.env["LEARNIT_AGENT_URL"]; // e.g. https://learnit-agent.your-tunnel.com
+const AGENT_SECRET = process.env["LEARNIT_AGENT_SECRET"];
+const AGENT_TIMEOUT_MS = 3000; // 3s to connect, fallback if unreachable
+
 /**
  * Streaming endpoint for LearnIt content generation.
- * Uses Server-Sent Events (SSE) to stream AI-generated content to the client.
+ * Tries local OpenClaw agent first, falls back to direct Gemini.
  */
 export async function POST(req: Request) {
   const session = await auth();
@@ -50,7 +54,6 @@ export async function POST(req: Request) {
   // Check if content already exists
   const existing = await getLearnItContent(slug);
   if (existing && existing.status === "PUBLISHED") {
-    // Return existing content as a single SSE event
     const existingContent = existing;
     async function* existingContentGenerator(): AsyncGenerator<StreamEvent> {
       yield {
@@ -58,6 +61,7 @@ export async function POST(req: Request) {
         content: existingContent.content,
         title: existingContent.title,
         description: existingContent.description,
+        agent: "cache",
       };
     }
     return createSSEResponse(existingContentGenerator());
@@ -77,16 +81,192 @@ export async function POST(req: Request) {
   // Mark as generating
   await markAsGenerating(slug, path, userId);
 
-  // Create SSE stream
-  return createSSEResponse(generateStreamContent(path, slug, userId));
+  // Try local agent first, fall back to Gemini
+  const agentAvailable = await isAgentAvailable();
+
+  if (agentAvailable) {
+    logger.info("LearnIt: using local agent (Spike)", { slug });
+    return createAgentProxyResponse(path, slug, userId);
+  }
+
+  logger.info("LearnIt: falling back to Gemini", { slug });
+  return createSSEResponse(generateWithGemini(path, slug, userId));
 }
 
-async function* generateStreamContent(
+/**
+ * Check if the local LearnIt agent is reachable.
+ */
+async function isAgentAvailable(): Promise<boolean> {
+  if (!AGENT_URL || !AGENT_SECRET) return false;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), AGENT_TIMEOUT_MS);
+    const res = await fetch(`${AGENT_URL}/health`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Proxy the request to the local agent and stream back the response.
+ * Saves to DB on completion. Falls back to Gemini on error.
+ */
+function createAgentProxyResponse(
+  path: string[],
+  slug: string,
+  userId: string | undefined,
+): Response {
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        const res = await fetch(`${AGENT_URL}/generate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${AGENT_SECRET}`,
+          },
+          body: JSON.stringify({ path }),
+        });
+
+        if (!res.ok || !res.body) {
+          throw new Error(`Agent returned ${res.status}`);
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let fullContent = "";
+        let title = "";
+        let description = "";
+        let agentName = "Spike";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const data = line.slice(6);
+
+            try {
+              const event = JSON.parse(data);
+
+              if (event.type === "agent") {
+                agentName = event.name ?? "Spike";
+                // Forward agent identity to client
+                controller.enqueue(
+                  encoder.encode(`data: ${JSON.stringify({ type: "agent", name: agentName, model: event.model })}\n\n`),
+                );
+                continue;
+              }
+
+              if (event.type === "chunk") {
+                fullContent += event.content;
+                controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+                continue;
+              }
+
+              if (event.type === "complete") {
+                title = event.title;
+                description = event.description;
+                const finalContent = event.content;
+
+                // Process wiki links and save to DB
+                const { content: processedContent } = parseWikiLinks(
+                  title + "\n" + finalContent,
+                );
+                const contentOnly = processedContent.substring(
+                  processedContent.indexOf("\n") + 1,
+                ).trim();
+
+                await createOrUpdateContent({
+                  slug,
+                  path,
+                  parentSlug: path.length > 1 ? path.slice(0, -1).join("/") : null,
+                  title,
+                  description,
+                  content: contentOnly,
+                  generatedById: userId,
+                  aiModel: `agent:${agentName}`,
+                });
+
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ type: "complete", content: contentOnly, title, description, agent: agentName })}\n\n`,
+                  ),
+                );
+                continue;
+              }
+
+              if (event.type === "error") {
+                throw new Error(event.message);
+              }
+            } catch (parseError) {
+              // If JSON parse fails, skip this line
+              if (parseError instanceof SyntaxError) continue;
+              throw parseError;
+            }
+          }
+        }
+
+        controller.close();
+      } catch (error) {
+        logger.warn("LearnIt agent proxy failed, falling back to Gemini", {
+          slug,
+          error: error instanceof Error ? error.message : String(error),
+        });
+
+        // Fall back to Gemini inline
+        try {
+          for await (const event of generateWithGemini(path, slug, userId)) {
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
+            );
+          }
+        } catch (geminiError) {
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ type: "error", message: "Generation failed" })}\n\n`,
+            ),
+          );
+        }
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+    },
+  });
+}
+
+/**
+ * Generate content directly with Gemini (fallback path).
+ */
+async function* generateWithGemini(
   path: string[],
   slug: string,
   userId: string | undefined,
 ): AsyncGenerator<StreamEvent> {
   const topic = path.join(" > ");
+
+  // Send agent identity
+  yield { type: "agent", name: "Gemini Flash", model: "gemini-3-flash-preview" } as StreamEvent;
 
   const prompt =
     `You are an expert technical educator creating a high-quality, interactive learning wiki called LearnIt.
@@ -134,16 +314,14 @@ Begin with the title on the first line (just the title text, no heading markup),
       if (text) {
         fullContent += text;
 
-        // Extract title from first line if not set
         if (!title) {
           const lines = fullContent.split("\n");
           const firstLine = lines[0];
           if (firstLine?.trim()) {
-            title = firstLine.trim().replace(/^#*\s*/, ""); // Remove any leading # marks
+            title = firstLine.trim().replace(/^#*\s*/, "");
           }
         }
 
-        // Extract description from second paragraph
         if (!description && fullContent.includes("\n\n")) {
           const contentParts = fullContent.split("\n\n");
           const secondPart = contentParts[1];
@@ -152,18 +330,15 @@ Begin with the title on the first line (just the title text, no heading markup),
           }
         }
 
-        // Stream the chunk to the client
         yield { type: "chunk", content: text };
         lineCount++;
 
-        // Log progress periodically
         if (lineCount % 10 === 0) {
           logger.info(`LearnIt streaming: ${lineCount} chunks sent`, { slug });
         }
       }
     }
 
-    // Finalize - extract title and description if not yet set
     if (!title) {
       title = path[path.length - 1]?.replace(/-/g, " ") ?? "Topic";
     }
@@ -175,7 +350,6 @@ Begin with the title on the first line (just the title text, no heading markup),
     logger.info("Generated full content length", { length: fullContent.length });
     const { content: processedContent } = parseWikiLinks(fullContent);
 
-    // Remove the title line from content since it's stored separately
     let finalContent = processedContent;
     const firstNewline = processedContent.indexOf("\n");
     if (firstNewline > 0) {
@@ -193,7 +367,7 @@ Begin with the title on the first line (just the title text, no heading markup),
       aiModel: "gemini-3-flash-preview",
     });
 
-    yield { type: "complete", content: finalContent, title, description };
+    yield { type: "complete", content: finalContent, title, description, agent: "Gemini Flash" };
   } catch (error) {
     logger.error("LearnIt streaming error:", { error, slug });
     await markAsFailed(slug);
@@ -205,8 +379,9 @@ Begin with the title on the first line (just the title text, no heading markup),
 }
 
 type StreamEvent =
+  | { type: "agent"; name: string; model: string; }
   | { type: "chunk"; content: string; }
-  | { type: "complete"; content: string; title: string; description: string; }
+  | { type: "complete"; content: string; title: string; description: string; agent?: string; }
   | { type: "error"; message: string; };
 
 function createSSEResponse(generator: AsyncGenerator<StreamEvent>): Response {
