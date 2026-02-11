@@ -31,6 +31,7 @@ export function ComposerImageStrip({
             exit={{ opacity: 0, scale: 0.8 }}
             className="relative shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-white/10 group"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element -- blob: URLs from createObjectURL are not compatible with next/image */}
             <img
               src={img.previewUrl}
               alt="Attachment"

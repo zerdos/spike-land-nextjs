@@ -13,19 +13,7 @@ vi.mock("framer-motion", () => ({
     get: () => 0,
     on: vi.fn(() => vi.fn()),
   })),
-  useTransform: vi.fn((_spring, transform) => {
-    const result = transform(1234);
-    return result;
-  }),
-  motion: {
-    span: ({
-      children,
-      className,
-    }: {
-      children: React.ReactNode;
-      className?: string;
-    }) => <span className={className}>{children}</span>,
-  },
+  useMotionValueEvent: vi.fn(),
 }));
 
 describe("AnimatedCounter", () => {
@@ -54,9 +42,10 @@ describe("AnimatedCounter", () => {
     vi.mocked(useReducedMotion).mockReturnValue(false);
 
     const { container } = render(<AnimatedCounter value={999} suffix="+" />);
-    // With reduced motion off, it uses the motion.span path
     const span = container.querySelector("span");
     expect(span).not.toBeNull();
+    // Non-reduced motion path shows displayValue from useMotionValueEvent
+    expect(span?.textContent).toContain("+");
 
     vi.mocked(useReducedMotion).mockReturnValue(true);
   });

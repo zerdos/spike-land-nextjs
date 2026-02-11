@@ -219,7 +219,7 @@ describe("useComposerImages", () => {
 
       // Find the call that matches our upload endpoint
       const uploadCall = mockFetch.mock.calls.find(
-        ([url]: [string]) => url === "/api/create/upload-image",
+        (args: unknown[]) => args[0] === "/api/create/upload-image",
       );
       expect(uploadCall).toBeDefined();
       expect(uploadCall![1].method).toBe("POST");

@@ -3,8 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTypewriter } from "./useTypewriter";
 
 /**
- * Advance timer ticks one at a time, flushing React between each.
- * Each call runs one pending timer and flushes React state.
+ * Advance one timer tick, flushing React state updates.
  */
 function tickOnce() {
   act(() => {
@@ -40,12 +39,12 @@ describe("useTypewriter", () => {
       useTypewriter({ prompts: ["Hi"], typeSpeed: 50, enabled: true }),
     );
 
-    // Tick 1: initial useEffect fires -> types "H"
+    // tick 1: type "H"
     tickOnce();
     expect(result.current.displayText).toBe("H");
     expect(result.current.isTyping).toBe(true);
 
-    // Tick 2: types "i" -> prompt complete, transitions to pausing
+    // tick 2: type "i" (completes prompt)
     tickOnce();
     expect(result.current.displayText).toBe("Hi");
   });
@@ -60,13 +59,12 @@ describe("useTypewriter", () => {
       }),
     );
 
-    // Tick 1: type "A", Tick 2: type "B" (prompt complete)
+    // tick 1: "A", tick 2: "AB" (prompt complete)
     tickN(2);
     expect(result.current.displayText).toBe("AB");
 
-    // Tick 3: pause timer fires — transitions from pausing to deleting
+    // tick 3: pause timer fires, text still "AB"
     tickOnce();
-    // Text should still contain typed content at this point
     expect(result.current.displayText).toBe("AB");
   });
 
@@ -81,19 +79,20 @@ describe("useTypewriter", () => {
       }),
     );
 
-    // Tick 1: type "A", Tick 2: type "B"
+    // tick 1: "A", tick 2: "AB"
     tickN(2);
     expect(result.current.displayText).toBe("AB");
 
-    // Tick 3: pause fires -> sets phase to deleting
-    tickOnce();
+    // tick 3: pause completes — still "AB"
+    // tick 4: pausing->deleting transition — still "AB"
+    tickN(2);
     expect(result.current.displayText).toBe("AB");
 
-    // Tick 4: first delete -> "A"
+    // tick 5: first delete -> "A"
     tickOnce();
     expect(result.current.displayText).toBe("A");
 
-    // Tick 5: second delete -> ""
+    // tick 6: second delete -> ""
     tickOnce();
     expect(result.current.displayText).toBe("");
   });
@@ -109,19 +108,19 @@ describe("useTypewriter", () => {
       }),
     );
 
-    // Tick 1: type "A" (prompt complete — single char)
+    // tick 1: type "A" (single char prompt, completes immediately)
     tickOnce();
     expect(result.current.displayText).toBe("A");
 
-    // Tick 2: pause fires -> sets phase to deleting
-    tickOnce();
-
-    // Tick 3: delete "A" -> "" -> advances prompt index
-    tickOnce();
+    // tick 2: pause fires
+    // tick 3: pausing->deleting transition
+    // tick 4: delete "A" -> "" (advances prompt index)
+    tickN(3);
     expect(result.current.displayText).toBe("");
 
-    // Tick 4: next prompt delay fires -> types "B"
-    tickOnce();
+    // tick 5: next prompt delay
+    // tick 6: type "B"
+    tickN(2);
     expect(result.current.displayText).toBe("B");
   });
 
@@ -143,7 +142,6 @@ describe("useTypewriter", () => {
       useTypewriter({ prompts: ["Hello"], enabled: false }),
     );
 
-    // Even after ticking, nothing happens
     tickN(5);
     expect(result.current.displayText).toBe("");
     expect(result.current.isTyping).toBe(false);

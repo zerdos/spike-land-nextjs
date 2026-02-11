@@ -50,8 +50,9 @@ export function useComposerImages(
 
   // Cleanup objectURLs on unmount
   useEffect(() => {
+    const urls = objectUrlsRef.current;
     return () => {
-      objectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      urls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);
 

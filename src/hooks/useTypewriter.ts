@@ -38,7 +38,7 @@ export function useTypewriter(options?: UseTypewriterOptions): UseTypewriterRetu
   const promptIndex = useRef(0);
   const charIndex = useRef(0);
   const phase = useRef<"typing" | "pausing" | "deleting">("typing");
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Store mutable config in refs to keep tick callback stable
   const promptsRef = useRef(prompts);

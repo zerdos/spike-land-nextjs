@@ -1,8 +1,8 @@
 "use client";
 
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { useInView, useSpring, useTransform, motion } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useInView, useSpring, useMotionValueEvent } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 interface AnimatedCounterProps {
   value: number;
@@ -15,15 +15,16 @@ export function AnimatedCounter({ value, duration = 2, suffix = "", className }:
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const prefersReducedMotion = useReducedMotion();
+  const [displayValue, setDisplayValue] = useState("0");
 
   const spring = useSpring(0, {
     duration: prefersReducedMotion ? 0 : duration * 1000,
     bounce: 0,
   });
 
-  const display = useTransform(spring, (current) =>
-    Math.round(current).toLocaleString(),
-  );
+  useMotionValueEvent(spring, "change", (current) => {
+    setDisplayValue(Math.round(current).toLocaleString());
+  });
 
   useEffect(() => {
     if (isInView) {
@@ -36,9 +37,9 @@ export function AnimatedCounter({ value, duration = 2, suffix = "", className }:
   }
 
   return (
-    <motion.span ref={ref} className={className}>
-      {display}
+    <span ref={ref} className={className}>
+      {displayValue}
       {suffix}
-    </motion.span>
+    </span>
   );
 }
