@@ -196,7 +196,7 @@ function createAgentProxyResponse(
           }
         }
       } catch (error) {
-        logger.warn("Create agent proxy failed, falling back to direct generation", {
+        logger.info("Create agent proxy failed, falling back to direct generation", {
           slug,
           error: error instanceof Error ? error.message : String(error),
         });
@@ -280,7 +280,7 @@ async function* geminiFallbackStream(
   userId: string | undefined,
 ): AsyncGenerator<StreamEvent> {
   const codespaceId = generateCodespaceId(slug);
-  const codespaceUrl = `https://testing.spike.land/live/${codespaceId}/`;
+  const codespaceUrl = `/api/codespace/${codespaceId}/embed`;
 
   try {
     yield { type: "agent", name: "Opus 4.6", model: "claude-opus-4-6" };

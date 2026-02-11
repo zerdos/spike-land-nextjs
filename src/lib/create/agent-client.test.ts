@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Shared mock for messages.create - all Anthropic instances reference this
-const mockCreate = vi.fn();
+// Shared mock for messages.stream - all Anthropic instances reference this
+const mockStream = vi.fn();
 
 vi.mock("@anthropic-ai/sdk", () => {
   // Must use a function (not arrow) so `new` works
   function MockAnthropic() {
     // @ts-expect-error -- mock constructor
-    this.messages = { create: mockCreate };
+    this.messages = { stream: mockStream };
   }
   return { default: MockAnthropic };
 });
@@ -23,7 +23,7 @@ import { resetClaudeClient } from "@/lib/ai/claude-client";
 
 describe("agent-client", () => {
   beforeEach(() => {
-    mockCreate.mockReset();
+    mockStream.mockReset();
     resetClaudeClient();
   });
 
@@ -35,13 +35,15 @@ describe("agent-client", () => {
   // callClaude
   // ---------------------------------------------------------------
   describe("callClaude", () => {
-    it("should call Anthropic messages.create with correct default parameters", async () => {
-      mockCreate.mockResolvedValue({
-        content: [{ type: "text", text: "hello" }],
-        usage: {
-          input_tokens: 10,
-          output_tokens: 20,
-        },
+    it("should call Anthropic messages.stream with correct default parameters", async () => {
+      mockStream.mockReturnValue({
+        finalMessage: vi.fn().mockResolvedValue({
+          content: [{ type: "text", text: "hello" }],
+          usage: {
+            input_tokens: 10,
+            output_tokens: 20,
+          },
+        }),
       });
 
       const result: ClaudeResponse = await callClaude({
@@ -49,7 +51,7 @@ describe("agent-client", () => {
         userPrompt: "Say hello",
       });
 
-      expect(mockCreate).toHaveBeenCalledWith(
+      expect(mockStream).toHaveBeenCalledWith(
         expect.objectContaining({
           model: "claude-opus-4-6",
           max_tokens: 32768,
@@ -73,9 +75,11 @@ describe("agent-client", () => {
     });
 
     it("should use specified model, maxTokens, and temperature", async () => {
-      mockCreate.mockResolvedValue({
-        content: [{ type: "text", text: "ok" }],
-        usage: { input_tokens: 1, output_tokens: 2 },
+      mockStream.mockReturnValue({
+        finalMessage: vi.fn().mockResolvedValue({
+          content: [{ type: "text", text: "ok" }],
+          usage: { input_tokens: 1, output_tokens: 2 },
+        }),
       });
 
       await callClaude({
@@ -86,7 +90,7 @@ describe("agent-client", () => {
         temperature: 0.9,
       });
 
-      expect(mockCreate).toHaveBeenCalledWith(
+      expect(mockStream).toHaveBeenCalledWith(
         expect.objectContaining({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 1024,
@@ -96,9 +100,11 @@ describe("agent-client", () => {
     });
 
     it("should map sonnet model correctly", async () => {
-      mockCreate.mockResolvedValue({
-        content: [{ type: "text", text: "ok" }],
-        usage: { input_tokens: 1, output_tokens: 2 },
+      mockStream.mockReturnValue({
+        finalMessage: vi.fn().mockResolvedValue({
+          content: [{ type: "text", text: "ok" }],
+          usage: { input_tokens: 1, output_tokens: 2 },
+        }),
       });
 
       await callClaude({
@@ -107,7 +113,7 @@ describe("agent-client", () => {
         model: "sonnet",
       });
 
-      expect(mockCreate).toHaveBeenCalledWith(
+      expect(mockStream).toHaveBeenCalledWith(
         expect.objectContaining({
           model: "claude-sonnet-4-5-20250929",
         }),
@@ -115,12 +121,14 @@ describe("agent-client", () => {
     });
 
     it("should concatenate multiple text blocks into a single string", async () => {
-      mockCreate.mockResolvedValue({
-        content: [
-          { type: "text", text: "part1" },
-          { type: "text", text: "part2" },
-        ],
-        usage: { input_tokens: 5, output_tokens: 10 },
+      mockStream.mockReturnValue({
+        finalMessage: vi.fn().mockResolvedValue({
+          content: [
+            { type: "text", text: "part1" },
+            { type: "text", text: "part2" },
+          ],
+          usage: { input_tokens: 5, output_tokens: 10 },
+        }),
       });
 
       const result = await callClaude({
@@ -132,12 +140,14 @@ describe("agent-client", () => {
     });
 
     it("should filter out non-text content blocks", async () => {
-      mockCreate.mockResolvedValue({
-        content: [
-          { type: "text", text: "only-text" },
-          { type: "tool_use", id: "1", name: "tool", input: {} },
-        ],
-        usage: { input_tokens: 5, output_tokens: 10 },
+      mockStream.mockReturnValue({
+        finalMessage: vi.fn().mockResolvedValue({
+          content: [
+            { type: "text", text: "only-text" },
+            { type: "tool_use", id: "1", name: "tool", input: {} },
+          ],
+          usage: { input_tokens: 5, output_tokens: 10 },
+        }),
       });
 
       const result = await callClaude({
@@ -149,14 +159,16 @@ describe("agent-client", () => {
     });
 
     it("should read cache token fields from usage when present", async () => {
-      mockCreate.mockResolvedValue({
-        content: [{ type: "text", text: "cached" }],
-        usage: {
-          input_tokens: 100,
-          output_tokens: 50,
-          cache_read_input_tokens: 80,
-          cache_creation_input_tokens: 20,
-        },
+      mockStream.mockReturnValue({
+        finalMessage: vi.fn().mockResolvedValue({
+          content: [{ type: "text", text: "cached" }],
+          usage: {
+            input_tokens: 100,
+            output_tokens: 50,
+            cache_read_input_tokens: 80,
+            cache_creation_input_tokens: 20,
+          },
+        }),
       });
 
       const result = await callClaude({
@@ -169,13 +181,15 @@ describe("agent-client", () => {
     });
 
     it("should default cache tokens to 0 when usage fields are undefined", async () => {
-      mockCreate.mockResolvedValue({
-        content: [{ type: "text", text: "no-cache" }],
-        usage: {
-          input_tokens: 10,
-          output_tokens: 5,
-          // cache_read_input_tokens and cache_creation_input_tokens absent
-        },
+      mockStream.mockReturnValue({
+        finalMessage: vi.fn().mockResolvedValue({
+          content: [{ type: "text", text: "no-cache" }],
+          usage: {
+            input_tokens: 10,
+            output_tokens: 5,
+            // cache_read_input_tokens and cache_creation_input_tokens absent
+          },
+        }),
       });
 
       const result = await callClaude({
@@ -188,7 +202,7 @@ describe("agent-client", () => {
     });
 
     it("should propagate API errors", async () => {
-      mockCreate.mockRejectedValue(new Error("API rate limit exceeded"));
+      mockStream.mockImplementation(() => { throw new Error("API rate limit exceeded"); });
 
       await expect(
         callClaude({ systemPrompt: "sys", userPrompt: "usr" }),

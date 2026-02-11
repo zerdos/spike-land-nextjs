@@ -135,7 +135,7 @@ export async function PATCH(
   if (codespaceData?.codespaceId || validatedData.codespaceId) {
     const codespaceId = codespaceData?.codespaceId || validatedData.codespaceId;
     updateData.codespaceId = codespaceId;
-    updateData.codespaceUrl = `https://testing.spike.land/live/${codespaceId}/`;
+    updateData.codespaceUrl = `/api/codespace/${codespaceId}/embed`;
     // Also update slug if not already set
     if (!existingApp.slug) {
       updateData.slug = codespaceId;

@@ -1,5 +1,6 @@
-import { Fragment, type FC } from "react";
+import { Fragment, useId, useMemo, type FC } from "react";
 import { COLORS, VERITASIUM_COLORS } from "../../lib/constants";
+import { clamp, seededRandom } from "../../lib/animation-utils";
 
 export type DarwinianTreeCoreProps = {
   generations?: number; // 1-3
@@ -19,10 +20,6 @@ type Branch = {
   index: number;
 };
 
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
-}
 
 function buildTree(generations: number): Branch[] {
   const branches: Branch[] = [];
@@ -93,7 +90,6 @@ function buildTree(generations: number): Branch[] {
   return branches;
 }
 
-const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
 
 export const DarwinianTreeCore: FC<DarwinianTreeCoreProps> = ({
   generations = 3,
@@ -102,7 +98,9 @@ export const DarwinianTreeCore: FC<DarwinianTreeCoreProps> = ({
   height = 1080,
   className,
 }) => {
-  const branches = buildTree(Math.min(3, Math.max(1, generations)));
+  const id = useId();
+  const glowId = `tree-glow-${id.replace(/:/g, "")}`;
+  const branches = useMemo(() => buildTree(Math.min(3, Math.max(1, generations))), [generations]);
 
   return (
     <svg 
@@ -113,7 +111,7 @@ export const DarwinianTreeCore: FC<DarwinianTreeCoreProps> = ({
       preserveAspectRatio="xMidYMid meet"
     >
       <defs>
-        <filter id="tree-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <filter id={glowId} x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="4" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
@@ -122,98 +120,101 @@ export const DarwinianTreeCore: FC<DarwinianTreeCoreProps> = ({
         </filter>
       </defs>
 
-      {/* Branches */}
-      {branches.map((branch) => {
-        // Each branch starts growing based on its generation
-        const branchStart = branch.generation * 0.2 + (branch.index % 5) * 0.05;
-        const growProgress = clamp((progress - branchStart) * 5, 0, 1);
+      {/* Main interaction layer */}
+      <g style={{ transform: "translate(0, 120px) scale(0.85)", transformOrigin: "center 60%" }}>
+        {/* Branches */}
+        {branches.map((branch) => {
+          // Each branch starts growing based on its generation
+          const branchStart = branch.generation * 0.2 + (branch.index % 5) * 0.05;
+          const growProgress = clamp((progress - branchStart) * 5, 0, 1);
 
-        const color = branch.survives
-          ? VERITASIUM_COLORS.active
-          : VERITASIUM_COLORS.failed;
+          const color = branch.survives
+            ? VERITASIUM_COLORS.active
+            : VERITASIUM_COLORS.failed;
 
-        // Failed branches get pruned after appearing
-        // Pruning happens in the second half of the overall progress
-        const pruneStart = branchStart + 0.3;
-        const pruneOpacity = branch.survives
-          ? 1
-          : clamp(1 - (progress - pruneStart) * 4, 0, 1);
+          // Failed branches get pruned after appearing
+          // Pruning happens in the second half of the overall progress
+          const pruneStart = branchStart + 0.3;
+          const pruneOpacity = branch.survives
+            ? 1
+            : clamp(1 - (progress - pruneStart) * 4, 0, 1);
 
-        const currentX2 = branch.x1 + (branch.x2 - branch.x1) * growProgress;
-        const currentY2 = branch.y1 + (branch.y2 - branch.y1) * growProgress;
+          const currentX2 = branch.x1 + (branch.x2 - branch.x1) * growProgress;
+          const currentY2 = branch.y1 + (branch.y2 - branch.y1) * growProgress;
 
-        const strokeWidth = branch.generation === 0 ? 6 : 4 - branch.generation * 0.5;
+          const strokeWidth = branch.generation === 0 ? 6 : 4 - branch.generation * 0.5;
 
-        return (
-          <Fragment key={`branch-${branch.index}`}>
-            <line
-              x1={branch.x1}
-              y1={branch.y1}
-              x2={currentX2}
-              y2={currentY2}
-              stroke={color}
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-              opacity={pruneOpacity * growProgress}
-              filter={branch.survives ? "url(#tree-glow)" : undefined}
-            />
-
-            {/* Pruning cut mark on failed branches */}
-            {!branch.survives && pruneOpacity < 0.8 && growProgress > 0.5 && (
+          return (
+            <Fragment key={`branch-${branch.index}`}>
               <line
-                x1={branch.x1 + (branch.x2 - branch.x1) * 0.3 - 10}
-                y1={branch.y1 + (branch.y2 - branch.y1) * 0.3 - 10}
-                x2={branch.x1 + (branch.x2 - branch.x1) * 0.3 + 10}
-                y2={branch.y1 + (branch.y2 - branch.y1) * 0.3 + 10}
-                stroke={VERITASIUM_COLORS.failed}
-                strokeWidth={3}
-                opacity={1 - pruneOpacity}
+                x1={branch.x1}
+                y1={branch.y1}
+                x2={currentX2}
+                y2={currentY2}
+                stroke={color}
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                opacity={pruneOpacity * growProgress}
+                filter={branch.survives ? `url(#${glowId})` : undefined}
               />
-            )}
 
-            {/* Learning particles floating up from pruned branches */}
-            {!branch.survives &&
-              pruneOpacity < 0.6 &&
-              Array.from({ length: 3 }, (_, pi) => {
-                const particleStart = pruneStart + 0.1 + pi * 0.05;
-                const particleProgress = clamp((progress - particleStart) * 4, 0, 1);
-                
-                if (particleProgress <= 0) return null;
+              {/* Pruning cut mark on failed branches */}
+              {!branch.survives && pruneOpacity < 0.8 && growProgress > 0.5 && (
+                <line
+                  x1={branch.x1 + (branch.x2 - branch.x1) * 0.3 - 10}
+                  y1={branch.y1 + (branch.y2 - branch.y1) * 0.3 - 10}
+                  x2={branch.x1 + (branch.x2 - branch.x1) * 0.3 + 10}
+                  y2={branch.y1 + (branch.y2 - branch.y1) * 0.3 + 10}
+                  stroke={VERITASIUM_COLORS.failed}
+                  strokeWidth={3}
+                  opacity={1 - pruneOpacity}
+                />
+              )}
 
-                const px = branch.x2 + seededRandom(branch.index * 10 + pi) * 40 - 20;
-                const py = branch.y2 - particleProgress * 80;
-                const particleOpacity = particleProgress < 0.3 
-                   ? (particleProgress / 0.3) * 0.8 
-                   : (1 - (particleProgress - 0.3) / 0.7) * 0.8;
+              {/* Learning particles floating up from pruned branches */}
+              {!branch.survives &&
+                pruneOpacity < 0.6 &&
+                Array.from({ length: 3 }, (_, pi) => {
+                  const particleStart = pruneStart + 0.1 + pi * 0.05;
+                  const particleProgress = clamp((progress - particleStart) * 4, 0, 1);
+                  
+                  if (particleProgress <= 0) return null;
 
-                return (
-                  <circle
-                    key={`particle-${branch.index}-${pi}`}
-                    cx={px}
-                    cy={py}
-                    r={3}
-                    fill={VERITASIUM_COLORS.learning}
-                    opacity={clamp(particleOpacity, 0, 0.8)}
-                  />
-                );
-              })}
-          </Fragment>
-        );
-      })}
+                  const px = branch.x2 + seededRandom(branch.index * 10 + pi) * 40 - 20;
+                  const py = branch.y2 - particleProgress * 80;
+                  const particleOpacity = particleProgress < 0.3 
+                     ? (particleProgress / 0.3) * 0.8 
+                     : (1 - (particleProgress - 0.3) / 0.7) * 0.8;
 
-      {/* Ground line */}
-      <line
-        x1={700}
-        y1={800}
-        x2={1220}
-        y2={800}
-        stroke={COLORS.darkBorder}
-        strokeWidth={2}
-        opacity={0.5}
-      />
+                  return (
+                    <circle
+                      key={`particle-${branch.index}-${pi}`}
+                      cx={px}
+                      cy={py}
+                      r={3}
+                      fill={VERITASIUM_COLORS.learning}
+                      opacity={clamp(particleOpacity, 0, 0.8)}
+                    />
+                  );
+                })}
+            </Fragment>
+          );
+        })}
+
+        {/* Ground line */}
+        <line
+          x1={700}
+          y1={800}
+          x2={1220}
+          y2={800}
+          stroke={COLORS.darkBorder}
+          strokeWidth={2}
+          opacity={0.5}
+        />
+      </g>
 
       {/* Legend */}
-      <g transform={`translate(100, ${typeof height === 'number' ? height - 180 : 900})`}>
+      <g transform={`translate(100, ${typeof height === 'number' ? height - 100 : 980})`}>
         <circle cx={0} cy={0} r={6} fill={VERITASIUM_COLORS.active} />
         <text x={16} y={5} fill={COLORS.textSecondary} fontSize={14} fontFamily="Inter, sans-serif">
           Survives (good code)

@@ -20,24 +20,7 @@ const LAYER_COLORS = [
 ];
 
 
-const interpolate = (val: number, input: number[], output: number[]) => {
-  if (!input.length || !output.length) return 0;
-  if (val <= (input[0] ?? 0)) return output[0] ?? 0;
-  if (val >= (input[input.length - 1] ?? 0)) return output[output.length - 1] ?? 0;
-  
-  for (let i = 0; i < input.length - 1; i++) {
-    const iVal = input[i] ?? 0;
-    const iNextVal = input[i+1] ?? 0;
-    const oVal = output[i] ?? 0;
-    const oNextVal = output[i+1] ?? 0;
-    
-    if (val >= iVal && val <= iNextVal) {
-      const p = (val - iVal) / (iNextVal - iVal);
-      return oVal + p * (oNextVal - oVal);
-    }
-  }
-  return output[0] ?? 0;
-};
+import { interpolate } from "../../lib/animation-utils";
 
 export const RecursiveZoomCore: FC<RecursiveZoomCoreProps> = ({
   labels,
@@ -80,8 +63,8 @@ export const RecursiveZoomCore: FC<RecursiveZoomCoreProps> = ({
 
         const opacity = interpolate(
           zoomFactor,
-          [i * 0.5, i * 0.5 + 0.5, i * 0.5 + 2.5, i * 0.5 + 3],
-          [0, 1, 1, 0.3]
+          [i * 0.5, i * 0.5 + 0.5, i * 0.5 + 2.0, i * 0.5 + 2.5],
+          [0, 1, 1, 0] // Fade to 0 completely
         );
 
         const size = 600 * animatedScale;
@@ -114,7 +97,6 @@ export const RecursiveZoomCore: FC<RecursiveZoomCoreProps> = ({
                 fontWeight: 600,
                 letterSpacing: "0.05em",
                 textTransform: "uppercase",
-                opacity,
               }}
             >
               {label}

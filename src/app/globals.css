@@ -149,6 +149,7 @@
   }
 
   @media (min-width: 768px) {
+
     html,
     body {
       font-size: 14px;
@@ -172,19 +173,15 @@
     inset: 0;
     z-index: -1;
     background:
-      radial-gradient(
-        circle at 50% 0%,
+      radial-gradient(circle at 50% 0%,
         rgba(255, 255, 255, 0.03) 0%,
-        transparent 60%
-      ),
+        transparent 60%),
       hsl(var(--background));
     background-image:
       url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"),
-      radial-gradient(
-      circle at 50% 0%,
-      rgba(255, 255, 255, 0.03) 0%,
-      transparent 60%
-    ),
+      radial-gradient(circle at 50% 0%,
+        rgba(255, 255, 255, 0.03) 0%,
+        transparent 60%),
       hsl(var(--background));
     background-size: 200px 200px, 100% 100%, 100% 100%;
     /* Subtle noise + top spotlight for premium feel, but NO grid lines */
@@ -206,6 +203,7 @@
 
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {
@@ -246,11 +244,9 @@
   /* Aura Surfaces: Vibrant, colorful glass variants with deep saturation and bloom glows */
   /* These are now mobile-first with simplified blurs */
   .glass-aura-blue {
-    background: linear-gradient(
-      135deg,
-      rgba(7, 89, 133, 0.6),
-      rgba(7, 89, 133, 0.3)
-    );
+    background: linear-gradient(135deg,
+        rgba(7, 89, 133, 0.6),
+        rgba(7, 89, 133, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -260,11 +256,9 @@
   }
 
   .glass-aura-green {
-    background: linear-gradient(
-      135deg,
-      rgba(20, 83, 45, 0.6),
-      rgba(20, 83, 45, 0.3)
-    );
+    background: linear-gradient(135deg,
+        rgba(20, 83, 45, 0.6),
+        rgba(20, 83, 45, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow: inset 0 1px 1px 0 rgba(34, 197, 94, 0.5), 0 10px 40px -10px rgba(34, 197, 94, 0.3);
@@ -272,11 +266,9 @@
   }
 
   .glass-aura-orange {
-    background: linear-gradient(
-      135deg,
-      rgba(124, 45, 18, 0.6),
-      rgba(124, 45, 18, 0.3)
-    );
+    background: linear-gradient(135deg,
+        rgba(124, 45, 18, 0.6),
+        rgba(124, 45, 18, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -286,11 +278,9 @@
   }
 
   .glass-aura-fuchsia {
-    background: linear-gradient(
-      135deg,
-      rgba(112, 26, 117, 0.6),
-      rgba(112, 26, 117, 0.3)
-    );
+    background: linear-gradient(135deg,
+        rgba(112, 26, 117, 0.6),
+        rgba(112, 26, 117, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -300,11 +290,9 @@
   }
 
   .glass-aura-pink {
-    background: linear-gradient(
-      135deg,
-      rgba(157, 23, 77, 0.6),
-      rgba(157, 23, 77, 0.3)
-    );
+    background: linear-gradient(135deg,
+        rgba(157, 23, 77, 0.6),
+        rgba(157, 23, 77, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -314,11 +302,9 @@
   }
 
   .glass-aura-purple {
-    background: linear-gradient(
-      135deg,
-      rgba(88, 28, 135, 0.6),
-      rgba(88, 28, 135, 0.3)
-    );
+    background: linear-gradient(135deg,
+        rgba(88, 28, 135, 0.6),
+        rgba(88, 28, 135, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -328,11 +314,9 @@
   }
 
   .glass-layers {
-    background: linear-gradient(
-      135deg,
-      rgba(24, 24, 27, 0.8),
-      rgba(24, 24, 27, 0.6)
-    );
+    background: linear-gradient(135deg,
+        rgba(24, 24, 27, 0.8),
+        rgba(24, 24, 27, 0.6));
     backdrop-filter: blur(var(--glass-blur-mobile));
     -webkit-backdrop-filter: blur(var(--glass-blur-mobile));
     box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.1), 0 20px 50px -10px rgba(0, 0, 0, 0.5);
@@ -380,7 +364,8 @@
   .glass-edge {
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
-      /* Top highlighted edge */ inset 1px 0 0 0 rgba(255, 255, 255, 0.1),
+      /* Top highlighted edge */
+      inset 1px 0 0 0 rgba(255, 255, 255, 0.1),
       inset -1px 0 0 0 rgba(0, 0, 0, 0.2),
       inset 0 -1px 0 0 rgba(0, 0, 0, 0.3);
   }
@@ -391,7 +376,8 @@
     /* Slightly darker inner recess */
     box-shadow:
       inset 0 2px 4px rgba(0, 0, 0, 0.1),
-      /* Inner shadow top */ 0 1px 0 rgba(255, 255, 255, 0.05);
+      /* Inner shadow top */
+      0 1px 0 rgba(255, 255, 255, 0.05);
     /* Bottom highlight */
     backdrop-filter: blur(var(--glass-blur-md));
     /* Maintain blur */
@@ -436,45 +422,35 @@
 
   /* Gradient backgrounds for package cards - using HSL for consistency */
   .gradient-blue {
-    background: linear-gradient(
-      135deg,
-      hsl(217 91% 60%) 0%,
-      hsl(221 83% 53%) 100%
-    );
+    background: linear-gradient(135deg,
+        hsl(217 91% 60%) 0%,
+        hsl(221 83% 53%) 100%);
   }
 
   .gradient-purple {
-    background: linear-gradient(
-      135deg,
-      hsl(258 90% 66%) 0%,
-      hsl(263 70% 50%) 100%
-    );
+    background: linear-gradient(135deg,
+        hsl(258 90% 66%) 0%,
+        hsl(263 70% 50%) 100%);
   }
 
   .gradient-pink {
-    background: linear-gradient(
-      135deg,
-      hsl(330 81% 60%) 0%,
-      hsl(338 78% 48%) 100%
-    );
+    background: linear-gradient(135deg,
+        hsl(330 81% 60%) 0%,
+        hsl(338 78% 48%) 100%);
   }
 
   .gradient-orange {
-    background: linear-gradient(
-      135deg,
-      hsl(25 95% 53%) 0%,
-      hsl(21 90% 48%) 100%
-    );
+    background: linear-gradient(135deg,
+        hsl(25 95% 53%) 0%,
+        hsl(21 90% 48%) 100%);
   }
 
   /* Theme-aware gradient text utility for hero headings */
   .text-gradient-primary {
-    background-image: linear-gradient(
-      135deg,
-      hsl(var(--primary)),
-      hsl(var(--secondary)),
-      hsl(var(--accent))
-    );
+    background-image: linear-gradient(135deg,
+        hsl(var(--primary)),
+        hsl(var(--secondary)),
+        hsl(var(--accent)));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -482,38 +458,30 @@
 
   /* Gradient background utilities */
   .bg-gradient-primary {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--primary)),
-      hsl(var(--secondary))
-    );
+    background: linear-gradient(135deg,
+        hsl(var(--primary)),
+        hsl(var(--secondary)));
   }
 
   .bg-gradient-accent {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--accent)),
-      hsl(var(--primary))
-    );
+    background: linear-gradient(135deg,
+        hsl(var(--accent)),
+        hsl(var(--primary)));
   }
 
   .bg-gradient-hero {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--primary) / 0.15),
-      hsl(var(--secondary) / 0.1),
-      hsl(var(--accent) / 0.08)
-    );
+    background: linear-gradient(135deg,
+        hsl(var(--primary) / 0.15),
+        hsl(var(--secondary) / 0.1),
+        hsl(var(--accent) / 0.08));
   }
 
   /* Dark gradient page background */
   .bg-gradient-page {
-    background: linear-gradient(
-      135deg,
-      hsl(224 71% 4%) 0%,
-      hsl(250 60% 8%) 50%,
-      hsl(224 71% 4%) 100%
-    );
+    background: linear-gradient(135deg,
+        hsl(224 71% 4%) 0%,
+        hsl(250 60% 8%) 50%,
+        hsl(224 71% 4%) 100%);
     background-attachment: fixed;
   }
 
@@ -563,6 +531,7 @@
 
   /* Cyan pulse animation for loading and active states */
   @keyframes pulse-cyan {
+
     0%,
     100% {
       box-shadow: 0 0 20px hsl(var(--pixel-cyan) / 0.3), 0 0 40px hsl(var(--pixel-cyan) / 0.1);
@@ -581,6 +550,7 @@
 
   /* Vibrant Pulse Aura */
   @keyframes pulse-aura {
+
     0%,
     100% {
       opacity: 0.5;
@@ -617,12 +587,10 @@
   }
 
   .bg-skeleton-shimmer {
-    background: linear-gradient(
-      90deg,
-      hsl(var(--primary) / 0.05) 0%,
-      hsl(var(--primary) / 0.15) 50%,
-      hsl(var(--primary) / 0.05) 100%
-    );
+    background: linear-gradient(90deg,
+        hsl(var(--primary) / 0.05) 0%,
+        hsl(var(--primary) / 0.15) 50%,
+        hsl(var(--primary) / 0.05) 100%);
     background-size: 200% 100%;
   }
 
@@ -706,7 +674,17 @@
   .prose-blog {
     color: hsl(var(--foreground));
     font-family: var(--font-geist-sans);
-    line-height: 1.75;
+    line-height: 1.8;
+    font-size: 1.125rem;
+    /* 18px base */
+  }
+
+  @media (min-width: 1024px) {
+    .prose-blog {
+      font-size: 1.25rem;
+      /* 20px on desktop */
+      line-height: 1.8;
+    }
   }
 
   .prose-blog h1,
@@ -717,30 +695,52 @@
   .prose-blog h6 {
     font-family: var(--font-montserrat);
     color: hsl(var(--foreground));
-    font-weight: 700;
-    line-height: 1.3;
+    font-weight: 800;
+    /* Bolder headings */
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    /* Tighter tracking for headings */
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
   }
 
   .prose-blog h1 {
-    font-size: 2.25rem;
-    margin-top: 3rem;
-    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    .prose-blog h1 {
+      font-size: 3.5rem;
+      /* Huge H1 */
+    }
   }
 
   .prose-blog h2 {
-    font-size: 1.875rem;
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
+    font-size: 2rem;
+    margin-top: 3rem;
+  }
+
+  @media (min-width: 1024px) {
+    .prose-blog h2 {
+      font-size: 2.5rem;
+    }
   }
 
   .prose-blog h3 {
     font-size: 1.5rem;
-    margin-top: 2rem;
-    margin-bottom: 0.75rem;
+  }
+
+  @media (min-width: 1024px) {
+    .prose-blog h3 {
+      font-size: 1.75rem;
+    }
   }
 
   .prose-blog p {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.75rem;
+    /* More breathing room */
+    color: hsl(var(--foreground) / 0.9);
+    /* Slightly brighter text */
   }
 
   .prose-blog a {
@@ -786,7 +786,7 @@
     font-size: 0.875rem;
   }
 
-  .prose-blog :not(pre) > code {
+  .prose-blog :not(pre)>code {
     background: hsl(var(--muted));
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
@@ -838,7 +838,7 @@
   }
 
   /* Remove bottom margin from paragraphs inside blockquotes */
-  .prose-blog blockquote > div > p {
+  .prose-blog blockquote>div>p {
     margin-bottom: 0;
   }
 
@@ -880,7 +880,7 @@
   }
 
   /* Lead paragraph - larger intro text for better hierarchy */
-  .prose-blog > p:first-of-type {
+  .prose-blog>p:first-of-type {
     font-size: 1.125rem;
     line-height: 1.7;
     color: hsl(var(--foreground) / 0.85);
@@ -899,12 +899,12 @@
     }
   }
 
-  .stack-spacing > * + * {
+  .stack-spacing>*+* {
     margin-top: 1rem;
   }
 
   @media (min-width: 768px) {
-    .stack-spacing > * + * {
+    .stack-spacing>*+* {
       margin-top: 1.5rem;
     }
   }
@@ -964,6 +964,7 @@
 
   /* Slow twinkle animation - CPU efficient, opacity only */
   @keyframes twinkle-slow {
+
     0%,
     100% {
       opacity: 0.3;
@@ -975,6 +976,7 @@
   }
 
   @keyframes glow-pulse {
+
     0%,
     100% {
       text-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
@@ -986,6 +988,7 @@
   }
 
   @keyframes digit-pulse {
+
     0%,
     100% {
       transform: scale(1);
@@ -1059,6 +1062,7 @@
 
   /* Epic NYE - Floating orbs (GPU accelerated, subtle) */
   @keyframes float-slow {
+
     0%,
     100% {
       transform: translate(0, 0) scale(1);
@@ -1070,6 +1074,7 @@
   }
 
   @keyframes float-slow-reverse {
+
     0%,
     100% {
       transform: translate(0, 0) scale(1);
@@ -1092,6 +1097,7 @@
 
   /* Gradient text animation */
   @keyframes gradient-x {
+
     0%,
     100% {
       background-position: 0% 50%;
@@ -1138,6 +1144,7 @@
 
   /* Aurora effect - CPU efficient with slow animation */
   @keyframes aurora {
+
     0%,
     100% {
       opacity: 0.3;
@@ -1157,6 +1164,7 @@
 
   /* Heartbeat scale for urgency */
   @keyframes heartbeat {
+
     0%,
     100% {
       transform: scale(1);
@@ -1181,6 +1189,7 @@
 
   /* Screen pulse for final countdown */
   @keyframes screen-pulse {
+
     0%,
     100% {
       opacity: 0;
@@ -1257,6 +1266,7 @@
 
   /* Dramatic background shift - intensifying colors */
   @keyframes bg-intensity-pulse {
+
     0%,
     100% {
       opacity: 0.3;
@@ -1374,6 +1384,7 @@
 
   /* Sparkle twinkle for extra magic */
   @keyframes sparkle {
+
     0%,
     100% {
       transform: scale(0) rotate(0deg);
@@ -1419,6 +1430,7 @@
 
   /* Screen shake - dramatic shake effect */
   @keyframes screen-shake {
+
     0%,
     100% {
       transform: translateX(0);
@@ -1485,6 +1497,7 @@
 
   /* Glitch text effect */
   @keyframes glitch {
+
     0%,
     100% {
       transform: translate(0);
@@ -1513,6 +1526,7 @@
 
   /* Zoom pulse - dramatic zoom effect */
   @keyframes zoom-pulse {
+
     0%,
     100% {
       transform: scale(1);
@@ -1642,6 +1656,7 @@
 
   /* Sound bar - music visualizer effect */
   @keyframes sound-bar {
+
     0%,
     100% {
       transform: scaleY(0.3);
@@ -1798,6 +1813,7 @@
 
   /* Electric arc - flickering lightning */
   @keyframes electric-arc {
+
     0%,
     100% {
       opacity: 0;
@@ -1825,6 +1841,7 @@
 
   /* Spark - random flickering particles */
   @keyframes spark {
+
     0%,
     100% {
       opacity: 0;
@@ -1858,6 +1875,7 @@
 
   /* Text shimmer - subtle glow pulse */
   @keyframes text-shimmer {
+
     0%,
     100% {
       text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 215, 0, 0.3);
@@ -1923,6 +1941,7 @@
 
   /* Victory glow - pulsing celebration */
   @keyframes victory-glow {
+
     0%,
     100% {
       box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 100, 0, 0.3);
@@ -1942,6 +1961,7 @@
 
   /* Chromatic shift - color separation effect */
   @keyframes chromatic-shift {
+
     0%,
     100% {
       text-shadow: -2px 0 #ff0000, 2px 0 #00ffff;
@@ -1971,6 +1991,7 @@
 
   /* Disco beam - rotating light rays */
   @keyframes disco-beam {
+
     0%,
     100% {
       opacity: 0.3;
@@ -2170,6 +2191,7 @@
 
   /* Subtle shake for highlighted digits */
   @keyframes shake-subtle {
+
     0%,
     100% {
       transform: translateX(0);
@@ -2194,18 +2216,23 @@
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
 }
 
 @keyframes glitchShake {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateX(0);
   }
+
   25% {
     transform: translateX(-2px);
   }
+
   75% {
     transform: translateX(2px);
   }

@@ -32,7 +32,7 @@ beforeEach(() => {
 
 describe("MiniPreview", () => {
   const defaultProps = {
-    codespaceUrl: "https://testing.spike.land/live/test-app/",
+    codespaceUrl: "/api/codespace/test-app/embed",
     versionNumber: 1,
     isLatest: false,
     onClick: vi.fn(),
@@ -70,7 +70,7 @@ describe("MiniPreview", () => {
 
     it("should render URL bar placeholder text", () => {
       render(<MiniPreview {...defaultProps} />);
-      expect(screen.getByText("testing.spike.land/live/...")).toBeInTheDocument();
+      expect(screen.getByText("spike.land/live/...")).toBeInTheDocument();
     });
   });
 

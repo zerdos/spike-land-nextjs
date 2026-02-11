@@ -1,5 +1,6 @@
-import type { FC } from "react";
+import { useId, type FC } from "react";
 import { COLORS, VERITASIUM_COLORS } from "../../lib/constants";
+import { interpolate, clamp, seededRandom } from "../../lib/animation-utils";
 
 export type AttentionSpotlightCoreProps = {
   tokenCount: number;
@@ -20,31 +21,6 @@ const TOKEN_COLORS = [
   COLORS.amber,
 ];
 
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
-}
-
-const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
-
-const interpolate = (val: number, input: number[], output: number[]) => {
-  if (!input.length || !output.length) return 0;
-  if (val <= (input[0] ?? 0)) return output[0] ?? 0;
-  if (val >= (input[input.length - 1] ?? 0)) return output[output.length - 1] ?? 0;
-  
-  for (let i = 0; i < input.length - 1; i++) {
-    const iVal = input[i] ?? 0;
-    const iNextVal = input[i+1] ?? 0;
-    const oVal = output[i] ?? 0;
-    const oNextVal = output[i+1] ?? 0;
-    
-    if (val >= iVal && val <= iNextVal) {
-      const p = (val - iVal) / (iNextVal - iVal || 1);
-      return oVal + p * (oNextVal - oVal);
-    }
-  }
-  return output[0] ?? 0;
-};
 
 export const AttentionSpotlightCore: FC<AttentionSpotlightCoreProps> = ({
   tokenCount,
@@ -53,6 +29,8 @@ export const AttentionSpotlightCore: FC<AttentionSpotlightCoreProps> = ({
   height = 1080,
   className,
 }) => {
+  const id = useId();
+  const spotlightId = `spotlight-cone-${id.replace(/:/g, "")}`;
   // Spotlight dims as token count increases
   const spotlightOpacity = interpolate(
     clamp(tokenCount, 1, 100),
@@ -87,7 +65,7 @@ export const AttentionSpotlightCore: FC<AttentionSpotlightCoreProps> = ({
       preserveAspectRatio="xMidYMid meet"
     >
       <defs>
-        <radialGradient id="spotlight-cone" cx="50%" cy="50%" r={`${spotlightRadius}%`}>
+        <radialGradient id={spotlightId} cx="50%" cy="50%" r={`${spotlightRadius}%`}>
           <stop offset="0%" stopColor={COLORS.cyan} stopOpacity={spotlightOpacity} />
           <stop offset="40%" stopColor={COLORS.cyan} stopOpacity={spotlightOpacity * 0.4} />
           <stop offset="100%" stopColor={COLORS.cyan} stopOpacity={0} />
@@ -95,7 +73,7 @@ export const AttentionSpotlightCore: FC<AttentionSpotlightCoreProps> = ({
       </defs>
 
       {/* Spotlight cone */}
-      <rect x={0} y={0} width={1920} height={1080} fill="url(#spotlight-cone)" />
+      <rect x={0} y={0} width={1920} height={1080} fill={`url(#${spotlightId})`} />
 
       {/* Center glow */}
       <circle

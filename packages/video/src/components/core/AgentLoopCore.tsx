@@ -57,14 +57,20 @@ export const AgentLoopCore: FC<AgentLoopCoreProps> = ({
     >
       <div 
         style={{ 
-          width: 1920, 
-          height: 1080, 
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%) scale(0.6)", // Default scale for blog
+          width: "100%", 
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
+        <div style={{
+          position: "relative",
+          width: 1920,
+          height: 1080,
+          transformOrigin: "center",
+          transform: "scale(min(1, calc(100vw / 1920)))", // Responsive scaling
+        }}>
         {/* Connection lines (SVG) */}
         <svg
           style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none" }}
@@ -86,32 +92,34 @@ export const AgentLoopCore: FC<AgentLoopCoreProps> = ({
             const midX = (fromState.x + toState.x) / 2;
             const midY = (fromState.y + toState.y) / 2;
 
-            return (
-              <g key={i} opacity={lineProgress * 0.6}>
-                <line
-                  x1={fromState.x} y1={fromState.y}
-                  x2={toState.x} y2={toState.y}
-                  stroke={COLORS.textMuted}
-                  strokeWidth={2}
-                  strokeDasharray="8 4"
-                />
-                {/* Arrow head */}
-                <circle cx={toState.x} cy={toState.y} r={6} fill={COLORS.textMuted} />
-                {/* Label */}
-                {arrow.label && (
-                  <text
-                    x={midX}
-                    y={midY - 12}
-                    fill={COLORS.textSecondary}
-                    fontSize={14}
-                    fontFamily="Inter, sans-serif"
-                    textAnchor="middle"
-                  >
-                    {arrow.label}
-                  </text>
-                )}
-              </g>
-            );
+              return (
+                <g key={i} opacity={lineProgress * 0.8}> {/* Increased opacity from 0.6 */}
+                  <line
+                    x1={fromState.x} y1={fromState.y}
+                    x2={toState.x} y2={toState.y}
+                    stroke={COLORS.textMuted}
+                    strokeWidth={3} // Increased from 2
+                    strokeDasharray="12 6" // Larger dashes
+                  />
+                  {/* Arrow head */}
+                  <circle cx={toState.x} cy={toState.y} r={8} fill={COLORS.textMuted} /> {/* Increased radius */}
+                  {/* Label */}
+                  {arrow.label && (
+                    <text
+                      x={midX}
+                      y={midY - 16} // Moved up slightly
+                      fill={COLORS.textSecondary}
+                      fontSize={16} // Increased font size
+                      fontWeight={600}
+                      fontFamily="Inter, sans-serif"
+                      textAnchor="middle"
+                      style={{ textShadow: `0 2px 4px ${COLORS.darkBg}` }} // Added shadow for contrast
+                    >
+                      {arrow.label}
+                    </text>
+                  )}
+                </g>
+              );
           })}
         </svg>
 
@@ -191,6 +199,7 @@ export const AgentLoopCore: FC<AgentLoopCoreProps> = ({
             </span>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

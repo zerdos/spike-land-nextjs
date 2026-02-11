@@ -10,8 +10,8 @@ export function BayesianConfidenceDemo() {
   const [fails, setFails] = useState(1);
 
   return (
-    <div ref={ref} className="my-16 flex flex-col gap-6 items-center">
-      <div className="rounded-3xl overflow-hidden border border-white/10 bg-black w-full max-w-xl">
+    <div ref={ref} className="my-8 flex flex-col gap-6 items-center">
+      <div className="rounded-xl overflow-hidden border border-border bg-background w-full max-w-xl" aria-live="polite" aria-label={`Confidence score visualization: ${helps} successes, ${fails} failures`}>
         <BayesianConfidenceCore
           helps={helps}
           fails={fails}
@@ -19,18 +19,20 @@ export function BayesianConfidenceDemo() {
         />
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 w-full max-w-md">
         <button
           type="button"
           onClick={() => setHelps(h => h + 1)}
-          className="flex-1 px-8 py-4 rounded-2xl bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 text-green-400 font-black transition-all active:scale-95"
+          className="flex-1 px-4 py-3 sm:px-8 sm:py-4 rounded-xl bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 text-green-500 font-black transition-all active:scale-95 text-sm sm:text-base"
+          aria-label="Log success (increases confidence)"
         >
           LOG SUCCESS
         </button>
         <button
           type="button"
           onClick={() => setFails(f => f + 1)}
-          className="flex-1 px-8 py-4 rounded-2xl bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-400 font-black transition-all active:scale-95"
+          className="flex-1 px-4 py-3 sm:px-8 sm:py-4 rounded-xl bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-500 font-black transition-all active:scale-95 text-sm sm:text-base"
+          aria-label="Log failure (decreases confidence)"
         >
           LOG FAILURE
         </button>
@@ -39,15 +41,15 @@ export function BayesianConfidenceDemo() {
       <button
         type="button"
         onClick={() => { setHelps(0); setFails(0); }}
-        className="text-[10px] text-white/20 uppercase font-bold tracking-widest hover:text-white/40 transition-colors"
+        className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest hover:text-foreground transition-colors"
       >
         Reset Counter
       </button>
       
       <div className="max-w-md text-center">
-        <p className="text-xs text-white/40 leading-relaxed font-mono">
+        <p className="text-xs text-muted-foreground leading-relaxed font-mono">
           This uses Laplace's "Rule of Succession" to estimate confidence in an agent's ability based on historical data. 
-          Real-world agents transition from <span className="text-yellow-400">CANDIDATE</span> to <span className="text-green-400">ACTIVE</span> as they prove their reliability.
+          Real-world agents transition from <span className="text-yellow-500 font-bold">CANDIDATE</span> to <span className="text-green-500 font-bold">ACTIVE</span> as they prove their reliability.
         </p>
       </div>
     </div>

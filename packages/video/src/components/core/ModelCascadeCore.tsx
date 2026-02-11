@@ -87,7 +87,8 @@ export const ModelCascadeCore: FC<ModelCascadeCoreProps> = ({
           display: "flex",
           gap: 0,
           opacity: progress,
-          width: 720,
+          width: "100%",
+          maxWidth: 720,
           padding: "0 24px",
         }}
       >
@@ -117,74 +118,97 @@ export const ModelCascadeCore: FC<ModelCascadeCoreProps> = ({
         if (rowProgress <= 0) return null;
 
         const isHighlighted = i === highlightIndex;
+        // Z-index: Active card on top (50), otherwise stack normally (i) or reverse if needed
+        const zIndex = isHighlighted ? 50 : i + 1;
 
         return (
-          <GlassmorphismCardCore
+          <div
             key={model.name}
-            width={720}
-            progress={rowProgress}
-            color={model.color}
+            style={{
+              position: "relative",
+              zIndex,
+              width: "100%",
+              maxWidth: 720,
+              // Add negative margin to overlap cards slightly for the "cascade" effect
+              marginTop: i > 0 ? -40 : 0, 
+              transition: "transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), z-index 0s",
+              transform: isHighlighted ? "scale(1.05) translateY(-10px)" : `scale(${1 - i * 0.05}) translateY(${i * 10}px)`,
+              // Fade out non-highlighted items if one is selected
+              opacity: highlightIndex !== -1 && !isHighlighted ? 0.6 : 1,
+            }}
           >
-            <div
+            <GlassmorphismCardCore
+              width="100%"
+              progress={rowProgress}
+              color={model.color}
               style={{
-                display: "flex",
-                alignItems: "center",
-                position: "relative",
-                opacity: isHighlighted || highlightIndex === -1 ? 1 : 0.4,
-                transition: "opacity 0.3s",
+                background: `${COLORS.darkBg}E6`, // High opacity background to hide underlying cards
+                backdropFilter: "blur(12px)",
+                border: `1px solid ${model.color}40`,
+                boxShadow: isHighlighted ? `0 20px 40px -10px ${model.color}40` : "none",
               }}
             >
-              {/* Model name */}
               <div
                 style={{
-                  flex: 1,
-                  fontSize: 20,
-                  fontWeight: 700,
-                  color: model.color,
-                  fontFamily: "JetBrains Mono, monospace",
+                  display: "flex",
+                  alignItems: "center",
+                  position: "relative",
+                  padding: "16px 8px",
                 }}
               >
-                {model.name}
-              </div>
+                {/* Model name */}
+                <div
+                  style={{
+                    flex: 1,
+                    fontSize: 20,
+                    fontWeight: 700,
+                    color: model.color,
+                    fontFamily: "JetBrains Mono, monospace",
+                    minWidth: 80,
+                  }}
+                >
+                  {model.name}
+                </div>
 
-              {/* Role */}
-              <div
-                style={{
-                  flex: 1,
-                  fontSize: 16,
-                  color: COLORS.textPrimary,
-                  fontFamily: "Inter, sans-serif",
-                }}
-              >
-                {model.role}
-              </div>
+                {/* Role */}
+                <div
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    color: COLORS.textPrimary,
+                    fontFamily: "Inter, sans-serif",
+                  }}
+                >
+                  {model.role}
+                </div>
 
-              {/* Temperature */}
-              <div
-                style={{
-                  flex: 1,
-                  fontSize: 16,
-                  color: COLORS.textSecondary,
-                  fontFamily: "JetBrains Mono, monospace",
-                }}
-              >
-                {model.temp}
-              </div>
+                {/* Temperature */}
+                <div
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    color: COLORS.textSecondary,
+                    fontFamily: "JetBrains Mono, monospace",
+                  }}
+                >
+                  {model.temp}
+                </div>
 
-              {/* Cost */}
-              <div
-                style={{
-                  flex: 1,
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: COLORS.amber,
-                  fontFamily: "JetBrains Mono, monospace",
-                }}
-              >
-                {model.cost}
+                {/* Cost */}
+                <div
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: COLORS.amber,
+                    fontFamily: "JetBrains Mono, monospace",
+                  }}
+                >
+                  {model.cost}
+                </div>
               </div>
-            </div>
-          </GlassmorphismCardCore>
+            </GlassmorphismCardCore>
+          </div>
         );
       })}
     </div>

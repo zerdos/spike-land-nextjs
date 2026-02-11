@@ -283,7 +283,7 @@ describe("agentGenerateApp", () => {
       expect(events[6]).toEqual({
         type: "complete",
         slug: "my-app",
-        url: "https://testing.spike.land/live/test-codespace-123/",
+        url: "/api/codespace/test-codespace-123/embed",
         title: "Test App",
         description: "A test app",
         relatedApps: ["related/one"],
@@ -301,7 +301,7 @@ describe("agentGenerateApp", () => {
         "my app",
         "Generating app...",
         "test-codespace-123",
-        "https://testing.spike.land/live/test-codespace-123/",
+        "/api/codespace/test-codespace-123/embed",
         "Agent loop: my-app",
         "user-1",
       );
@@ -575,7 +575,7 @@ describe("agentGenerateApp", () => {
       expect(errorEvent).toHaveLength(1);
       expect(errorEvent[0]!.message).toBe("Failed after 2 fix attempts");
       expect(errorEvent[0]!.codespaceUrl).toBe(
-        "https://testing.spike.land/live/test-codespace-123/",
+        "/api/codespace/test-codespace-123/embed",
       );
     });
 
@@ -1307,7 +1307,7 @@ describe("agentGenerateApp", () => {
 
       const completeEvent = findEvent(events, "complete");
       expect(completeEvent!.url).toBe(
-        "https://testing.spike.land/live/custom-id-456/",
+        "/api/codespace/custom-id-456/embed",
       );
     });
   });
@@ -1683,7 +1683,7 @@ describe("agentGenerateApp", () => {
   // Sprint 2: Smart model routing
   // ----------------------------------------------------------------
   describe("smart model routing", () => {
-    it("uses Sonnet for simple apps (0 matched skills)", async () => {
+    it("always uses Opus (model routing disabled)", async () => {
       vi.mocked(getMatchedSkills).mockReturnValue([]);
 
       const events = await collectEvents(
@@ -1692,17 +1692,17 @@ describe("agentGenerateApp", () => {
 
       expect(callClaude).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: "sonnet",
+          model: "opus",
           maxTokens: 8192,
         }),
       );
 
-      // Generating message should say Sonnet
+      // Generating message should say Opus
       const genPhase = findEvents(events, "phase").find(
         (e) => e.phase === "GENERATING",
       );
       expect(genPhase!.message).toBe(
-        "Generating application with Claude Sonnet...",
+        "Generating application with Claude Opus...",
       );
     });
 

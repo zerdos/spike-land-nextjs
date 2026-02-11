@@ -1,3 +1,4 @@
+import { getOrCreateSession } from "@/lib/codespace";
 import prisma from "@/lib/prisma";
 
 /**
@@ -139,14 +140,8 @@ export async function checkCodespaceHasContent(
   const DEFAULT_CONTENT = "<div>Write your code here!</div>";
 
   try {
-    const response = await fetch(
-      `https://testing.spike.land/live/${encodeURIComponent(codeSpace)}/htm`,
-      { cache: "no-store" },
-    );
-
-    if (!response.ok) return false;
-
-    const html = await response.text();
+    const session = await getOrCreateSession(codeSpace);
+    const html = session.html;
     return html.trim() !== DEFAULT_CONTENT;
   } catch {
     return false;
@@ -194,7 +189,7 @@ export async function claimCreatedApp(
       codespaceId: createdApp.codespaceId,
       codespaceUrl: createdApp.codespaceUrl,
       userId,
-      status: "LIVE", // Already working on testing.spike.land
+      status: "LIVE", // Already working in codespace
       messages: {
         create: {
           role: "USER",

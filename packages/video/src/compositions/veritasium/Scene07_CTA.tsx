@@ -10,7 +10,7 @@ export function Scene07_CTA() {
   const progress = spring({
     frame,
     fps,
-    config: SPRING_CONFIGS.slow,
+    config: SPRING_CONFIGS.slow, durationInFrames: 90,
   });
 
   const labels = [

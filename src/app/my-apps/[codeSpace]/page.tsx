@@ -204,7 +204,7 @@ export default function CodeSpacePage() {
   // Ref to track current messages for stale closure prevention in polling
   const messagesRef = useRef<AppMessage[]>(messages);
 
-  const codespaceUrl = `https://testing.spike.land/live/${codeSpace}/embed`;
+  const codespaceUrl = `/api/codespace/${codeSpace}/embed`;
 
   // Memoize version number calculation to avoid O(n²) complexity in render loop
   // Maps messageId -> versionNumber for messages with code versions
@@ -1244,12 +1244,10 @@ export default function CodeSpacePage() {
                               const versionNumber = versionMap.get(message.id) ?? 1;
                               const isLatest = versionNumber === totalVersions;
 
-                              // Phase 5: Use versioned URLs for historical versions
-                              // - Latest: testing.spike.land/live/{codeSpace}/embed
-                              // - Version N: testing.spike.land/live/{codeSpace}/version/{N}/embed
+                              // Use versioned URLs for historical versions
                               const versionedUrl = isLatest
                                 ? codespaceUrl
-                                : `https://testing.spike.land/live/${codeSpace}/version/${versionNumber}/embed`;
+                                : `/api/codespace/${codeSpace}/version/${versionNumber}/embed`;
 
                               return (
                                 <MiniPreview

@@ -249,7 +249,7 @@ export default function CodespacePage() {
             <div className="flex-1 flex items-center justify-center">
               <div className="flex w-full max-w-sm items-center gap-2 rounded-md bg-zinc-950/50 px-3 py-1.5 text-xs text-zinc-500">
                 <div className="h-2 w-2 rounded-full bg-green-500" />
-                <span>testing.spike.land/live/{codeSpace}/</span>
+                <span>spike.land/live/{codeSpace}/</span>
               </div>
             </div>
 
@@ -280,7 +280,7 @@ export default function CodespacePage() {
           <div className="flex-1 relative">
             <iframe
               key={iframeKey}
-              src={`https://testing.spike.land/live/${codeSpace}/`}
+              src={`/api/codespace/${codeSpace}/embed`}
               className="absolute inset-0 border-0"
               style={{
                 width: "200%",

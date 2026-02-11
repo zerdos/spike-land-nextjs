@@ -157,20 +157,20 @@ describe("ALL_PHASES", () => {
 
 describe("LIVE_URL_BASE", () => {
   it("is the correct base URL", () => {
-    expect(LIVE_URL_BASE).toBe("https://testing.spike.land/live");
+    expect(LIVE_URL_BASE).toBe("/api/codespace");
   });
 });
 
 describe("getAppLiveUrl", () => {
   it("constructs correct URL for app name", () => {
-    expect(getAppLiveUrl("my-app")).toBe("https://testing.spike.land/live/my-app/index.ts");
+    expect(getAppLiveUrl("my-app")).toBe("/api/codespace/my-app/embed");
   });
 
   it("handles app names with numbers", () => {
-    expect(getAppLiveUrl("app-123")).toBe("https://testing.spike.land/live/app-123/index.ts");
+    expect(getAppLiveUrl("app-123")).toBe("/api/codespace/app-123/embed");
   });
 
   it("handles simple app names", () => {
-    expect(getAppLiveUrl("calculator")).toBe("https://testing.spike.land/live/calculator/index.ts");
+    expect(getAppLiveUrl("calculator")).toBe("/api/codespace/calculator/embed");
   });
 });

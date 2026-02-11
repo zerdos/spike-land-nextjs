@@ -49,7 +49,7 @@ export async function POST(
     const timeout = setTimeout(() => controller.abort(), RESTORE_TIMEOUT_MS);
 
     const response = await fetch(
-      `https://testing.spike.land/live/${app.codespaceId}/`,
+      `${process.env["NEXTAUTH_URL"] || "http://localhost:3000"}/api/codespace/${app.codespaceId}/code`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

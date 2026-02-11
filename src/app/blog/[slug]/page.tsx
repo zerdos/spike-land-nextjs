@@ -101,7 +101,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-grid-pattern">
-      <article className="container mx-auto px-6 max-w-3xl pt-24 pb-12">
+      <article className="container mx-auto px-6 max-w-4xl lg:max-w-5xl pt-24 pb-12">
         {/* Back to blog */}
         <Link
           href="/blog"

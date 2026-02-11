@@ -163,7 +163,7 @@ export function MiniPreview({
         <div className="flex-1 mx-3">
           <div className="bg-black/30 rounded px-2 py-0.5 max-w-[200px]">
             <span className="text-[9px] text-zinc-500 truncate block font-mono">
-              testing.spike.land/live/...
+              spike.land/live/...
             </span>
           </div>
         </div>

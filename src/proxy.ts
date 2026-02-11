@@ -150,6 +150,10 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  // Embed routes serve self-contained HTML with inline scripts and esm.sh
+  // imports. They set their own CSP — don't override it from middleware.
+  const isEmbedRoute = /^\/api\/codespace\/[^/]+\/(embed|version\/\d+\/embed)$/.test(pathname);
+
   // Generate CSP Nonce and Header
   const nonce = generateNonce();
   const cspHeader = `
@@ -158,7 +162,7 @@ export async function proxy(request: NextRequest) {
     script-src 'self' 'nonce-${nonce}' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://va.vercel-scripts.com https://connect.facebook.net https://vercel.live;
     style-src 'self' 'unsafe-inline' https://vercel.live;
     font-src 'self' https://vercel.live https://assets.vercel.com https://fonts.gstatic.com data:;
-    frame-src 'self' https://vercel.live http://localhost:3000 https://www.facebook.com https://staticxx.facebook.com https://testing.spike.land;
+    frame-src 'self' https://vercel.live http://localhost:3000 https://www.facebook.com https://staticxx.facebook.com;
     connect-src 'self' blob: data: https://*.r2.dev https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-analytics.com https://vitals.vercel-insights.com https://www.facebook.com https://connect.facebook.net https://vercel.live https://fonts.gstatic.com https://fonts.googleapis.com wss://ws-us3.pusher.com wss://*.peerjs.com;
     worker-src 'self' blob: data:;
     media-src 'self' blob: https://*.r2.dev https://*.r2.cloudflarestorage.com;
@@ -169,11 +173,15 @@ export async function proxy(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(CSP_NONCE_HEADER, nonce);
-  requestHeaders.set("Content-Security-Policy", cspHeader);
+  if (!isEmbedRoute) {
+    requestHeaders.set("Content-Security-Policy", cspHeader);
+  }
 
   // Helper to apply headers to response
   const applyHeaders = (response: NextResponse) => {
-    response.headers.set("Content-Security-Policy", cspHeader);
+    if (!isEmbedRoute) {
+      response.headers.set("Content-Security-Policy", cspHeader);
+    }
     // Add CORS headers for API routes in development
     if (pathname.startsWith("/api/")) {
       addCorsHeaders(response, origin);

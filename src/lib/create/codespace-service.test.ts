@@ -1,19 +1,26 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// Mock dependencies before importing the module under test
+const { mockTranspileCode, mockUpsertSession } = vi.hoisted(() => ({
+  mockTranspileCode: vi.fn(),
+  mockUpsertSession: vi.fn(),
+}));
+
+vi.mock("@/lib/codespace/transpile", () => ({
+  transpileCode: mockTranspileCode,
+}));
+
+vi.mock("@/lib/codespace/session-service", () => ({
+  upsertSession: mockUpsertSession,
+}));
+
+vi.mock("@/lib/logger", () => ({
+  default: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+}));
+
 import { generateCodespaceId, getCodespaceUrl, updateCodespace } from "./codespace-service";
 
-// Mock global fetch
-const fetchMock = vi.fn();
-
 describe("codespace-service", () => {
-  beforeEach(() => {
-    vi.stubGlobal("fetch", fetchMock);
-    fetchMock.mockReset();
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   describe("generateCodespaceId", () => {
     it("should generate consistent IDs for same input", () => {
       const id1 = generateCodespaceId("cooking/pasta");
@@ -22,7 +29,6 @@ describe("codespace-service", () => {
     });
 
     it("should generate IDs with at most 2 hyphen-separated parts", () => {
-      // Backend requires codeSpace.split("-").length <= 2
       const id = generateCodespaceId("framer-motion-example");
       const parts = id.split("-");
       expect(parts.length).toBeLessThanOrEqual(2);
@@ -44,41 +50,35 @@ describe("codespace-service", () => {
   describe("getCodespaceUrl", () => {
     it("should return correct URL", () => {
       const id = "create-test";
-      expect(getCodespaceUrl(id)).toContain(`/live/${id}/`);
+      expect(getCodespaceUrl(id)).toBe(`/api/codespace/${id}/embed`);
     });
   });
 
   describe("updateCodespace", () => {
     it("should call API and return success", async () => {
-      fetchMock.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ success: true }),
-      });
+      mockTranspileCode.mockResolvedValueOnce("transpiled-code");
+      mockUpsertSession.mockResolvedValueOnce(undefined);
 
       const result = await updateCodespace("test-id", "console.log('hi')");
 
       expect(result.success).toBe(true);
-      expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining("/live/test-id/api/code"),
-        expect.objectContaining({
-          method: "PUT",
-          body: JSON.stringify({ code: "console.log('hi')", run: true }),
-        }),
-      );
+      expect(mockTranspileCode).toHaveBeenCalledWith("console.log('hi')", "https://spike.land");
+      expect(mockUpsertSession).toHaveBeenCalledWith({
+        codeSpace: "test-id",
+        code: "console.log('hi')",
+        transpiled: "transpiled-code",
+        html: "",
+        css: "",
+      });
     });
 
     it("should handle API failure", async () => {
-      fetchMock.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        text: async () => "Error",
-        statusText: "Server Error",
-      });
+      mockTranspileCode.mockRejectedValueOnce(new Error("Transpilation failed"));
 
       const result = await updateCodespace("test-id", "code");
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Server Error");
+      expect(result.error).toContain("Transpilation failed");
     });
   });
 });

@@ -28,7 +28,7 @@ export function LiveAppDisplay({
     setIframeKey((prev) => prev + 1);
   }, []);
 
-  const iframeSrc = `https://testing.spike.land/live/${codespaceId}/`;
+  const iframeSrc = `/api/codespace/${codespaceId}/embed`;
 
   return (
     <div className={cn("flex flex-col h-[calc(100vh-4rem)] w-full", className)}>

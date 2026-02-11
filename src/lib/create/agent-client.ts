@@ -83,13 +83,14 @@ export async function callClaude(params: {
 
   for (let attempt = 0; attempt <= CLAUDE_MAX_RETRIES; attempt++) {
     try {
-      const response = await anthropic.messages.create({
+      const stream = anthropic.messages.stream({
         model: MODEL_MAP[model],
         max_tokens: maxTokens,
         temperature,
         system: systemBlocks,
         messages: [{ role: "user", content: userPrompt }],
       });
+      const response = await stream.finalMessage();
 
       const text = response.content
         .filter((block): block is TextBlock => block.type === "text")

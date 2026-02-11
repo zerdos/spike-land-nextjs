@@ -232,11 +232,6 @@ After deployment:
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <meta name="description" content="spike.land codeSpace">
 
-  <!-- Fonts (if needed) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap" rel="stylesheet">
-
   <!-- Content Security Policy -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';

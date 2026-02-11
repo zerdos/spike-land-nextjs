@@ -307,6 +307,7 @@ model App {
   codeVersions       AppCodeVersion[] // Code snapshots for undo/restore
   sandboxJobs        SandboxJob[] // Vercel Sandbox execution jobs
   workspaceLink      WorkspaceApp? // Link to workspace (campaign tools)
+  codespaceSession   CodespaceSession? // Linked codespace session (replaces CF Worker DO)
 
   @@index([userId])
   @@index([forkedFrom])
@@ -5386,4 +5387,44 @@ model GenerationAttempt {
   @@index([slug])
   @@index([createdAt])
   @@map("generation_attempts")
+}
+
+// =============================================================================
+// Codespace Sessions (replaces Cloudflare Worker Durable Objects)
+// =============================================================================
+
+model CodespaceSession {
+  id         String   @id @default(cuid())
+  codeSpace  String   @unique
+  code       String   @db.Text
+  transpiled String   @db.Text
+  html       String   @db.Text
+  css        String   @db.Text
+  hash       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  versions CodespaceVersion[]
+  app      App?               @relation(fields: [appId], references: [id])
+  appId    String?            @unique
+
+  @@index([codeSpace])
+  @@map("codespace_sessions")
+}
+
+model CodespaceVersion {
+  id         String           @id @default(cuid())
+  sessionId  String
+  session    CodespaceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  number     Int
+  code       String           @db.Text
+  transpiled String           @db.Text
+  html       String           @db.Text
+  css        String           @db.Text
+  hash       String
+  createdAt  DateTime         @default(now())
+
+  @@unique([sessionId, number])
+  @@index([sessionId, number])
+  @@map("codespace_versions")
 }

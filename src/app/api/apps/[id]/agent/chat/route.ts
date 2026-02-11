@@ -8,6 +8,7 @@ import {
   CODESPACE_TOOL_NAMES,
   createCodespaceServer,
 } from "@/lib/claude-agent/tools/codespace-tools";
+import { getOrCreateSession } from "@/lib/codespace";
 import prisma from "@/lib/prisma";
 import { spawnAgentSandbox } from "@/lib/sandbox/agent-sandbox";
 import { tryCatch } from "@/lib/try-catch";
@@ -37,9 +38,6 @@ interface ContentPart {
   name?: string;
 }
 
-// Timeout for external fetches (5 seconds)
-const FETCH_TIMEOUT_MS = 5000;
-
 // Helper to emit stage events to stream
 function emitStage(
   controller: ReadableStreamDefaultController,
@@ -52,40 +50,6 @@ function emitStage(
     ...(tool && { tool }),
   });
   controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
-}
-
-// Custom error for fetch timeouts
-class FetchTimeoutError extends Error {
-  constructor(url: string, timeoutMs: number) {
-    super(`Fetch to ${url} timed out after ${timeoutMs}ms`);
-    this.name = "FetchTimeoutError";
-  }
-}
-
-// Fetch with timeout
-async function fetchWithTimeout(
-  url: string,
-  options: RequestInit = {},
-  timeoutMs: number = FETCH_TIMEOUT_MS,
-): Promise<Response> {
-  const abortController = new AbortController();
-  const timeout = setTimeout(() => abortController.abort(), timeoutMs);
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: abortController.signal,
-    });
-    return response;
-  } catch (error) {
-    // Distinguish timeout from other errors
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new FetchTimeoutError(url, timeoutMs);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeout);
-  }
 }
 
 export async function POST(
@@ -328,21 +292,14 @@ export async function POST(
   // Create MCP server with codespace tools
   const codespaceServer = createCodespaceServer(app.codespaceId);
 
-  // Fetch current code from testing.spike.land to include in context
-  // Using timeout to prevent hangs
+  // Fetch current code from codespace session service
   let currentCode = "";
-  const { data: sessionResponse, error: sessionError } = await tryCatch(
-    fetchWithTimeout(
-      `https://testing.spike.land/live/${app.codespaceId}/session.json`,
-      { headers: { "Accept": "application/json" } },
-    ),
+  const { data: codespaceSession, error: sessionError } = await tryCatch(
+    getOrCreateSession(app.codespaceId),
   );
 
-  if (!sessionError && sessionResponse.ok) {
-    const { data: sessionData } = await tryCatch(sessionResponse.json());
-    if (sessionData?.code) {
-      currentCode = sessionData.code;
-    }
+  if (!sessionError && codespaceSession?.code) {
+    currentCode = codespaceSession.code;
   }
 
   // Token optimization: Check if code has changed since last message
@@ -516,17 +473,13 @@ export async function POST(
           // Emit validating stage
           emitStage(controller, "validating");
 
-          // Verify the update actually happened (with timeout)
-          const { data: verifyResponse } = await tryCatch(
-            fetchWithTimeout(
-              `https://testing.spike.land/live/${app.codespaceId}/session.json`,
-              { headers: { "Accept": "application/json" } },
-            ),
+          // Verify the update actually happened via session service
+          const { data: verifySession } = await tryCatch(
+            getOrCreateSession(app.codespaceId!),
           );
 
-          if (verifyResponse?.ok) {
-            const { data: verifyData } = await tryCatch(verifyResponse.json());
-            const actuallyChanged = verifyData?.code !== currentCode;
+          if (verifySession) {
+            const actuallyChanged = verifySession.code !== currentCode;
             console.log(
               `[agent/chat] Code verification: ${actuallyChanged ? "SUCCESS" : "FAILED"}`,
             );
@@ -538,10 +491,10 @@ export async function POST(
             }
 
             // Create code version snapshot if code was actually updated
-            if (actuallyChanged && verifyData?.code) {
+            if (actuallyChanged && verifySession.code) {
               const crypto = await import("crypto");
               const hash = crypto.createHash("sha256")
-                .update(verifyData.code)
+                .update(verifySession.code)
                 .digest("hex");
 
               // Use the captured agentMessageId directly (no query needed)
@@ -549,7 +502,7 @@ export async function POST(
                 data: {
                   appId: id,
                   messageId: agentMessageId,
-                  code: verifyData.code,
+                  code: verifySession.code,
                   hash,
                 },
               });

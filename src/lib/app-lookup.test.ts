@@ -1,16 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Use vi.hoisted to define mocks that will be available when vi.mock is hoisted
-const { mockApp } = vi.hoisted(() => ({
+const { mockApp, mockGetOrCreateSession } = vi.hoisted(() => ({
   mockApp: {
     findFirst: vi.fn(),
   },
+  mockGetOrCreateSession: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
   default: {
     app: mockApp,
   },
+}));
+
+vi.mock("@/lib/codespace", () => ({
+  getOrCreateSession: mockGetOrCreateSession,
 }));
 
 import {
@@ -258,35 +263,30 @@ describe("app-lookup", () => {
   });
 
   describe("checkCodespaceHasContent", () => {
-    const mockFetch = vi.fn();
-
     beforeEach(() => {
-      vi.stubGlobal("fetch", mockFetch);
-    });
-
-    afterEach(() => {
-      vi.unstubAllGlobals();
+      mockGetOrCreateSession.mockReset();
     });
 
     it("should return true when codespace has non-default content", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: () => Promise.resolve("<div>My custom app content</div>"),
+      mockGetOrCreateSession.mockResolvedValueOnce({
+        html: "<div>My custom app content</div>",
+        code: "",
+        transpiled: "",
+        css: "",
       });
 
       const result = await checkCodespaceHasContent("my-codespace");
 
       expect(result).toBe(true);
-      expect(mockFetch).toHaveBeenCalledWith(
-        "https://testing.spike.land/live/my-codespace/htm",
-        { cache: "no-store" },
-      );
+      expect(mockGetOrCreateSession).toHaveBeenCalledWith("my-codespace");
     });
 
     it("should return false when codespace has default content", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: () => Promise.resolve("<div>Write your code here!</div>"),
+      mockGetOrCreateSession.mockResolvedValueOnce({
+        html: "<div>Write your code here!</div>",
+        code: "",
+        transpiled: "",
+        css: "",
       });
 
       const result = await checkCodespaceHasContent("empty-codespace");
@@ -295,9 +295,11 @@ describe("app-lookup", () => {
     });
 
     it("should return false when codespace has default content with whitespace", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: () => Promise.resolve("  <div>Write your code here!</div>  \n"),
+      mockGetOrCreateSession.mockResolvedValueOnce({
+        html: "  <div>Write your code here!</div>  \n",
+        code: "",
+        transpiled: "",
+        css: "",
       });
 
       const result = await checkCodespaceHasContent("whitespace-codespace");
@@ -305,19 +307,16 @@ describe("app-lookup", () => {
       expect(result).toBe(false);
     });
 
-    it("should return false when HTTP response is not ok", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-      });
+    it("should return false when session lookup fails", async () => {
+      mockGetOrCreateSession.mockRejectedValueOnce(new Error("Not found"));
 
       const result = await checkCodespaceHasContent("nonexistent-codespace");
 
       expect(result).toBe(false);
     });
 
-    it("should return false when fetch throws an error", async () => {
-      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+    it("should return false when getOrCreateSession throws an error", async () => {
+      mockGetOrCreateSession.mockRejectedValueOnce(new Error("Network error"));
 
       const result = await checkCodespaceHasContent("error-codespace");
 
@@ -325,17 +324,16 @@ describe("app-lookup", () => {
     });
 
     it("should encode special characters in codespace name", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: () => Promise.resolve("<div>Content</div>"),
+      mockGetOrCreateSession.mockResolvedValueOnce({
+        html: "<div>Content</div>",
+        code: "",
+        transpiled: "",
+        css: "",
       });
 
       await checkCodespaceHasContent("my codespace/test");
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        "https://testing.spike.land/live/my%20codespace%2Ftest/htm",
-        { cache: "no-store" },
-      );
+      expect(mockGetOrCreateSession).toHaveBeenCalledWith("my codespace/test");
     });
   });
 });

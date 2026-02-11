@@ -236,15 +236,15 @@ export const ALL_PHASES: AppPhase[] = [
 export const THIS_PROJECT_SOURCE = "sources/github/zerdos/spike-land-app-factory";
 
 /**
- * Live URL base for deployed apps
+ * Live URL base for deployed apps (relative, since we use local API routes)
  */
-export const LIVE_URL_BASE = "https://testing.spike.land/live";
+export const LIVE_URL_BASE = "/api/codespace";
 
 /**
  * Get the live URL for a deployed app
  */
 export function getAppLiveUrl(appName: string): string {
-  return `${LIVE_URL_BASE}/${appName}/index.ts`;
+  return `${LIVE_URL_BASE}/${appName}/embed`;
 }
 
 /**

@@ -68,7 +68,7 @@ function getCallbackUrl(): string {
  *
  * This script:
  * 1. Reads context from context.json
- * 2. Fetches current code from testing.spike.land
+ * 2. Fetches current code from the app's API
  * 3. Runs Claude Agent SDK with codespace tools
  * 4. POSTs result to callback URL
  */
@@ -84,11 +84,17 @@ const { appId, messageId, jobId, codespaceId, userMessage, callbackUrl, callback
 
 console.log("[sandbox] Starting agent for app:", appId, "message:", messageId);
 
-// Fetch current code from testing.spike.land
+// Determine the base URL for API calls
+const API_BASE = callbackUrl.replace(/\\/api\\/agent\\/sandbox\\/callback$/, "");
+
+// Fetch current code from the app's API
 async function fetchCurrentCode() {
   return new Promise((resolve, reject) => {
-    https.get(
-      \`https://testing.spike.land/live/\${codespaceId}/session.json\`,
+    const url = new URL(\`\${API_BASE}/api/codespace/\${codespaceId}/session\`);
+    const isHttps = url.protocol === "https:";
+    const httpModule = isHttps ? https : http;
+    httpModule.get(
+      url.href,
       { headers: { Accept: "application/json" } },
       (res) => {
         let data = "";
@@ -108,13 +114,14 @@ async function fetchCurrentCode() {
 
 // Simple MCP-like tool for codespace operations
 function createCodespaceTools(codespaceId) {
-  const TESTING_SPIKE_LAND = "https://testing.spike.land";
-
   const tools = {
     async read_code() {
       return new Promise((resolve, reject) => {
-        https.get(
-          \`\${TESTING_SPIKE_LAND}/live/\${codespaceId}/session.json\`,
+        const url = new URL(\`\${API_BASE}/api/codespace/\${codespaceId}/session\`);
+        const isHttps = url.protocol === "https:";
+        const httpMod = isHttps ? https : http;
+        httpMod.get(
+          url.href,
           { headers: { Accept: "application/json" } },
           (res) => {
             let data = "";
@@ -134,12 +141,15 @@ function createCodespaceTools(codespaceId) {
 
     async update_code(code) {
       return new Promise((resolve, reject) => {
-        const postData = JSON.stringify({ code, run: true });
-        const req = https.request(
+        const postData = JSON.stringify({ code });
+        const url = new URL(\`\${API_BASE}/api/codespace/\${codespaceId}/code\`);
+        const isHttps = url.protocol === "https:";
+        const httpMod = isHttps ? https : http;
+        const req = httpMod.request(
           {
-            hostname: "testing.spike.land",
-            port: 443,
-            path: \`/live/\${codespaceId}/api/code\`,
+            hostname: url.hostname,
+            port: url.port || (isHttps ? 443 : 80),
+            path: url.pathname,
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -208,11 +218,14 @@ function createCodespaceTools(codespaceId) {
     async validate_code(code) {
       return new Promise((resolve, reject) => {
         const postData = JSON.stringify({ code });
-        const req = https.request(
+        const url = new URL(\`\${API_BASE}/api/codespace/\${codespaceId}/validate\`);
+        const isHttps = url.protocol === "https:";
+        const httpMod = isHttps ? https : http;
+        const req = httpMod.request(
           {
-            hostname: "testing.spike.land",
-            port: 443,
-            path: \`/live/\${codespaceId}/api/validate\`,
+            hostname: url.hostname,
+            port: url.port || (isHttps ? 443 : 80),
+            path: url.pathname,
             method: "POST",
             headers: {
               "Content-Type": "application/json",

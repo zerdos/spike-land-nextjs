@@ -9,6 +9,7 @@ export type GlassmorphismCardCoreProps = {
   color?: string;
   padding?: number | string;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 export const GlassmorphismCardCore: React.FC<GlassmorphismCardCoreProps> = ({
@@ -19,6 +20,7 @@ export const GlassmorphismCardCore: React.FC<GlassmorphismCardCoreProps> = ({
   color = COLORS.cyan,
   padding = 32,
   className,
+  style,
 }) => {
   const opacity = progress;
   const y = (1 - progress) * 20;
@@ -27,6 +29,7 @@ export const GlassmorphismCardCore: React.FC<GlassmorphismCardCoreProps> = ({
     <div
       className={className}
       style={{
+        ...style,
         width,
         height,
         opacity,

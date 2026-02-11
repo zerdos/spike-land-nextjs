@@ -117,7 +117,7 @@ describe("GET /api/agent/apps/[appId]/context", () => {
       description: "Test description",
       status: "WAITING",
       codespaceId: "test-codespace",
-      codespaceUrl: "https://testing.spike.land/live/test-codespace/",
+      codespaceUrl: "/api/codespace/test-codespace/embed",
       isPublic: false,
       slug: "test-app",
       requirements: [
@@ -174,7 +174,7 @@ describe("GET /api/agent/apps/[appId]/context", () => {
       description: "Test description",
       status: "WAITING",
       codespaceId: "test-codespace",
-      codespaceUrl: "https://testing.spike.land/live/test-codespace/",
+      codespaceUrl: "/api/codespace/test-codespace/embed",
       isPublic: false,
       slug: "test-app",
     });

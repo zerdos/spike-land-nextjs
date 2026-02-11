@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 
 import { broadcastCodeUpdated, broadcastMessage } from "@/app/api/apps/[id]/messages/stream/route";
 import { verifyAgentAuth } from "@/lib/auth/agent";
+import { getOrCreateSession } from "@/lib/codespace";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { dequeueMessage } from "@/lib/upstash";
@@ -109,29 +110,21 @@ export async function POST(
       let codeVersion: { id: string; createdAt: Date; } | null = null;
       if (codeUpdated && app.codespaceId) {
         try {
-          const sessionUrl = `https://testing.spike.land/live/${app.codespaceId}/session.json`;
-          const response = await fetch(sessionUrl, {
-            headers: { Accept: "application/json" },
-            signal: AbortSignal.timeout(5000),
-          });
+          const codespaceSession = await getOrCreateSession(app.codespaceId);
+          const code = codespaceSession?.code;
 
-          if (response.ok) {
-            const sessionData = await response.json();
-            const code = sessionData?.code || sessionData?.cSess?.code;
-
-            if (code) {
-              const hash = createHash("sha256").update(code).digest("hex");
-              const version = await tx.appCodeVersion.create({
-                data: {
-                  appId,
-                  messageId: message.id,
-                  code,
-                  hash,
-                },
-              });
-              codeVersion = { id: version.id, createdAt: version.createdAt };
-              console.log("[respond] Created code version for message:", message.id);
-            }
+          if (code) {
+            const hash = createHash("sha256").update(code).digest("hex");
+            const version = await tx.appCodeVersion.create({
+              data: {
+                appId,
+                messageId: message.id,
+                code,
+                hash,
+              },
+            });
+            codeVersion = { id: version.id, createdAt: version.createdAt };
+            console.log("[respond] Created code version for message:", message.id);
           }
         } catch (codeVersionError) {
           // Log but don't fail - code version is nice-to-have for UI previews

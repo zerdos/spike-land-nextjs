@@ -78,7 +78,7 @@ ${message}
 
   if (options.codespaceId) {
     body +=
-      `\n- **Codespace**: [${options.codespaceId}](https://testing.spike.land/live/${options.codespaceId}/)`;
+      `\n- **Codespace**: [${options.codespaceId}](https://spike.land/api/codespace/${options.codespaceId}/embed)`;
   }
 
   return body;
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
 ${body.message.trim().slice(0, 4000)}
 </user_bug_report>
 
-The app code is at: https://testing.spike.land/live/${body.codespaceId}/
+The app code is at: https://spike.land/api/codespace/${body.codespaceId}/embed
 Related GitHub issue: #${issue.number}
 
 Please investigate the bug described above and fix it. Update the codespace code accordingly.`,
