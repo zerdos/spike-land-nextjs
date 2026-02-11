@@ -13,6 +13,8 @@ export interface CodespaceResponse {
   success: boolean;
   error?: string;
   url?: string;
+  /** Structured errors from esbuild when transpilation fails. */
+  structuredErrors?: Array<{ line?: number; column?: number; message: string }>;
 }
 
 /**

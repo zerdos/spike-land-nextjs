@@ -442,7 +442,7 @@ export async function* agentGenerateApp(
           fixed: false,
         },
       ],
-      model: "opus",
+      model: ctx.generationModel,
       inputTokens: ctx.totalInputTokens,
       outputTokens: ctx.totalOutputTokens,
       cachedTokens: ctx.totalCachedTokens,
@@ -454,6 +454,25 @@ export async function* agentGenerateApp(
       codespaceUrl,
     };
   }
+}
+
+/**
+ * Merge two note arrays, deduplicating by ID.
+ * Error-specific notes are appended after general notes.
+ */
+function mergeNotes(
+  generalNotes: LearningNote[],
+  errorNotes: LearningNote[],
+): LearningNote[] {
+  const seenIds = new Set(generalNotes.map((n) => n.id));
+  const merged = [...generalNotes];
+  for (const note of errorNotes) {
+    if (!seenIds.has(note.id)) {
+      seenIds.add(note.id);
+      merged.push(note);
+    }
+  }
+  return merged;
 }
 
 /**
