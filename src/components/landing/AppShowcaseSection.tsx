@@ -53,25 +53,37 @@ export function AppShowcaseSection({ apps }: AppShowcaseSectionProps) {
           Witness the raw power of AI. Every app below was built starting from a single sentence.
         </motion.p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {apps.map((app, index) => (
-            <motion.div
-              key={app.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.05 * (index % 4) }}
-              whileHover={{ y: -8 }}
-            >
-              <LiveAppCard
-                title={app.title}
-                description={app.description}
-                slug={app.slug}
-                codespaceId={app.codespaceId}
-                viewCount={app.viewCount}
-              />
-            </motion.div>
-          ))}
+        <div className="relative">
+          {/* Gradient fade edges */}
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-zinc-950 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-zinc-950 to-transparent z-10 pointer-events-none" />
+
+          <div className="flex gap-6 overflow-x-auto scroll-snap-x-mandatory pb-4 px-4 scrollbar-none">
+            {apps.map((app, index) => (
+              <motion.div
+                key={app.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.05 * (index % 4) }}
+                whileHover={{ y: -8 }}
+                className="relative shrink-0 w-[280px] sm:w-[320px] scroll-snap-align-start"
+              >
+                {index < 3 && (
+                  <div className="absolute -top-2 -right-2 z-10 bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    Featured
+                  </div>
+                )}
+                <LiveAppCard
+                  title={app.title}
+                  description={app.description}
+                  slug={app.slug}
+                  codespaceId={app.codespaceId}
+                  viewCount={app.viewCount}
+                />
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         <motion.div 

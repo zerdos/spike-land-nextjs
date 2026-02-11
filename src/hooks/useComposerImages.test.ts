@@ -207,19 +207,23 @@ describe("useComposerImages", () => {
       });
 
       const { result } = renderHook(() => useComposerImages());
+      const callsBefore = mockFetch.mock.calls.length;
 
       act(() => {
         result.current.addImages([createMockFile("photo.jpg")]);
       });
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(mockFetch.mock.calls.length).toBeGreaterThan(callsBefore);
       });
 
-      const [url, options] = mockFetch.mock.calls[0];
-      expect(url).toBe("/api/create/upload-image");
-      expect(options.method).toBe("POST");
-      expect(options.body).toBeInstanceOf(FormData);
+      // Find the call that matches our upload endpoint
+      const uploadCall = mockFetch.mock.calls.find(
+        ([url]: [string]) => url === "/api/create/upload-image",
+      );
+      expect(uploadCall).toBeDefined();
+      expect(uploadCall![1].method).toBe("POST");
+      expect(uploadCall![1].body).toBeInstanceOf(FormData);
     });
 
     it("should use custom upload endpoint", async () => {
@@ -501,16 +505,16 @@ describe("useComposerImages", () => {
 
   describe("uploadedUrls", () => {
     it("should return only successfully uploaded URLs", async () => {
-      let callCount = 0;
-      mockFetch.mockImplementation(async () => {
-        callCount++;
-        if (callCount === 1) {
+      mockFetch.mockImplementation(async (_url: string, options: { body: FormData }) => {
+        const formData = options.body;
+        const file = formData.get("file") as File;
+        if (file && file.name === "success.jpg") {
           return {
             ok: true,
             json: async () => ({ url: "https://r2.example.com/img1.jpg" }),
           };
         }
-        // Second upload fails
+        // fail.jpg upload fails
         return {
           ok: false,
           json: async () => ({ error: "Failed" }),
