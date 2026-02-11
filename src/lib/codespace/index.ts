@@ -1,11 +1,10 @@
+export { computeSessionHash } from "./hash-utils";
 export {
-  computeSessionHash,
   getOrCreateSession,
   getSession,
   getVersion,
   getVersionsList,
   initializeSession,
-  linkSessionToApp,
   saveVersion,
   updateSession,
   upsertSession,

@@ -157,3 +157,48 @@ export const IMPORT_MAP = {
     "recharts": "/recharts.mjs",
   },
 };
+
+/**
+ * Build a self-contained embed HTML page.
+ *
+ * The page is served from the Next.js origin but all module imports
+ * (import map entries + paths in transpiled code) must resolve against
+ * testing.spike.land where the ESM proxy lives. Because `<base>` does
+ * NOT affect ES module `import` resolution, we rewrite every relative
+ * URL to an absolute testing.spike.land URL.
+ */
+export function buildEmbedHtml(opts: {
+  transpiled: string;
+  html: string;
+  css: string;
+  codeSpace: string;
+}): string {
+  const origin = "https://testing.spike.land";
+  const base = `${origin}/live/${opts.codeSpace}/`;
+
+  // Make import map values absolute so module resolution hits testing.spike.land
+  const absoluteImports: Record<string, string> = {};
+  for (const [key, value] of Object.entries(IMPORT_MAP.imports)) {
+    absoluteImports[key] = value.startsWith("/")
+      ? `${origin}${value}`
+      : value;
+  }
+  const importMap = JSON.stringify({ imports: absoluteImports }, null, 2);
+
+  // Rewrite relative import paths in transpiled code to absolute URLs.
+  // Matches: from "/something" or from '/something'
+  const transpiled = (opts.transpiled || "").replace(
+    /\bfrom\s+["'](\/[^"']+)["']/g,
+    (_, path) => `from "${origin}${path}"`,
+  );
+
+  return HTML_TEMPLATE
+    .replace("// IMPORTMAP", importMap)
+    .replace('<base href="/" />', `<base href="${base}" />`)
+    .replace("<!-- HTML_CONTENT -->", opts.html || "")
+    .replace("/* criticalCss */", opts.css || "")
+    .replace(
+      '<script type="module" src="/start.mjs"></script>',
+      `<script type="module">${transpiled}</script>`,
+    );
+}

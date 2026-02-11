@@ -116,6 +116,7 @@ async function updateCode(
       transpiled,
       html: "",
       css: "",
+      messages: [],
     });
 
     logger.info(`[codespace-tools] updateCode SUCCESS for: ${codespaceId}`);

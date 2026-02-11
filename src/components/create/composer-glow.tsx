@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 
 interface ComposerGlowProps {
@@ -10,7 +9,7 @@ interface ComposerGlowProps {
   className?: string;
 }
 
-export function ComposerGlow({ isFocused, children, className }: ComposerGlowProps) {
+export function ComposerGlow({ isFocused: _isFocused, children, className }: ComposerGlowProps) {
 
   return (
     <div className={cn("relative rounded-2xl p-[1px]", className)}>

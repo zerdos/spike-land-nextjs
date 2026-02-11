@@ -99,6 +99,53 @@ export class SessionService {
   }
 
   /**
+   * Get or create a session.
+   */
+  static async getOrCreateSession(codeSpace: string): Promise<ICodeSession> {
+    const session = await this.getSession(codeSpace);
+    if (session) {
+      return session;
+    }
+    return this.initializeSession(codeSpace);
+  }
+
+  /**
+   * Upsert a session with provided data.
+   */
+  static async upsertSession(session: ICodeSession): Promise<ICodeSession> {
+    const { codeSpace } = session;
+    const hash = computeSessionHash(session);
+
+    await prisma.codespaceSession.upsert({
+      where: { codeSpace },
+      update: {
+        code: session.code,
+        transpiled: session.transpiled,
+        html: session.html,
+        css: session.css,
+        hash,
+        messages: session.messages as unknown as Prisma.JsonValue,
+        requiresReRender: session.requiresReRender,
+      },
+      create: {
+        codeSpace,
+        code: session.code,
+        transpiled: session.transpiled,
+        html: session.html,
+        css: session.css,
+        hash,
+        messages: session.messages as unknown as Prisma.JsonValue,
+        requiresReRender: session.requiresReRender,
+      },
+    });
+
+    // Invalidate cache
+    await redis.del(this.getCacheKey(codeSpace));
+
+    return session;
+  }
+
+  /**
    * Update an existing session.
    * Performs an optimistic lock using the expected hash.
    */
@@ -268,3 +315,18 @@ export class SessionService {
     }));
   }
 }
+
+export const getSession = SessionService.getSession.bind(SessionService);
+export const initializeSession = SessionService.initializeSession.bind(
+  SessionService,
+);
+export const getOrCreateSession = SessionService.getOrCreateSession.bind(
+  SessionService,
+);
+export const updateSession = SessionService.updateSession.bind(SessionService);
+export const upsertSession = SessionService.upsertSession.bind(SessionService);
+export const saveVersion = SessionService.saveVersion.bind(SessionService);
+export const getVersion = SessionService.getVersion.bind(SessionService);
+export const getVersionsList = SessionService.getVersionsList.bind(
+  SessionService,
+);

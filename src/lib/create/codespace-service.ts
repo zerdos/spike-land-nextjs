@@ -1,4 +1,4 @@
-import { upsertSession } from "@/lib/codespace/session-service";
+import { upsertSession } from "@/lib/codespace";
 import { transpileCode } from "@/lib/codespace/transpile";
 import logger from "@/lib/logger";
 
@@ -38,6 +38,7 @@ export async function updateCodespace(
       transpiled,
       html: "",
       css: "",
+      messages: [],
     });
 
     return {
