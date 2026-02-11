@@ -542,6 +542,14 @@ export const mdxComponents: MDXComponents = {
   YouTubeEmbed,
   PDFViewer,
   LiveDemo,
+  SplitScreenDemo: dynamic(() => import("./interactive").then((mod) => mod.SplitScreenDemo), { ssr: false }),
+  AttentionSpotlightDemo: dynamic(() => import("./interactive").then((mod) => mod.AttentionSpotlightDemo), { ssr: false }),
+  FiveLayerStackDemo: dynamic(() => import("./interactive").then((mod) => mod.FiveLayerStackDemo), { ssr: false }),
+  DarwinianTreeDemo: dynamic(() => import("./interactive").then((mod) => mod.DarwinianTreeDemo), { ssr: false }),
+  RecursiveZoomDemo: dynamic(() => import("./interactive").then((mod) => mod.RecursiveZoomDemo), { ssr: false }),
+  AgentLoopDemo: dynamic(() => import("./interactive").then((mod) => mod.AgentLoopDemo), { ssr: false }),
+  ModelCascadeDemo: dynamic(() => import("./interactive").then((mod) => mod.ModelCascadeDemo), { ssr: false }),
+  BayesianConfidenceDemo: dynamic(() => import("./interactive").then((mod) => mod.BayesianConfidenceDemo), { ssr: false }),
 };
 
 /**

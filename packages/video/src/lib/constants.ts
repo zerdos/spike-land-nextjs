@@ -91,6 +91,8 @@ export const SPRING_CONFIGS = {
   snappy: { damping: 20, stiffness: 200 },
   bouncy: { damping: 8 },
   heavy: { damping: 15, stiffness: 80, mass: 2 },
+  gentle: { damping: 14, stiffness: 100 },
+  slow: { damping: 40, stiffness: 60 },
 } as const;
 
 /**

@@ -14,6 +14,7 @@ import {
   Scene10_EndCard,
 } from "./compositions/vibe-coding-paradox";
 import { VCP_DURATIONS, VCP_TIMING, VIDEO_CONFIG, COLORS, TYPOGRAPHY } from "./lib/constants";
+import { VeritasiumPitch, VERITASIUM_SCENE_DURATION } from "./compositions/veritasium/VeritasiumPitch";
 
 // Component imports for preview compositions
 import { TokenVisualization } from "./components/animations/TokenVisualization";
@@ -107,6 +108,15 @@ export const RemotionRoot = () => {
         id="VibeCodingParadox"
         component={VibeCodingParadox}
         durationInFrames={VCP_TIMING.totalFrames}
+        fps={VCP_TIMING.fps}
+        width={VIDEO_CONFIG.width}
+        height={VIDEO_CONFIG.height}
+      />
+
+      <Composition
+        id="VeritasiumPitch"
+        component={VeritasiumPitch}
+        durationInFrames={VERITASIUM_SCENE_DURATION * 7}
         fps={VCP_TIMING.fps}
         width={VIDEO_CONFIG.width}
         height={VIDEO_CONFIG.height}

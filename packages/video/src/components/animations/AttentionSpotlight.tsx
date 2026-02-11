@@ -1,27 +1,12 @@
 import React from "react";
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { COLORS, SPRING_CONFIGS, VERITASIUM_COLORS } from "../../lib/constants";
+import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { SPRING_CONFIGS } from "../../lib/constants";
+import { AttentionSpotlightCore } from "../core/AttentionSpotlightCore";
 
 type AttentionSpotlightProps = {
   tokenCount: number;
   delay?: number;
 };
-
-const TOKEN_COLORS = [
-  VERITASIUM_COLORS.planning,
-  VERITASIUM_COLORS.generating,
-  VERITASIUM_COLORS.transpiling,
-  VERITASIUM_COLORS.fixing,
-  VERITASIUM_COLORS.learning,
-  COLORS.cyan,
-  COLORS.fuchsia,
-  COLORS.amber,
-];
-
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
-}
 
 export function AttentionSpotlight({
   tokenCount,
@@ -30,87 +15,18 @@ export function AttentionSpotlight({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Spotlight dims as token count increases
-  const spotlightOpacity = interpolate(tokenCount, [1, 20, 100], [0.9, 0.5, 0.15], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const spotlightRadius = interpolate(tokenCount, [1, 50, 100], [35, 25, 15], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // Generate deterministic token positions around spotlight
-  const tokens = Array.from({ length: tokenCount }, (_, i) => {
-    const angle = seededRandom(i * 7) * Math.PI * 2;
-    const dist = 150 + seededRandom(i * 13) * 300;
-    return {
-      x: 960 + Math.cos(angle) * dist,
-      y: 540 + Math.sin(angle) * dist,
-      color: TOKEN_COLORS[i % TOKEN_COLORS.length],
-      size: 4 + seededRandom(i * 19) * 8,
-    };
+  const progress = spring({
+    frame: frame - delay,
+    fps,
+    config: SPRING_CONFIGS.snappy,
   });
 
   return (
     <AbsoluteFill style={{ background: "#000000" }}>
-      <svg width={1920} height={1080} viewBox="0 0 1920 1080">
-        <defs>
-          <radialGradient id="spotlight-cone" cx="50%" cy="50%" r={`${spotlightRadius}%`}>
-            <stop offset="0%" stopColor={COLORS.cyan} stopOpacity={spotlightOpacity} />
-            <stop offset="40%" stopColor={COLORS.cyan} stopOpacity={spotlightOpacity * 0.4} />
-            <stop offset="100%" stopColor={COLORS.cyan} stopOpacity={0} />
-          </radialGradient>
-        </defs>
-
-        {/* Spotlight cone */}
-        <rect x={0} y={0} width={1920} height={1080} fill="url(#spotlight-cone)" />
-
-        {/* Center glow */}
-        <circle
-          cx={960}
-          cy={540}
-          r={40}
-          fill={COLORS.cyan}
-          opacity={spotlightOpacity * 0.3}
-          filter="blur(20px)"
-        />
-
-        {/* Token dots */}
-        {tokens.map((token, i) => {
-          const entrance = spring({
-            frame: frame - delay - i * 2,
-            fps,
-            config: SPRING_CONFIGS.snappy,
-          });
-
-          if (entrance <= 0) return null;
-
-          return (
-            <circle
-              key={`token-${i}`}
-              cx={token.x}
-              cy={token.y}
-              r={token.size * entrance}
-              fill={token.color}
-              opacity={0.6 * entrance}
-            />
-          );
-        })}
-
-        {/* Label */}
-        <text
-          x={960}
-          y={980}
-          textAnchor="middle"
-          fill={COLORS.textSecondary}
-          fontSize={18}
-          fontFamily="JetBrains Mono, monospace"
-        >
-          {tokenCount} tokens — attention {Math.round(spotlightOpacity * 100)}%
-        </text>
-      </svg>
+      <AttentionSpotlightCore 
+        tokenCount={tokenCount} 
+        progress={progress} 
+      />
     </AbsoluteFill>
   );
 }

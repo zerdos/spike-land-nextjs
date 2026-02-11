@@ -1,6 +1,7 @@
 import React from "react";
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { COLORS, SPRING_CONFIGS } from "../../lib/constants";
+import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { SPRING_CONFIGS } from "../../lib/constants";
+import { SplitScreenCore } from "../core/SplitScreenCore";
 
 type SplitScreenRevealProps = {
   leftContent: React.ReactNode;
@@ -30,54 +31,13 @@ export function SplitScreenReveal({
       durationInFrames: 45,
     });
 
-  const effectiveSplit =
-    revealDirection === "right-to-left" ? 1 - animatedSplit : animatedSplit;
-
-  const splitPercent = interpolate(effectiveSplit, [0, 1], [0, 100], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const glowOpacity = interpolate(
-    Math.abs(animatedSplit - 0.5),
-    [0, 0.5],
-    [1, 0.2],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
-
   return (
-    <AbsoluteFill style={{ background: COLORS.darkBg }}>
-      {/* Left side */}
-      <AbsoluteFill
-        style={{
-          clipPath: `inset(0 ${100 - splitPercent}% 0 0)`,
-        }}
-      >
-        {leftContent}
-      </AbsoluteFill>
-
-      {/* Right side */}
-      <AbsoluteFill
-        style={{
-          clipPath: `inset(0 0 0 ${splitPercent}%)`,
-        }}
-      >
-        {rightContent}
-      </AbsoluteFill>
-
-      {/* Divider line */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: `${splitPercent}%`,
-          width: 3,
-          background: COLORS.cyan,
-          boxShadow: `0 0 ${12 * glowOpacity}px ${COLORS.cyan}, 0 0 ${24 * glowOpacity}px ${COLORS.cyan}60`,
-          transform: "translateX(-50%)",
-          zIndex: 10,
-        }}
+    <AbsoluteFill>
+      <SplitScreenCore 
+        leftContent={leftContent} 
+        rightContent={rightContent} 
+        progress={animatedSplit} 
+        revealDirection={revealDirection} 
       />
     </AbsoluteFill>
   );

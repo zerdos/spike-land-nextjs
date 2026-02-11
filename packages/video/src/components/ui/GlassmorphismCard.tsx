@@ -1,6 +1,7 @@
 import React from "react";
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS, SPRING_CONFIGS } from "../../lib/constants";
+import { GlassmorphismCardCore } from "../core/ui/GlassmorphismCardCore";
 
 type GlassmorphismCardProps = {
   children: React.ReactNode;
@@ -30,41 +31,14 @@ export const GlassmorphismCard: React.FC<GlassmorphismCardProps> = ({
       })
     : 1;
 
-  const opacity = interpolate(progress, [0, 1], [0, 1]);
-  const y = interpolate(progress, [0, 1], [20, 0]);
-
   return (
-    <div
-      style={{
-        width,
-        height,
-        opacity,
-        transform: `translateY(${y}px)`,
-        background: "rgba(255, 255, 255, 0.05)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderRadius: 24,
-        border: `1px solid ${color}40`,
-        padding: 32,
-        boxShadow: `0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 0 0 1px rgba(255, 255, 255, 0.05)`,
-        overflow: "hidden",
-        position: "relative",
-      }}
+    <GlassmorphismCardCore 
+      width={width} 
+      height={height} 
+      progress={progress} 
+      color={color}
     >
-      {/* Subtle background glow */}
-      <div
-        style={{
-          position: "absolute",
-          top: -100,
-          right: -100,
-          width: 200,
-          height: 200,
-          background: `${color}15`,
-          filter: "blur(60px)",
-          borderRadius: "50%",
-        }}
-      />
       {children}
-    </div>
+    </GlassmorphismCardCore>
   );
 };
