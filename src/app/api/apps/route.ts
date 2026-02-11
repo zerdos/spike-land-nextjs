@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
 
   // Build codespace URL if codespaceId is provided
   const codespaceUrl = validatedData.codespaceId
-    ? `https://testing.spike.land/live/${validatedData.codespaceId}`
+    ? `/api/codespace/${validatedData.codespaceId}/embed`
     : undefined;
 
   const { data: app, error: createError } = await tryCatch(
@@ -336,7 +336,7 @@ async function createAppFromPrompt(
           userId,
           status: "WAITING", // Skip PROMPTING since we have the prompt
           codespaceId: slug, // Use slug as codespaceId (since we set slug = codespaceId if provided)
-          codespaceUrl: `https://testing.spike.land/live/${slug}/`,
+          codespaceUrl: `/api/codespace/${slug}/embed`,
         },
         select: {
           id: true,

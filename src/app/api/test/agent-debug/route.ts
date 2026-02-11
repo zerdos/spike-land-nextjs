@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { getOrCreateSession } from "@/lib/codespace";
 import { NextResponse } from "next/server";
 
 export const maxDuration = 120;
@@ -46,11 +47,8 @@ export async function POST(request: Request) {
     console.log("[test/agent-debug] MCP server created");
     console.log("[test/agent-debug] Allowed tools:", CODESPACE_TOOL_NAMES);
 
-    // Fetch current code first
-    const beforeResponse = await fetch(
-      `https://testing.spike.land/live/${codespaceId}/session.json`,
-    );
-    const beforeData = beforeResponse.ok ? await beforeResponse.json() : null;
+    // Fetch current code first via session service
+    const beforeData = await getOrCreateSession(codespaceId);
     const codeBefore = beforeData?.code || "";
     console.log("[test/agent-debug] Code before length:", codeBefore.length);
 
@@ -91,11 +89,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // Fetch code after
-    const afterResponse = await fetch(
-      `https://testing.spike.land/live/${codespaceId}/session.json`,
-    );
-    const afterData = afterResponse.ok ? await afterResponse.json() : null;
+    // Fetch code after via session service
+    const afterData = await getOrCreateSession(codespaceId);
     const codeAfter = afterData?.code || "";
     console.log("[test/agent-debug] Code after length:", codeAfter.length);
 
@@ -148,11 +143,12 @@ export async function GET(request: Request) {
     );
   }
 
-  // If code provided, update it
+  // If code provided, update it via our local API route
   if (code) {
     console.log("[test/agent-debug] Direct code update to:", codespaceId);
+    const baseUrl = process.env["NEXTAUTH_URL"] || "http://localhost:3000";
     const response = await fetch(
-      `https://testing.spike.land/live/${codespaceId}/api/code`,
+      `${baseUrl}/api/codespace/${codespaceId}/code`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -167,15 +163,12 @@ export async function GET(request: Request) {
     });
   }
 
-  // Otherwise just read the current code
-  const response = await fetch(
-    `https://testing.spike.land/live/${codespaceId}/session.json`,
-  );
-  const data = await response.json();
+  // Otherwise just read the current code via session service
+  const sessionData = await getOrCreateSession(codespaceId);
 
   return NextResponse.json({
     codespaceId,
-    codeLength: data.code?.length || 0,
-    code: data.code?.substring(0, 1000) || "",
+    codeLength: sessionData.code?.length || 0,
+    code: sessionData.code?.substring(0, 1000) || "",
   });
 }

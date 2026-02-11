@@ -8,6 +8,7 @@ import {
   CODESPACE_TOOL_NAMES,
   createCodespaceServer,
 } from "@/lib/claude-agent/tools/codespace-tools";
+import { getOrCreateSession } from "@/lib/codespace";
 import prisma from "@/lib/prisma";
 import { spawnAgentSandbox } from "@/lib/sandbox/agent-sandbox";
 import { tryCatch } from "@/lib/try-catch";
@@ -328,21 +329,14 @@ export async function POST(
   // Create MCP server with codespace tools
   const codespaceServer = createCodespaceServer(app.codespaceId);
 
-  // Fetch current code from testing.spike.land to include in context
-  // Using timeout to prevent hangs
+  // Fetch current code from codespace session service
   let currentCode = "";
-  const { data: sessionResponse, error: sessionError } = await tryCatch(
-    fetchWithTimeout(
-      `https://testing.spike.land/live/${app.codespaceId}/session.json`,
-      { headers: { "Accept": "application/json" } },
-    ),
+  const { data: codespaceSession, error: sessionError } = await tryCatch(
+    getOrCreateSession(app.codespaceId),
   );
 
-  if (!sessionError && sessionResponse.ok) {
-    const { data: sessionData } = await tryCatch(sessionResponse.json());
-    if (sessionData?.code) {
-      currentCode = sessionData.code;
-    }
+  if (!sessionError && codespaceSession?.code) {
+    currentCode = codespaceSession.code;
   }
 
   // Token optimization: Check if code has changed since last message
@@ -516,17 +510,13 @@ export async function POST(
           // Emit validating stage
           emitStage(controller, "validating");
 
-          // Verify the update actually happened (with timeout)
-          const { data: verifyResponse } = await tryCatch(
-            fetchWithTimeout(
-              `https://testing.spike.land/live/${app.codespaceId}/session.json`,
-              { headers: { "Accept": "application/json" } },
-            ),
+          // Verify the update actually happened via session service
+          const { data: verifySession } = await tryCatch(
+            getOrCreateSession(app.codespaceId),
           );
 
-          if (verifyResponse?.ok) {
-            const { data: verifyData } = await tryCatch(verifyResponse.json());
-            const actuallyChanged = verifyData?.code !== currentCode;
+          if (verifySession) {
+            const actuallyChanged = verifySession.code !== currentCode;
             console.log(
               `[agent/chat] Code verification: ${actuallyChanged ? "SUCCESS" : "FAILED"}`,
             );
@@ -538,10 +528,10 @@ export async function POST(
             }
 
             // Create code version snapshot if code was actually updated
-            if (actuallyChanged && verifyData?.code) {
+            if (actuallyChanged && verifySession.code) {
               const crypto = await import("crypto");
               const hash = crypto.createHash("sha256")
-                .update(verifyData.code)
+                .update(verifySession.code)
                 .digest("hex");
 
               // Use the captured agentMessageId directly (no query needed)
@@ -549,7 +539,7 @@ export async function POST(
                 data: {
                   appId: id,
                   messageId: agentMessageId,
-                  code: verifyData.code,
+                  code: verifySession.code,
                   hash,
                 },
               });

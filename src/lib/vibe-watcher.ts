@@ -1,13 +1,13 @@
 /**
- * Vibe Watcher - Auto-sync local live/*.tsx files to testing.spike.land
+ * Vibe Watcher - Auto-sync local live/*.tsx files to codespace API routes
  *
  * This module watches the live/ directory for file changes and automatically
- * syncs them to testing.spike.land, triggering iframe reloads in /my-apps pages.
+ * syncs them via local API routes, triggering iframe reloads in /my-apps pages.
  *
  * Architecture:
  * - Uses chokidar to watch live/*.tsx files
  * - Debounces changes (200ms) to prevent flooding
- * - Calls pushCode() to sync entire file to testing.spike.land
+ * - Calls pushCode() to sync entire file via /api/codespace/:id/code
  * - Notifies SSE clients via the sync-status API for iframe reloads
  */
 
@@ -20,18 +20,16 @@ import { basename, join } from "path";
 const LIVE_DIR = join(process.cwd(), "live");
 const DEBOUNCE_MS = 200;
 const BASE_URL = process.env["NEXTAUTH_URL"] || "http://localhost:3000";
-const TESTING_SPIKE_LAND_URL = process.env["TESTING_SPIKE_LAND_URL"] ||
-  "https://testing.spike.land";
 
 let watcher: FSWatcher | null = null;
 const debounceTimers = new Map<string, NodeJS.Timeout>();
 const appIdCache = new Map<string, string | null>();
 
 /**
- * Push code to testing.spike.land
+ * Push code to our codespace API route
  */
 async function pushCode(codespaceId: string, code: string, run = true): Promise<void> {
-  const url = `${TESTING_SPIKE_LAND_URL}/live/${codespaceId}/api/code`;
+  const url = `${BASE_URL}/api/codespace/${codespaceId}/code`;
 
   const response = await fetch(url, {
     method: "PUT",
@@ -46,10 +44,10 @@ async function pushCode(codespaceId: string, code: string, run = true): Promise<
 }
 
 /**
- * Download code from testing.spike.land
+ * Download code from our codespace API route
  */
 async function pullCode(codespaceId: string): Promise<string> {
-  const url = `${TESTING_SPIKE_LAND_URL}/live/${codespaceId}/session.json`;
+  const url = `${BASE_URL}/api/codespace/${codespaceId}/session`;
 
   const response = await fetch(url);
 
@@ -137,7 +135,7 @@ function handleFileChange(filePath: string): void {
 }
 
 /**
- * Sync a file to testing.spike.land and notify SSE clients
+ * Sync a file to the codespace API and notify SSE clients
  */
 async function syncFile(codespaceId: string, filePath: string): Promise<void> {
   const appId = await resolveAppId(codespaceId);

@@ -95,7 +95,7 @@ export async function* agentGenerateApp(
   userId: string | undefined,
 ): AsyncGenerator<StreamEvent> {
   const codespaceId = generateCodespaceId(slug);
-  const codespaceUrl = `https://testing.spike.land/live/${codespaceId}/`;
+  const codespaceUrl = `/api/codespace/${codespaceId}/embed`;
   const maxIterations = Math.min(
     parseInt(process.env["AGENT_MAX_ITERATIONS"] || "3", 10),
     MAX_ITERATIONS_CAP,

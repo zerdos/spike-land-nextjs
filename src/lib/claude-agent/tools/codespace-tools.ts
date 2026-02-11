@@ -1,8 +1,7 @@
+import { getOrCreateSession, transpileCode, upsertSession } from "@/lib/codespace";
 import logger from "@/lib/logger";
 import { createSdkMcpServer, tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
-
-const TESTING_SPIKE_LAND = "https://testing.spike.land";
 
 /**
  * Regex pattern for valid codespace IDs
@@ -38,17 +37,6 @@ interface ValidationError {
 }
 
 /**
- * Response from the code update/validate endpoint
- */
-interface CodeUpdateResponse {
-  success: boolean;
-  error?: string;
-  errors?: ValidationError[];
-  updated?: string[];
-  message?: string;
-}
-
-/**
  * Format validation errors into a human-readable string for the agent
  */
 function formatValidationErrors(errors: ValidationError[]): string {
@@ -65,37 +53,20 @@ function formatValidationErrors(errors: ValidationError[]): string {
 }
 
 /**
- * Read the current code from the codespace via REST API
+ * Read the current code from the codespace via direct DB access
  */
 async function readCode(codespaceId: string): Promise<string> {
   logger.info(`[codespace-tools] readCode called for: ${codespaceId}`);
 
   try {
-    const response = await fetch(
-      `${TESTING_SPIKE_LAND}/live/${codespaceId}/session.json`,
-      {
-        headers: { Accept: "application/json" },
-      },
-    );
-
-    logger.info(
-      `[codespace-tools] readCode response status: ${response.status}`,
-    );
-
-    if (!response.ok) {
-      const error = `Error reading code: ${response.status} ${response.statusText}`;
-      logger.error(`[codespace-tools] ${error}`);
-      return error;
-    }
-
-    const data = await response.json();
-    const code = data.code || "";
+    const session = await getOrCreateSession(codespaceId);
+    const code = session.code || "";
     logger.info(
       `[codespace-tools] readCode success, code length: ${code.length}`,
     );
     return code;
   } catch (error) {
-    const msg = `Network error reading code: ${
+    const msg = `Error reading code: ${
       error instanceof Error ? error.message : String(error)
     }`;
     logger.error(`[codespace-tools] ${msg}`);
@@ -104,7 +75,7 @@ async function readCode(codespaceId: string): Promise<string> {
 }
 
 /**
- * Update the entire code via REST API
+ * Update the entire code via direct DB access + transpilation
  * Returns "success" on success, or a formatted error message on failure
  */
 async function updateCode(
@@ -115,54 +86,42 @@ async function updateCode(
   logger.info(`[codespace-tools] updateCode code length: ${code.length}`);
 
   try {
-    const url = `${TESTING_SPIKE_LAND}/live/${codespaceId}/api/code`;
-    logger.info(`[codespace-tools] updateCode PUT to: ${url}`);
+    // Transpile the code
+    let transpiled: string;
+    try {
+      transpiled = await transpileCode(code, "https://spike.land");
+    } catch (error) {
+      // Parse transpilation errors
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error(`[codespace-tools] Transpilation failed: ${errorMsg}`);
 
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, run: true }),
+      // Try to extract structured errors
+      try {
+        const parsed = JSON.parse(errorMsg);
+        if (Array.isArray(parsed.errors)) {
+          const formattedErrors = formatValidationErrors(parsed.errors);
+          return `TypeScript/JSX errors found:\n${formattedErrors}\n\nPlease fix these errors and try again.`;
+        }
+      } catch {
+        // Not JSON, return raw error
+      }
+
+      return `TypeScript/JSX errors found:\n${errorMsg}\n\nPlease fix these errors and try again.`;
+    }
+
+    // Save to DB
+    await upsertSession({
+      codeSpace: codespaceId,
+      code,
+      transpiled,
+      html: "",
+      css: "",
     });
 
-    logger.info(
-      `[codespace-tools] updateCode response status: ${response.status}`,
-    );
-
-    // Parse response body
-    let data: CodeUpdateResponse;
-    try {
-      data = await response.json() as CodeUpdateResponse;
-    } catch {
-      const text = await response.text();
-      logger.error(`[codespace-tools] Failed to parse response: ${text}`);
-      return `Error updating code: ${response.status} ${response.statusText} - ${text}`;
-    }
-
-    logger.info(`[codespace-tools] updateCode response data:`, { data });
-
-    if (data.success) {
-      logger.info(`[codespace-tools] updateCode SUCCESS for: ${codespaceId}`);
-      return "success";
-    }
-
-    // Handle structured validation errors
-    if (data.errors && data.errors.length > 0) {
-      const formattedErrors = formatValidationErrors(data.errors);
-      logger.error(`[codespace-tools] Validation errors:\n${formattedErrors}`);
-      return `TypeScript/JSX errors found:\n${formattedErrors}\n\nPlease fix these errors and try again.`;
-    }
-
-    // Handle generic error
-    if (data.error) {
-      logger.error(`[codespace-tools] Error: ${data.error}`);
-      return `Error: ${data.error}`;
-    }
-
-    const error = `Update failed: ${JSON.stringify(data)}`;
-    logger.error(`[codespace-tools] ${error}`);
-    return error;
+    logger.info(`[codespace-tools] updateCode SUCCESS for: ${codespaceId}`);
+    return "success";
   } catch (error) {
-    const msg = `Network error updating code: ${
+    const msg = `Error updating code: ${
       error instanceof Error ? error.message : String(error)
     }`;
     logger.error(`[codespace-tools] ${msg}`);
@@ -183,7 +142,7 @@ async function editCode(
   // First read the current code
   const currentCode = await readCode(codespaceId);
   if (
-    currentCode.startsWith("Error") || currentCode.startsWith("Network error")
+    currentCode.startsWith("Error")
   ) {
     return currentCode;
   }
@@ -234,7 +193,7 @@ async function searchAndReplace(
 
   const currentCode = await readCode(codespaceId);
   if (
-    currentCode.startsWith("Error") || currentCode.startsWith("Network error")
+    currentCode.startsWith("Error")
   ) {
     return currentCode;
   }
@@ -271,52 +230,27 @@ async function validateCode(
   logger.info(`[codespace-tools] validateCode code length: ${code.length}`);
 
   try {
-    const url = `${TESTING_SPIKE_LAND}/live/${codespaceId}/api/validate`;
-    logger.info(`[codespace-tools] validateCode POST to: ${url}`);
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
-
-    logger.info(
-      `[codespace-tools] validateCode response status: ${response.status}`,
-    );
-
-    // Parse response body
-    let data: { valid: boolean; errors?: ValidationError[]; warnings?: ValidationError[]; };
-    try {
-      data = await response.json() as {
-        valid: boolean;
-        errors?: ValidationError[];
-        warnings?: ValidationError[];
-      };
-    } catch {
-      const text = await response.text();
-      logger.error(`[codespace-tools] Failed to parse response: ${text}`);
-      return `Error validating code: ${text}`;
-    }
-
-    if (data.valid) {
-      logger.info(`[codespace-tools] validateCode: code is valid`);
-      return "valid";
-    }
-
-    // Return formatted validation errors
-    if (data.errors && data.errors.length > 0) {
-      const formattedErrors = formatValidationErrors(data.errors);
-      logger.info(`[codespace-tools] validateCode: found errors:\n${formattedErrors}`);
-      return `TypeScript/JSX errors:\n${formattedErrors}`;
-    }
-
-    return "Validation failed for unknown reason";
+    // Try to transpile — if it succeeds, the code is valid
+    await transpileCode(code, "https://spike.land");
+    logger.info(`[codespace-tools] validateCode: code is valid`);
+    return "valid";
   } catch (error) {
-    const msg = `Network error validating code: ${
-      error instanceof Error ? error.message : String(error)
-    }`;
-    logger.error(`[codespace-tools] ${msg}`);
-    return msg;
+    const errorMsg = error instanceof Error ? error.message : String(error);
+
+    // Try to extract structured errors
+    try {
+      const parsed = JSON.parse(errorMsg);
+      if (Array.isArray(parsed.errors)) {
+        const formattedErrors = formatValidationErrors(parsed.errors);
+        logger.info(`[codespace-tools] validateCode: found errors:\n${formattedErrors}`);
+        return `TypeScript/JSX errors:\n${formattedErrors}`;
+      }
+    } catch {
+      // Not JSON
+    }
+
+    logger.info(`[codespace-tools] validateCode: found errors:\n${errorMsg}`);
+    return `TypeScript/JSX errors:\n${errorMsg}`;
   }
 }
 
@@ -332,7 +266,7 @@ async function findLines(
 
   const currentCode = await readCode(codespaceId);
   if (
-    currentCode.startsWith("Error") || currentCode.startsWith("Network error")
+    currentCode.startsWith("Error")
   ) {
     return currentCode;
   }

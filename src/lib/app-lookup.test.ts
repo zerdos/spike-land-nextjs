@@ -278,7 +278,7 @@ describe("app-lookup", () => {
 
       expect(result).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://testing.spike.land/live/my-codespace/htm",
+        "/api/codespace/my-codespace/htm",
         { cache: "no-store" },
       );
     });
@@ -333,7 +333,7 @@ describe("app-lookup", () => {
       await checkCodespaceHasContent("my codespace/test");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://testing.spike.land/live/my%20codespace%2Ftest/htm",
+        "/api/codespace/my%20codespace%2Ftest/htm",
         { cache: "no-store" },
       );
     });

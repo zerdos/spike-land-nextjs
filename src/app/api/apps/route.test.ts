@@ -494,7 +494,7 @@ describe("POST /api/apps", () => {
           slug: "swift-forge-launch-1a2b",
           status: "WAITING",
           codespaceId: "swift-forge-launch-1a2b",
-          codespaceUrl: "https://testing.spike.land/live/swift-forge-launch-1a2b/",
+          codespaceUrl: "/api/codespace/swift-forge-launch-1a2b/embed",
           createdAt: new Date(),
         },
         messageId: "msg-1",
@@ -537,7 +537,7 @@ describe("POST /api/apps", () => {
 
       expect(response.status).toBe(201);
       expect(data.status).toBe("WAITING");
-      expect(data.codespaceUrl).toContain("testing.spike.land/live/");
+      expect(data.codespaceUrl).toContain("/api/codespace/");
     });
 
     it("should create app with provided codespaceId", async () => {
@@ -553,7 +553,7 @@ describe("POST /api/apps", () => {
           slug: "custom-codespace-id",
           status: "WAITING",
           codespaceId: "custom-codespace-id",
-          codespaceUrl: "https://testing.spike.land/live/custom-codespace-id/",
+          codespaceUrl: "/api/codespace/custom-codespace-id/embed",
           createdAt: new Date(),
         },
         messageId: "msg-2",
@@ -729,7 +729,7 @@ describe("POST /api/apps", () => {
           slug: "new-app-slug",
           status: "WAITING",
           codespaceId: "new-app-slug",
-          codespaceUrl: "https://testing.spike.land/live/new-app-slug/",
+          codespaceUrl: "/api/codespace/new-app-slug/embed",
           createdAt: new Date(),
         },
         messageId: "msg-3",
@@ -830,7 +830,7 @@ describe("GET /api/apps", () => {
         userId: "user-1",
         status: "LIVE",
         codespaceId: "test-app-2",
-        codespaceUrl: "https://testing.spike.land/live/test-app-2/",
+        codespaceUrl: "/api/codespace/test-app-2/embed",
         isCurated: false,
         isPublic: false,
         lastAgentActivity: null,
@@ -882,7 +882,7 @@ describe("GET /api/apps", () => {
         name: "Curated App",
         slug: "curated-app",
         description: "A curated app",
-        codespaceUrl: "https://testing.spike.land/live/curated-app/",
+        codespaceUrl: "/api/codespace/curated-app/embed",
         status: "LIVE",
         createdAt: new Date(),
         _count: { messages: 10 },

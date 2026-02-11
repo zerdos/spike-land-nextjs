@@ -81,7 +81,7 @@ export function parseTranspileError(rawError: string): StructuredError {
   return error;
 }
 
-/** Known libraries available on the CDN at testing.spike.land. */
+/** Known libraries available on the CDN at esm.sh. */
 const KNOWN_CDN_LIBRARIES = new Set([
   "react", "react-dom", "framer-motion", "lucide-react", "date-fns",
   "zustand", "sonner", "recharts", "react-hook-form", "zod",

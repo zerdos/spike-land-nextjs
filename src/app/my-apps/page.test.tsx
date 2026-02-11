@@ -278,7 +278,7 @@ describe("MyAppsPage", () => {
           description: "Description 2",
           status: "LIVE",
           codespaceId: "test-app-2",
-          codespaceUrl: "https://testing.spike.land/live/test-app-2/",
+          codespaceUrl: "/api/codespace/test-app-2/embed",
           _count: { messages: 10, images: 5 },
         }),
       ];
@@ -393,7 +393,7 @@ describe("MyAppsPage", () => {
           name: "Live App",
           status: "LIVE",
           codespaceId: "live-app",
-          codespaceUrl: "https://testing.spike.land/live/live-app/",
+          codespaceUrl: "/api/codespace/live-app/embed",
         }),
       ];
 
@@ -405,7 +405,7 @@ describe("MyAppsPage", () => {
       // New 3D cards show live iframe preview
       const iframe = document.querySelector("iframe");
       expect(iframe).toBeInTheDocument();
-      expect(iframe?.src).toBe("https://testing.spike.land/live/live-app/");
+      expect(iframe?.src).toContain("/api/codespace/live-app/embed");
     });
 
     it("should show placeholder for apps without codespaceUrl", async () => {

@@ -48,7 +48,7 @@ describe("IframeErrorBridge", () => {
 
     handler(
       new MessageEvent("message", {
-        origin: "https://testing.spike.land",
+        origin: window.location.origin,
         data: {
           type: "iframe-error",
           message: "Component crashed",
@@ -118,7 +118,7 @@ describe("IframeErrorBridge", () => {
 
     handler(
       new MessageEvent("message", {
-        origin: "https://testing.spike.land",
+        origin: window.location.origin,
         data: { type: "other-message", message: "Not an error" },
       }),
     );
@@ -135,7 +135,7 @@ describe("IframeErrorBridge", () => {
 
     handler(
       new MessageEvent("message", {
-        origin: "https://testing.spike.land",
+        origin: window.location.origin,
         data: "just a string",
       }),
     );
@@ -152,7 +152,7 @@ describe("IframeErrorBridge", () => {
 
     handler(
       new MessageEvent("message", {
-        origin: "https://testing.spike.land",
+        origin: window.location.origin,
         data: null,
       }),
     );
@@ -169,7 +169,7 @@ describe("IframeErrorBridge", () => {
 
     handler(
       new MessageEvent("message", {
-        origin: "https://testing.spike.land",
+        origin: window.location.origin,
         data: {
           type: "iframe-error",
           message: "No stack",

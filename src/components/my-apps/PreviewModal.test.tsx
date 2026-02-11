@@ -38,7 +38,7 @@ describe("PreviewModal", () => {
   const defaultProps = {
     open: true,
     onClose: vi.fn(),
-    codespaceUrl: "https://testing.spike.land/live/test-app/",
+    codespaceUrl: "/api/codespace/test-app/embed",
     versionLabel: "Version 1",
   };
 
@@ -72,7 +72,7 @@ describe("PreviewModal", () => {
     it("should render URL in the address bar", () => {
       render(<PreviewModal {...defaultProps} />);
       expect(
-        screen.getByText("https://testing.spike.land/live/test-app/"),
+        screen.getByText("/api/codespace/test-app/embed"),
       ).toBeInTheDocument();
     });
 
@@ -104,7 +104,7 @@ describe("PreviewModal", () => {
       expect(iframe).toBeInTheDocument();
       expect(iframe).toHaveAttribute(
         "src",
-        "https://testing.spike.land/live/test-app/",
+        "/api/codespace/test-app/embed",
       );
     });
   });
@@ -164,7 +164,7 @@ describe("PreviewModal", () => {
       render(<PreviewModal {...defaultProps} onClose={onClose} />);
       // Click on the URL text (inside modal content)
       await user.click(
-        screen.getByText("https://testing.spike.land/live/test-app/"),
+        screen.getByText("/api/codespace/test-app/embed"),
       );
       expect(onClose).not.toHaveBeenCalled();
     });
@@ -220,7 +220,7 @@ describe("PreviewModal", () => {
       await user.click(screen.getByLabelText("Open in new tab"));
 
       expect(windowOpen).toHaveBeenCalledWith(
-        "https://testing.spike.land/live/test-app/",
+        "/api/codespace/test-app/embed",
         "_blank",
         "noopener,noreferrer",
       );
@@ -251,7 +251,7 @@ describe("PreviewModal", () => {
       rerender(
         <PreviewModal
           {...defaultProps}
-          codespaceUrl="https://testing.spike.land/live/other-app/"
+          codespaceUrl="/api/codespace/other-app/embed"
         />,
       );
 

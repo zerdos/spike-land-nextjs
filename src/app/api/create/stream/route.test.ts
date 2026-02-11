@@ -112,7 +112,7 @@ describe("POST /api/create/stream", () => {
     const { getCreatedApp } = await import("@/lib/create/content-service");
     vi.mocked(getCreatedApp).mockResolvedValueOnce({
       status: "PUBLISHED" as const,
-      codespaceUrl: "https://testing.spike.land/live/abc/",
+      codespaceUrl: "/api/codespace/abc/embed",
       slug: "games/tetris",
     } as ReturnType<typeof getCreatedApp> extends Promise<infer T> ? NonNullable<T> : never);
 

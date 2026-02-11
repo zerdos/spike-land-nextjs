@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { Code2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const CDN_BASE = "https://testing.spike.land";
 const LOAD_TIMEOUT_MS = 15_000;
 
 type LoadState = "idle" | "loading" | "loaded" | "error";
@@ -30,7 +29,7 @@ export function LiveAppPreview({
   const [isVisible, setIsVisible] = useState(!lazy);
   const loadStartedRef = useRef(false);
 
-  const iframeSrc = `${CDN_BASE}/live/${codespaceId}/`;
+  const iframeSrc = `/api/codespace/${codespaceId}/embed`;
 
   const handleLoad = useCallback(() => {
     setState("loaded");

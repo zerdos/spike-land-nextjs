@@ -18,7 +18,7 @@ describe("BinAppCard", () => {
     description: "A test application",
     status: "LIVE" as AppBuildStatus,
     codespaceId: "test-app",
-    codespaceUrl: "https://testing.spike.land/live/test-app/",
+    codespaceUrl: "/api/codespace/test-app/embed",
     deletedAt: new Date().toISOString(),
     daysRemaining: 15,
     _count: {

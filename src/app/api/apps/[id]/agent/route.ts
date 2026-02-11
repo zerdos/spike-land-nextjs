@@ -102,7 +102,7 @@ export async function PATCH(
   // Handle codespace linking
   if (codespaceId !== undefined) {
     updateData["codespaceId"] = codespaceId;
-    updateData["codespaceUrl"] = `https://testing.spike.land/live/${codespaceId}/`;
+    updateData["codespaceUrl"] = `/api/codespace/${codespaceId}/embed`;
     // Also update slug if not already set
     if (!existingApp.slug) {
       updateData["slug"] = codespaceId;

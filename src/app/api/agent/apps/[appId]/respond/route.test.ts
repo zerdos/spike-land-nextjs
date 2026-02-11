@@ -246,7 +246,7 @@ describe("POST /api/agent/apps/[appId]/respond", () => {
 
     expect(response.status).toBe(201);
     expect(mockFetch).toHaveBeenCalledWith(
-      "https://testing.spike.land/live/test-codespace-123/session.json",
+      "/api/codespace/test-codespace-123/session",
       expect.objectContaining({
         headers: { Accept: "application/json" },
       }),
