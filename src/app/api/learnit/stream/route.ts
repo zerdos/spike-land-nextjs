@@ -142,7 +142,6 @@ function createAgentProxyResponse(
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
-        let fullContent = "";
         let title = "";
         let description = "";
         let agentName = "Spike";
@@ -172,7 +171,6 @@ function createAgentProxyResponse(
               }
 
               if (event.type === "chunk") {
-                fullContent += event.content;
                 controller.enqueue(encoder.encode(`data: ${data}\n\n`));
                 continue;
               }
@@ -234,7 +232,7 @@ function createAgentProxyResponse(
               encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
             );
           }
-        } catch (geminiError) {
+        } catch (_geminiError) {
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({ type: "error", message: "Generation failed" })}\n\n`,
