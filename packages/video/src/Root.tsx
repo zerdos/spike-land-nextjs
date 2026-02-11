@@ -1,6 +1,16 @@
 import { Composition, Folder } from "remotion";
 import { BridgeMindPromo } from "./compositions/bridgemind/BridgeMindPromo";
 import {
+  VeritasiumPitch,
+  Scene01_Hook,
+  Scene02_Problem,
+  Scene03_Solution,
+  Scene04_Magic,
+  Scene05_Proof,
+  Scene06_Implications,
+  Scene07_CTA,
+} from "./compositions/veritasium";
+import {
   AIDiscovery,
   ChatSolution,
   EndCard,
@@ -17,7 +27,13 @@ import {
   Transformation,
 } from "./Video";
 
-import { BRIDGEMIND_TIMING, SCENE_DURATIONS, VIDEO_CONFIG } from "./lib/constants";
+import {
+  BRIDGEMIND_TIMING,
+  SCENE_DURATIONS,
+  VERITASIUM_DURATIONS,
+  VERITASIUM_TIMING,
+  VIDEO_CONFIG,
+} from "./lib/constants";
 import { FORMAT_CONFIGS } from "./lib/schemas";
 
 /**
@@ -70,6 +86,75 @@ export const RemotionRoot = () => {
         width={VIDEO_CONFIG.width}
         height={VIDEO_CONFIG.height}
       />
+
+      {/* Veritasium Pitch — "The AI That Remembers Every Mistake" (4 min) */}
+      <Composition
+        id="VeritasiumPitch"
+        component={VeritasiumPitch}
+        durationInFrames={VERITASIUM_TIMING.totalFrames}
+        fps={VERITASIUM_TIMING.fps}
+        width={VIDEO_CONFIG.width}
+        height={VIDEO_CONFIG.height}
+      />
+
+      <Folder name="Veritasium">
+        <Composition
+          id="V-Scene1-Hook"
+          component={Scene01_Hook}
+          durationInFrames={VERITASIUM_DURATIONS.hook}
+          fps={VERITASIUM_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="V-Scene2-Problem"
+          component={Scene02_Problem}
+          durationInFrames={VERITASIUM_DURATIONS.problem}
+          fps={VERITASIUM_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="V-Scene3-Solution"
+          component={Scene03_Solution}
+          durationInFrames={VERITASIUM_DURATIONS.solution}
+          fps={VERITASIUM_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="V-Scene4-Magic"
+          component={Scene04_Magic}
+          durationInFrames={VERITASIUM_DURATIONS.magic}
+          fps={VERITASIUM_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="V-Scene5-Proof"
+          component={Scene05_Proof}
+          durationInFrames={VERITASIUM_DURATIONS.proof}
+          fps={VERITASIUM_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="V-Scene6-Implications"
+          component={Scene06_Implications}
+          durationInFrames={VERITASIUM_DURATIONS.implications}
+          fps={VERITASIUM_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="V-Scene7-CTA"
+          component={Scene07_CTA}
+          durationInFrames={VERITASIUM_DURATIONS.cta}
+          fps={VERITASIUM_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+      </Folder>
 
       {/* YouTube Long-form Content */}
       <Folder name="YouTube">
