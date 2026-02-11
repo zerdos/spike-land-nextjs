@@ -1,18 +1,14 @@
 /// <reference types="@cloudflare/workers-types" />
 
 export default interface Env {
-  ESM_ORIGIN?: string;
-  ESM_TOKEN?: string;
   OPENAI_API_KEY: string;
   AI: Ai;
   KV: KVNamespace;
   __STATIC_CONTENT: KVNamespace;
-  NPM_REGISTRY?: string;
   REPLICATE_API_TOKEN: string;
   ANTHROPIC_AUTH_TOKEN: string;
   CF_REAL_TURN_TOKEN: string;
   ESBUILD: Fetcher;
-  NPM_TOKEN?: string;
   CODE: DurableObjectNamespace;
   LIMITERS: DurableObjectNamespace;
   R2: R2Bucket;

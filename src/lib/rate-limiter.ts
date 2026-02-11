@@ -5,11 +5,12 @@
  */
 
 import { tryCatch } from "@/lib/try-catch";
-import { redis } from "@/lib/upstash";
+import { redis } from "@/lib/upstash/client";
 
 interface RateLimitEntry {
   count: number;
   firstRequest: number;
+  expiry?: number;
 }
 
 interface RateLimitConfig {
@@ -27,6 +28,7 @@ let kvAvailable: boolean | null = null;
 
 // Cleanup interval for in-memory store
 let cleanupInterval: ReturnType<typeof setInterval> | null = null;
+const CLEANUP_INTERVAL_MS = 60 * 1000; // 1 minute
 
 /**
  * Checks if Upstash Redis is available.
@@ -79,17 +81,23 @@ export function resetKVAvailability(): void {
  * Starts the cleanup interval for in-memory store if not already running.
  * Only needed when using in-memory fallback.
  */
-function ensureCleanupInterval(windowMs: number): void {
+function ensureCleanupInterval(): void {
   if (cleanupInterval) return;
 
   cleanupInterval = setInterval(() => {
     const now = Date.now();
     for (const [key, entry] of rateLimitStore.entries()) {
-      if (now - entry.firstRequest > windowMs * 2) {
+      // Use expiry if available (preferred), otherwise fall back to 2x global interval
+      // This fallback is only relevant for old entries if any, or if expiry wasn't set (shouldn't happen)
+      const isExpired = entry.expiry
+        ? now > entry.expiry
+        : now - entry.firstRequest > CLEANUP_INTERVAL_MS * 2;
+
+      if (isExpired) {
         rateLimitStore.delete(key);
       }
     }
-  }, windowMs);
+  }, CLEANUP_INTERVAL_MS);
 
   // Don't block process exit
   if (cleanupInterval.unref) {
@@ -117,7 +125,11 @@ async function checkRateLimitKV(
 
   // No previous requests or window has expired
   if (!entry || now - entry.firstRequest > config.windowMs) {
-    const newEntry: RateLimitEntry = { count: 1, firstRequest: now };
+    const newEntry: RateLimitEntry = {
+      count: 1,
+      firstRequest: now,
+      expiry: now + config.windowMs,
+    };
 
     // Store with TTL (window + 1 minute for cleanup margin)
     const ttlSeconds = Math.ceil((config.windowMs + 60000) / 1000);
@@ -143,6 +155,8 @@ async function checkRateLimitKV(
   const updatedEntry: RateLimitEntry = {
     ...entry,
     count: entry.count + 1,
+    // Ensure expiry is preserved/set
+    expiry: entry.expiry || entry.firstRequest + config.windowMs,
   };
 
   // Update with same TTL
@@ -168,14 +182,23 @@ function checkRateLimitMemory(
   remaining: number;
   resetAt: number;
 } {
-  ensureCleanupInterval(config.windowMs);
+  ensureCleanupInterval();
 
   const now = Date.now();
   const entry = rateLimitStore.get(identifier);
 
   // No previous requests or window has expired
-  if (!entry || now - entry.firstRequest > config.windowMs) {
-    rateLimitStore.set(identifier, { count: 1, firstRequest: now });
+  // Note: We check both expiry (if present) and time diff for robustness
+  const isExpired = entry?.expiry
+    ? now > entry.expiry
+    : entry && now - entry.firstRequest > config.windowMs;
+
+  if (!entry || isExpired) {
+    rateLimitStore.set(identifier, {
+      count: 1,
+      firstRequest: now,
+      expiry: now + config.windowMs,
+    });
     return {
       isLimited: false,
       remaining: config.maxRequests - 1,
@@ -194,6 +217,10 @@ function checkRateLimitMemory(
 
   // Increment the count
   entry.count += 1;
+  // Preserve expiry if set, otherwise calculate it
+  if (!entry.expiry) {
+    entry.expiry = entry.firstRequest + config.windowMs;
+  }
   return {
     isLimited: false,
     remaining: config.maxRequests - entry.count,
