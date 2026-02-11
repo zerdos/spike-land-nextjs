@@ -160,7 +160,7 @@ export const AgentLoopCore: FC<AgentLoopCoreProps> = ({
         {revealCount >= 5 && progress > 0.8 && (
           <div style={{
             position: "absolute",
-            left: 160,
+            left: 266,
             top: 700,
             opacity: clamp((progress - 0.8) * 5, 0, 1),
             display: "flex",

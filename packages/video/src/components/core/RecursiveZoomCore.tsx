@@ -21,16 +21,22 @@ const LAYER_COLORS = [
 
 
 const interpolate = (val: number, input: number[], output: number[]) => {
-  if (val <= input[0]) return output[0];
-  if (val >= input[input.length - 1]) return output[output.length - 1];
+  if (!input.length || !output.length) return 0;
+  if (val <= (input[0] ?? 0)) return output[0] ?? 0;
+  if (val >= (input[input.length - 1] ?? 0)) return output[output.length - 1] ?? 0;
   
   for (let i = 0; i < input.length - 1; i++) {
-    if (val >= input[i] && val <= input[i+1]) {
-      const p = (val - input[i]) / (input[i+1] - input[i]);
-      return output[i] + p * (output[i+1] - output[i]);
+    const iVal = input[i] ?? 0;
+    const iNextVal = input[i+1] ?? 0;
+    const oVal = output[i] ?? 0;
+    const oNextVal = output[i+1] ?? 0;
+    
+    if (val >= iVal && val <= iNextVal) {
+      const p = (val - iVal) / (iNextVal - iVal);
+      return oVal + p * (oNextVal - oVal);
     }
   }
-  return output[0];
+  return output[0] ?? 0;
 };
 
 export const RecursiveZoomCore: FC<RecursiveZoomCoreProps> = ({
@@ -108,7 +114,7 @@ export const RecursiveZoomCore: FC<RecursiveZoomCoreProps> = ({
                 fontWeight: 600,
                 letterSpacing: "0.05em",
                 textTransform: "uppercase",
-                opacity: interpolate(opacity, [0, 0.5, 1], [0, 0, 1]),
+                opacity,
               }}
             >
               {label}

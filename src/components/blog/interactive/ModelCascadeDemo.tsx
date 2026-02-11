@@ -10,7 +10,7 @@ export function ModelCascadeDemo() {
 
   return (
     <div ref={ref} className="my-16 py-12 rounded-3xl bg-black border border-white/5 flex flex-col items-center">
-      <div className="w-full relative px-4 overflow-x-auto overflow-y-hidden">
+      <div className="w-full relative px-4 overflow-x-auto">
         <ModelCascadeCore
           revealCount={3}
           progress={progress}

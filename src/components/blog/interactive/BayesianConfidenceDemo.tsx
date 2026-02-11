@@ -21,12 +21,14 @@ export function BayesianConfidenceDemo() {
 
       <div className="flex gap-4">
         <button
+          type="button"
           onClick={() => setHelps(h => h + 1)}
           className="flex-1 px-8 py-4 rounded-2xl bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 text-green-400 font-black transition-all active:scale-95"
         >
           LOG SUCCESS
         </button>
         <button
+          type="button"
           onClick={() => setFails(f => f + 1)}
           className="flex-1 px-8 py-4 rounded-2xl bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-400 font-black transition-all active:scale-95"
         >
@@ -35,6 +37,7 @@ export function BayesianConfidenceDemo() {
       </div>
 
       <button
+        type="button"
         onClick={() => { setHelps(0); setFails(0); }}
         className="text-[10px] text-white/20 uppercase font-bold tracking-widest hover:text-white/40 transition-colors"
       >

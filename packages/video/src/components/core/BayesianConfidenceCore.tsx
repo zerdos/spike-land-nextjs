@@ -8,6 +8,7 @@ export type BayesianConfidenceCoreProps = {
   width?: number | string;
   height?: number | string;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 
@@ -18,6 +19,7 @@ export const BayesianConfidenceCore: FC<BayesianConfidenceCoreProps> = ({
   width = "100%",
   height = "100%",
   className,
+  style,
 }) => {
   const confidence = (helps + 1) / (helps + fails + 2);
 
@@ -32,6 +34,7 @@ export const BayesianConfidenceCore: FC<BayesianConfidenceCoreProps> = ({
     <div
       className={className}
       style={{
+        ...style,
         width,
         height,
         background: COLORS.darkBg,

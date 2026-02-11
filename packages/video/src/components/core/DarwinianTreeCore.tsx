@@ -213,7 +213,7 @@ export const DarwinianTreeCore: FC<DarwinianTreeCoreProps> = ({
       />
 
       {/* Legend */}
-      <g transform="translate(100, 900)">
+      <g transform={`translate(100, ${typeof height === 'number' ? height - 180 : 900})`}>
         <circle cx={0} cy={0} r={6} fill={VERITASIUM_COLORS.active} />
         <text x={16} y={5} fill={COLORS.textSecondary} fontSize={14} fontFamily="Inter, sans-serif">
           Survives (good code)

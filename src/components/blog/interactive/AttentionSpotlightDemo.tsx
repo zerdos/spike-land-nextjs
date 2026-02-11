@@ -28,6 +28,7 @@ export function AttentionSpotlightDemo() {
           value={tokenCount}
           onChange={(e) => setTokenCount(parseInt(e.target.value))}
           className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+          aria-label="Token count control"
         />
         <p className="text-xs text-white/40 mt-2 italic">
           As tokens increase, the "spotlight" of attention dims and spreads, illustrating how context window size impacts focus.

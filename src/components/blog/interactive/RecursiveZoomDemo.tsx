@@ -30,7 +30,7 @@ export function RecursiveZoomDemo() {
     <div ref={ref} className="my-16 rounded-3xl overflow-hidden border border-white/5 aspect-square sm:aspect-video relative group bg-black">
       <RecursiveZoomCore
         labels={labels}
-        progress={autoProgress || inViewProgress}
+        progress={autoProgress > 0 ? autoProgress : inViewProgress}
         zoomSpeed={0.5}
         className="w-full h-full"
       />

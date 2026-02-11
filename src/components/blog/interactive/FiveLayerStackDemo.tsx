@@ -10,7 +10,7 @@ export function FiveLayerStackDemo() {
     <div ref={ref} className="my-16 flex flex-col items-center py-12 px-4 rounded-3xl bg-black/40 border border-white/5 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 to-blue-500/10 pointer-events-none" />
       
-      <div className="relative z-10 w-full max-w-2xl transform scale-90 sm:scale-100">
+      <div className="relative z-10 w-full overflow-hidden">
         <FiveLayerStackCore
           revealCount={5}
           progress={progress}

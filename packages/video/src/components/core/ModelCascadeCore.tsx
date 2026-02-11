@@ -9,6 +9,7 @@ export type ModelCascadeCoreProps = {
   width?: number | string;
   height?: number | string;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 const MODELS = [
@@ -49,6 +50,7 @@ export const ModelCascadeCore: FC<ModelCascadeCoreProps> = ({
   width = "100%",
   height = "100%",
   className,
+  style,
 }) => {
   return (
     <div
@@ -61,7 +63,8 @@ export const ModelCascadeCore: FC<ModelCascadeCoreProps> = ({
         padding: 20,
         background: COLORS.darkBg,
         width,
-        height,
+        height: typeof height === "number" ? `${height}px` : height,
+        ...style,
       }}
     >
       {/* Title */}

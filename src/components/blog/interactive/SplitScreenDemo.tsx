@@ -50,6 +50,7 @@ export function SplitScreenDemo() {
         value={split}
         onChange={(e) => setSplit(parseFloat(e.target.value))}
         className="absolute top-0 left-0 w-full h-full opacity-0 cursor-ew-resize z-20"
+        aria-label="Split screen control"
       />
       
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-4 py-2 rounded-full text-xs font-mono text-white/70 border border-white/10 pointer-events-none">

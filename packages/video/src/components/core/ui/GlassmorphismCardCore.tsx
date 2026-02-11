@@ -7,6 +7,7 @@ export type GlassmorphismCardCoreProps = {
   height?: number | string;
   progress?: number;
   color?: string;
+  padding?: number | string;
   className?: string;
 };
 
@@ -16,6 +17,7 @@ export const GlassmorphismCardCore: React.FC<GlassmorphismCardCoreProps> = ({
   height = "auto",
   progress = 1,
   color = COLORS.cyan,
+  padding = 32,
   className,
 }) => {
   const opacity = progress;
@@ -34,7 +36,7 @@ export const GlassmorphismCardCore: React.FC<GlassmorphismCardCoreProps> = ({
         WebkitBackdropFilter: "blur(12px)",
         borderRadius: 24,
         border: `1px solid ${color}40`,
-        padding: 32,
+        padding,
         boxShadow: `0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 0 0 1px rgba(255, 255, 255, 0.05)`,
         overflow: "hidden",
         position: "relative",

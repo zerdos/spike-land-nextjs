@@ -24,6 +24,16 @@ export const VCP_DURATIONS = {
   endCard: 1350,             // 45s
 } as const;
 
+export const VERITASIUM_DURATIONS = {
+  hook: 30 * 5,
+  attention: 30 * 8,
+  stack: 30 * 10,
+  darwin: 30 * 12,
+  memory: 30 * 8,
+  cascade: 30 * 10,
+  cta: 30 * 5,
+} as const;
+
 export const VCP_TIMING = {
   totalFrames: 19800,  // 11 minutes
   fps: 30,

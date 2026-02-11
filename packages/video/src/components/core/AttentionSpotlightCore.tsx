@@ -27,14 +27,23 @@ function seededRandom(seed: number): number {
 
 const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
 
-const interpolate = (val: number, input: [number, number, number], output: [number, number, number]) => {
-  if (val <= input[1]) {
-    const p = (val - input[0]) / (input[1] - input[0]);
-    return output[0] + p * (output[1] - output[0]);
-  } else {
-    const p = (val - input[1]) / (input[2] - input[1]);
-    return output[1] + p * (output[2] - output[1]);
+const interpolate = (val: number, input: number[], output: number[]) => {
+  if (!input.length || !output.length) return 0;
+  if (val <= (input[0] ?? 0)) return output[0] ?? 0;
+  if (val >= (input[input.length - 1] ?? 0)) return output[output.length - 1] ?? 0;
+  
+  for (let i = 0; i < input.length - 1; i++) {
+    const iVal = input[i] ?? 0;
+    const iNextVal = input[i+1] ?? 0;
+    const oVal = output[i] ?? 0;
+    const oNextVal = output[i+1] ?? 0;
+    
+    if (val >= iVal && val <= iNextVal) {
+      const p = (val - iVal) / (iNextVal - iVal || 1);
+      return oVal + p * (oNextVal - oVal);
+    }
   }
+  return output[0] ?? 0;
 };
 
 export const AttentionSpotlightCore: FC<AttentionSpotlightCoreProps> = ({

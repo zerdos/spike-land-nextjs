@@ -23,7 +23,7 @@ export const ModelCascadeTable: React.FC<ModelCascadeTableProps> = ({
   });
 
   return (
-    <div style={{ width: 1920, height: 1080, display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div className="w-full h-full flex items-center justify-center bg-[#0a0a0f]">
       <ModelCascadeCore 
         revealCount={revealCount} 
         progress={progress} 

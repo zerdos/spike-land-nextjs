@@ -15,7 +15,7 @@ export function Scene06_Cascade() {
 
   return (
     <AbsoluteFill className="bg-black">
-      <ModelCascadeCore progress={progress} revealCount={3} className="w-full h-full scale-90" />
+      <ModelCascadeCore progress={progress} revealCount={3} className="w-full h-full" style={{ transform: 'scale(0.9)' }} />
     </AbsoluteFill>
   );
 }

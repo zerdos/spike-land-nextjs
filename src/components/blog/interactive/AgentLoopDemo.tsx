@@ -6,7 +6,7 @@ import { useInViewProgress } from "./useInViewProgress";
 
 export function AgentLoopDemo() {
   const { ref, progress: inViewProgress } = useInViewProgress();
-  const [activeState, setActiveState] = useState(0);
+  const [activeState, setActiveState] = useState(-1);
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {

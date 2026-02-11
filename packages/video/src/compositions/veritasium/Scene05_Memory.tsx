@@ -15,7 +15,7 @@ export function Scene05_Memory() {
 
   return (
     <AbsoluteFill className="bg-[#05050a]">
-      <BayesianConfidenceCore progress={progress} helps={3} fails={1} className="w-full h-full scale-75" />
+      <BayesianConfidenceCore progress={progress} helps={3} fails={1} className="w-full h-full" style={{ transform: 'scale(0.75)' }} />
     </AbsoluteFill>
   );
 }

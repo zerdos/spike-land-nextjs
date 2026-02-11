@@ -14,7 +14,7 @@ export function useInViewProgress() {
     const element = ref.current;
     if (!element) return;
 
-    let rafId: number;
+    let rafId: number = 0;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
