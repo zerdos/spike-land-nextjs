@@ -1,5 +1,6 @@
-import { Fragment, type FC } from "react";
+import { Fragment, useId, useMemo, type FC } from "react";
 import { COLORS, VERITASIUM_COLORS } from "../../lib/constants";
+import { clamp, seededRandom } from "../../lib/animation-utils";
 
 export type DarwinianTreeCoreProps = {
   generations?: number; // 1-3
@@ -19,10 +20,6 @@ type Branch = {
   index: number;
 };
 
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
-}
 
 function buildTree(generations: number): Branch[] {
   const branches: Branch[] = [];
@@ -93,7 +90,6 @@ function buildTree(generations: number): Branch[] {
   return branches;
 }
 
-const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
 
 export const DarwinianTreeCore: FC<DarwinianTreeCoreProps> = ({
   generations = 3,
@@ -102,7 +98,9 @@ export const DarwinianTreeCore: FC<DarwinianTreeCoreProps> = ({
   height = 1080,
   className,
 }) => {
-  const branches = buildTree(Math.min(3, Math.max(1, generations)));
+  const id = useId();
+  const glowId = `tree-glow-${id.replace(/:/g, "")}`;
+  const branches = useMemo(() => buildTree(Math.min(3, Math.max(1, generations))), [generations]);
 
   return (
     <svg 
@@ -113,7 +111,7 @@ export const DarwinianTreeCore: FC<DarwinianTreeCoreProps> = ({
       preserveAspectRatio="xMidYMid meet"
     >
       <defs>
-        <filter id="tree-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <filter id={glowId} x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="4" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
@@ -155,7 +153,7 @@ export const DarwinianTreeCore: FC<DarwinianTreeCoreProps> = ({
               strokeWidth={strokeWidth}
               strokeLinecap="round"
               opacity={pruneOpacity * growProgress}
-              filter={branch.survives ? "url(#tree-glow)" : undefined}
+              filter={branch.survives ? `url(#${glowId})` : undefined}
             />
 
             {/* Pruning cut mark on failed branches */}

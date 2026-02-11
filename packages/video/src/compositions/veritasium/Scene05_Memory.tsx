@@ -10,7 +10,7 @@ export function Scene05_Memory() {
   const progress = spring({
     frame,
     fps,
-    config: SPRING_CONFIGS.slow,
+    config: SPRING_CONFIGS.slow, durationInFrames: 90,
   });
 
   return (

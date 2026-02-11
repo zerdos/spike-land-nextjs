@@ -168,7 +168,7 @@ export function glitchOffset(
 ): number {
   // Pseudo-random based on frame and seed
   const hash = Math.sin((frame + seed) * 12.9898) * 43758.5453;
-  return ((hash % 1) * 2 - 1) * maxOffset;
+  return ((hash - Math.floor(hash)) * 2 - 1) * maxOffset;
 }
 
 /**

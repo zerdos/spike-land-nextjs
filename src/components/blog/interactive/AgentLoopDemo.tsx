@@ -19,9 +19,13 @@ export function AgentLoopDemo() {
     return undefined;
   }, [inViewProgress, isPaused]);
 
+  const STATES = [
+    "Planning", "Writing", "Typing", "Linting", "Fixing", "Building", "Testing"
+  ];
+
   return (
-    <div ref={ref} className="my-16 flex flex-col gap-4">
-      <div className="rounded-3xl overflow-hidden border border-white/10 aspect-video bg-[#0a0a0f] relative group">
+    <div ref={ref} className="my-8 flex flex-col gap-4">
+      <div className="rounded-xl overflow-hidden border border-border aspect-video bg-background relative group">
         <AgentLoopCore
           revealCount={7}
           activeState={activeState}
@@ -29,34 +33,39 @@ export function AgentLoopDemo() {
           className="w-full h-full"
         />
         
-        <div className="absolute top-6 left-6 text-2xl font-black text-white italic tracking-tighter opacity-20 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-6 left-6 text-2xl font-black text-muted-foreground italic tracking-tighter opacity-20 group-hover:opacity-100 transition-opacity pointer-events-none">
           THE LOOP
         </div>
 
-        <div className="absolute bottom-6 left-6 flex gap-2">
-          {Array.from({ length: 7 }).map((_, i) => (
+        <div className="absolute bottom-6 left-6 flex gap-2" role="tablist" aria-label="Agent states">
+          {STATES.map((stateName, i) => (
             <button
-              key={i}
+              key={stateName}
+              type="button"
+              role="tab"
+              aria-selected={i === activeState}
+              aria-label={`Select ${stateName} state`}
               onClick={() => {
                 setActiveState(i);
                 setIsPaused(true);
               }}
-              className={`w-8 h-1 rounded-full transition-all ${
-                i === activeState ? "bg-cyan-400 w-12" : "bg-white/20 hover:bg-white/40"
+              className={`h-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                i === activeState ? "bg-cyan-500 w-12" : "bg-muted-foreground/30 hover:bg-muted-foreground/60 w-8"
               }`}
             />
           ))}
         </div>
 
         <button
+          type="button"
           onClick={() => setIsPaused(!isPaused)}
-          className="absolute bottom-6 right-6 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white/50 uppercase tracking-widest hover:text-white transition-colors"
+          className="absolute bottom-6 right-6 px-4 py-2 rounded-full bg-background/80 border border-border text-[10px] font-bold text-muted-foreground uppercase tracking-widest hover:text-foreground transition-colors backdrop-blur-sm"
         >
           {isPaused ? "Play" : "Pause"}
         </button>
       </div>
       
-      <p className="text-center text-xs text-white/30 italic font-mono">
+      <p className="text-center text-xs text-muted-foreground italic font-mono">
         Click the indicators or pause to focus on a specific state of the agent's workflow.
       </p>
     </div>

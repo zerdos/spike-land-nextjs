@@ -16,6 +16,11 @@ export function useInViewProgress() {
 
     let rafId: number = 0;
 
+    if (typeof IntersectionObserver === "undefined") {
+      setProgress(1);
+      return undefined;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry && entry.isIntersecting) {

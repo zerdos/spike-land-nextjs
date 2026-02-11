@@ -542,14 +542,38 @@ export const mdxComponents: MDXComponents = {
   YouTubeEmbed,
   PDFViewer,
   LiveDemo,
-  SplitScreenDemo: dynamic(() => import("./interactive").then((mod) => mod.SplitScreenDemo), { ssr: false }),
-  AttentionSpotlightDemo: dynamic(() => import("./interactive").then((mod) => mod.AttentionSpotlightDemo), { ssr: false }),
-  FiveLayerStackDemo: dynamic(() => import("./interactive").then((mod) => mod.FiveLayerStackDemo), { ssr: false }),
-  DarwinianTreeDemo: dynamic(() => import("./interactive").then((mod) => mod.DarwinianTreeDemo), { ssr: false }),
-  RecursiveZoomDemo: dynamic(() => import("./interactive").then((mod) => mod.RecursiveZoomDemo), { ssr: false }),
-  AgentLoopDemo: dynamic(() => import("./interactive").then((mod) => mod.AgentLoopDemo), { ssr: false }),
-  ModelCascadeDemo: dynamic(() => import("./interactive").then((mod) => mod.ModelCascadeDemo), { ssr: false }),
-  BayesianConfidenceDemo: dynamic(() => import("./interactive").then((mod) => mod.BayesianConfidenceDemo), { ssr: false }),
+  SplitScreenDemo: dynamic(() => import("./interactive").then((mod) => mod.SplitScreenDemo), { 
+    ssr: false,
+    loading: () => <div className="w-full aspect-video bg-muted animate-pulse rounded-xl my-16" />,
+  }),
+  AttentionSpotlightDemo: dynamic(() => import("./interactive").then((mod) => mod.AttentionSpotlightDemo), { 
+    ssr: false,
+    loading: () => <div className="w-full aspect-video bg-muted animate-pulse rounded-xl my-16" />,
+  }),
+  FiveLayerStackDemo: dynamic(() => import("./interactive").then((mod) => mod.FiveLayerStackDemo), { 
+    ssr: false,
+    loading: () => <div className="w-full aspect-video bg-muted animate-pulse rounded-xl my-16" />,
+  }),
+  DarwinianTreeDemo: dynamic(() => import("./interactive").then((mod) => mod.DarwinianTreeDemo), { 
+    ssr: false,
+    loading: () => <div className="w-full aspect-video bg-muted animate-pulse rounded-xl my-16" />,
+  }),
+  RecursiveZoomDemo: dynamic(() => import("./interactive").then((mod) => mod.RecursiveZoomDemo), { 
+    ssr: false,
+    loading: () => <div className="w-full aspect-video bg-muted animate-pulse rounded-xl my-16" />,
+  }),
+  AgentLoopDemo: dynamic(() => import("./interactive").then((mod) => mod.AgentLoopDemo), { 
+    ssr: false,
+    loading: () => <div className="w-full aspect-video bg-muted animate-pulse rounded-xl my-16" />,
+  }),
+  ModelCascadeDemo: dynamic(() => import("./interactive").then((mod) => mod.ModelCascadeDemo), { 
+    ssr: false,
+    loading: () => <div className="w-full aspect-video bg-muted animate-pulse rounded-xl my-16" />,
+  }),
+  BayesianConfidenceDemo: dynamic(() => import("./interactive").then((mod) => mod.BayesianConfidenceDemo), { 
+    ssr: false,
+    loading: () => <div className="w-full aspect-video bg-muted animate-pulse rounded-xl my-16" />,
+  }),
 };
 
 /**

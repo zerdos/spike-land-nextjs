@@ -51,6 +51,13 @@ vi.mock("@/lib/upstash", () => ({
   dequeueMessage: vi.fn(),
 }));
 
+const { mockGetOrCreateSession } = vi.hoisted(() => ({
+  mockGetOrCreateSession: vi.fn(),
+}));
+vi.mock("@/lib/codespace", () => ({
+  getOrCreateSession: mockGetOrCreateSession,
+}));
+
 // Mock global fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -224,10 +231,12 @@ describe("POST /api/agent/apps/[appId]/respond", () => {
       return fn(tx as unknown as Parameters<typeof fn>[0]);
     });
 
-    // Mock fetch for session.json
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ code: "console.log('hello');" }),
+    // Mock getOrCreateSession for code version creation
+    mockGetOrCreateSession.mockResolvedValue({
+      code: "console.log('hello');",
+      transpiled: "",
+      html: "",
+      css: "",
     });
 
     const request = new NextRequest(
@@ -245,12 +254,7 @@ describe("POST /api/agent/apps/[appId]/respond", () => {
     const response = await POST(request, context);
 
     expect(response.status).toBe(201);
-    expect(mockFetch).toHaveBeenCalledWith(
-      "/api/codespace/test-codespace-123/session",
-      expect.objectContaining({
-        headers: { Accept: "application/json" },
-      }),
-    );
+    expect(mockGetOrCreateSession).toHaveBeenCalledWith("test-codespace-123");
     expect(mockCodeVersionCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({
         appId: "app-1",

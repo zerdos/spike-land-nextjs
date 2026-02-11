@@ -8,28 +8,34 @@ export function DarwinianTreeDemo() {
   const { ref, progress } = useInViewProgress();
   const [replayProgress, setReplayProgress] = useState<number | null>(null);
 
+  const isActive = replayProgress !== null;
+
+  useEffect(() => {
+    if (!isActive) return undefined;
+    
+    let rafId: number;
+    const animate = () => {
+      setReplayProgress((prev) => {
+        if (prev === null) return null;
+        const next = prev + 0.01;
+        if (next >= 1) return null; // Exit condition (C5)
+        rafId = requestAnimationFrame(animate);
+        return next;
+      });
+    };
+    
+    rafId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId);
+  }, [isActive]); // Trigger when active state changes
+
   const handleReplay = () => {
     setReplayProgress(0);
   };
 
-  useEffect(() => {
-    if (replayProgress !== null && replayProgress < 1) {
-      const frame = requestAnimationFrame(() => {
-        setReplayProgress(prev => (prev !== null ? Math.min(prev + 0.01, 1) : null));
-      });
-      return () => cancelAnimationFrame(frame);
-    } 
-    
-    if (replayProgress !== null && replayProgress >= 1) {
-      setReplayProgress(null);
-    }
-    return undefined;
-  }, [replayProgress]);
-
   const displayProgress = replayProgress !== null ? replayProgress : progress;
 
   return (
-    <div ref={ref} className="my-16 rounded-2xl overflow-hidden border border-white/10 aspect-video bg-[#0a0a0f] relative group">
+    <div ref={ref} className="my-8 rounded-xl overflow-hidden border border-border aspect-video bg-background relative group">
       <DarwinianTreeCore
         generations={3}
         progress={displayProgress}
@@ -37,15 +43,15 @@ export function DarwinianTreeDemo() {
       />
       
       <div className="absolute top-6 left-6 flex flex-col gap-2">
-        <div className="text-xl font-bold text-white tracking-tight">The Survival Loop</div>
-        <div className="text-xs text-white/40 uppercase tracking-widest font-mono">Evolutionary Code Improvement</div>
+        <div className="text-xl font-bold text-foreground tracking-tight">The Survival Loop</div>
+        <div className="text-xs text-muted-foreground uppercase tracking-widest font-mono">Evolutionary Code Improvement</div>
       </div>
 
       <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
         <button 
           onClick={handleReplay} 
           type="button"
-          className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-[10px] text-white/70 uppercase font-bold tracking-widest backdrop-blur-md cursor-pointer"
+          className="px-4 py-2 bg-background/80 hover:bg-accent border border-border rounded-full text-[10px] text-foreground uppercase font-bold tracking-widest backdrop-blur-md cursor-pointer transition-colors"
         >
           Replay Animation
         </button>

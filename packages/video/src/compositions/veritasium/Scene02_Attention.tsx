@@ -10,7 +10,7 @@ export function Scene02_Attention() {
   const progress = spring({
     frame,
     fps,
-    config: SPRING_CONFIGS.gentle,
+    config: SPRING_CONFIGS.gentle, durationInFrames: 90,
   });
 
   return (

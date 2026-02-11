@@ -82,7 +82,7 @@ describe("DonePanel", () => {
       render(<DonePanel apps={[createDoneApp("my-test-app", "utility")]} />);
 
       const link = screen.getByRole("link", { name: /View/i });
-      expect(link).toHaveAttribute("href", "/my-test-app/index.ts");
+      expect(link).toHaveAttribute("href", "/api/codespace/my-test-app/embed");
       expect(link).toHaveAttribute("target", "_blank");
       expect(link).toHaveAttribute("rel", "noopener noreferrer");
     });

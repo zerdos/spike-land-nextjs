@@ -1683,7 +1683,7 @@ describe("agentGenerateApp", () => {
   // Sprint 2: Smart model routing
   // ----------------------------------------------------------------
   describe("smart model routing", () => {
-    it("uses Sonnet for simple apps (0 matched skills)", async () => {
+    it("always uses Opus (model routing disabled)", async () => {
       vi.mocked(getMatchedSkills).mockReturnValue([]);
 
       const events = await collectEvents(
@@ -1692,17 +1692,17 @@ describe("agentGenerateApp", () => {
 
       expect(callClaude).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: "sonnet",
+          model: "opus",
           maxTokens: 8192,
         }),
       );
 
-      // Generating message should say Sonnet
+      // Generating message should say Opus
       const genPhase = findEvents(events, "phase").find(
         (e) => e.phase === "GENERATING",
       );
       expect(genPhase!.message).toBe(
-        "Generating application with Claude Sonnet...",
+        "Generating application with Claude Opus...",
       );
     });
 
