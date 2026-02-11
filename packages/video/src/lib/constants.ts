@@ -33,7 +33,6 @@ export const VERITASIUM_DURATIONS = {
   cascade: 30 * 10,
   cta: 30 * 5,
 } as const;
-
 export const VCP_TIMING = {
   totalFrames: 19800,  // 11 minutes
   fps: 30,
