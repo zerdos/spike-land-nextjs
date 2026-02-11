@@ -67,9 +67,9 @@ export async function POST(
   const newSessionData = {
     ...currentSession,
     code,
-    transpiled: transpiled.js,
-    html: transpiled.html || "",
-    css: transpiled.css || "",
+    transpiled: transpiled,
+    html: "",
+    css: "",
   };
 
   // We need the hash for the update. Since we just fetched it, we use it.

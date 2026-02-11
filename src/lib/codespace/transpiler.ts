@@ -34,7 +34,7 @@ export function parseTranspileErrors(
       errors.push({
         line: parseInt(lineColMatch[1], 10),
         column: parseInt(lineColMatch[2], 10),
-        message: lineColMatch[4].trim(),
+        message: lineColMatch[4]?.trim() || "Unknown error",
       });
       continue;
     }
@@ -43,7 +43,7 @@ export function parseTranspileErrors(
     if (lineMatch) {
       errors.push({
         line: parseInt(lineMatch[1], 10),
-        message: lineMatch[2].trim(),
+        message: lineMatch[2]?.trim() || "Unknown error",
       });
       continue;
     }

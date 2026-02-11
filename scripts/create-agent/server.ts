@@ -26,7 +26,13 @@ const authMethod = "oauth-token";
 const anthropic = new Anthropic({
   apiKey: null,
   authToken,
-  defaultHeaders: { "anthropic-beta": "oauth-2025-04-20" },
+  defaultHeaders: {
+    "accept": "application/json",
+    "anthropic-beta":
+      "claude-code-20250219,oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14",
+    "user-agent": "claude-cli/2.1.2 (external, cli)",
+    "x-app": "cli",
+  },
 });
 
 const SYSTEM_PROMPT = `You are an expert React developer building polished, production-quality micro-apps.

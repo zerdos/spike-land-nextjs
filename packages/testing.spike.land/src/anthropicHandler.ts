@@ -49,7 +49,13 @@ export async function handleAnthropicRequest(
     headers.delete("X-Api-Key");
 
     headers.set("Authorization", `Bearer ${env.ANTHROPIC_AUTH_TOKEN}`);
-    headers.set("anthropic-beta", "oauth-2025-04-20");
+    headers.set("accept", "application/json");
+    headers.set(
+      "anthropic-beta",
+      "claude-code-20250219,oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14",
+    );
+    headers.set("user-agent", "claude-cli/2.1.2 (external, cli)");
+    headers.set("x-app", "cli");
 
     // Create new request with all components
     const request = new Request(url.toString(), {

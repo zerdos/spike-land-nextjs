@@ -2258,29 +2258,6 @@ erDiagram
   Int cachedTokens
   DateTime createdAt
 }
-"codespace_sessions" {
-  String id PK
-  String codeSpace UK
-  String code
-  String transpiled
-  String html
-  String css
-  String hash
-  DateTime createdAt
-  DateTime updatedAt
-  String appId FK,UK "nullable"
-}
-"codespace_versions" {
-  String id PK
-  String sessionId FK
-  Int number
-  String code
-  String transpiled
-  String html
-  String css
-  String hash
-  DateTime createdAt
-}
 "_ConnectionTags" {
   String A FK
   String B FK
@@ -2506,8 +2483,6 @@ erDiagram
 "learnit_relations" }o--|| "learnit_content" : fromTopic
 "learnit_relations" }o--|| "learnit_content" : toTopic
 "created_apps" }o--o| "users" : generatedBy
-"codespace_sessions" |o--o| "apps" : app
-"codespace_versions" }o--|| "codespace_sessions" : session
 "_ConnectionTags" }o--|| "connections" : connections
 "_ConnectionTags" }o--|| "connection_tags" : connection_tags
 ```
@@ -5340,35 +5315,6 @@ Properties as follows:
 - `inputTokens`:
 - `outputTokens`:
 - `cachedTokens`:
-- `createdAt`:
-
-### `codespace_sessions`
-
-Properties as follows:
-
-- `id`:
-- `codeSpace`:
-- `code`:
-- `transpiled`:
-- `html`:
-- `css`:
-- `hash`:
-- `createdAt`:
-- `updatedAt`:
-- `appId`:
-
-### `codespace_versions`
-
-Properties as follows:
-
-- `id`:
-- `sessionId`:
-- `number`:
-- `code`:
-- `transpiled`:
-- `html`:
-- `css`:
-- `hash`:
 - `createdAt`:
 
 ### `_ConnectionTags`
