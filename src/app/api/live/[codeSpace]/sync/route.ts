@@ -1,8 +1,10 @@
+import { transpileCode } from "@/lib/codespace/transpiler";
+import { SessionService } from "@/lib/codespace/session-service";
+import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const MCP_ENDPOINT = "https://testing.spike.land/mcp";
 
 /**
  * POST /api/live/[codeSpace]/sync
@@ -40,63 +42,60 @@ export async function POST(
     );
   }
 
-  // Call MCP endpoint to update code
-  const payload = {
-    jsonrpc: "2.0",
-    id: crypto.randomUUID(),
-    method: "tools/call",
-    params: {
-      name: "update_code",
-      arguments: { codeSpace, code },
-    },
-  };
+  // 1. Get current session to have the hash for optimistic locking
+  const currentSession = await SessionService.getSession(codeSpace);
+  if (!currentSession) {
+    return NextResponse.json(
+      { error: "Codespace not found" },
+      { status: 404 },
+    );
+  }
 
-  const { data: response, error: fetchError } = await tryCatch(
-    fetch(`${MCP_ENDPOINT}?codespaceId=${codeSpace}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    }),
+  // 2. Transpile the new code
+  const { data: transpiled, error: transpileError } = await tryCatch(
+    transpileCode(code, codeSpace),
   );
 
-  if (fetchError) {
-    console.error("[api/live/sync] Fetch error:", fetchError);
+  if (transpileError) {
     return NextResponse.json(
-      { error: "Failed to connect to codespace server" },
-      { status: 502 },
+      { error: `Transpilation failed: ${transpileError.message}` },
+      { status: 422 },
     );
   }
 
-  if (!response.ok) {
-    const text = await response.text();
-    console.error("[api/live/sync] MCP error:", response.status, text);
-    return NextResponse.json(
-      { error: `Sync failed: ${response.status}` },
-      { status: response.status },
-    );
+  // 3. Update the session
+  const newSessionData = {
+    ...currentSession,
+    code,
+    transpiled: transpiled.js,
+    html: transpiled.html || "",
+    css: transpiled.css || "",
+  };
+
+  // We need the hash for the update. Since we just fetched it, we use it.
+  // In a real high-concurrency scenario, this might need retries, 
+  // but for a single-user "sync", it's usually fine.
+  const dbSession = await prisma.codespaceSession.findUnique({
+    where: { codeSpace },
+    select: { hash: true }
+  });
+
+  if (!dbSession) {
+    return NextResponse.json({ error: "Session disappeared" }, { status: 404 });
   }
 
-  const { data: result, error: jsonError } = await tryCatch(response.json());
+  const result = await SessionService.updateSession(
+    codeSpace,
+    newSessionData,
+    dbSession.hash
+  );
 
-  if (jsonError) {
-    console.error("[api/live/sync] JSON parse error:", jsonError);
+  if (!result.success) {
     return NextResponse.json(
-      { error: "Invalid response from MCP server" },
-      { status: 502 },
+      { error: result.error || "Failed to update session" },
+      { status: 409 },
     );
   }
-
-  // Check for MCP error response
-  if (result.error) {
-    console.error("[api/live/sync] MCP returned error:", result.error);
-    return NextResponse.json(
-      { error: result.error.message || "MCP error" },
-      { status: 500 },
-    );
-  }
-
   return NextResponse.json({
     success: true,
     codeSpace,

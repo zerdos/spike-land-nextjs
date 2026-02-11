@@ -1,3 +1,4 @@
+import { SessionService } from "@/lib/codespace/session-service";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -25,44 +26,12 @@ export async function GET(
     );
   }
 
-  const { data: response, error: fetchError } = await tryCatch(
-    fetch(`https://testing.spike.land/live/${codeSpace}/session.json`, {
-      headers: {
-        "Accept": "application/json",
-      },
-      // Cache for 1 second to allow quick refreshes
-      next: { revalidate: 1 },
-    }),
-  );
+  const session = await SessionService.getSession(codeSpace);
 
-  if (fetchError) {
-    console.error("[api/live] Fetch error:", fetchError);
+  if (!session) {
     return NextResponse.json(
-      { error: "Failed to connect to codespace server" },
-      { status: 502 },
-    );
-  }
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      return NextResponse.json(
-        { error: "Codespace not found", codeSpace },
-        { status: 404 },
-      );
-    }
-    return NextResponse.json(
-      { error: `Upstream error: ${response.status}` },
-      { status: response.status },
-    );
-  }
-
-  const { data: session, error: jsonError } = await tryCatch(response.json());
-
-  if (jsonError) {
-    console.error("[api/live] JSON parse error:", jsonError);
-    return NextResponse.json(
-      { error: "Invalid response from codespace server" },
-      { status: 502 },
+      { error: "Codespace not found", codeSpace },
+      { status: 404 },
     );
   }
 
@@ -72,5 +41,6 @@ export async function GET(
     transpiled: session.transpiled || "",
     html: session.html || "",
     css: session.css || "",
+    messages: session.messages || [],
   });
 }
