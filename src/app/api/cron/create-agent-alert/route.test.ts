@@ -66,6 +66,7 @@ describe("GET /api/cron/create-agent-alert", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
     delete process.env.CRON_SECRET;
   });
 
@@ -92,10 +93,9 @@ describe("GET /api/cron/create-agent-alert", () => {
 
   it("allows in development when no CRON_SECRET configured", async () => {
     delete process.env.CRON_SECRET;
-    process.env.NODE_ENV = "development";
+    vi.stubEnv("NODE_ENV", "development");
     const res = await GET(makeRequest());
     expect(res.status).toBe(200);
-    process.env.NODE_ENV = "test";
   });
 
   // Alert condition tests

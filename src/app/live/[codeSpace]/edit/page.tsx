@@ -280,7 +280,7 @@ export default function CodespacePage() {
           <div className="flex-1 relative">
             <iframe
               key={iframeKey}
-              src={`/api/codespace/${codeSpace}/embed`}
+              src={`/live/${codeSpace}/`}
               className="absolute inset-0 border-0"
               style={{
                 width: "200%",

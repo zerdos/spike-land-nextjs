@@ -1,48 +1,59 @@
-/**
- * Codespace session types — mirrors ICodeSession from @spike-npm-land/code
- * but without the browser-only dependencies.
- */
+export type Role = "user" | "system" | "assistant";
 
-export interface CodespaceSessionData {
+export enum MessageType {
+  TEXT = "text",
+  COMMAND = "command",
+  STATUS = "status",
+  ERROR = "error",
+}
+
+export interface TextPart {
+  type: "text";
+  text: string;
+}
+
+export interface ImageUrlPart {
+  type: "image_url";
+  image_url: {
+    url: string;
+  };
+}
+
+export interface ImagePart {
+  type: "image";
+  source: {
+    type: string;
+    mediaType: string;
+    data: string;
+  };
+}
+
+export type MessagePart = TextPart | ImageUrlPart | ImagePart;
+export type MessageContent = string | MessagePart[];
+
+export interface Message {
+  id: string;
+  role: Role;
+  type?: MessageType;
+  content: MessageContent;
+}
+
+export interface ICodeSession {
+  code: string;
   codeSpace: string;
-  code: string;
-  transpiled: string;
   html: string;
   css: string;
+  transpiled: string;
+  requiresReRender?: boolean;
+  messages: Message[];
 }
 
-export interface CodespaceVersionData {
+export interface CodeVersion {
   number: number;
   code: string;
   transpiled: string;
   html: string;
   css: string;
   hash: string;
-  createdAt: Date;
-}
-
-export interface CodespaceVersionMeta {
-  number: number;
-  hash: string;
-  createdAt: Date;
-}
-
-/** Returned by getSession / updateSession */
-export interface CodespaceSessionWithHash extends CodespaceSessionData {
-  hash: string;
-  updatedAt: Date;
-}
-
-/** Thrown when optimistic locking detects a conflict */
-export class OptimisticLockError extends Error {
-  constructor(
-    public readonly codeSpace: string,
-    public readonly expectedHash: string,
-    public readonly actualHash: string,
-  ) {
-    super(
-      `Optimistic lock conflict on "${codeSpace}": expected ${expectedHash}, got ${actualHash}`,
-    );
-    this.name = "OptimisticLockError";
-  }
+  createdAt: number; // Unix timestamp
 }

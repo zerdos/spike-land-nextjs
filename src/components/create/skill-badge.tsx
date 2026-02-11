@@ -16,7 +16,7 @@ export function SkillBadge({ skill, index }: SkillBadgeProps) {
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.8 }}
       transition={{ duration: 0.15, delay: index * 0.05 }}
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium ${skill.colorClass}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium transition-all duration-200 hover:shadow-[0_0_8px_currentColor] ${skill.colorClass}`}
       title={skill.description}
     >
       <span>{skill.icon}</span>

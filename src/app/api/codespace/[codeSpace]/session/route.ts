@@ -1,56 +1,31 @@
-import { CORS_HEADERS, corsOptions } from "@/lib/codespace/cors";
-import { getOrCreateSession } from "@/lib/codespace/session-service";
-import { tryCatch } from "@/lib/try-catch";
+import { computeSessionHash } from "@/lib/codespace/hash-utils";
+import { SessionService } from "@/lib/codespace/session-service";
+import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-/**
- * GET /api/codespace/[codeSpace]/session
- *
- * Returns the full session state including code, transpiled output, html, css, and hash.
- * Creates a default session if one does not exist for this codeSpace.
- */
 export async function GET(
   _request: NextRequest,
-  context: { params: Promise<{ codeSpace: string }> },
+  props: { params: Promise<{ codeSpace: string }> }
 ) {
-  const { data: params, error: paramsError } = await tryCatch(context.params);
-  if (paramsError) {
-    return Response.json(
-      { error: "Invalid parameters" },
-      { status: 400, headers: CORS_HEADERS },
-    );
-  }
-
+  const params = await props.params;
   const { codeSpace } = params;
+  const session = await SessionService.getSession(codeSpace);
 
-  const { data: session, error: sessionError } = await tryCatch(
-    getOrCreateSession(codeSpace),
-  );
-
-  if (sessionError) {
-    console.error(
-      `[Codespace API] Failed to get session for "${codeSpace}":`,
-      sessionError,
-    );
-    return Response.json(
-      { error: "Failed to retrieve session" },
-      { status: 500, headers: CORS_HEADERS },
-    );
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Codespace not found" }, { status: 404 });
   }
 
-  return Response.json(
-    {
-      codeSpace: session.codeSpace,
+  return NextResponse.json({
+    success: true,
+    codeSpace: session.codeSpace,
+    hash: computeSessionHash(session),
+    session: {
       code: session.code,
       transpiled: session.transpiled,
       html: session.html,
       css: session.css,
-      hash: session.hash,
+      codeSpace: session.codeSpace,
+      messages: session.messages,
     },
-    { headers: CORS_HEADERS },
-  );
-}
-
-export function OPTIONS() {
-  return corsOptions();
+  });
 }

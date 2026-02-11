@@ -1,135 +1,159 @@
-/**
- * HTML Template Builder for Live App Embeds
- *
- * Builds a complete HTML page from codespace session data,
- * replacing the Cloudflare Worker's liveRoutes HTML rendering.
- *
- * The template includes:
- * - An import map mapping bare specifiers to esm.sh CDN URLs
- * - Inline CSS from the session
- * - The user's HTML content in the body
- * - A module script that imports the transpiled code and renders it
- */
-
-import { REACT_VERSION } from "./constants";
-
-// ---------------------------------------------------------------------------
-// Import map for embedded apps
-// ---------------------------------------------------------------------------
-
-export interface ImportMap {
-  imports: Record<string, string>;
-}
-
-/**
- * Build a minimal import map for standalone embedded apps.
- *
- * This is a simplified server-side version of the client-side import map
- * from packages/code/src/@/lib/importmap-utils.ts. The embedded app only
- * needs the core React + UI library mappings since all other dependencies
- * are bundled via ?bundle=true on esm.sh.
- */
-function buildImportMap(): ImportMap {
-  return {
-    imports: {
-      "react": `https://esm.sh/react@${REACT_VERSION}?bundle=true`,
-      "react/": `https://esm.sh/react@${REACT_VERSION}/`,
-      "react/jsx-runtime": `https://esm.sh/react@${REACT_VERSION}/jsx-runtime?bundle=true`,
-      "react/jsx-dev-runtime": `https://esm.sh/react@${REACT_VERSION}/jsx-dev-runtime?bundle=true`,
-      "react-dom": `https://esm.sh/react-dom@${REACT_VERSION}?bundle=true`,
-      "react-dom/": `https://esm.sh/react-dom@${REACT_VERSION}/`,
-      "react-dom/client": `https://esm.sh/react-dom@${REACT_VERSION}/client?bundle=true`,
-      "react-dom/server": `https://esm.sh/react-dom@${REACT_VERSION}/server?bundle=true`,
-      "@emotion/react": "https://esm.sh/@emotion/react@11?bundle=true",
-      "@emotion/react/jsx-runtime": "https://esm.sh/@emotion/react@11/jsx-runtime?bundle=true",
-      "@emotion/react/jsx-dev-runtime": "https://esm.sh/@emotion/react@11/jsx-dev-runtime?bundle=true",
-      "@emotion/styled": "https://esm.sh/@emotion/styled@11?bundle=true",
-      "@emotion/cache": "https://esm.sh/@emotion/cache@11?bundle=true",
-      "framer-motion": "https://esm.sh/framer-motion@12?bundle=true",
-      "recharts": "https://esm.sh/recharts@2?bundle=true",
-    },
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Embed HTML builder
-// ---------------------------------------------------------------------------
-
-export interface EmbedHtmlParams {
-  transpiled: string;
-  html: string;
-  css: string;
-  codeSpace: string;
-}
-
-/**
- * Build a self-contained HTML page that renders a codespace app.
- *
- * The transpiled code is loaded via a base64 data URI to avoid
- * needing a separate JS endpoint for the main module. The import map
- * handles resolving bare specifiers like "react" to CDN URLs.
- */
-export function buildEmbedHtml(params: EmbedHtmlParams): string {
-  const importMapJson = JSON.stringify(buildImportMap(), null, 2);
-
-  // Encode transpiled code as base64 data URI.
-  // Buffer is available in Node.js runtime (not Edge, but we use Node runtime).
-  const transpiledBase64 = Buffer.from(params.transpiled, "utf-8").toString(
-    "base64",
-  );
-
-  return `<!DOCTYPE html>
+export const HTML_TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${sanitize(params.codeSpace)} - spike.land</title>
-  <script type="importmap">${importMapJson}</script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { min-height: 100vh; font-family: system-ui, -apple-system, sans-serif; }
-  </style>
-  <style id="session-css">${sanitizeCss(params.css)}</style>
-</head>
-<body>
-  <div id="embed">${params.html}</div>
-  <script type="module">
-    import { createElement } from "react";
-    import { createRoot } from "react-dom/client";
+  <head>
+    <base href="/" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spike.land</title>
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap"
+      as="style"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap"
+      rel="stylesheet"
+    />
+    
+    <style type="text/tailwindcss">
+    @import "tailwindcss";
 
-    try {
-      const mod = await import("data:text/javascript;base64,${transpiledBase64}");
-      const App = mod.default || mod;
+    @custom-variant dark (&:where(.dark, .dark *));
 
-      const root = document.getElementById("embed");
-      if (root && typeof App === "function") {
-        createRoot(root).render(createElement(App));
-      }
-    } catch (err) {
-      console.error("[spike.land embed] Failed to render app:", err);
+    @theme inline {
+      --color-background: hsl(var(--background));
+      --color-foreground: hsl(var(--foreground));
+      --color-card: hsl(var(--card));
+      --color-card-foreground: hsl(var(--card-foreground));
+      --color-popover: hsl(var(--popover));
+      --color-popover-foreground: hsl(var(--popover-foreground));
+      --color-primary: hsl(var(--primary));
+      --color-primary-foreground: hsl(var(--primary-foreground));
+      --color-secondary: hsl(var(--secondary));
+      --color-secondary-foreground: hsl(var(--secondary-foreground));
+      --color-muted: hsl(var(--muted));
+      --color-muted-foreground: hsl(var(--muted-foreground));
+      --color-accent: hsl(var(--accent));
+      --color-accent-foreground: hsl(var(--accent-foreground));
+      --color-destructive: hsl(var(--destructive));
+      --color-destructive-foreground: hsl(var(--destructive-foreground));
+      --color-border: hsl(var(--border));
+      --color-input: hsl(var(--input));
+      --color-ring: hsl(var(--ring));
+      --color-sidebar: hsl(var(--sidebar-background));
+      --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+      --color-sidebar-primary: hsl(var(--sidebar-primary));
+      --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+      --color-sidebar-accent: hsl(var(--sidebar-accent));
+      --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+      --color-sidebar-border: hsl(var(--sidebar-border));
+      --color-sidebar-ring: hsl(var(--sidebar-ring));
+      --radius-lg: var(--radius);
+      --radius-md: calc(var(--radius) - 2px);
+      --radius-sm: calc(var(--radius) - 4px);
+      --animate-accordion-down: accordion-down 0.2s ease-out;
+      --animate-accordion-up: accordion-up 0.2s ease-out;
+      --animate-gradient-x-slow: gradient-x 30s ease infinite;
+      --animate-gradient-x-normal: gradient-x 20s ease infinite;
+      --animate-gradient-x-fast: gradient-x 10s ease infinite;
     }
-  </script>
-</body>
+
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 222.2 84% 4.9%;
+      --primary: 222.2 47.4% 11.2%;
+      --primary-foreground: 210 40% 98%;
+      --secondary: 210 40% 96.1%;
+      --secondary-foreground: 222.2 47.4% 11.2%;
+      --muted: 210 40% 96.1%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --accent: 210 40% 96.1%;
+      --accent-foreground: 222.2 47.4% 11.2%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 222.2 84% 4.9%;
+      --radius: 0.5rem;
+      --sidebar-background: 0 0% 98%;
+      --sidebar-foreground: 240 5.3% 26.1%;
+      --sidebar-primary: 240 5.9% 10%;
+      --sidebar-primary-foreground: 0 0% 98%;
+      --sidebar-accent: 240 4.8% 95.9%;
+      --sidebar-accent-foreground: 240 5.9% 10%;
+      --sidebar-border: 220 13% 91%;
+      --sidebar-ring: 217.2 91.2% 59.8%;
+    }
+
+    @layer base {
+      * {
+        border-color: hsl(var(--border));
+      }
+      body {
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+      }
+    }
+
+    @keyframes accordion-down {
+      from {
+        height: 0;
+      }
+      to {
+        height: var(--radix-accordion-content-height);
+      }
+    }
+    @keyframes accordion-up {
+      from {
+        height: var(--radix-accordion-content-height);
+      }
+      to {
+        height: 0;
+      }
+    }
+    @keyframes gradient-x {
+      0%, 100% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+    </style>
+
+    <script type="importmap">
+    // IMPORTMAP
+    </script>
+    <script src="/@/workers/tw.worker.js"></script>
+    <!-- CSS_LINKS -->
+  </head>
+  <style>
+  /* criticalCss */
+  </style>
+
+  <body>
+    <div id="embed"><!-- HTML_CONTENT --></div>
+    <script type="module" src="/start.mjs"></script>
+  </body>
 </html>`;
-}
 
-// ---------------------------------------------------------------------------
-// Sanitization helpers
-// ---------------------------------------------------------------------------
-
-/** Escape HTML-sensitive characters in text content. */
-function sanitize(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-/**
- * Basic CSS sanitization: strip </style> tags that could break out
- * of the inline style block.
- */
-function sanitizeCss(css: string): string {
-  return css.replace(/<\/style/gi, "<\\/style");
-}
+export const IMPORT_MAP = {
+  imports: {
+    "/@/": "/@/",
+    "@emotion/react/jsx-runtime": "/emotionJsxRuntime.mjs",
+    "@emotion/react/jsx-dev-runtime": "/emotionJsxRuntime.mjs",
+    "@emotion/styled": "/emotionStyled.mjs",
+    "react/jsx-runtime": "/jsx.mjs",
+    "react-dom/server": "/reactDomServer.mjs",
+    "react-dom/client": "/reactDomClient.mjs",
+    "@emotion/react": "/emotion.mjs",
+    "react": "/reactMod.mjs",
+    "framer-motion": "/@/workers/framer-motion.mjs",
+    "react-dom": "/reactDom.mjs",
+    "recharts": "/recharts.mjs",
+  },
+};

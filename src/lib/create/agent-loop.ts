@@ -93,6 +93,7 @@ export async function* agentGenerateApp(
   slug: string,
   path: string[],
   userId: string | undefined,
+  imageUrls?: string[],
 ): AsyncGenerator<StreamEvent> {
   const codespaceId = generateCodespaceId(slug);
   const codespaceUrl = `/api/codespace/${codespaceId}/embed`;
@@ -153,7 +154,7 @@ export async function* agentGenerateApp(
     ctx.notesRetrieved = ctx.notes.map((n) => n.id);
 
     const systemPrompt = buildAgentSystemPrompt(topic, ctx.notes);
-    const userPrompt = buildAgentUserPrompt(path);
+    const userPrompt = buildAgentUserPrompt(path, imageUrls);
 
     // === GENERATING: Call Claude (model chosen by topic complexity) ===
     yield {

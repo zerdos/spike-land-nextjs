@@ -1,5 +1,8 @@
 import type { APIError } from "@anthropic-ai/sdk";
-import type { TextBlock } from "@anthropic-ai/sdk/resources/messages.js";
+import type {
+  ContentBlockParam,
+  TextBlock,
+} from "@anthropic-ai/sdk/resources/messages.js";
 import { getClaudeClient } from "@/lib/ai/claude-client";
 
 export interface ClaudeResponse {
@@ -59,7 +62,7 @@ export async function callClaude(params: {
   systemPrompt: string;
   stablePrefix?: string;
   dynamicSuffix?: string;
-  userPrompt: string;
+  userPrompt: string | ContentBlockParam[];
   model?: ClaudeModel;
   maxTokens?: number;
   temperature?: number;

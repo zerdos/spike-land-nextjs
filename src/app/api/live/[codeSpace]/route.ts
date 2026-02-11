@@ -1,4 +1,4 @@
-import { getOrCreateSession } from "@/lib/codespace";
+import { SessionService } from "@/lib/codespace/session-service";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -26,15 +26,12 @@ export async function GET(
     );
   }
 
-  const { data: session, error: sessionError } = await tryCatch(
-    getOrCreateSession(codeSpace),
-  );
+  const session = await SessionService.getSession(codeSpace);
 
-  if (sessionError) {
-    console.error("[api/live] Session error:", sessionError);
+  if (!session) {
     return NextResponse.json(
-      { error: "Failed to load codespace session" },
-      { status: 500 },
+      { error: "Codespace not found", codeSpace },
+      { status: 404 },
     );
   }
 
@@ -44,5 +41,6 @@ export async function GET(
     transpiled: session.transpiled || "",
     html: session.html || "",
     css: session.css || "",
+    messages: session.messages || [],
   });
 }

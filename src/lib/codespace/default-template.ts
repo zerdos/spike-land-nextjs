@@ -1,9 +1,7 @@
-/**
- * Default codespace session template — ported from
- * packages/testing.spike.land/src/chatRoom.ts lines 142-305
- */
+import type { ICodeSession } from "./types";
 
-export const DEFAULT_CODE = `export default function LandingPage() {
+export const DEFAULT_TEMPLATE: Omit<ICodeSession, "codeSpace"> = {
+  code: `export default function LandingPage() {
   const features = [
     { icon: "📷", label: "Photos" },
     { icon: "📁", label: "Files" },
@@ -165,8 +163,10 @@ export const DEFAULT_CODE = `export default function LandingPage() {
       \`}</style>
     </div>
   );
-}`;
-
-export const DEFAULT_HTML = "<div></div>";
-export const DEFAULT_CSS = "";
-export const DEFAULT_TRANSPILED = "";
+}`,
+  transpiled: "",
+  html: "<div></div>",
+  css: "",
+  requiresReRender: false,
+  messages: [],
+};

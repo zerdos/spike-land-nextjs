@@ -1,125 +1,55 @@
-import { CORS_HEADERS, corsOptions } from "@/lib/codespace/cors";
-import {
-  getOrCreateSession,
-  saveVersion,
-  upsertSession,
-} from "@/lib/codespace/session-service";
-import { transpileCode } from "@/lib/codespace/transpile";
-import { tryCatch } from "@/lib/try-catch";
+import { computeSessionHash } from "@/lib/codespace/hash-utils";
+import { SessionService } from "@/lib/codespace/session-service";
+import { transpileCode } from "@/lib/codespace/transpiler";
+import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-/**
- * POST /api/codespace/[codeSpace]/run
- *
- * Transpile code and force-update the session (no optimistic locking).
- * Also saves a new version snapshot.
- *
- * Body: { code: string }
- * Returns: { success: true, hash: string }
- */
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ codeSpace: string }> },
+  props: { params: Promise<{ codeSpace: string }> }
 ) {
-  const { data: params, error: paramsError } = await tryCatch(context.params);
-  if (paramsError) {
-    return Response.json(
-      { error: "Invalid parameters" },
-      { status: 400, headers: CORS_HEADERS },
-    );
-  }
-
+  const params = await props.params;
   const { codeSpace } = params;
+  const session = await SessionService.getSession(codeSpace);
 
-  // Parse request body
-  const { data: body, error: bodyError } = await tryCatch(
-    request.json() as Promise<{ code?: string }>,
-  );
-
-  if (bodyError) {
-    return Response.json(
-      { error: "Invalid JSON body" },
-      { status: 400, headers: CORS_HEADERS },
-    );
+  if (!session) {
+    return NextResponse.json({ error: "Codespace not found" }, { status: 404 });
   }
 
-  if (!body.code || typeof body.code !== "string") {
-    return Response.json(
-      { error: "Missing or invalid 'code' field" },
-      { status: 400, headers: CORS_HEADERS },
-    );
+  if (!session.code) {
+    return NextResponse.json({ error: "No code to transpile" }, { status: 400 });
   }
 
-  // Transpile
-  const origin = request.headers.get("origin") ?? undefined;
-  const { data: transpiled, error: transpileError } = await tryCatch(
-    transpileCode(body.code, origin),
-  );
+  try {
+    const origin = new URL(request.url).origin;
+    const transpiled = await transpileCode(session.code, origin);
 
-  if (transpileError) {
-    console.error(
-      `[Codespace API] Transpilation failed for "${codeSpace}":`,
-      transpileError,
-    );
-    return Response.json(
-      { error: `Transpilation failed: ${transpileError.message}` },
-      { status: 422, headers: CORS_HEADERS },
-    );
-  }
-
-  // Get current session to preserve html/css fields
-  const { data: current, error: currentError } = await tryCatch(
-    getOrCreateSession(codeSpace),
-  );
-
-  if (currentError) {
-    console.error(
-      `[Codespace API] Failed to get current session for "${codeSpace}":`,
-      currentError,
-    );
-    return Response.json(
-      { error: "Failed to retrieve current session" },
-      { status: 500, headers: CORS_HEADERS },
-    );
-  }
-
-  // Force-update session (no optimistic lock)
-  const { data: session, error: upsertError } = await tryCatch(
-    upsertSession({
-      codeSpace,
-      code: body.code,
+    const expectedHash = computeSessionHash(session);
+    const newSession = {
+      ...session,
       transpiled,
-      html: current.html,
-      css: current.css,
-    }),
-  );
+      html: "",
+      css: "",
+    };
 
-  if (upsertError) {
-    console.error(
-      `[Codespace API] Failed to upsert session for "${codeSpace}":`,
-      upsertError,
-    );
-    return Response.json(
-      { error: "Failed to update session" },
-      { status: 500, headers: CORS_HEADERS },
-    );
+    const result = await SessionService.updateSession(codeSpace, newSession, expectedHash);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error, session: result.session },
+        { status: result.error === "Conflict: Hash mismatch" ? 409 : 400 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      codeSpace,
+      hash: computeSessionHash(newSession),
+      updated: ["transpiled"],
+      message: "Code transpiled successfully. HTML/CSS rendering delegated to connected clients.",
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Transpilation failed";
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }
-
-  // Save a version snapshot (best-effort, do not fail the request)
-  const { error: versionError } = await tryCatch(saveVersion(codeSpace));
-  if (versionError) {
-    console.warn(
-      `[Codespace API] Failed to save version for "${codeSpace}":`,
-      versionError,
-    );
-  }
-
-  return Response.json(
-    { success: true, hash: session.hash },
-    { headers: CORS_HEADERS },
-  );
-}
-
-export function OPTIONS() {
-  return corsOptions();
 }

@@ -1,385 +1,270 @@
-/**
- * Codespace Session Service
- *
- * Replaces Cloudflare Durable Object state operations (chatRoom.ts)
- * with PostgreSQL (Neon) + Redis (Upstash) caching.
- */
-
-import { createHash } from "crypto";
-
 import prisma from "@/lib/prisma";
-import { redis } from "@/lib/upstash";
+import type { Prisma } from "@prisma/client";
+import { publishSSEEvent, redis } from "@/lib/upstash";
+import { DEFAULT_TEMPLATE } from "./default-template";
+import { computeSessionHash } from "./hash-utils";
+import type { CodeVersion, ICodeSession, Message } from "./types";
 
-import {
-  DEFAULT_CODE,
-  DEFAULT_CSS,
-  DEFAULT_HTML,
-  DEFAULT_TRANSPILED,
-} from "./default-template";
-import type {
-  CodespaceSessionData,
-  CodespaceSessionWithHash,
-  CodespaceVersionData,
-  CodespaceVersionMeta,
-} from "./types";
-import { OptimisticLockError } from "./types";
+const SESSION_CACHE_TTL = 30; // 30 seconds
 
-// ---------------------------------------------------------------------------
-// Hash computation
-// ---------------------------------------------------------------------------
+export class SessionService {
+  private static getCacheKey(codeSpace: string) {
+    return `codespace:session:${codeSpace}`;
+  }
 
-/** Server-side session hash using MD5. Matches the structure of the client hash. */
-export function computeSessionHash(session: CodespaceSessionData): string {
-  const md5 = (s: string) =>
-    createHash("md5").update(s || "empty").digest("hex").slice(0, 8);
+  /**
+   * Get a session by codeSpace name.
+   * Checks Redis cache first, then PostgreSQL.
+   */
+  static async getSession(codeSpace: string): Promise<ICodeSession | null> {
+    const cacheKey = this.getCacheKey(codeSpace);
 
-  const hashObj = {
-    codeSpace: session.codeSpace,
-    code: md5(session.code),
-    html: md5(session.html),
-    css: md5(session.css),
-    transpiled: md5(session.transpiled),
-  };
-  return md5(JSON.stringify(hashObj));
-}
-
-// ---------------------------------------------------------------------------
-// Redis cache helpers
-// ---------------------------------------------------------------------------
-
-const CACHE_TTL = 30; // seconds
-
-function cacheKey(codeSpace: string): string {
-  return `session:${codeSpace}`;
-}
-
-async function getCached(
-  codeSpace: string,
-): Promise<CodespaceSessionWithHash | null> {
-  const raw = await redis.get<string>(cacheKey(codeSpace));
-  if (!raw) return null;
-  const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-  return {
-    ...parsed,
-    updatedAt: new Date(parsed.updatedAt),
-  } as CodespaceSessionWithHash;
-}
-
-async function setCache(
-  codeSpace: string,
-  session: CodespaceSessionWithHash,
-): Promise<void> {
-  await redis
-    .set(cacheKey(codeSpace), JSON.stringify(session), { ex: CACHE_TTL })
-    .catch((err: unknown) => {
-      console.warn("[CodespaceService] Redis cache set failed:", err);
-    });
-}
-
-async function invalidateCache(codeSpace: string): Promise<void> {
-  await redis.del(cacheKey(codeSpace)).catch((err: unknown) => {
-    console.warn("[CodespaceService] Redis cache invalidate failed:", err);
-  });
-}
-
-// ---------------------------------------------------------------------------
-// Core CRUD
-// ---------------------------------------------------------------------------
-
-/**
- * Read session from PostgreSQL, with Redis cache layer.
- * Returns null if the session doesn't exist.
- */
-export async function getSession(
-  codeSpace: string,
-): Promise<CodespaceSessionWithHash | null> {
-  // Try cache first
-  const cached = await getCached(codeSpace);
-  if (cached) return cached;
-
-  // Fall back to DB
-  const row = await prisma.codespaceSession.findUnique({
-    where: { codeSpace },
-  });
-  if (!row) return null;
-
-  const session: CodespaceSessionWithHash = {
-    codeSpace: row.codeSpace,
-    code: row.code,
-    transpiled: row.transpiled,
-    html: row.html,
-    css: row.css,
-    hash: row.hash,
-    updatedAt: row.updatedAt,
-  };
-
-  // Populate cache
-  await setCache(codeSpace, session);
-  return session;
-}
-
-/**
- * Get session or create a default one if it doesn't exist.
- */
-export async function getOrCreateSession(
-  codeSpace: string,
-): Promise<CodespaceSessionWithHash> {
-  const existing = await getSession(codeSpace);
-  if (existing) return existing;
-  return initializeSession(codeSpace);
-}
-
-/**
- * Optimistic lock update — only succeeds if `expectedHash` matches current.
- * Throws OptimisticLockError on conflict.
- */
-export async function updateSession(
-  codeSpace: string,
-  data: CodespaceSessionData,
-  expectedHash: string,
-): Promise<CodespaceSessionWithHash> {
-  const newHash = computeSessionHash(data);
-
-  // Attempt optimistic lock update via raw SQL for atomicity
-  const result = await prisma.$executeRaw`
-    UPDATE "codespace_sessions"
-    SET "code" = ${data.code},
-        "transpiled" = ${data.transpiled},
-        "html" = ${data.html},
-        "css" = ${data.css},
-        "hash" = ${newHash},
-        "updatedAt" = NOW()
-    WHERE "codeSpace" = ${codeSpace}
-      AND "hash" = ${expectedHash}
-  `;
-
-  if (result === 0) {
-    // Either the row doesn't exist or the hash didn't match
-    const current = await prisma.codespaceSession.findUnique({
-      where: { codeSpace },
-      select: { hash: true },
-    });
-
-    if (!current) {
-      // Row doesn't exist — initialize and retry
-      await initializeSession(codeSpace);
-      return updateSession(codeSpace, data, computeSessionHash({
-        codeSpace,
-        code: DEFAULT_CODE,
-        transpiled: DEFAULT_TRANSPILED,
-        html: DEFAULT_HTML,
-        css: DEFAULT_CSS,
-      }));
+    // Try cache first
+    try {
+      const cached = await redis.get<ICodeSession>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    } catch (e) {
+      console.error(`[SessionService] Redis error for ${codeSpace}:`, e);
     }
 
-    throw new OptimisticLockError(codeSpace, expectedHash, current.hash);
+    // Fallback to PostgreSQL
+    const dbSession = await prisma.codespaceSession.findUnique({
+      where: { codeSpace },
+    });
+
+    if (!dbSession) {
+      return null;
+    }
+
+    const session: ICodeSession = {
+      code: dbSession.code,
+      codeSpace: dbSession.codeSpace,
+      transpiled: dbSession.transpiled,
+      html: dbSession.html,
+      css: dbSession.css,
+      requiresReRender: dbSession.requiresReRender,
+      messages: (dbSession.messages as Message[]) || [],
+    };
+
+    // Cache the session
+    try {
+      await redis.set(cacheKey, session, { ex: SESSION_CACHE_TTL });
+    } catch (e) {
+      console.error(`[SessionService] Failed to cache session for ${codeSpace}:`, e);
+    }
+
+    return session;
   }
 
-  // Invalidate cache and return the updated session
-  await invalidateCache(codeSpace);
+  /**
+   * Initialize a new session with the default template.
+   */
+  static async initializeSession(codeSpace: string): Promise<ICodeSession> {
+    const session: ICodeSession = {
+      ...DEFAULT_TEMPLATE,
+      codeSpace,
+    };
 
-  const session: CodespaceSessionWithHash = {
-    codeSpace: data.codeSpace,
-    code: data.code,
-    transpiled: data.transpiled,
-    html: data.html,
-    css: data.css,
-    hash: newHash,
-    updatedAt: new Date(),
-  };
+    const hash = computeSessionHash(session);
 
-  await setCache(codeSpace, session);
-  return session;
-}
-
-/**
- * Force-update session (no optimistic locking). Used for initial writes or admin.
- */
-export async function upsertSession(
-  data: CodespaceSessionData,
-): Promise<CodespaceSessionWithHash> {
-  const hash = computeSessionHash(data);
-
-  const row = await prisma.codespaceSession.upsert({
-    where: { codeSpace: data.codeSpace },
-    update: {
-      code: data.code,
-      transpiled: data.transpiled,
-      html: data.html,
-      css: data.css,
-      hash,
-    },
-    create: {
-      codeSpace: data.codeSpace,
-      code: data.code,
-      transpiled: data.transpiled,
-      html: data.html,
-      css: data.css,
-      hash,
-    },
-  });
-
-  await invalidateCache(data.codeSpace);
-
-  const session: CodespaceSessionWithHash = {
-    codeSpace: row.codeSpace,
-    code: row.code,
-    transpiled: row.transpiled,
-    html: row.html,
-    css: row.css,
-    hash: row.hash,
-    updatedAt: row.updatedAt,
-  };
-
-  await setCache(data.codeSpace, session);
-  return session;
-}
-
-/**
- * Create default session if it doesn't already exist.
- */
-export async function initializeSession(
-  codeSpace: string,
-): Promise<CodespaceSessionWithHash> {
-  const data: CodespaceSessionData = {
-    codeSpace,
-    code: DEFAULT_CODE,
-    transpiled: DEFAULT_TRANSPILED,
-    html: DEFAULT_HTML,
-    css: DEFAULT_CSS,
-  };
-
-  return upsertSession(data);
-}
-
-// ---------------------------------------------------------------------------
-// Versioning
-// ---------------------------------------------------------------------------
-
-/**
- * Save a new immutable version snapshot of the current session state.
- */
-export async function saveVersion(
-  codeSpace: string,
-): Promise<CodespaceVersionData> {
-  const session = await prisma.codespaceSession.findUnique({
-    where: { codeSpace },
-  });
-  if (!session) {
-    throw new Error(`No session found for codeSpace "${codeSpace}"`);
-  }
-
-  // Get the next version number
-  const lastVersion = await prisma.codespaceVersion.findFirst({
-    where: { sessionId: session.id },
-    orderBy: { number: "desc" },
-    select: { number: true },
-  });
-  const nextNumber = (lastVersion?.number ?? 0) + 1;
-
-  const hash = computeSessionHash({
-    codeSpace,
-    code: session.code,
-    transpiled: session.transpiled,
-    html: session.html,
-    css: session.css,
-  });
-
-  const version = await prisma.codespaceVersion.create({
-    data: {
-      sessionId: session.id,
-      number: nextNumber,
-      code: session.code,
-      transpiled: session.transpiled,
-      html: session.html,
-      css: session.css,
-      hash,
-    },
-  });
-
-  console.log(
-    `[CodespaceService] Saved version ${nextNumber} for "${codeSpace}"`,
-  );
-
-  return {
-    number: version.number,
-    code: version.code,
-    transpiled: version.transpiled,
-    html: version.html,
-    css: version.css,
-    hash: version.hash,
-    createdAt: version.createdAt,
-  };
-}
-
-/**
- * Get a specific version by number.
- */
-export async function getVersion(
-  codeSpace: string,
-  versionNumber: number,
-): Promise<CodespaceVersionData | null> {
-  const session = await prisma.codespaceSession.findUnique({
-    where: { codeSpace },
-    select: { id: true },
-  });
-  if (!session) return null;
-
-  const version = await prisma.codespaceVersion.findUnique({
-    where: {
-      sessionId_number: {
-        sessionId: session.id,
-        number: versionNumber,
+    await prisma.codespaceSession.upsert({
+      where: { codeSpace },
+      update: {
+        code: session.code,
+        transpiled: session.transpiled,
+        html: session.html,
+        css: session.css,
+        hash,
+        messages: session.messages as unknown as Prisma.JsonValue,
+        requiresReRender: session.requiresReRender,
       },
-    },
-  });
-  if (!version) return null;
+      create: {
+        codeSpace,
+        code: session.code,
+        transpiled: session.transpiled,
+        html: session.html,
+        css: session.css,
+        hash,
+        messages: session.messages as unknown as Prisma.JsonValue,
+        requiresReRender: session.requiresReRender,
+      },
+    });
 
-  return {
-    number: version.number,
-    code: version.code,
-    transpiled: version.transpiled,
-    html: version.html,
-    css: version.css,
-    hash: version.hash,
-    createdAt: version.createdAt,
-  };
-}
+    // Invalidate cache
+    await redis.del(this.getCacheKey(codeSpace));
 
-/**
- * List all versions (lightweight metadata only).
- */
-export async function getVersionsList(
-  codeSpace: string,
-): Promise<CodespaceVersionMeta[]> {
-  const session = await prisma.codespaceSession.findUnique({
-    where: { codeSpace },
-    select: { id: true },
-  });
-  if (!session) return [];
+    return session;
+  }
 
-  const versions = await prisma.codespaceVersion.findMany({
-    where: { sessionId: session.id },
-    orderBy: { number: "desc" },
-    select: {
-      number: true,
-      hash: true,
-      createdAt: true,
-    },
-  });
+  /**
+   * Update an existing session.
+   * Performs an optimistic lock using the expected hash.
+   */
+  static async updateSession(
+    codeSpace: string,
+    newSession: ICodeSession,
+    expectedHash: string,
+  ): Promise<{ success: boolean; session?: ICodeSession; error?: string }> {
+    const newHash = computeSessionHash(newSession);
 
-  return versions;
-}
+    // Update with optimistic locking
+    const updateResult = await prisma.codespaceSession.updateMany({
+      where: {
+        codeSpace,
+        hash: expectedHash,
+      },
+      data: {
+        code: newSession.code,
+        transpiled: newSession.transpiled,
+        html: newSession.html,
+        css: newSession.css,
+        hash: newHash,
+        messages: newSession.messages as unknown as Prisma.JsonValue,
+        requiresReRender: newSession.requiresReRender ?? false,
+      },
+    });
 
-/**
- * Link a codespace session to an existing App record.
- */
-export async function linkSessionToApp(
-  codeSpace: string,
-  appId: string,
-): Promise<void> {
-  await prisma.codespaceSession.update({
-    where: { codeSpace },
-    data: { appId },
-  });
+    if (updateResult.count === 0) {
+      // Optimistic lock failure: either codespace doesn't exist or hash mismatched
+      const current = await prisma.codespaceSession.findUnique({
+        where: { codeSpace },
+      });
+
+      if (!current) {
+        return { success: false, error: "Codespace not found" };
+      }
+
+      return {
+        success: false,
+        error: "Conflict: Hash mismatch",
+        session: {
+          code: current.code,
+          codeSpace: current.codeSpace,
+          transpiled: current.transpiled,
+          html: current.html,
+          css: current.css,
+          requiresReRender: current.requiresReRender,
+          messages: (current.messages as Message[]) || [],
+        },
+      };
+    }
+
+    // Invalidate cache
+    await redis.del(this.getCacheKey(codeSpace));
+
+    // Broadcast the update for real-time sync
+    // If this codespace is linked to an app, we use that for broadcasting
+    // Fetch once to check for appId if not already present (optimization: check newSession first)
+    const appId = newSession.appId || (await prisma.codespaceSession.findUnique({
+      where: { codeSpace },
+      select: { appId: true }
+    }))?.appId;
+
+    const broadcastId = appId || `codespace:${codeSpace}`;
+
+    publishSSEEvent(broadcastId, {
+      type: "code_updated",
+      data: {
+        reloadRequired: true,
+        codeSpace,
+        appId
+      },
+      timestamp: Date.now(),
+    }).catch(err => {
+      console.error(`[SessionService] Failed to broadcast update for ${codeSpace}:`, err);
+    });
+
+    return { success: true, session: newSession };
+  }
+
+  /**
+   * Create an immutable snapshot of the current session state.
+   */
+  static async saveVersion(codeSpace: string): Promise<CodeVersion | null> {
+    const session = await prisma.codespaceSession.findUnique({
+      where: { codeSpace },
+    });
+
+    if (!session) return null;
+
+    // Get current version number
+    const maxVersion = await prisma.codespaceVersion.findFirst({
+      where: { sessionId: session.id },
+      orderBy: { number: 'desc' },
+      select: { number: true },
+    });
+
+    const nextNumber = (maxVersion?.number || 0) + 1;
+
+    const version = await prisma.codespaceVersion.create({
+      data: {
+        sessionId: session.id,
+        number: nextNumber,
+        code: session.code,
+        transpiled: session.transpiled,
+        html: session.html,
+        css: session.css,
+        hash: session.hash,
+      },
+    });
+
+    return {
+      number: version.number,
+      code: version.code,
+      transpiled: version.transpiled,
+      html: version.html,
+      css: version.css,
+      hash: version.hash,
+      createdAt: version.createdAt.getTime(),
+    };
+  }
+
+  /**
+   * Get a specific version of a codespace.
+   */
+  static async getVersion(codeSpace: string, number: number): Promise<CodeVersion | null> {
+    const version = await prisma.codespaceVersion.findFirst({
+      where: {
+        session: { codeSpace },
+        number,
+      },
+    });
+
+    if (!version) return null;
+
+    return {
+      number: version.number,
+      code: version.code,
+      transpiled: version.transpiled,
+      html: version.html,
+      css: version.css,
+      hash: version.hash,
+      createdAt: version.createdAt.getTime(),
+    };
+  }
+
+  /**
+   * List all versions for a codespace.
+   */
+  static async getVersionsList(codeSpace: string): Promise<Array<{ number: number; hash: string; createdAt: number }>> {
+    const versions = await prisma.codespaceVersion.findMany({
+      where: {
+        session: { codeSpace },
+      },
+      orderBy: { number: 'desc' },
+      select: {
+        number: true,
+        hash: true,
+        createdAt: true,
+      },
+    });
+
+    return versions.map(v => ({
+      number: v.number,
+      hash: v.hash,
+      createdAt: v.createdAt.getTime(),
+    }));
+  }
 }

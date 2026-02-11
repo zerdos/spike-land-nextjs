@@ -2,8 +2,24 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { LandingHero } from "./LandingHero";
 
-vi.mock("@/components/create/create-search", () => ({
-  CreateSearch: () => <div data-testid="create-search">CreateSearch</div>,
+vi.mock("@/components/create/composer-box", () => ({
+  ComposerBox: ({ initialPrompt }: { initialPrompt?: string }) => (
+    <div data-testid="composer-box" data-initial-prompt={initialPrompt}>ComposerBox</div>
+  ),
+}));
+
+vi.mock("@/components/landing/TemplateCards", () => ({
+  TemplateCards: ({ onSelect }: { onSelect: (prompt: string) => void }) => (
+    <div data-testid="template-cards">
+      <button onClick={() => onSelect("test prompt")}>Template</button>
+    </div>
+  ),
+}));
+
+vi.mock("@/components/landing/CreationStats", () => ({
+  CreationStats: ({ appsCreated, creatorCount }: { appsCreated: number; creatorCount: number }) => (
+    <div data-testid="creation-stats">{appsCreated} apps, {creatorCount} creators</div>
+  ),
 }));
 
 vi.mock("@/components/orbit-landing/ScrollReveal", () => ({
@@ -32,9 +48,14 @@ describe("LandingHero", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the CreateSearch component", () => {
+  it("renders the ComposerBox component", () => {
     render(<LandingHero />);
-    expect(screen.getByTestId("create-search")).toBeInTheDocument();
+    expect(screen.getByTestId("composer-box")).toBeInTheDocument();
+  });
+
+  it("renders the TemplateCards component", () => {
+    render(<LandingHero />);
+    expect(screen.getByTestId("template-cards")).toBeInTheDocument();
   });
 
   it("renders the explore apps link", () => {
@@ -46,5 +67,16 @@ describe("LandingHero", () => {
   it("renders the badge", () => {
     render(<LandingHero />);
     expect(screen.getByText("The Future of Creation")).toBeInTheDocument();
+  });
+
+  it("renders CreationStats when stats are provided", () => {
+    render(<LandingHero stats={{ appsCreated: 100, creatorCount: 50 }} />);
+    expect(screen.getByTestId("creation-stats")).toBeInTheDocument();
+    expect(screen.getByText("100 apps, 50 creators")).toBeInTheDocument();
+  });
+
+  it("does not render CreationStats when stats are not provided", () => {
+    render(<LandingHero />);
+    expect(screen.queryByTestId("creation-stats")).not.toBeInTheDocument();
   });
 });

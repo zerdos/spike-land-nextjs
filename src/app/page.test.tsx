@@ -14,6 +14,10 @@ vi.mock("@/lib/gallery/public-photos", () => ({
   getRecentPublicPhotos: vi.fn().mockResolvedValue([]),
 }));
 
+vi.mock("@/lib/landing/creation-stats", () => ({
+  getCreationStats: vi.fn().mockResolvedValue({ appsCreated: 10, creatorCount: 5 }),
+}));
+
 vi.mock("@/components/landing/LandingHero", () => ({
   LandingHero: () => <div data-testid="landing-hero">LandingHero</div>,
 }));

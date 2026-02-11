@@ -8,7 +8,7 @@ const mockSkill: SkillDefinition = {
   name: "Three.js",
   icon: "🧊",
   category: "3D",
-  colorClass: "border-blue-400 bg-blue-50 text-blue-700",
+  colorClass: "border-blue-400/30 bg-blue-500/10 text-blue-400",
   triggers: ["three", "3d"],
   description: "3D scene rendering",
 };
@@ -29,8 +29,8 @@ describe("SkillBadge", () => {
   it("should apply color classes from skill", () => {
     const { container } = render(<SkillBadge skill={mockSkill} index={0} />);
     const span = container.querySelector("span");
-    expect(span?.className).toContain("border-blue-400");
-    expect(span?.className).toContain("bg-blue-50");
-    expect(span?.className).toContain("text-blue-700");
+    expect(span?.className).toContain("border-blue-400/30");
+    expect(span?.className).toContain("bg-blue-500/10");
+    expect(span?.className).toContain("text-blue-400");
   });
 });

@@ -1,3 +1,4 @@
+import type { ContentBlockParam } from "@anthropic-ai/sdk/resources/messages.js";
 import {
   buildSystemPrompt as buildSkillSystemPrompt,
   buildUserPrompt as buildSkillUserPrompt,
@@ -79,11 +80,36 @@ export function buildAgentSystemPrompt(
 
 /**
  * Build the user prompt for generation.
- * Reuses the existing skill-aware user prompt from content-generator.
+ * Returns a plain string when no images are provided, or an array of content
+ * blocks for multimodal messages when images are attached.
  */
-export function buildAgentUserPrompt(path: string[]): string {
+export function buildAgentUserPrompt(
+  path: string[],
+  imageUrls?: string[],
+): string | ContentBlockParam[] {
   const topic = path.join("/");
-  return buildSkillUserPrompt(topic);
+  const textPrompt = buildSkillUserPrompt(topic);
+
+  if (!imageUrls || imageUrls.length === 0) {
+    return textPrompt;
+  }
+
+  // Return content blocks array for multimodal message
+  const blocks: ContentBlockParam[] = [{ type: "text", text: textPrompt }];
+
+  for (const url of imageUrls) {
+    blocks.push({
+      type: "image",
+      source: { type: "url", url },
+    });
+  }
+
+  blocks.push({
+    type: "text",
+    text: "The user has attached the above reference image(s). Use them as visual inspiration for the app's design, layout, color scheme, or content as appropriate.",
+  });
+
+  return blocks;
 }
 
 // Lightweight fix prompt — doesn't need the full skill catalogue, icon lists, or layout patterns
