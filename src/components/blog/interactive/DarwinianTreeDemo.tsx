@@ -42,7 +42,7 @@ export function DarwinianTreeDemo() {
         className="w-full h-full"
       />
       
-      <div className="absolute top-6 left-6 flex flex-col gap-2">
+      <div className="absolute top-6 left-6 flex flex-col gap-2 p-4 rounded-xl bg-background/5 backdrop-blur-sm transition-all hover:bg-background/40 border border-transparent hover:border-border/50">
         <div className="text-xl font-bold text-foreground tracking-tight">The Survival Loop</div>
         <div className="text-xs text-muted-foreground uppercase tracking-widest font-mono">Evolutionary Code Improvement</div>
       </div>
