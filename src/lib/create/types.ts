@@ -1,4 +1,5 @@
 export type StreamEvent =
+  | { type: "agent"; name: string; model: string; }
   | { type: "status"; message: string; }
   | {
     type: "complete";
@@ -7,5 +8,6 @@ export type StreamEvent =
     title: string;
     description: string;
     relatedApps: string[];
+    agent?: string;
   }
   | { type: "error"; message: string; codespaceUrl?: string; };

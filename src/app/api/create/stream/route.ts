@@ -17,6 +17,10 @@ import { z } from "zod";
 export const maxDuration = 60; // Allow 60s for generation
 export const dynamic = "force-dynamic";
 
+const CREATE_AGENT_URL = process.env["CREATE_AGENT_URL"]; // e.g. https://create-agent.your-tunnel.com
+const CREATE_AGENT_SECRET = process.env["CREATE_AGENT_SECRET"];
+const AGENT_TIMEOUT_MS = 3000; // 3s to connect, fallback if unreachable
+
 const CreateRequestSchema = z.object({
   path: z.array(z.string()),
 });
@@ -78,8 +82,138 @@ export async function POST(req: Request) {
     }
   }
 
-  // Start streaming response
+  // Try local agent first, fall back to direct generation
+  const agentAvailable = await isAgentAvailable();
+
+  if (agentAvailable) {
+    logger.info("Create: using local agent", { slug });
+    return createAgentProxyResponse(slug, path, userId);
+  }
+
+  logger.info("Create: falling back to direct generation", { slug });
   return createSSEResponse(generateStream(slug, path, userId));
+}
+
+/**
+ * Check if the local Create agent is reachable.
+ */
+export async function isAgentAvailable(): Promise<boolean> {
+  if (!CREATE_AGENT_URL || !CREATE_AGENT_SECRET) return false;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), AGENT_TIMEOUT_MS);
+    const res = await fetch(`${CREATE_AGENT_URL}/health`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Proxy the request to the local agent and stream back the response.
+ * Falls back to direct generation on error.
+ */
+function createAgentProxyResponse(
+  slug: string,
+  path: string[],
+  userId: string | undefined,
+): Response {
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        const res = await fetch(`${CREATE_AGENT_URL}/generate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${CREATE_AGENT_SECRET}`,
+          },
+          body: JSON.stringify({ path }),
+        });
+
+        if (!res.ok || !res.body) {
+          throw new Error(`Agent returned ${res.status}`);
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const data = line.slice(6);
+
+            try {
+              const event = JSON.parse(data) as Record<string, unknown>;
+
+              if (event["type"] === "agent") {
+                // Forward agent identity to client
+                controller.enqueue(
+                  encoder.encode(`data: ${data}\n\n`),
+                );
+                continue;
+              }
+
+              if (event["type"] === "status" || event["type"] === "complete" || event["type"] === "error") {
+                controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+                continue;
+              }
+
+              // Forward any other events as-is
+              controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+            } catch (parseError) {
+              if (parseError instanceof SyntaxError) continue;
+              throw parseError;
+            }
+          }
+        }
+
+        controller.close();
+      } catch (error) {
+        logger.warn("Create agent proxy failed, falling back to direct generation", {
+          slug,
+          error: error instanceof Error ? error.message : String(error),
+        });
+
+        // Fall back to direct generation inline
+        try {
+          for await (const event of generateStream(slug, path, userId)) {
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
+            );
+          }
+        } catch {
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ type: "error", message: "Generation failed" })}\n\n`,
+            ),
+          );
+        }
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+    },
+  });
 }
 
 async function* generateStream(
@@ -91,6 +225,7 @@ async function* generateStream(
   const codespaceUrl = `https://testing.spike.land/live/${codespaceId}/`;
 
   try {
+    yield { type: "agent", name: "Gemini Flash", model: "gemini-2.5-flash-preview-05-20" };
     yield { type: "status", message: "Initializing app generation..." };
 
     // 1. Mark as generating in DB
@@ -184,6 +319,7 @@ async function* generateStream(
       title: content.title,
       description: content.description,
       relatedApps: relatedLinks,
+      agent: "Gemini Flash",
     };
   } catch (error) {
     logger.error(`App generation failed for ${slug}:`, { error });
