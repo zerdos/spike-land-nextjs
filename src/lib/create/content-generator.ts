@@ -756,7 +756,7 @@ function addMissingIconImports(code: string): string {
   return newImport + "\n" + code;
 }
 
-function cleanCode(code: string): string {
+export function cleanCode(code: string): string {
   const cleaned = code.replace(/^```tsx?/, "").replace(/^```/, "").replace(/```$/, "").trim();
   // First add missing imports, then prune unused — order matters
   return pruneUnusedIcons(addMissingIconImports(cleaned));

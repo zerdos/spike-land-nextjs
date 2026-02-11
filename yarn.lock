@@ -108,7 +108,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@anthropic-ai/sdk@npm:0.74.0":
+"@anthropic-ai/sdk@npm:^0.74.0":
   version: 0.74.0
   resolution: "@anthropic-ai/sdk@npm:0.74.0"
   dependencies:
@@ -24879,7 +24879,7 @@ __metadata:
   resolution: "vercel-app@workspace:."
   dependencies:
     "@anthropic-ai/claude-agent-sdk": "npm:0.2.37"
-    "@anthropic-ai/sdk": "npm:0.74.0"
+    "@anthropic-ai/sdk": "npm:^0.74.0"
     "@aws-sdk/client-s3": "npm:3.986.0"
     "@aws-sdk/lib-storage": "npm:3.986.0"
     "@cucumber/cucumber": "npm:12.6.0"
