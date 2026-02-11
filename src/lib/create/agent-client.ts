@@ -1,6 +1,6 @@
-import Anthropic from "@anthropic-ai/sdk";
 import type { APIError } from "@anthropic-ai/sdk";
 import type { TextBlock } from "@anthropic-ai/sdk/resources/messages.js";
+import { getClaudeClient } from "@/lib/ai/claude-client";
 
 export interface ClaudeResponse {
   text: string;
@@ -24,15 +24,6 @@ const CLAUDE_MAX_RETRIES = 3;
 const CLAUDE_RETRY_DELAYS = [1000, 2000, 4000];
 /** HTTP status codes that are worth retrying (transient). */
 const RETRYABLE_STATUS_CODES = new Set([429, 529]);
-
-let client: Anthropic | null = null;
-
-function getClient(): Anthropic {
-  if (!client) {
-    client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  }
-  return client;
-}
 
 function isRetryableError(error: unknown): boolean {
   if (error && typeof error === "object" && "status" in error) {
@@ -83,7 +74,7 @@ export async function callClaude(params: {
     temperature = 0.5,
   } = params;
 
-  const anthropic = getClient();
+  const anthropic = getClaudeClient();
 
   // Build system content blocks with split caching
   const systemBlocks = buildSystemBlocks(systemPrompt, stablePrefix, dynamicSuffix);

@@ -9,6 +9,7 @@ import {
 } from "@/lib/create/content-service";
 import { type StreamEvent } from "@/lib/create/types";
 import { agentGenerateApp } from "@/lib/create/agent-loop";
+import { isClaudeConfigured } from "@/lib/ai/claude-client";
 import logger from "@/lib/logger";
 import { checkGenerationRateLimit, getClientIp } from "@/lib/rate-limit";
 import { CreatedAppStatus } from "@prisma/client";
@@ -220,8 +221,8 @@ async function* generateStream(
   path: string[],
   userId: string | undefined,
 ): AsyncGenerator<StreamEvent> {
-  // Use Claude agent loop when API key is available
-  if (process.env.ANTHROPIC_API_KEY) {
+  // Use Claude agent loop when any Anthropic credential is available
+  if (isClaudeConfigured()) {
     try {
       yield* agentGenerateApp(slug, path, userId);
       return;

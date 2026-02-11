@@ -19,10 +19,12 @@ import {
   extractCodeFromResponse,
   parseGenerationResponse,
 } from "./agent-client";
+import { resetClaudeClient } from "@/lib/ai/claude-client";
 
 describe("agent-client", () => {
   beforeEach(() => {
     mockCreate.mockReset();
+    resetClaudeClient();
   });
 
   afterEach(() => {

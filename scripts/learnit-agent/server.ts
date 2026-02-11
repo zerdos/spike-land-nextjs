@@ -1,22 +1,36 @@
 /**
  * LearnIt Agent Server — "Spike"
  *
- * Generates LearnIt content via Claude Code OAuth token (Max subscription).
- * Uses stealth mode headers matching pi-ai/Claude Code exactly.
+ * Generates LearnIt content via Anthropic SDK.
+ * Auth: ANTHROPIC_API_KEY > ANTHROPIC_AUTH_TOKEN > CLAUDE_CODE_OAUTH_TOKEN
  */
 
+import Anthropic from "@anthropic-ai/sdk";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 const PORT = parseInt(process.env["LEARNIT_AGENT_PORT"] ?? "4891", 10);
-const OAUTH_TOKEN = process.env["CLAUDE_CODE_OAUTH_TOKEN"];
 const AGENT_NAME = "Spike";
 const CLAUDE_MODEL = "claude-opus-4-6";
 const AGENT_SECRET = process.env["LEARNIT_AGENT_SECRET"] ?? "spike-learnit-2026";
 
-if (!OAUTH_TOKEN) {
-  console.error("CLAUDE_CODE_OAUTH_TOKEN is required");
+// Auth resolution: ANTHROPIC_API_KEY > ANTHROPIC_AUTH_TOKEN > CLAUDE_CODE_OAUTH_TOKEN
+const apiKey = process.env["ANTHROPIC_API_KEY"];
+const authToken = process.env["ANTHROPIC_AUTH_TOKEN"] ?? process.env["CLAUDE_CODE_OAUTH_TOKEN"];
+
+if (!apiKey && !authToken) {
+  console.error("No Anthropic credentials found. Set ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN.");
   process.exit(1);
 }
+
+const authMethod = apiKey ? "api-key" : "oauth-token";
+
+const anthropic = new Anthropic({
+  apiKey: apiKey ?? null,
+  authToken: !apiKey ? (authToken ?? null) : null,
+  ...(!apiKey && authToken
+    ? { defaultHeaders: { "anthropic-beta": "oauth-2025-04-20" } }
+    : {}),
+});
 
 const SYSTEM_PROMPT = `You are an expert technical educator creating a high-quality, interactive learning wiki called LearnIt.
 
@@ -81,87 +95,38 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
 
   res.write(`data: ${JSON.stringify({ type: "agent", name: AGENT_NAME, model: CLAUDE_MODEL })}\n\n`);
 
-  console.log(`Token prefix: ${OAUTH_TOKEN?.slice(0, 15)}... length: ${OAUTH_TOKEN?.length}`);
-
   try {
-    // Stealth mode: exact headers from pi-ai anthropic provider
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "accept": "application/json",
-        "Authorization": `Bearer ${OAUTH_TOKEN}`,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true",
-        "anthropic-beta": "claude-code-20250219,oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14,interleaved-thinking-2025-05-14",
-        "user-agent": "claude-cli/2.1.2 (external, cli)",
-        "x-app": "cli",
-      },
-      body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: 8192,
-        stream: true,
-        system: [
-          { type: "text", text: "You are Claude Code, Anthropic's official CLI for Claude." },
-          { type: "text", text: SYSTEM_PROMPT },
-        ],
-        messages: [{ role: "user", content: buildPrompt(topic) }],
-      }),
+    const stream = anthropic.messages.stream({
+      model: CLAUDE_MODEL,
+      max_tokens: 8192,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: buildPrompt(topic) }],
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Claude ${response.status}: ${errText}`);
-    }
-
-    const reader = response.body!.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
     let fullContent = "";
     let title = "";
     let description = "";
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    for await (const event of stream) {
+      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+        const text = event.delta.text;
+        fullContent += text;
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() ?? "";
-
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        const data = line.slice(6).trim();
-        if (data === "[DONE]") continue;
-
-        try {
-          const event = JSON.parse(data) as Record<string, unknown>;
-          if (event["type"] === "content_block_delta") {
-            const delta = event["delta"] as Record<string, unknown> | undefined;
-            const text = delta?.["text"] as string | undefined;
-            if (text) {
-              fullContent += text;
-
-              if (!title) {
-                const firstLine = fullContent.split("\n")[0];
-                if (firstLine?.trim()) {
-                  title = firstLine.trim().replace(/^#*\s*/, "");
-                }
-              }
-
-              if (!description && fullContent.includes("\n\n")) {
-                const parts = fullContent.split("\n\n");
-                if (parts[1]?.trim()) {
-                  description = parts[1].trim().substring(0, 200);
-                }
-              }
-
-              res.write(`data: ${JSON.stringify({ type: "chunk", content: text })}\n\n`);
-            }
+        if (!title) {
+          const firstLine = fullContent.split("\n")[0];
+          if (firstLine?.trim()) {
+            title = firstLine.trim().replace(/^#*\s*/, "");
           }
-        } catch {
-          // skip
         }
+
+        if (!description && fullContent.includes("\n\n")) {
+          const parts = fullContent.split("\n\n");
+          if (parts[1]?.trim()) {
+            description = parts[1].trim().substring(0, 200);
+          }
+        }
+
+        res.write(`data: ${JSON.stringify({ type: "chunk", content: text })}\n\n`);
       }
     }
 
@@ -177,8 +142,12 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
     res.write(`data: ${JSON.stringify({ type: "complete", content: finalContent, title: finalTitle, description: finalDesc })}\n\n`);
     console.log(`[${new Date().toISOString()}] Completed: ${topic} (${fullContent.length} chars)`);
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Generation failed";
+    if (message.includes("401") || message.includes("Invalid bearer token")) {
+      console.error(`[AUTH] OAuth token may be expired. Update ANTHROPIC_AUTH_TOKEN in .env.local`);
+    }
     console.error(`[${new Date().toISOString()}] Error:`, error);
-    res.write(`data: ${JSON.stringify({ type: "error", message: error instanceof Error ? error.message : "Generation failed" })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: "error", message })}\n\n`);
   }
 
   res.end();
@@ -190,7 +159,7 @@ function handleHealth(_req: IncomingMessage, res: ServerResponse): void {
     status: "ok",
     agent: AGENT_NAME,
     model: CLAUDE_MODEL,
-    provider: "claude-code-oauth",
+    authMethod,
     timestamp: new Date().toISOString(),
   }));
 }
@@ -203,6 +172,6 @@ const server = createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`🤖 LearnIt Agent (${AGENT_NAME}) listening on http://localhost:${PORT}`);
-  console.log(`   Model: ${CLAUDE_MODEL} via Claude Code OAuth`);
+  console.log(`LearnIt Agent (${AGENT_NAME}) listening on http://localhost:${PORT}`);
+  console.log(`   Model: ${CLAUDE_MODEL} via ${authMethod}`);
 });
