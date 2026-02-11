@@ -112,14 +112,18 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
         "Authorization": `Bearer ${OAUTH_TOKEN}`,
         "anthropic-version": "2023-06-01",
         "anthropic-dangerous-direct-browser-access": "true",
-        "anthropic-beta": "claude-code-20250219,oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14",
+        "anthropic-beta": "claude-code-20250219,oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14,interleaved-thinking-2025-05-14",
         "user-agent": "claude-cli/2.1.2 (external, cli)",
         "x-app": "cli",
       },
       body: JSON.stringify({
         model: CLAUDE_MODEL,
         max_tokens: 16384,
-        system: SYSTEM_PROMPT,
+        stream: true,
+        system: [
+          { type: "text", text: "You are Claude Code, Anthropic's official CLI for Claude." },
+          { type: "text", text: SYSTEM_PROMPT },
+        ],
         messages: [{ role: "user", content: buildUserPrompt(topic) }],
       }),
     });
@@ -129,14 +133,37 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
       throw new Error(`Claude ${response.status}: ${errText}`);
     }
 
-    const data = await response.json() as {
-      content: Array<{ type: string; text?: string }>;
-    };
+    // Parse streaming response to collect full text
+    const reader = response.body!.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let text = "";
 
-    const text = data.content
-      .filter((block) => block.type === "text" && block.text)
-      .map((block) => block.text!)
-      .join("");
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6).trim();
+        if (data === "[DONE]") continue;
+
+        try {
+          const event = JSON.parse(data) as Record<string, unknown>;
+          if (event["type"] === "content_block_delta") {
+            const delta = event["delta"] as Record<string, unknown> | undefined;
+            const chunk = delta?.["text"] as string | undefined;
+            if (chunk) text += chunk;
+          }
+        } catch {
+          // skip
+        }
+      }
+    }
 
     if (!text) throw new Error("Empty response from Claude");
 

@@ -81,6 +81,8 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
 
   res.write(`data: ${JSON.stringify({ type: "agent", name: AGENT_NAME, model: CLAUDE_MODEL })}\n\n`);
 
+  console.log(`Token prefix: ${OAUTH_TOKEN?.slice(0, 15)}... length: ${OAUTH_TOKEN?.length}`);
+
   try {
     // Stealth mode: exact headers from pi-ai anthropic provider
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -91,7 +93,7 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
         "Authorization": `Bearer ${OAUTH_TOKEN}`,
         "anthropic-version": "2023-06-01",
         "anthropic-dangerous-direct-browser-access": "true",
-        "anthropic-beta": "claude-code-20250219,oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14",
+        "anthropic-beta": "claude-code-20250219,oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14,interleaved-thinking-2025-05-14",
         "user-agent": "claude-cli/2.1.2 (external, cli)",
         "x-app": "cli",
       },
@@ -99,7 +101,10 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
         model: CLAUDE_MODEL,
         max_tokens: 8192,
         stream: true,
-        system: SYSTEM_PROMPT,
+        system: [
+          { type: "text", text: "You are Claude Code, Anthropic's official CLI for Claude." },
+          { type: "text", text: SYSTEM_PROMPT },
+        ],
         messages: [{ role: "user", content: buildPrompt(topic) }],
       }),
     });
