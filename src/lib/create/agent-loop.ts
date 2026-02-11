@@ -29,6 +29,13 @@ import { parseTranspileError } from "./error-parser";
 import type { StreamEvent } from "./types";
 import logger from "@/lib/logger";
 
+/** Maximum total tokens (input + output) per generation to prevent runaway costs. */
+const TOKEN_BUDGET_MAX = 150_000;
+/** Maximum fix iterations, clamped regardless of env var. */
+const MAX_ITERATIONS_CAP = 5;
+/** Max tokens for Sonnet fix calls — fixes rarely produce >4k tokens. */
+const FIX_MAX_TOKENS = 8192;
+
 interface AgentContext {
   slug: string;
   path: string[];
@@ -41,7 +48,8 @@ interface AgentContext {
   description: string;
   relatedApps: string[];
   errors: Array<{ error: string; iteration: number; fixed: boolean }>;
-  notesApplied: string[];
+  /** IDs of notes retrieved for this generation (for metrics). */
+  notesRetrieved: string[];
   notes: LearningNote[];
   startTime: number;
   totalInputTokens: number;
@@ -63,9 +71,9 @@ export async function* agentGenerateApp(
 ): AsyncGenerator<StreamEvent> {
   const codespaceId = generateCodespaceId(slug);
   const codespaceUrl = `https://testing.spike.land/live/${codespaceId}/`;
-  const maxIterations = parseInt(
-    process.env["AGENT_MAX_ITERATIONS"] || "3",
-    10,
+  const maxIterations = Math.min(
+    parseInt(process.env["AGENT_MAX_ITERATIONS"] || "3", 10),
+    MAX_ITERATIONS_CAP,
   );
 
   const ctx: AgentContext = {
@@ -80,7 +88,7 @@ export async function* agentGenerateApp(
     description: "Generating app...",
     relatedApps: [],
     errors: [],
-    notesApplied: [],
+    notesRetrieved: [],
     notes: [],
     startTime: Date.now(),
     totalInputTokens: 0,
@@ -109,7 +117,7 @@ export async function* agentGenerateApp(
       message: "Assembling context and learning notes...",
     };
     ctx.notes = await retrieveRelevantNotes(path);
-    ctx.notesApplied = ctx.notes.map((n) => n.id);
+    ctx.notesRetrieved = ctx.notes.map((n) => n.id);
 
     const topic = path.join("/");
     const systemPrompt = buildAgentSystemPrompt(topic, ctx.notes);
@@ -123,7 +131,9 @@ export async function* agentGenerateApp(
     };
 
     const genResponse = await callClaude({
-      systemPrompt,
+      systemPrompt: systemPrompt.full,
+      stablePrefix: systemPrompt.stablePrefix,
+      dynamicSuffix: systemPrompt.dynamicSuffix || undefined,
       userPrompt,
       model: "opus",
       maxTokens: 32768,
@@ -133,6 +143,11 @@ export async function* agentGenerateApp(
     ctx.totalInputTokens += genResponse.inputTokens;
     ctx.totalOutputTokens += genResponse.outputTokens;
     ctx.totalCachedTokens += genResponse.cacheReadTokens;
+
+    // Token budget check
+    if (ctx.totalInputTokens + ctx.totalOutputTokens > TOKEN_BUDGET_MAX) {
+      throw new Error(`Token budget exceeded (${ctx.totalInputTokens + ctx.totalOutputTokens}/${TOKEN_BUDGET_MAX})`);
+    }
 
     // Parse structured response
     const parsed = parseGenerationResponse(genResponse.text, slug);
@@ -170,8 +185,16 @@ export async function* agentGenerateApp(
           message: "App published successfully!",
         };
 
-        // Record note effectiveness
-        await recordSuccess(ctx.notesApplied);
+        // Attribution-gated confidence: only credit notes on fix success (iteration > 0),
+        // and only notes relevant to the errors that were actually fixed.
+        if (ctx.iteration > 0) {
+          const fixedErrors = ctx.errors.filter((e) => e.fixed);
+          const relevantNoteIds = getRelevantNoteIds(ctx.notes, fixedErrors);
+          if (relevantNoteIds.length > 0) {
+            await recordSuccess(relevantNoteIds);
+          }
+        }
+        // On first-try success (iteration 0), notes get no credit — they didn't demonstrably help.
 
         // Update DB
         await updateAppContent(slug, ctx.title, ctx.description);
@@ -187,7 +210,7 @@ export async function* agentGenerateApp(
           success: true,
           iterations: ctx.iteration,
           totalDurationMs: Date.now() - ctx.startTime,
-          notesApplied: ctx.notesApplied,
+          notesApplied: ctx.notesRetrieved,
           errors: ctx.errors,
           model: "opus",
           inputTokens: ctx.totalInputTokens,
@@ -236,20 +259,37 @@ export async function* agentGenerateApp(
         ctx.currentCode!,
         errorMsg,
         ctx.errors.map((e) => ({ error: e.error, iteration: e.iteration })),
+        {
+          type: structuredError.type,
+          library: structuredError.library,
+          lineNumber: structuredError.lineNumber,
+          suggestion: structuredError.suggestion,
+        },
       );
 
       try {
         const fixResponse = await callClaude({
-          systemPrompt: fixSystemPrompt,
+          systemPrompt: fixSystemPrompt.full,
+          stablePrefix: fixSystemPrompt.stablePrefix,
+          dynamicSuffix: fixSystemPrompt.dynamicSuffix || undefined,
           userPrompt: fixUserPrompt,
           model: "sonnet",
-          maxTokens: 32768,
+          maxTokens: FIX_MAX_TOKENS,
           temperature: 0.2,
         });
 
         ctx.totalInputTokens += fixResponse.inputTokens;
         ctx.totalOutputTokens += fixResponse.outputTokens;
         ctx.totalCachedTokens += fixResponse.cacheReadTokens;
+
+        // Token budget check after fix call
+        if (ctx.totalInputTokens + ctx.totalOutputTokens > TOKEN_BUDGET_MAX) {
+          logger.warn("Token budget exceeded during fix loop, breaking", {
+            total: ctx.totalInputTokens + ctx.totalOutputTokens,
+            budget: TOKEN_BUDGET_MAX,
+          });
+          break;
+        }
 
         const fixedCode = extractCodeFromResponse(fixResponse.text);
         if (fixedCode) {
@@ -289,14 +329,18 @@ export async function* agentGenerateApp(
     }
 
     // === EXHAUSTED ALL ITERATIONS ===
-    await recordFailure(ctx.notesApplied);
+    // Attribution-gated failure: only penalize notes relevant to encountered errors
+    const relevantFailNoteIds = getRelevantNoteIds(ctx.notes, ctx.errors);
+    if (relevantFailNoteIds.length > 0) {
+      await recordFailure(relevantFailNoteIds);
+    }
 
     recordGenerationAttempt({
       slug,
       success: false,
       iterations: ctx.iteration,
       totalDurationMs: Date.now() - ctx.startTime,
-      notesApplied: ctx.notesApplied,
+      notesApplied: ctx.notesRetrieved,
       errors: ctx.errors,
       model: "opus",
       inputTokens: ctx.totalInputTokens,
@@ -330,7 +374,7 @@ export async function* agentGenerateApp(
       success: false,
       iterations: ctx.iteration,
       totalDurationMs: Date.now() - ctx.startTime,
-      notesApplied: ctx.notesApplied,
+      notesApplied: ctx.notesRetrieved,
       errors: [
         ...ctx.errors,
         {
@@ -351,4 +395,32 @@ export async function* agentGenerateApp(
       codespaceUrl,
     };
   }
+}
+
+/**
+ * Find note IDs relevant to the given errors based on overlapping errorPatterns or libraries.
+ * Used for attribution-gated confidence updates.
+ */
+function getRelevantNoteIds(
+  notes: LearningNote[],
+  errors: Array<{ error: string; iteration: number; fixed?: boolean }>,
+): string[] {
+  if (notes.length === 0 || errors.length === 0) return [];
+
+  // We need the full note data — retrieve from the original notes which have
+  // id/trigger/lesson/confidenceScore. For pattern matching we check if any
+  // error substring appears in the note's trigger or lesson.
+  const errorTexts = errors.map((e) => e.error.toLowerCase());
+
+  return notes
+    .filter((note) => {
+      const triggerLower = note.trigger.toLowerCase();
+      const lessonLower = note.lesson.toLowerCase();
+      return errorTexts.some(
+        (errText) => errText.includes(triggerLower) || triggerLower.includes(errText.slice(0, 50)),
+      ) || errorTexts.some(
+        (errText) => lessonLower.includes(errText.slice(0, 50)),
+      );
+    })
+    .map((n) => n.id);
 }

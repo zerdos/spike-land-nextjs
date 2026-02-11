@@ -200,24 +200,24 @@ describe("classifyInput", () => {
     expect(result.reason).toBeTruthy();
   });
 
-  it("should fallback to naive slug on AI error", async () => {
+  it("should fail-closed to 'unclear' on AI error", async () => {
     mockGenerate.mockRejectedValueOnce(new Error("API unavailable"));
 
     const result = await classifyInput("todo list");
-    expect(result.status).toBe("ok");
+    expect(result.status).toBe("unclear");
     expect(result.slug).toBe("todo-list");
-    expect(result.reason).toBeNull();
+    expect(result.reason).toBeTruthy();
   });
 
-  it("should fallback on malformed AI response", async () => {
+  it("should fail-closed to 'unclear' on malformed AI response", async () => {
     mockGenerate.mockResolvedValueOnce({
       unexpected: "shape",
     });
 
     const result = await classifyInput("color picker");
-    expect(result.status).toBe("ok");
+    expect(result.status).toBe("unclear");
     expect(result.slug).toBe("color-picker");
-    expect(result.reason).toBeNull();
+    expect(result.reason).toBeTruthy();
   });
 
   it("should sanitize slug from AI response", async () => {

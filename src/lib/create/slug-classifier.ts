@@ -160,28 +160,28 @@ export async function classifyInput(
   );
 
   if (error) {
-    logger.error("Slug classification failed, using fallback", {
+    logger.error("Slug classification failed, using fail-closed fallback", {
       error: error instanceof Error ? error.message : String(error),
     });
     return {
-      status: "ok",
+      status: "unclear",
       slug: naiveFallbackSlug(trimmed),
       category: "",
-      reason: null,
+      reason: "Classification service is temporarily unavailable. Please try again.",
     };
   }
 
   // Validate with Zod
   const parsed = ClassificationResultSchema.safeParse(data);
   if (!parsed.success) {
-    logger.warn("Classification response failed schema validation", {
+    logger.warn("Classification response failed schema validation, using fail-closed fallback", {
       errors: parsed.error.issues,
     });
     return {
-      status: "ok",
+      status: "unclear",
       slug: naiveFallbackSlug(trimmed),
       category: "",
-      reason: null,
+      reason: "Could not classify your request. Please try rephrasing.",
     };
   }
 

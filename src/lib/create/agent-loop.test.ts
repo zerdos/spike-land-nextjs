@@ -134,7 +134,11 @@ const DEFAULT_CODE =
 function setupDefaultMocks() {
   vi.mocked(generateCodespaceId).mockReturnValue("test-codespace-123");
   vi.mocked(retrieveRelevantNotes).mockResolvedValue([]);
-  vi.mocked(buildAgentSystemPrompt).mockReturnValue("system prompt");
+  vi.mocked(buildAgentSystemPrompt).mockReturnValue({
+    full: "system prompt",
+    stablePrefix: "stable prefix",
+    dynamicSuffix: "",
+  } as never);
   vi.mocked(buildAgentUserPrompt).mockReturnValue("user prompt");
   vi.mocked(callClaude).mockResolvedValue({
     text: "generated code",
@@ -162,7 +166,11 @@ function setupDefaultMocks() {
     type: "transpile",
     message: "error",
   } as never);
-  vi.mocked(buildFixSystemPrompt).mockReturnValue("fix system prompt");
+  vi.mocked(buildFixSystemPrompt).mockReturnValue({
+    full: "fix system prompt",
+    stablePrefix: "fix stable prefix",
+    dynamicSuffix: "",
+  } as never);
   vi.mocked(buildFixUserPrompt).mockReturnValue("fix user prompt");
   vi.mocked(extractCodeFromResponse).mockReturnValue(null);
 }
@@ -297,6 +305,8 @@ describe("agentGenerateApp", () => {
 
       expect(callClaude).toHaveBeenCalledWith({
         systemPrompt: "system prompt",
+        stablePrefix: "stable prefix",
+        dynamicSuffix: undefined,
         userPrompt: "user prompt",
         model: "opus",
         maxTokens: 32768,
@@ -304,7 +314,7 @@ describe("agentGenerateApp", () => {
       });
     });
 
-    it("calls recordSuccess with note IDs", async () => {
+    it("does NOT call recordSuccess on first-try success (iteration 0, attribution-gated)", async () => {
       vi.mocked(retrieveRelevantNotes).mockResolvedValue([
         { id: "note-1", trigger: "t", lesson: "l", confidenceScore: 0.9 },
         { id: "note-2", trigger: "t2", lesson: "l2", confidenceScore: 0.8 },
@@ -314,7 +324,8 @@ describe("agentGenerateApp", () => {
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
       );
 
-      expect(recordSuccess).toHaveBeenCalledWith(["note-1", "note-2"]);
+      // On first-try success, notes get no credit — they didn't demonstrably help
+      expect(recordSuccess).not.toHaveBeenCalled();
     });
 
     it("calls updateAppContent and updateAppStatus on success", async () => {
@@ -447,7 +458,7 @@ describe("agentGenerateApp", () => {
           systemPrompt: "fix system prompt",
           userPrompt: "fix user prompt",
           model: "sonnet",
-          maxTokens: 32768,
+          maxTokens: 8192,
           temperature: 0.2,
         }),
       );
@@ -466,6 +477,7 @@ describe("agentGenerateApp", () => {
         DEFAULT_CODE,
         "SyntaxError: unexpected token",
         [{ error: "SyntaxError: unexpected token", iteration: 0 }],
+        expect.objectContaining({ type: "transpile" }),
       );
     });
 
@@ -554,15 +566,16 @@ describe("agentGenerateApp", () => {
       );
     });
 
-    it("calls recordFailure with note IDs", async () => {
+    it("calls recordFailure only with relevant note IDs (attribution-gated)", async () => {
       vi.mocked(retrieveRelevantNotes).mockResolvedValue([
-        { id: "n1", trigger: "", lesson: "", confidenceScore: 0.5 },
+        { id: "n1", trigger: "transpile error", lesson: "fix transpile", confidenceScore: 0.5 },
       ]);
 
       await collectEvents(
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
       );
 
+      // Note trigger "transpile error" matches the error "transpile error"
       expect(recordFailure).toHaveBeenCalledWith(["n1"]);
     });
 
@@ -979,7 +992,7 @@ describe("agentGenerateApp", () => {
           slug: "test-slug",
           success: true,
           iterations: 0,
-          notesApplied: ["note-x"],
+          notesApplied: ["note-x"], // Field name in recordGenerationAttempt stays the same
           errors: [],
           model: "opus",
           inputTokens: 100,
@@ -1657,6 +1670,7 @@ describe("agentGenerateApp", () => {
           { error: "err1", iteration: 0 },
           { error: "err2", iteration: 1 },
         ],
+        expect.objectContaining({ type: "transpile" }),
       );
     });
   });

@@ -2,6 +2,13 @@ import logger from "@/lib/logger";
 
 const TESTING_SPIKE_LAND = process.env["TESTING_SPIKE_LAND_URL"] || "https://testing.spike.land";
 
+const CODESPACE_FETCH_TIMEOUT_MS = 30_000;
+const CODESPACE_MAX_RETRIES = 2;
+const CODESPACE_RETRY_DELAYS = [1000, 2000];
+
+/** HTTP status codes that indicate transient infrastructure errors worth retrying. */
+const RETRYABLE_STATUS_CODES = new Set([502, 503, 504]);
+
 export interface CodespaceResponse {
   success: boolean;
   error?: string;
@@ -10,56 +17,86 @@ export interface CodespaceResponse {
 
 /**
  * Creates or updates a codespace with the given code.
- * Reuses the existing infrastructure by calling the REST API directly.
+ * Retries on transient network/infrastructure errors (502/503/504).
+ * Does NOT retry on 4xx or transpile failures.
  */
 export async function updateCodespace(
   codespaceId: string,
   code: string,
 ): Promise<CodespaceResponse> {
-  try {
-    const url = `${TESTING_SPIKE_LAND}/live/${codespaceId}/api/code`;
+  const url = `${TESTING_SPIKE_LAND}/live/${codespaceId}/api/code`;
 
-    // We want to run it immediately
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        code,
-        run: true,
-      }),
-    });
+  for (let attempt = 0; attempt <= CODESPACE_MAX_RETRIES; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), CODESPACE_FETCH_TIMEOUT_MS);
 
-    if (!response.ok) {
-      const text = await response.text();
-      logger.error(`Failed to update codespace ${codespaceId}: ${response.status} ${text}`);
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, run: true }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        const text = await response.text();
+        logger.error(`Failed to update codespace ${codespaceId}: ${response.status} ${text}`);
+
+        // Retry on transient infrastructure errors
+        if (RETRYABLE_STATUS_CODES.has(response.status) && attempt < CODESPACE_MAX_RETRIES) {
+          const delay = CODESPACE_RETRY_DELAYS[attempt] ?? 1000;
+          logger.info(`Retrying codespace update (attempt ${attempt + 1}) after ${delay}ms`, {
+            codespaceId,
+            status: response.status,
+          });
+          await sleep(delay);
+          continue;
+        }
+
+        return {
+          success: false,
+          error: `Failed to update codespace: ${response.statusText}`,
+        };
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        return {
+          success: true,
+          url: `${TESTING_SPIKE_LAND}/live/${codespaceId}/`,
+        };
+      } else {
+        // Transpile/validation failure — NOT retryable
+        return {
+          success: false,
+          error: data.error || "Unknown error updating codespace",
+        };
+      }
+    } catch (error) {
+      logger.error(`Error updating codespace ${codespaceId} (attempt ${attempt + 1}):`, { error });
+
+      // Retry on network errors (fetch failures, aborts)
+      if (attempt < CODESPACE_MAX_RETRIES) {
+        const delay = CODESPACE_RETRY_DELAYS[attempt] ?? 1000;
+        logger.info(`Retrying codespace update after network error (${delay}ms)`, { codespaceId });
+        await sleep(delay);
+        continue;
+      }
+
       return {
         success: false,
-        error: `Failed to update codespace: ${response.statusText}`,
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
-
-    const data = await response.json();
-
-    if (data.success) {
-      return {
-        success: true,
-        url: `${TESTING_SPIKE_LAND}/live/${codespaceId}/`,
-      };
-    } else {
-      return {
-        success: false,
-        error: data.error || "Unknown error updating codespace",
-      };
-    }
-  } catch (error) {
-    logger.error(`Error updating codespace ${codespaceId}:`, { error });
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
   }
+
+  return { success: false, error: "Codespace update failed after retries" };
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**

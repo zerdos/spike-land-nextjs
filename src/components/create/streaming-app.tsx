@@ -15,8 +15,19 @@ import type { StreamEvent } from "@/lib/create/types";
 
 interface BuildMessage {
   text: string;
-  type: "status" | "phase" | "error" | "fix" | "learning";
+  type: "status" | "phase" | "error" | "fix" | "learning" | "agent";
 }
+
+const PHASE_PROGRESS: Record<string, number> = {
+  PLANNING: 10,
+  GENERATING: 30,
+  TRANSPILING: 60,
+  FIXING: 70,
+  LEARNING: 80,
+  VERIFYING: 85,
+  PUBLISHED: 100,
+  FAILED: 100,
+};
 
 export function StreamingApp({ path, className }: StreamingAppProps) {
   const [messages, setMessages] = useState<BuildMessage[]>([]);
@@ -25,6 +36,8 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
   );
   const [currentPhase, setCurrentPhase] = useState<string | null>(null);
   const [iteration, setIteration] = useState<number | null>(null);
+  const [agentModel, setAgentModel] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [errorCodespaceUrl, setErrorCodespaceUrl] = useState<string | null>(null);
   const router = useRouter();
@@ -108,12 +121,18 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
               const event: StreamEvent = JSON.parse(data);
 
               switch (event.type) {
+                case "agent":
+                  setAgentModel(event.model);
+                  addMessage(`Using ${event.name} (${event.model})`, "agent");
+                  break;
+
                 case "status":
                   addMessage(event.message);
                   break;
 
                 case "phase":
                   setCurrentPhase(event.phase);
+                  setProgress(PHASE_PROGRESS[event.phase] ?? 0);
                   if (event.iteration !== undefined) {
                     setIteration(event.iteration);
                   }
@@ -138,12 +157,14 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
 
                 case "complete":
                   setStatus("complete");
+                  setProgress(100);
                   addMessage("Complete! Loading app...");
                   router.refresh();
                   break;
 
                 case "error":
                   setStatus("error");
+                  setProgress(100);
                   setError(event.message);
                   if (event.codespaceUrl) {
                     setErrorCodespaceUrl(event.codespaceUrl);
@@ -238,6 +259,28 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
             </span>
           </p>
 
+          {/* Agent model badge */}
+          {agentModel && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 text-xs font-medium text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+              {agentModel}
+            </div>
+          )}
+
+          {/* Progress bar */}
+          {status === "generating" && (
+            <div className="w-full max-w-xs mx-auto">
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-700 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 text-center">
+                {progress}%
+              </p>
+            </div>
+          )}
+
           {/* Phase indicator */}
           {currentPhase && (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 text-sm text-muted-foreground">
@@ -275,6 +318,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
                     msg.type === "fix" && "bg-amber-500",
                     msg.type === "learning" && "bg-blue-500",
                     msg.type === "phase" && "bg-purple-500",
+                    msg.type === "agent" && "bg-indigo-500",
                     msg.type === "status" && "bg-green-500",
                   )}
                 />

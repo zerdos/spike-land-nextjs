@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import type { APIError } from "@anthropic-ai/sdk";
 import type { TextBlock } from "@anthropic-ai/sdk/resources/messages.js";
 
 export interface ClaudeResponse {
@@ -17,6 +18,13 @@ const MODEL_MAP: Record<ClaudeModel, string> = {
   haiku: "claude-haiku-4-5-20251001",
 };
 
+import logger from "@/lib/logger";
+
+const CLAUDE_MAX_RETRIES = 3;
+const CLAUDE_RETRY_DELAYS = [1000, 2000, 4000];
+/** HTTP status codes that are worth retrying (transient). */
+const RETRYABLE_STATUS_CODES = new Set([429, 529]);
+
 let client: Anthropic | null = null;
 
 function getClient(): Anthropic {
@@ -26,13 +34,40 @@ function getClient(): Anthropic {
   return client;
 }
 
+function isRetryableError(error: unknown): boolean {
+  if (error && typeof error === "object" && "status" in error) {
+    const status = (error as APIError).status;
+    return typeof status === "number" && RETRYABLE_STATUS_CODES.has(status);
+  }
+  return false;
+}
+
+function getRetryAfterMs(error: unknown): number | null {
+  if (error && typeof error === "object" && "headers" in error) {
+    const headers = (error as APIError).headers;
+    const retryAfter = headers?.get?.("retry-after");
+    if (retryAfter) {
+      const seconds = parseFloat(retryAfter);
+      if (!isNaN(seconds) && seconds > 0 && seconds <= 30) {
+        return seconds * 1000;
+      }
+    }
+  }
+  return null;
+}
+
 /**
  * Call Claude with KV cache optimization on system prompt.
- * The system prompt is marked as cacheable — identical prefixes across
- * calls will hit the KV cache (10x cheaper input tokens per the docs).
+ *
+ * Supports split cache blocks: `stablePrefix` gets cache_control for high hit rate,
+ * while `dynamicSuffix` (notes) does NOT get cached so changes don't invalidate the prefix.
+ *
+ * Retries on 429 (rate limit) and 529 (overloaded) with exponential backoff.
  */
 export async function callClaude(params: {
   systemPrompt: string;
+  stablePrefix?: string;
+  dynamicSuffix?: string;
   userPrompt: string;
   model?: ClaudeModel;
   maxTokens?: number;
@@ -40,6 +75,8 @@ export async function callClaude(params: {
 }): Promise<ClaudeResponse> {
   const {
     systemPrompt,
+    stablePrefix,
+    dynamicSuffix,
     userPrompt,
     model = "opus",
     maxTokens = 32768,
@@ -48,36 +85,86 @@ export async function callClaude(params: {
 
   const anthropic = getClient();
 
-  const response = await anthropic.messages.create({
-    model: MODEL_MAP[model],
-    max_tokens: maxTokens,
-    temperature,
-    system: [
+  // Build system content blocks with split caching
+  const systemBlocks = buildSystemBlocks(systemPrompt, stablePrefix, dynamicSuffix);
+
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= CLAUDE_MAX_RETRIES; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model: MODEL_MAP[model],
+        max_tokens: maxTokens,
+        temperature,
+        system: systemBlocks,
+        messages: [{ role: "user", content: userPrompt }],
+      });
+
+      const text = response.content
+        .filter((block): block is TextBlock => block.type === "text")
+        .map((block) => block.text)
+        .join("");
+
+      const { usage } = response;
+      const usageRecord = usage as unknown as Record<string, number | undefined>;
+
+      return {
+        text,
+        inputTokens: usage.input_tokens,
+        outputTokens: usage.output_tokens,
+        cacheReadTokens: usageRecord["cache_read_input_tokens"] ?? 0,
+        cacheCreationTokens: usageRecord["cache_creation_input_tokens"] ?? 0,
+      };
+    } catch (error) {
+      lastError = error;
+
+      if (!isRetryableError(error) || attempt >= CLAUDE_MAX_RETRIES) {
+        throw error;
+      }
+
+      const retryAfter = getRetryAfterMs(error);
+      const delay = retryAfter ?? CLAUDE_RETRY_DELAYS[attempt] ?? 4000;
+
+      logger.warn(`Claude API call failed with retryable error (attempt ${attempt + 1}), retrying in ${delay}ms`, {
+        status: (error as APIError).status,
+        model,
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError;
+}
+
+function buildSystemBlocks(
+  systemPrompt: string,
+  stablePrefix?: string,
+  dynamicSuffix?: string,
+): Array<{ type: "text"; text: string; cache_control?: { type: "ephemeral" } }> {
+  // If split blocks are provided, use them for better cache hit rates
+  if (stablePrefix) {
+    const blocks: Array<{ type: "text"; text: string; cache_control?: { type: "ephemeral" } }> = [
       {
         type: "text",
-        text: systemPrompt,
+        text: stablePrefix,
         cache_control: { type: "ephemeral" },
       },
-    ],
-    messages: [{ role: "user", content: userPrompt }],
-  });
+    ];
+    if (dynamicSuffix) {
+      blocks.push({ type: "text", text: dynamicSuffix });
+    }
+    return blocks;
+  }
 
-  const text = response.content
-    .filter((block): block is TextBlock => block.type === "text")
-    .map((block) => block.text)
-    .join("");
-
-  const { usage } = response;
-  // Cache token fields are present on the usage object but may not be in the SDK types
-  const usageRecord = usage as unknown as Record<string, number | undefined>;
-
-  return {
-    text,
-    inputTokens: usage.input_tokens,
-    outputTokens: usage.output_tokens,
-    cacheReadTokens: usageRecord["cache_read_input_tokens"] ?? 0,
-    cacheCreationTokens: usageRecord["cache_creation_input_tokens"] ?? 0,
-  };
+  // Fallback: single block with cache
+  return [
+    {
+      type: "text",
+      text: systemPrompt,
+      cache_control: { type: "ephemeral" },
+    },
+  ];
 }
 
 /**

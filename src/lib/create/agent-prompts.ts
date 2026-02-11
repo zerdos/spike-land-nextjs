@@ -45,17 +45,24 @@ export interface LearningNote {
   confidenceScore: number;
 }
 
+export interface SplitPrompt {
+  full: string;
+  stablePrefix: string;
+  dynamicSuffix: string;
+}
+
 /**
  * Build the full system prompt for generation.
  *
- * Structure optimized for KV cache hits:
- * - Stable prefix (identity + core prompt + skills + output spec) → cached
- * - Dynamic suffix (learning notes) → computed fresh per request
+ * Returns split blocks for optimal KV cache hit rates:
+ * - `stablePrefix` (identity + core prompt + skills + output spec) → cached
+ * - `dynamicSuffix` (learning notes) → NOT cached, changes per request
+ * - `full` — concatenated version for backwards compatibility
  */
 export function buildAgentSystemPrompt(
   topic: string,
   notes: LearningNote[],
-): string {
+): SplitPrompt {
   // Stable prefix: layers 1, 3, 5 (identity + core + output spec)
   const coreWithSkills = buildSkillSystemPrompt(topic);
   const stablePrefix = `${AGENT_IDENTITY}\n\n${coreWithSkills}\n\n${OUTPUT_SPEC}`;
@@ -63,7 +70,11 @@ export function buildAgentSystemPrompt(
   // Dynamic suffix: layers 2, 4 (learning notes)
   const noteBlock = formatNotes(notes);
 
-  return noteBlock ? `${stablePrefix}\n\n${noteBlock}` : stablePrefix;
+  return {
+    stablePrefix,
+    dynamicSuffix: noteBlock,
+    full: noteBlock ? `${stablePrefix}\n\n${noteBlock}` : stablePrefix,
+  };
 }
 
 /**
@@ -75,29 +86,58 @@ export function buildAgentUserPrompt(path: string[]): string {
   return buildSkillUserPrompt(topic);
 }
 
+// Lightweight fix prompt — doesn't need the full skill catalogue, icon lists, or layout patterns
+const FIX_CORE_PROMPT =
+  `You are an expert React/TypeScript debugger for spike.land's app creator.
+Your ONLY job is to fix transpilation errors in React components. Do NOT redesign or restructure.
+
+## ENVIRONMENT
+- React 19, Tailwind CSS 4, shadcn/ui components available
+- npm packages load from CDN automatically
+- Component must have exactly one default export
+- Available: framer-motion, lucide-react, date-fns, recharts, zustand, sonner
+
+## FIX STRATEGY
+1. Read the ERROR TYPE and LINE NUMBER carefully
+2. Identify the root cause (missing import, wrong syntax, type mismatch)
+3. Apply the MINIMAL fix — do not rewrite unrelated code
+4. Verify all imports are correct after fixing`;
+
 /**
  * Build the system prompt for fix attempts.
- * Uses a lighter identity focused on debugging + the same skill context.
+ * Uses a lightweight prompt focused on debugging — no full skill catalogue.
+ * Returns split blocks for cache optimization.
  */
 export function buildFixSystemPrompt(
-  topic: string,
+  _topic: string,
   notes: LearningNote[],
-): string {
-  const coreWithSkills = buildSkillSystemPrompt(topic);
+): SplitPrompt {
   const noteBlock = formatNotes(notes);
-  const base =
-    `You are an expert React/TypeScript debugger. Fix transpilation errors precisely.\n\n${coreWithSkills}\n\n${FIX_OUTPUT_SPEC}`;
-  return noteBlock ? `${base}\n\n${noteBlock}` : base;
+  const stablePrefix = `${FIX_CORE_PROMPT}\n\n${FIX_OUTPUT_SPEC}`;
+
+  return {
+    stablePrefix,
+    dynamicSuffix: noteBlock,
+    full: noteBlock ? `${stablePrefix}\n\n${noteBlock}` : stablePrefix,
+  };
+}
+
+export interface StructuredErrorContext {
+  type: string;
+  library?: string;
+  lineNumber?: number;
+  suggestion?: string;
 }
 
 /**
  * Build the user prompt for fix attempts.
- * Includes the failing code, error message, and history of previous errors.
+ * Includes structured error context, the failing code, error message, and history.
  */
 export function buildFixUserPrompt(
   code: string,
   error: string,
   previousErrors: Array<{ error: string; iteration: number }>,
+  structuredError?: StructuredErrorContext,
 ): string {
   const historyBlock = previousErrors.length > 0
     ? `\n\nPrevious errors in this session:\n${
@@ -107,8 +147,13 @@ export function buildFixUserPrompt(
     }`
     : "";
 
-  return `The following React component failed transpilation. Fix it.
+  // Add structured error context when available for more precise fixing
+  const structuredBlock = structuredError
+    ? `\nERROR TYPE: ${structuredError.type}${structuredError.library ? `\nLIBRARY: ${structuredError.library}` : ""}${structuredError.lineNumber ? `\nLINE: ${structuredError.lineNumber}` : ""}${structuredError.suggestion ? `\nSUGGESTION: ${structuredError.suggestion}` : ""}\n`
+    : "";
 
+  return `The following React component failed transpilation. Fix it.
+${structuredBlock}
 ERROR: ${error}
 ${historyBlock}
 
@@ -118,15 +163,34 @@ ${code}
 Return ONLY the fixed code. No explanations, no markdown fences.`;
 }
 
+/** Rough token estimate: ~3.5 chars per token for English text. */
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 3.5);
+}
+
+const NOTE_TOKEN_BUDGET = 800;
+
 /**
  * Format learning notes for inclusion in the system prompt.
- * Sorted by confidence score, capped to fit within ~800 token budget.
+ * Sorted by confidence score, selected greedily within an ~800 token budget.
  */
 function formatNotes(notes: LearningNote[]): string {
   if (notes.length === 0) return "";
 
   const sorted = [...notes].sort((a, b) => b.confidenceScore - a.confidenceScore);
-  const selected = sorted.slice(0, 15); // ~800 tokens max
+
+  // Greedy token-budget selection instead of hard count cap
+  const selected: LearningNote[] = [];
+  let totalTokens = 0;
+  for (const note of sorted) {
+    const noteText = `- **${note.trigger}**: ${note.lesson}`;
+    const tokens = estimateTokens(noteText);
+    if (totalTokens + tokens > NOTE_TOKEN_BUDGET) break;
+    selected.push(note);
+    totalTokens += tokens;
+  }
+
+  if (selected.length === 0) return "";
 
   return `## Lessons Learned (from previous generations)
 Apply these lessons to avoid known issues:

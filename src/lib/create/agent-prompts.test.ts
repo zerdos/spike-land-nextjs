@@ -12,19 +12,24 @@ describe("buildAgentSystemPrompt", () => {
   it("should include identity, core prompt, and output spec with empty notes", () => {
     const result = buildAgentSystemPrompt("cooking/pasta", []);
 
+    // Should return a SplitPrompt with stablePrefix and dynamicSuffix
+    expect(result.stablePrefix).toBeDefined();
+    expect(result.full).toBeDefined();
+
     // Check for identity layer
-    expect(result).toContain("You are an expert React developer");
-    expect(result).toContain("spike.land's app creator");
+    expect(result.full).toContain("You are an expert React developer");
+    expect(result.full).toContain("spike.land's app creator");
 
     // Check for output spec
-    expect(result).toContain("## OUTPUT FORMAT");
-    expect(result).toContain('"title": "App Title"');
-    expect(result).toContain('"code": "// Complete React component code');
-    expect(result).toContain('"relatedApps": ["path/one"');
-    expect(result).toContain("CRITICAL RULES for the \"code\" field:");
+    expect(result.full).toContain("## OUTPUT FORMAT");
+    expect(result.full).toContain('"title": "App Title"');
+    expect(result.full).toContain('"code": "// Complete React component code');
+    expect(result.full).toContain('"relatedApps": ["path/one"');
+    expect(result.full).toContain("CRITICAL RULES for the \"code\" field:");
 
     // Should NOT include notes section
-    expect(result).not.toContain("## Lessons Learned");
+    expect(result.full).not.toContain("## Lessons Learned");
+    expect(result.dynamicSuffix).toBe("");
   });
 
   it("should include formatted notes section when notes are provided", () => {
@@ -45,13 +50,18 @@ describe("buildAgentSystemPrompt", () => {
 
     const result = buildAgentSystemPrompt("tools/timer", notes);
 
-    // Check for notes section
-    expect(result).toContain("## Lessons Learned");
-    expect(result).toContain("Apply these lessons to avoid known issues:");
-    expect(result).toContain("**framer-motion AnimatePresence**:");
-    expect(result).toContain("Always wrap children in motion.div with exit prop");
-    expect(result).toContain("**lucide-react imports**:");
-    expect(result).toContain("Import only icons actually used in JSX");
+    // Check for notes section in full and dynamicSuffix
+    expect(result.full).toContain("## Lessons Learned");
+    expect(result.full).toContain("Apply these lessons to avoid known issues:");
+    expect(result.full).toContain("**framer-motion AnimatePresence**:");
+    expect(result.full).toContain("Always wrap children in motion.div with exit prop");
+    expect(result.full).toContain("**lucide-react imports**:");
+    expect(result.full).toContain("Import only icons actually used in JSX");
+
+    // Dynamic suffix should contain notes
+    expect(result.dynamicSuffix).toContain("## Lessons Learned");
+    // Stable prefix should NOT contain notes
+    expect(result.stablePrefix).not.toContain("## Lessons Learned");
   });
 
   it("should sort notes by confidence score descending", () => {
@@ -79,35 +89,34 @@ describe("buildAgentSystemPrompt", () => {
     const result = buildAgentSystemPrompt("games/chess", notes);
 
     // High confidence should appear first
-    const highIndex = result.indexOf("high-confidence");
-    const mediumIndex = result.indexOf("medium-confidence");
-    const lowIndex = result.indexOf("low-confidence");
+    const highIndex = result.full.indexOf("high-confidence");
+    const mediumIndex = result.full.indexOf("medium-confidence");
+    const lowIndex = result.full.indexOf("low-confidence");
 
     expect(highIndex).toBeLessThan(mediumIndex);
     expect(mediumIndex).toBeLessThan(lowIndex);
   });
 
-  it("should cap notes to 15 items", () => {
+  it("should limit notes by token budget (not a hard count cap)", () => {
+    // Create notes with long lessons to exceed the ~800 token budget
+    const longLesson = "This is a detailed lesson with enough text to consume many tokens. ".repeat(3);
     const notes: LearningNote[] = Array.from({ length: 20 }, (_, i) => ({
       id: `note${i}`,
-      trigger: `trigger-${i}`,
-      lesson: `lesson-${i}`,
+      trigger: `trigger-${i}-with-extra-context`,
+      lesson: `${longLesson} Specific detail for note ${i}.`,
       confidenceScore: 1 - i * 0.01, // Descending scores
     }));
 
     const result = buildAgentSystemPrompt("data/charts", notes);
 
-    // Check that we have exactly 15 notes (count the trigger markers)
-    const noteMatches = result.match(/\*\*trigger-\d+\*\*/g);
-    expect(noteMatches).toHaveLength(15);
+    // Should include some notes but not all 20 (token budget limits)
+    const noteMatches = result.full.match(/\*\*trigger-\d+-with-extra-context\*\*/g);
+    expect(noteMatches).toBeTruthy();
+    expect(noteMatches!.length).toBeLessThan(20);
+    expect(noteMatches!.length).toBeGreaterThan(0);
 
-    // First 15 should be present (trigger-0 to trigger-14)
-    expect(result).toContain("trigger-0");
-    expect(result).toContain("trigger-14");
-
-    // Last 5 should not be present (trigger-15 to trigger-19)
-    expect(result).not.toContain("trigger-15");
-    expect(result).not.toContain("trigger-19");
+    // First notes should be present (highest confidence)
+    expect(result.full).toContain("trigger-0-with-extra-context");
   });
 
   it("should include skill-matched content from buildSkillSystemPrompt", () => {
@@ -115,9 +124,9 @@ describe("buildAgentSystemPrompt", () => {
     const result = buildAgentSystemPrompt("games/tictactoe", []);
 
     // Should include core prompt content
-    expect(result).toContain("React 19");
-    expect(result).toContain("Tailwind CSS");
-    expect(result).toContain("shadcn/ui");
+    expect(result.full).toContain("React 19");
+    expect(result.full).toContain("Tailwind CSS");
+    expect(result.full).toContain("shadcn/ui");
   });
 });
 
@@ -175,18 +184,23 @@ describe("buildFixSystemPrompt", () => {
   it("should include fix output spec without notes", () => {
     const result = buildFixSystemPrompt("tools/timer", []);
 
-    // Check for fix-specific identity
-    expect(result).toContain("You are an expert React/TypeScript debugger");
-    expect(result).toContain("Fix transpilation errors precisely");
+    // Should return a SplitPrompt
+    expect(result.stablePrefix).toBeDefined();
+    expect(result.full).toBeDefined();
+
+    // Check for fix-specific identity (now using lightweight fix prompt)
+    expect(result.full).toContain("You are an expert React/TypeScript debugger");
+    expect(result.full).toContain("fix transpilation errors");
 
     // Check for fix output spec
-    expect(result).toContain("## OUTPUT FORMAT");
-    expect(result).toContain("Respond with ONLY the fixed React component code");
-    expect(result).toContain("Do NOT wrap it in markdown fences or JSON");
-    expect(result).toContain("Only fix the specific error mentioned");
+    expect(result.full).toContain("## OUTPUT FORMAT");
+    expect(result.full).toContain("Respond with ONLY the fixed React component code");
+    expect(result.full).toContain("Do NOT wrap it in markdown fences or JSON");
+    expect(result.full).toContain("Only fix the specific error mentioned");
 
     // Should NOT include notes section
-    expect(result).not.toContain("## Lessons Learned");
+    expect(result.full).not.toContain("## Lessons Learned");
+    expect(result.dynamicSuffix).toBe("");
   });
 
   it("should include notes section when notes are provided", () => {
@@ -202,17 +216,19 @@ describe("buildFixSystemPrompt", () => {
     const result = buildFixSystemPrompt("games/snake", notes);
 
     // Check for notes section
-    expect(result).toContain("## Lessons Learned");
-    expect(result).toContain("**import error**:");
-    expect(result).toContain("Check for missing dependencies");
+    expect(result.full).toContain("## Lessons Learned");
+    expect(result.full).toContain("**import error**:");
+    expect(result.full).toContain("Check for missing dependencies");
+    expect(result.dynamicSuffix).toContain("## Lessons Learned");
   });
 
-  it("should include skill-matched content", () => {
+  it("should include lightweight fix prompt content", () => {
     const result = buildFixSystemPrompt("charts/analytics", []);
 
-    // Should include core prompt elements
-    expect(result).toContain("React 19");
-    expect(result).toContain("Tailwind CSS");
+    // Lightweight fix prompt includes environment basics but not full skill catalogue
+    expect(result.full).toContain("React 19");
+    expect(result.full).toContain("Tailwind CSS");
+    expect(result.full).toContain("FIX STRATEGY");
   });
 
   it("should sort notes by confidence score", () => {
@@ -233,8 +249,8 @@ describe("buildFixSystemPrompt", () => {
 
     const result = buildFixSystemPrompt("tools/calculator", notes);
 
-    const highIndex = result.indexOf("**high-priority-fix**");
-    const lowIndex = result.indexOf("**low-priority-fix**");
+    const highIndex = result.full.indexOf("**high-priority-fix**");
+    const lowIndex = result.full.indexOf("**low-priority-fix**");
 
     expect(highIndex).toBeLessThan(lowIndex);
   });
