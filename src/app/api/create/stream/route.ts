@@ -196,7 +196,7 @@ function createAgentProxyResponse(
           }
         }
       } catch (error) {
-        logger.warn("Create agent proxy failed, falling back to direct generation", {
+        logger.info("Create agent proxy failed, falling back to direct generation", {
           slug,
           error: error instanceof Error ? error.message : String(error),
         });
