@@ -5,7 +5,12 @@ const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
 // Import at module scope - vi.mock calls are hoisted
-import { MAX_TEXT_LENGTH, synthesizeSpeech } from "./elevenlabs-client";
+import {
+  MAX_TEXT_LENGTH,
+  synthesizeSpeech,
+  synthesizeSpeechWithTimestamps,
+  characterTimestampsToWords,
+} from "./elevenlabs-client";
 
 describe("elevenlabs-client", () => {
   beforeEach(() => {
@@ -88,7 +93,7 @@ describe("elevenlabs-client", () => {
       const result = await synthesizeSpeech("Hello world");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB",
+        "https://api.elevenlabs.io/v1/text-to-speech/jRAAK67SEFE9m7ci5DhD",
         {
           method: "POST",
           headers: {
@@ -264,6 +269,132 @@ describe("elevenlabs-client", () => {
       const callArgs = mockFetch.mock.calls[0] as [string, RequestInit];
       const headers = callArgs[1].headers as Record<string, string>;
       expect(headers["xi-api-key"]).toBe("trimmed-key");
+    });
+  });
+
+  describe("characterTimestampsToWords", () => {
+    it("should convert character-level timestamps to word-level", () => {
+      const alignment = {
+        characters: ["H", "i", " ", "y", "o"],
+        character_start_times_seconds: [0.0, 0.1, 0.2, 0.3, 0.4],
+        character_end_times_seconds: [0.1, 0.2, 0.3, 0.4, 0.5],
+      };
+
+      const words = characterTimestampsToWords(alignment);
+
+      expect(words).toEqual([
+        { word: "Hi", start: 0.0, end: 0.2 },
+        { word: "yo", start: 0.3, end: 0.5 },
+      ]);
+    });
+
+    it("should handle empty input", () => {
+      const alignment = {
+        characters: [],
+        character_start_times_seconds: [],
+        character_end_times_seconds: [],
+      };
+
+      expect(characterTimestampsToWords(alignment)).toEqual([]);
+    });
+
+    it("should handle single word without trailing space", () => {
+      const alignment = {
+        characters: ["H", "i"],
+        character_start_times_seconds: [0.0, 0.1],
+        character_end_times_seconds: [0.1, 0.2],
+      };
+
+      const words = characterTimestampsToWords(alignment);
+      expect(words).toEqual([{ word: "Hi", start: 0.0, end: 0.2 }]);
+    });
+
+    it("should handle multiple consecutive spaces", () => {
+      const alignment = {
+        characters: ["a", " ", " ", "b"],
+        character_start_times_seconds: [0.0, 0.1, 0.2, 0.3],
+        character_end_times_seconds: [0.1, 0.2, 0.3, 0.4],
+      };
+
+      const words = characterTimestampsToWords(alignment);
+      expect(words).toEqual([
+        { word: "a", start: 0.0, end: 0.1 },
+        { word: "b", start: 0.3, end: 0.4 },
+      ]);
+    });
+  });
+
+  describe("synthesizeSpeechWithTimestamps", () => {
+    it("should throw when ELEVENLABS_API_KEY is not set", async () => {
+      vi.stubEnv("ELEVENLABS_API_KEY", "");
+
+      await expect(synthesizeSpeechWithTimestamps("Hello")).rejects.toThrow(
+        "ELEVENLABS_API_KEY is not configured",
+      );
+    });
+
+    it("should throw when text is empty", async () => {
+      await expect(synthesizeSpeechWithTimestamps("")).rejects.toThrow(
+        "Text cannot be empty",
+      );
+    });
+
+    it("should call the with-timestamps endpoint", async () => {
+      const base64Audio = Buffer.from([0xff, 0xfb]).toString("base64");
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          audio_base64: base64Audio,
+          alignment: {
+            characters: ["H", "i"],
+            character_start_times_seconds: [0.0, 0.1],
+            character_end_times_seconds: [0.1, 0.2],
+          },
+        }),
+      });
+
+      const result = await synthesizeSpeechWithTimestamps("Hi");
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.elevenlabs.io/v1/text-to-speech/jRAAK67SEFE9m7ci5DhD/with-timestamps",
+        expect.any(Object),
+      );
+      expect(result.audio).toBeInstanceOf(Buffer);
+      expect(result.words).toEqual([{ word: "Hi", start: 0.0, end: 0.2 }]);
+      expect(result.audioDurationSeconds).toBe(0.2);
+    });
+
+    it("should return 0 duration for empty alignment", async () => {
+      const base64Audio = Buffer.from([0xff]).toString("base64");
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          audio_base64: base64Audio,
+          alignment: {
+            characters: [],
+            character_start_times_seconds: [],
+            character_end_times_seconds: [],
+          },
+        }),
+      });
+
+      const result = await synthesizeSpeechWithTimestamps("test");
+      expect(result.audioDurationSeconds).toBe(0);
+      expect(result.words).toEqual([]);
+    });
+
+    it("should throw on non-ok response", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: vi.fn().mockResolvedValue("Server error"),
+      });
+
+      await expect(synthesizeSpeechWithTimestamps("Hello")).rejects.toThrow(
+        "ElevenLabs API returned 500: Server error",
+      );
     });
   });
 
