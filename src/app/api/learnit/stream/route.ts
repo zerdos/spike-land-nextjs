@@ -346,6 +346,8 @@ Begin with the title on the first line (just the title text, no heading markup),
       description = `Learn about ${title}`;
     }
 
+    // Process wiki links and save to database
+    logger.info("Generated full content length", { length: fullContent.length });
     const { content: processedContent } = parseWikiLinks(fullContent);
 
     let finalContent = processedContent;
@@ -369,7 +371,10 @@ Begin with the title on the first line (just the title text, no heading markup),
   } catch (error) {
     logger.error("LearnIt streaming error:", { error, slug });
     await markAsFailed(slug);
-    yield { type: "error", message: error instanceof Error ? error.message : "Generation failed" };
+    // Explicitly use the error to satisfy linter if needed
+    const errorMessage = error instanceof Error ? error.message : "Generation failed";
+    logger.error("LearnIt streaming failed", { errorMessage });
+    yield { type: "error", message: errorMessage };
   }
 }
 

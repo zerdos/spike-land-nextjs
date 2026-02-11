@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { generateAgentResponse, isGeminiConfigured } from "@/lib/ai/gemini-client";
 import prisma from "@/lib/prisma";
+import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
 import { BoxMessageRole } from "@prisma/client";
 import { NextResponse } from "next/server";
@@ -17,6 +18,29 @@ export async function POST(
   const { data: session, error: authError } = await tryCatch(auth());
   if (authError || !session?.user?.id) {
     return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  // Rate limiting check
+  const rateLimitResult = await checkRateLimit(
+    `box_message:${session.user.id}`,
+    rateLimitConfigs.boxMessage,
+  );
+
+  if (rateLimitResult.isLimited) {
+    const retryAfter = Math.ceil(
+      (rateLimitResult.resetAt - Date.now()) / 1000,
+    );
+    return new NextResponse(
+      "Too many messages. Please try again later.",
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(retryAfter),
+          "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+          "X-RateLimit-Reset": String(rateLimitResult.resetAt),
+        },
+      },
+    );
   }
 
   const { data: paramsData, error: paramsError } = await tryCatch(params);

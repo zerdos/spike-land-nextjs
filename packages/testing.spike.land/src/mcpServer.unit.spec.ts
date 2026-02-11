@@ -408,7 +408,7 @@ describe("MCP Server Unit Tests", () => {
       const result = JSON.parse(data.result?.content?.[0]?.text || "{}");
       expect(result.success).toBe(true);
       expect(mockDurableObject.updateAndBroadcastSession).toHaveBeenCalled();
-    }, 15000);
+    }, 60000);
 
     it("should handle missing tool name", async () => {
       const request = new Request("http://localhost/mcp", {

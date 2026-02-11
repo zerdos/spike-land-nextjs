@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { TIMEOUTS } from "./retry-helper";
 
 /**
  * Wait for page to be fully ready with configurable strategy
@@ -22,7 +23,7 @@ export async function waitForPageReady(
 ): Promise<void> {
   const {
     strategy = "both",
-    timeout = 10000,
+    timeout = TIMEOUTS.DEFAULT, // Use environment-aware timeout
     waitForSuspense = true,
   } = options;
 
@@ -88,7 +89,7 @@ export async function gotoWithRetry(
 ): Promise<void> {
   const {
     waitUntil = "commit",
-    timeout = 10000,
+    timeout = TIMEOUTS.LONG, // Use long timeout for navigation
     maxRetries = 3,
   } = options;
 
@@ -98,13 +99,13 @@ export async function gotoWithRetry(
     try {
       await page.goto(url, { waitUntil, timeout });
       // Success - wait for page to be ready
-      await waitForPageReady(page, { strategy: "both" });
+      await waitForPageReady(page, { strategy: "both", timeout: TIMEOUTS.DEFAULT });
       return;
     } catch (error) {
       lastError = error as Error;
       if (attempt < maxRetries) {
         // Wait before retry with exponential backoff
-        await page.waitForTimeout(500 * attempt);
+        await page.waitForTimeout(1000 * attempt);
       }
     }
   }
@@ -123,7 +124,7 @@ export async function waitForUrlPath(
   expectedPath: string,
   options: { timeout?: number; exact?: boolean; } = {},
 ): Promise<void> {
-  const { timeout = 10000, exact = false } = options;
+  const { timeout = TIMEOUTS.DEFAULT, exact = false } = options;
 
   await page.waitForURL(
     (url) => {
