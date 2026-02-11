@@ -1,50 +1,22 @@
 /**
  * Create Agent Server — "Spike"
  *
- * Local streaming server that generates app code using Claude (Opus 4.6).
- * Uses OAuth stealth mode for Claude Max subscription.
- * Falls back to Gemini if Claude is unavailable.
+ * Generates app code via OpenRouter → Claude Opus 4.6.
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
 const PORT = parseInt(process.env["CREATE_AGENT_PORT"] ?? "4892", 10);
-const ANTHROPIC_TOKEN = process.env["CLAUDE_CODE_OAUTH_TOKEN"] ?? process.env["ANTHROPIC_OAUTH_TOKEN"];
-const GEMINI_API_KEY = process.env["GEMINI_API_KEY"];
+const OPENROUTER_KEY = process.env["OPENROUTER_API_KEY"];
 const AGENT_NAME = "Spike";
-const AGENT_MODEL = "claude-opus-4-6";
+const AGENT_MODEL = "anthropic/claude-opus-4-6";
 const AGENT_SECRET = process.env["CREATE_AGENT_SECRET"] ?? "spike-create-2026";
-const CLAUDE_CODE_VERSION = "2.1.2";
 
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-if (!ANTHROPIC_TOKEN && !GEMINI_API_KEY) {
-  console.error("Either CLAUDE_CODE_OAUTH_TOKEN/ANTHROPIC_OAUTH_TOKEN or GEMINI_API_KEY is required");
+if (!OPENROUTER_KEY) {
+  console.error("OPENROUTER_API_KEY is required");
   process.exit(1);
-}
-
-function isOAuthToken(token: string): boolean {
-  return token.includes("sk-ant-oat");
-}
-
-function getAnthropicHeaders(): Record<string, string> {
-  if (!ANTHROPIC_TOKEN) return {};
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    "anthropic-version": "2023-06-01",
-  };
-
-  if (isOAuthToken(ANTHROPIC_TOKEN)) {
-    headers["Authorization"] = `Bearer ${ANTHROPIC_TOKEN}`;
-    headers["anthropic-beta"] = "claude-code-20250219,oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14";
-    headers["user-agent"] = `claude-cli/${CLAUDE_CODE_VERSION} (external, cli)`;
-    headers["x-app"] = "cli";
-  } else {
-    headers["x-api-key"] = ANTHROPIC_TOKEN;
-  }
-
-  return headers;
 }
 
 const SYSTEM_PROMPT = `You are an expert React developer building polished, production-quality micro-apps.
@@ -86,62 +58,6 @@ Interpret this path as user intent. Create a polished, fully functional micro-ap
 Respond with JSON: { "title": "...", "description": "...", "code": "...", "relatedApps": ["path1", "path2", ...] }
 - code: raw string (no markdown fences), single default-exported React component
 - relatedApps: 3-5 related paths without "/create/" prefix`;
-}
-
-async function generateWithClaude(topic: string): Promise<string> {
-  const response = await fetch(ANTHROPIC_API_URL, {
-    method: "POST",
-    headers: getAnthropicHeaders(),
-    body: JSON.stringify({
-      model: AGENT_MODEL,
-      max_tokens: 16384,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: buildUserPrompt(topic) }],
-    }),
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Claude ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json() as {
-    content: Array<{ type: string; text?: string }>;
-  };
-
-  return data.content
-    .filter((block) => block.type === "text" && block.text)
-    .map((block) => block.text!)
-    .join("");
-}
-
-async function generateWithGemini(topic: string): Promise<string> {
-  const model = "gemini-2.5-flash-preview-05-20";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: [{ role: "user", parts: [{ text: buildUserPrompt(topic) }] }],
-      generationConfig: { maxOutputTokens: 32768, temperature: 0.5 },
-    }),
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json() as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-
-  return data.candidates?.[0]?.content?.parts
-    ?.filter((p) => p.text)
-    .map((p) => p.text!)
-    .join("") ?? "";
 }
 
 async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promise<void> {
@@ -186,35 +102,40 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
     Connection: "keep-alive",
   });
 
+  res.write(`data: ${JSON.stringify({ type: "agent", name: AGENT_NAME, model: AGENT_MODEL })}\n\n`);
+  res.write(`data: ${JSON.stringify({ type: "status", message: "Generating with Claude Opus 4.6..." })}\n\n`);
+
   try {
-    let text: string;
-    let usedModel = "unknown";
+    const response = await fetch(OPENROUTER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENROUTER_KEY}`,
+        "HTTP-Referer": "https://spike.land",
+        "X-Title": "Create Agent",
+      },
+      body: JSON.stringify({
+        model: AGENT_MODEL,
+        max_tokens: 16384,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: buildUserPrompt(topic) },
+        ],
+      }),
+    });
 
-    if (ANTHROPIC_TOKEN) {
-      try {
-        res.write(`data: ${JSON.stringify({ type: "agent", name: AGENT_NAME, model: AGENT_MODEL })}\n\n`);
-        res.write(`data: ${JSON.stringify({ type: "status", message: "Generating with Claude Opus 4.6..." })}\n\n`);
-        text = await generateWithClaude(topic);
-        usedModel = AGENT_MODEL;
-      } catch (claudeErr) {
-        console.warn(`[${new Date().toISOString()}] Claude failed:`, (claudeErr as Error).message);
-        if (!GEMINI_API_KEY) throw claudeErr;
-
-        res.write(`data: ${JSON.stringify({ type: "status", message: "Claude unavailable, switching to Gemini..." })}\n\n`);
-        res.write(`data: ${JSON.stringify({ type: "agent", name: "Gemini Flash", model: "gemini-2.5-flash" })}\n\n`);
-        text = await generateWithGemini(topic);
-        usedModel = "gemini-2.5-flash";
-      }
-    } else {
-      res.write(`data: ${JSON.stringify({ type: "agent", name: "Gemini Flash", model: "gemini-2.5-flash" })}\n\n`);
-      res.write(`data: ${JSON.stringify({ type: "status", message: "Generating with Gemini..." })}\n\n`);
-      text = await generateWithGemini(topic);
-      usedModel = "gemini-2.5-flash";
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`OpenRouter ${response.status}: ${errText}`);
     }
 
+    const data = await response.json() as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+
+    const text = data.choices?.[0]?.message?.content ?? "";
     if (!text) throw new Error("Empty response from AI");
 
-    // Parse JSON response
     let appData: { title: string; description: string; code: string; relatedApps: string[] };
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -240,7 +161,7 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
       relatedApps: appData.relatedApps,
     })}\n\n`);
 
-    console.log(`[${new Date().toISOString()}] Completed: ${topic} (${text.length} chars, ${usedModel})`);
+    console.log(`[${new Date().toISOString()}] Completed: ${topic} (${text.length} chars)`);
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Error:`, error);
     res.write(`data: ${JSON.stringify({ type: "error", message: error instanceof Error ? error.message : "Generation failed" })}\n\n`);
@@ -255,7 +176,7 @@ function handleHealth(_req: IncomingMessage, res: ServerResponse): void {
     status: "ok",
     agent: AGENT_NAME,
     model: AGENT_MODEL,
-    providers: { claude: !!ANTHROPIC_TOKEN, gemini: !!GEMINI_API_KEY },
+    provider: "openrouter",
     timestamp: new Date().toISOString(),
   }));
 }
@@ -269,7 +190,5 @@ const server = createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`🤖 Create Agent (${AGENT_NAME}) listening on http://localhost:${PORT}`);
-  console.log(`   Model: ${AGENT_MODEL} (Claude=${!!ANTHROPIC_TOKEN}, Gemini=${!!GEMINI_API_KEY})`);
-  console.log(`   Health: http://localhost:${PORT}/health`);
-  console.log(`   Generate: POST http://localhost:${PORT}/generate`);
+  console.log(`   Model: ${AGENT_MODEL} via OpenRouter`);
 });
