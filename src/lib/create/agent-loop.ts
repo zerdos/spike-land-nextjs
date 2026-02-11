@@ -5,10 +5,11 @@ import {
   parseGenerationResponse,
 } from "./agent-client";
 import {
-  extractAndSaveNote,
+  batchExtractAndSaveNotes,
   recordFailure,
   recordGenerationAttempt,
   recordSuccess,
+  retrieveNotesForError,
   retrieveRelevantNotes,
 } from "./agent-memory";
 import {
@@ -19,13 +20,13 @@ import {
   type LearningNote,
 } from "./agent-prompts";
 import { generateCodespaceId, updateCodespace } from "./codespace-service";
-import { cleanCode } from "./content-generator";
+import { cleanCode, getMatchedSkills } from "./content-generator";
 import {
   markAsGenerating,
   updateAppContent,
   updateAppStatus,
 } from "./content-service";
-import { parseTranspileError } from "./error-parser";
+import { isUnrecoverableError, parseTranspileError } from "./error-parser";
 import type { StreamEvent } from "./types";
 import logger from "@/lib/logger";
 
@@ -35,6 +36,26 @@ const TOKEN_BUDGET_MAX = 150_000;
 const MAX_ITERATIONS_CAP = 5;
 /** Max tokens for Sonnet fix calls — fixes rarely produce >4k tokens. */
 const FIX_MAX_TOKENS = 8192;
+
+/** Adaptive max_tokens based on topic complexity. */
+const GEN_TOKENS_SIMPLE = 8192;
+const GEN_TOKENS_MEDIUM = 16384;
+const GEN_TOKENS_COMPLEX = 24576;
+
+/** Determine generation max_tokens based on matched skills for the topic. */
+function getAdaptiveMaxTokens(topic: string): number {
+  const skills = getMatchedSkills(topic);
+  if (skills.length === 0) return GEN_TOKENS_SIMPLE;
+  if (skills.length <= 2) return GEN_TOKENS_MEDIUM;
+  return GEN_TOKENS_COMPLEX;
+}
+
+/** Determine which model to use for generation based on topic complexity. */
+function getGenerationModel(topic: string): "opus" | "sonnet" {
+  const skills = getMatchedSkills(topic);
+  // Simple apps (no matched skills) can use Sonnet — 5x cheaper, 40-60% faster
+  return skills.length === 0 ? "sonnet" : "opus";
+}
 
 interface AgentContext {
   slug: string;
@@ -48,9 +69,13 @@ interface AgentContext {
   description: string;
   relatedApps: string[];
   errors: Array<{ error: string; iteration: number; fixed: boolean }>;
+  /** Error/fix pairs collected for batch note extraction at the end. */
+  errorFixPairs: Array<{ error: string; code: string; fixedCode: string | null; fixed: boolean }>;
   /** IDs of notes retrieved for this generation (for metrics). */
   notesRetrieved: string[];
   notes: LearningNote[];
+  /** The generation model chosen based on topic complexity. */
+  generationModel: "opus" | "sonnet";
   startTime: number;
   totalInputTokens: number;
   totalOutputTokens: number;
@@ -76,6 +101,10 @@ export async function* agentGenerateApp(
     MAX_ITERATIONS_CAP,
   );
 
+  const topic = path.join("/");
+  const generationModel = getGenerationModel(topic);
+  const adaptiveMaxTokens = getAdaptiveMaxTokens(topic);
+
   const ctx: AgentContext = {
     slug,
     path,
@@ -88,8 +117,10 @@ export async function* agentGenerateApp(
     description: "Generating app...",
     relatedApps: [],
     errors: [],
+    errorFixPairs: [],
     notesRetrieved: [],
     notes: [],
+    generationModel,
     startTime: Date.now(),
     totalInputTokens: 0,
     totalOutputTokens: 0,
@@ -119,15 +150,14 @@ export async function* agentGenerateApp(
     ctx.notes = await retrieveRelevantNotes(path);
     ctx.notesRetrieved = ctx.notes.map((n) => n.id);
 
-    const topic = path.join("/");
     const systemPrompt = buildAgentSystemPrompt(topic, ctx.notes);
     const userPrompt = buildAgentUserPrompt(path);
 
-    // === GENERATING: Call Claude Opus ===
+    // === GENERATING: Call Claude (model chosen by topic complexity) ===
     yield {
       type: "phase",
       phase: "GENERATING",
-      message: "Generating application with Claude...",
+      message: `Generating application with Claude ${ctx.generationModel === "opus" ? "Opus" : "Sonnet"}...`,
     };
 
     const genResponse = await callClaude({
@@ -135,8 +165,8 @@ export async function* agentGenerateApp(
       stablePrefix: systemPrompt.stablePrefix,
       dynamicSuffix: systemPrompt.dynamicSuffix || undefined,
       userPrompt,
-      model: "opus",
-      maxTokens: 32768,
+      model: ctx.generationModel,
+      maxTokens: adaptiveMaxTokens,
       temperature: 0.5,
     });
 
@@ -185,6 +215,13 @@ export async function* agentGenerateApp(
           message: "App published successfully!",
         };
 
+        // Batch learning: extract notes from error/fix pairs on success too
+        if (ctx.errorFixPairs.length > 0) {
+          batchExtractAndSaveNotes(ctx.errorFixPairs, path).catch((err) => {
+            logger.warn("Batch note extraction failed", { error: err });
+          });
+        }
+
         // Attribution-gated confidence: only credit notes on fix success (iteration > 0),
         // and only notes relevant to the errors that were actually fixed.
         if (ctx.iteration > 0) {
@@ -212,7 +249,7 @@ export async function* agentGenerateApp(
           totalDurationMs: Date.now() - ctx.startTime,
           notesApplied: ctx.notesRetrieved,
           errors: ctx.errors,
-          model: "opus",
+          model: ctx.generationModel,
           inputTokens: ctx.totalInputTokens,
           outputTokens: ctx.totalOutputTokens,
           cachedTokens: ctx.totalCachedTokens,
@@ -245,6 +282,22 @@ export async function* agentGenerateApp(
         fixed: false,
       });
 
+      // === EARLY TERMINATION: Check if error is unrecoverable ===
+      if (isUnrecoverableError(structuredError, ctx.errors)) {
+        logger.info("Early termination: unrecoverable error detected", {
+          type: structuredError.type,
+          severity: structuredError.severity,
+          iteration: ctx.iteration,
+        });
+        yield {
+          type: "phase",
+          phase: "FIXING",
+          message: `${structuredError.severity} error — cannot auto-fix (${structuredError.type})`,
+          iteration: ctx.iteration,
+        };
+        break;
+      }
+
       // === FIXING: Ask Claude Sonnet to fix the error ===
       yield {
         type: "phase",
@@ -254,7 +307,11 @@ export async function* agentGenerateApp(
         iteration: ctx.iteration,
       };
 
-      const fixSystemPrompt = buildFixSystemPrompt(topic, ctx.notes);
+      // Retrieve error-specific notes for more targeted fix prompts
+      const errorNotes = await retrieveNotesForError(errorMsg);
+      const mergedNotes = mergeNotes(ctx.notes, errorNotes);
+
+      const fixSystemPrompt = buildFixSystemPrompt(topic, mergedNotes);
       const fixUserPrompt = buildFixUserPrompt(
         ctx.currentCode!,
         errorMsg,
@@ -266,6 +323,8 @@ export async function* agentGenerateApp(
           suggestion: structuredError.suggestion,
         },
       );
+
+      const codeBeforeFix = ctx.currentCode!;
 
       try {
         const fixResponse = await callClaude({
@@ -304,20 +363,13 @@ export async function* agentGenerateApp(
         });
       }
 
-      // === LEARNING: Extract note from this error (fire-and-forget) ===
-      yield {
-        type: "phase",
-        phase: "LEARNING",
-        message: "Recording lesson learned...",
-      };
-
-      extractAndSaveNote(
-        ctx.currentCode!,
-        errorMsg,
-        ctx.errors[ctx.errors.length - 1]?.fixed ? ctx.currentCode : null,
-        path,
-      ).catch((err) => {
-        logger.warn("Note extraction failed", { error: err });
+      // === LEARNING: Collect error/fix pair for batch extraction later ===
+      const lastError = ctx.errors[ctx.errors.length - 1]!;
+      ctx.errorFixPairs.push({
+        error: errorMsg,
+        code: codeBeforeFix,
+        fixedCode: lastError.fixed ? ctx.currentCode : null,
+        fixed: lastError.fixed,
       });
 
       yield {
@@ -329,6 +381,13 @@ export async function* agentGenerateApp(
     }
 
     // === EXHAUSTED ALL ITERATIONS ===
+    // Batch learning: extract notes from all error/fix pairs (fire-and-forget)
+    if (ctx.errorFixPairs.length > 0) {
+      batchExtractAndSaveNotes(ctx.errorFixPairs, path).catch((err) => {
+        logger.warn("Batch note extraction failed", { error: err });
+      });
+    }
+
     // Attribution-gated failure: only penalize notes relevant to encountered errors
     const relevantFailNoteIds = getRelevantNoteIds(ctx.notes, ctx.errors);
     if (relevantFailNoteIds.length > 0) {
@@ -342,7 +401,7 @@ export async function* agentGenerateApp(
       totalDurationMs: Date.now() - ctx.startTime,
       notesApplied: ctx.notesRetrieved,
       errors: ctx.errors,
-      model: "opus",
+      model: ctx.generationModel,
       inputTokens: ctx.totalInputTokens,
       outputTokens: ctx.totalOutputTokens,
       cachedTokens: ctx.totalCachedTokens,

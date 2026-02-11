@@ -43,6 +43,77 @@ export async function retrieveRelevantNotes(
 }
 
 /**
+ * Retrieve notes specifically relevant to an error message.
+ * Matches against errorPatterns stored in notes for precise error-to-lesson lookup.
+ */
+export async function retrieveNotesForError(
+  errorMessage: string,
+): Promise<LearningNote[]> {
+  try {
+    // Find notes whose errorPatterns overlap with the actual error text
+    const errorLower = errorMessage.toLowerCase();
+    const notes = await prisma.agentLearningNote.findMany({
+      where: {
+        status: { in: ["ACTIVE", "CANDIDATE"] },
+        NOT: { errorPatterns: { isEmpty: true } },
+      },
+      orderBy: { confidenceScore: "desc" },
+      take: 10,
+    });
+
+    // Filter in-app: check if any errorPattern substring appears in the error message
+    const matched = notes.filter((n) =>
+      n.errorPatterns.some((pattern) => errorLower.includes(pattern.toLowerCase()))
+    );
+
+    return matched.map((n) => ({
+      id: n.id,
+      trigger: n.trigger,
+      lesson: n.lesson,
+      confidenceScore: n.confidenceScore,
+    }));
+  } catch (error) {
+    logger.warn("Failed to retrieve error-specific notes", { error });
+    return [];
+  }
+}
+
+/**
+ * Batch extract learning notes from multiple error/fix pairs.
+ * Called once after generation completes, not in the hot path.
+ * Skips duplicate errors and pairs where the fix failed.
+ */
+export async function batchExtractAndSaveNotes(
+  errorFixPairs: Array<{
+    error: string;
+    code: string;
+    fixedCode: string | null;
+    fixed: boolean;
+  }>,
+  path: string[],
+): Promise<void> {
+  // Deduplicate: only process unique errors where the fix succeeded
+  const seen = new Set<string>();
+  const uniquePairs = errorFixPairs.filter((pair) => {
+    if (!pair.fixed || !pair.fixedCode) return false;
+    if (seen.has(pair.error)) return false;
+    seen.add(pair.error);
+    return true;
+  });
+
+  if (uniquePairs.length === 0) return;
+
+  // Process each pair sequentially to avoid race conditions on similar notes
+  for (const pair of uniquePairs) {
+    try {
+      await extractAndSaveNote(pair.code, pair.error, pair.fixedCode, path);
+    } catch (err) {
+      logger.warn("Batch note extraction failed for one pair", { error: err });
+    }
+  }
+}
+
+/**
  * Extract a learning note from an error → fix pair using Claude Haiku.
  * The note is either merged into an existing similar note or created new.
  */
@@ -221,6 +292,41 @@ async function recalculateConfidence(noteId: string): Promise<void> {
     where: { id: noteId },
     data: { confidenceScore: score, status },
   });
+}
+
+/**
+ * Record user bug feedback by demoting notes that were applied to the buggy generation.
+ * Called when a user files a BUG feedback on a generated app.
+ */
+export async function recordUserBugFeedback(slug: string): Promise<void> {
+  try {
+    // Find the most recent generation attempt for this slug
+    const attempt = await prisma.generationAttempt.findFirst({
+      where: { slug },
+      orderBy: { createdAt: "desc" },
+      select: { notesApplied: true },
+    });
+
+    if (!attempt || attempt.notesApplied.length === 0) return;
+
+    // Increment failCount for all notes that were applied to the buggy app
+    await prisma.agentLearningNote.updateMany({
+      where: { id: { in: attempt.notesApplied } },
+      data: { failCount: { increment: 1 } },
+    });
+
+    // Recalculate confidence for each affected note
+    for (const id of attempt.notesApplied) {
+      await recalculateConfidence(id);
+    }
+
+    logger.info("Recorded user bug feedback for notes", {
+      slug,
+      noteCount: attempt.notesApplied.length,
+    });
+  } catch (err) {
+    logger.warn("Failed to record user bug feedback", { error: err, slug });
+  }
 }
 
 /**
