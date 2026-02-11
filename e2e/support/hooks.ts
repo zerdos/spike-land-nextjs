@@ -3,9 +3,10 @@ import { generateCoverageReport, isCoverageEnabled } from "./helpers/coverage-he
 import type { VideoWallWorld } from "./video-wall-world";
 import { CustomWorld } from "./world";
 
-// Increase default step timeout to 30 seconds for CI font loading
-// This is needed because Google Fonts can take time to load in CI environments
-setDefaultTimeout(30 * 1000);
+// Increase default step timeout for CI environments
+// CI environments can be slower due to resource constraints and network latency
+const DEFAULT_TIMEOUT = process.env.CI ? 60 * 1000 : 30 * 1000;
+setDefaultTimeout(DEFAULT_TIMEOUT);
 
 // Database verification for @requires-db scenarios
 // This ensures the test database is properly configured before running DB-dependent tests

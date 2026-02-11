@@ -151,3 +151,57 @@ export const BRIDGEMIND_TIMING = {
   fps: 30,
   transitionFrames: 15,
 } as const;
+
+/**
+ * Veritasium Pitch Video - "The AI That Remembers Every Mistake"
+ * 4 minutes = 240s = 7200 frames @ 30fps
+ *
+ * Scene breakdown (from script):
+ * 1. Hook (0:00-0:22)      - Story of failures → success
+ * 2. Problem (0:22-0:50)   - Single-shot AI limitations
+ * 3. Solution (0:50-1:50)  - Agent loop diagram
+ * 4. Magic (1:50-2:55)     - Learning notes, lifecycle, Laplace (CENTERPIECE)
+ * 5. Proof (2:55-3:20)     - Success rate chart + demo
+ * 6. Implications (3:20-3:45) - Data flywheel
+ * 7. CTA (3:45-4:00)       - Call to action
+ */
+export const VERITASIUM_DURATIONS = {
+  hook: 660,          // 22s
+  problem: 840,       // 28s
+  solution: 1800,     // 60s
+  magic: 1950,        // 65s (centerpiece — longest scene)
+  proof: 750,         // 25s
+  implications: 750,  // 25s
+  cta: 450,           // 15s
+} as const;
+
+export const VERITASIUM_TIMING = {
+  totalFrames: 7200,
+  fps: 30,
+  transitionFrames: 20,
+} as const;
+
+/**
+ * Veritasium-specific color accents
+ */
+export const VERITASIUM_COLORS = {
+  // Agent states
+  planning: "#8B5CF6",    // purple
+  generating: "#3B82F6",  // blue
+  transpiling: "#06B6D4", // cyan
+  fixing: "#F59E0B",      // amber
+  learning: "#10B981",    // emerald
+  published: "#22C55E",   // green
+  failed: "#EF4444",      // red
+
+  // Note lifecycle
+  candidate: "#EAB308",   // yellow
+  active: "#22C55E",      // green
+  deprecated: "#6B7280",  // gray
+
+  // Laplace formula
+  bayesian: "#A78BFA",    // violet
+
+  // Flywheel
+  flywheel: "#00E5FF",    // cyan (brand)
+} as const;

@@ -292,7 +292,7 @@ export default function App() {
     // Check that error is truncated
     const errorMatch = result.match(/Attempt 1: (A+)/);
     expect(errorMatch).toBeTruthy();
-    expect(errorMatch![1].length).toBeLessThanOrEqual(200);
+    expect(errorMatch?.[1]?.length).toBeLessThanOrEqual(200);
   });
 
   it("should handle multiple previous errors with correct iteration numbers", () => {

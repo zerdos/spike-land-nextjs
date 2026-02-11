@@ -2,6 +2,7 @@ import fs from "fs";
 import matter from "gray-matter";
 import path from "path";
 import readingTime from "reading-time";
+import { cache } from "react";
 
 import { tryCatchSync } from "@/lib/try-catch";
 
@@ -13,7 +14,7 @@ const BLOG_DIR = path.join(process.cwd(), "content/blog");
 /**
  * Get all blog post slugs for static generation
  */
-export function getPostSlugs(): string[] {
+export const getPostSlugs = cache(function getPostSlugs(): string[] {
   if (!fs.existsSync(BLOG_DIR)) {
     return [];
   }
@@ -30,15 +31,13 @@ export function getPostSlugs(): string[] {
     .filter((file) => file.toString().endsWith(".mdx"))
     .map((file) => file.toString().replace(/\.mdx$/, ""))
     .filter((slug) => slugSafePattern.test(slug));
-}
+});
 
 /**
- * Get a single blog post by slug.
- * Validates frontmatter using Zod schema.
- * @param slug - The URL slug of the blog post
- * @returns The blog post with content, or null if not found or invalid
+ * Internal helper to read and parse a blog post file.
+ * NOT CACHED to avoid pinning large content strings in memory when iterating all posts.
  */
-export function getPostBySlug(slug: string): BlogPost | null {
+function readPostData(slug: string): BlogPost | null {
   // Validate slug to prevent path traversal
   if (!/^[a-zA-Z0-9_-]+$/.test(slug)) {
     console.error(`Invalid slug: ${slug}`);
@@ -102,16 +101,24 @@ export function getPostBySlug(slug: string): BlogPost | null {
 }
 
 /**
+ * Get a single blog post by slug.
+ * Validates frontmatter using Zod schema.
+ */
+export const getPostBySlug = cache(function getPostBySlug(slug: string): BlogPost | null {
+  return readPostData(slug);
+});
+
+/**
  * Get all blog posts with metadata (for listing pages)
  * Returns posts sorted by date (newest first)
  * Filters out unlisted posts (frontmatter.listed === false)
  */
-export function getAllPosts(): BlogPostMeta[] {
+export const getAllPosts = cache(function getAllPosts(): BlogPostMeta[] {
   const slugs = getPostSlugs();
 
   const posts = slugs
     .map((slug) => {
-      const post = getPostBySlug(slug);
+      const post = readPostData(slug);
       if (!post) return null;
 
       return {
@@ -130,7 +137,7 @@ export function getAllPosts(): BlogPostMeta[] {
     const dateB = new Date(b.frontmatter.date);
     return dateB.getTime() - dateA.getTime();
   });
-}
+});
 
 /**
  * Get posts by category

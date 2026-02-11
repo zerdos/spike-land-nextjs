@@ -17,7 +17,6 @@ import {
   callClaude,
   type ClaudeResponse,
   extractCodeFromResponse,
-  type ParsedGeneration,
   parseGenerationResponse,
 } from "./agent-client";
 
@@ -246,7 +245,6 @@ describe("agent-client", () => {
     });
 
     it("should extract code from partial/malformed JSON with trailing fields", () => {
-      const input = '{"title":"Test","code":"export default function App() { return <div/> }","relatedApps":["a/b"]}';
       // The first path (full JSON.parse) should succeed here, but let's test the
       // partial JSON path by making it unparseable
       const malformed = '{"title":"Test","code":"export default function App() { return <div/> }","relatedApps":["a/b"';
@@ -262,7 +260,6 @@ describe("agent-client", () => {
     });
 
     it("should strip trailing relatedApps/title/description from partial JSON code", () => {
-      const input = '{"code":"const x = 1;","relatedApps":["a"],"title":"T"}';
       // Full JSON parse should succeed, but test the regex path with bad JSON
       const malformed = '{"code":"const x = 1;","relatedApps":["a"],"title":"T"';
       const result = extractCodeFromResponse(malformed);

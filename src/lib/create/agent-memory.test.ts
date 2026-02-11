@@ -235,7 +235,7 @@ describe("agent-memory", () => {
 
       await extractAndSaveNote(longCode, error, null, defaultPath);
 
-      const callArgs = mockCallClaude.mock.calls[0][0];
+      const callArgs = mockCallClaude!.mock.calls[0]![0]!;
       // The failing code excerpt should be truncated to 2000 chars
       expect(callArgs.userPrompt).toContain("x".repeat(2000));
       expect(callArgs.userPrompt).not.toContain("x".repeat(2001));
@@ -246,7 +246,7 @@ describe("agent-memory", () => {
 
       await extractAndSaveNote(failingCode, error, null, defaultPath);
 
-      const callArgs = mockCallClaude.mock.calls[0][0];
+      const callArgs = mockCallClaude!.mock.calls[0]![0]!;
       expect(callArgs.userPrompt).toContain("Fixed code (excerpt):\nN/A");
     });
 
@@ -256,7 +256,7 @@ describe("agent-memory", () => {
 
       await extractAndSaveNote(failingCode, error, longFix, defaultPath);
 
-      const callArgs = mockCallClaude.mock.calls[0][0];
+      const callArgs = mockCallClaude!.mock.calls[0]![0]!;
       expect(callArgs.userPrompt).toContain("y".repeat(2000));
       expect(callArgs.userPrompt).not.toContain("y".repeat(2001));
     });
@@ -394,7 +394,7 @@ describe("agent-memory", () => {
 
       await extractAndSaveNote(failingCode, error, fixedCode, defaultPath);
 
-      const createCall = mockPrisma.agentLearningNote.create.mock.calls[0][0];
+      const createCall = mockPrisma.agentLearningNote.create!.mock.calls[0]![0]!;
       expect(createCall.data.trigger).toHaveLength(200);
       expect(createCall.data.lesson).toHaveLength(500);
     });
@@ -411,7 +411,7 @@ describe("agent-memory", () => {
 
       await extractAndSaveNote(failingCode, error, fixedCode, defaultPath);
 
-      const createCall = mockPrisma.agentLearningNote.create.mock.calls[0][0];
+      const createCall = mockPrisma.agentLearningNote.create!.mock.calls[0]![0]!;
       expect(createCall.data.triggerType).toBe("error_class");
     });
 
@@ -429,7 +429,7 @@ describe("agent-memory", () => {
 
       await extractAndSaveNote(failingCode, error, fixedCode, defaultPath);
 
-      const createCall = mockPrisma.agentLearningNote.create.mock.calls[0][0];
+      const createCall = mockPrisma.agentLearningNote.create!.mock.calls[0]![0]!;
       expect(createCall.data.libraries).toEqual([]);
       expect(createCall.data.errorPatterns).toEqual([]);
       expect(createCall.data.tags).toEqual([]);
@@ -449,7 +449,7 @@ describe("agent-memory", () => {
 
       await extractAndSaveNote(failingCode, error, fixedCode, defaultPath);
 
-      const createCall = mockPrisma.agentLearningNote.create.mock.calls[0][0];
+      const createCall = mockPrisma.agentLearningNote.create!.mock.calls[0]![0]!;
       expect(createCall.data.libraries).toEqual(["123", "true", "react"]);
       expect(createCall.data.errorPatterns).toEqual(["null"]);
       expect(createCall.data.tags).toEqual(["42"]);
@@ -464,7 +464,7 @@ describe("agent-memory", () => {
       await extractAndSaveNote(failingCode, error, fixedCode, defaultPath);
 
       expect(mockPrisma.agentLearningNote.create).toHaveBeenCalled();
-      const createCall = mockPrisma.agentLearningNote.create.mock.calls[0][0];
+      const createCall = mockPrisma.agentLearningNote.create!.mock.calls[0]![0]!;
       expect(createCall.data.trigger).toBe("test");
       expect(createCall.data.lesson).toBe("do this");
     });
@@ -481,7 +481,7 @@ describe("agent-memory", () => {
 
       await extractAndSaveNote(failingCode, longError, fixedCode, defaultPath);
 
-      const createCall = mockPrisma.agentLearningNote.create.mock.calls[0][0];
+      const createCall = mockPrisma.agentLearningNote.create!.mock.calls[0]![0]!;
       expect(createCall.data.sourceError).toHaveLength(1000);
     });
 
@@ -497,7 +497,7 @@ describe("agent-memory", () => {
 
       await extractAndSaveNote(failingCode, error, longFix, defaultPath);
 
-      const createCall = mockPrisma.agentLearningNote.create.mock.calls[0][0];
+      const createCall = mockPrisma.agentLearningNote.create!.mock.calls[0]![0]!;
       expect(createCall.data.sourceFix).toHaveLength(2000);
     });
 
@@ -512,7 +512,7 @@ describe("agent-memory", () => {
 
       await extractAndSaveNote(failingCode, error, null, defaultPath);
 
-      const createCall = mockPrisma.agentLearningNote.create.mock.calls[0][0];
+      const createCall = mockPrisma.agentLearningNote.create!.mock.calls[0]![0]!;
       expect(createCall.data.sourceFix).toBeUndefined();
     });
 
@@ -674,7 +674,7 @@ describe("agent-memory", () => {
 
       await recordSuccess(["note-x"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update.mock.calls[0][0];
+      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
       expect(updateCall.where.id).toBe("note-x");
       expect(updateCall.data.confidenceScore).toBeCloseTo(5 / 7, 10);
       expect(updateCall.data.status).toBe("ACTIVE");
@@ -693,7 +693,7 @@ describe("agent-memory", () => {
 
       await recordSuccess(["candidate-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update.mock.calls[0][0];
+      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
       expect(updateCall.data.status).toBe("ACTIVE");
       expect(updateCall.data.confidenceScore).toBeCloseTo(0.8, 10);
     });
@@ -711,7 +711,7 @@ describe("agent-memory", () => {
 
       await recordSuccess(["candidate-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update.mock.calls[0][0];
+      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
       expect(updateCall.data.status).toBe("CANDIDATE");
     });
 
@@ -728,7 +728,7 @@ describe("agent-memory", () => {
 
       await recordSuccess(["candidate-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update.mock.calls[0][0];
+      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
       expect(updateCall.data.status).toBe("CANDIDATE");
     });
 
@@ -746,7 +746,7 @@ describe("agent-memory", () => {
 
       await recordFailure(["bad-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update.mock.calls[0][0];
+      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
       expect(updateCall.data.status).toBe("DEPRECATED");
       expect(updateCall.data.confidenceScore).toBeCloseTo(1 / 8, 10);
     });
@@ -765,7 +765,7 @@ describe("agent-memory", () => {
 
       await recordFailure(["early-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update.mock.calls[0][0];
+      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
       expect(updateCall.data.status).toBe("CANDIDATE");
     });
 
@@ -783,7 +783,7 @@ describe("agent-memory", () => {
 
       await recordFailure(["borderline-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update.mock.calls[0][0];
+      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
       expect(updateCall.data.status).toBe("ACTIVE");
       expect(updateCall.data.confidenceScore).toBeCloseTo(3 / 8, 10);
     });
@@ -806,7 +806,7 @@ describe("agent-memory", () => {
 
       await recordFailure(["double-check"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update.mock.calls[0][0];
+      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
       expect(updateCall.data.status).toBe("DEPRECATED");
     });
 
@@ -862,7 +862,7 @@ describe("agent-memory", () => {
 
       await recordSuccess(["both-cond"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update.mock.calls[0][0];
+      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
       expect(updateCall.data.status).toBe("DEPRECATED");
     });
 
@@ -879,7 +879,7 @@ describe("agent-memory", () => {
 
       await recordSuccess(["fresh-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update.mock.calls[0][0];
+      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
       expect(updateCall.data.confidenceScore).toBe(0.5);
       expect(updateCall.data.status).toBe("CANDIDATE");
     });
@@ -929,7 +929,7 @@ describe("agent-memory", () => {
 
       await recordGenerationAttempt({ ...baseParams, cachedTokens: 750 });
 
-      const createCall = mockPrisma.generationAttempt.create.mock.calls[0][0];
+      const createCall = mockPrisma.generationAttempt.create!.mock.calls[0]![0]!;
       expect(createCall.data.cachedTokens).toBe(750);
     });
 
@@ -938,7 +938,7 @@ describe("agent-memory", () => {
 
       await recordGenerationAttempt({ ...baseParams, cachedTokens: undefined });
 
-      const createCall = mockPrisma.generationAttempt.create.mock.calls[0][0];
+      const createCall = mockPrisma.generationAttempt.create!.mock.calls[0]![0]!;
       expect(createCall.data.cachedTokens).toBe(0);
     });
 
@@ -954,7 +954,7 @@ describe("agent-memory", () => {
         ],
       });
 
-      const createCall = mockPrisma.generationAttempt.create.mock.calls[0][0];
+      const createCall = mockPrisma.generationAttempt.create!.mock.calls[0]![0]!;
       expect(createCall.data.success).toBe(false);
       expect(createCall.data.errors).toHaveLength(2);
     });
@@ -980,7 +980,7 @@ describe("agent-memory", () => {
         errors: [],
       });
 
-      const createCall = mockPrisma.generationAttempt.create.mock.calls[0][0];
+      const createCall = mockPrisma.generationAttempt.create!.mock.calls[0]![0]!;
       expect(createCall.data.notesApplied).toEqual([]);
       expect(createCall.data.errors).toEqual([]);
     });

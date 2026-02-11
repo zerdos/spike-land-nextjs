@@ -9,6 +9,7 @@ export type AgentPhase =
   | "FAILED";
 
 export type StreamEvent =
+  | { type: "agent"; name: string; model: string }
   | { type: "status"; message: string }
   | { type: "phase"; phase: AgentPhase; message: string; iteration?: number }
   | { type: "code_generated"; codePreview: string }
@@ -22,5 +23,6 @@ export type StreamEvent =
     title: string;
     description: string;
     relatedApps: string[];
+    agent?: string;
   }
   | { type: "error"; message: string; codespaceUrl?: string };

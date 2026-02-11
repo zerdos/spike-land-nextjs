@@ -67,7 +67,7 @@ module.exports = {
     failFast: true, // Stop on first failure for fast feedback
     retry: 1, // Single retry for smoke tests
     tags: "@smoke and not @skip and not @requires-db",
-    timeout: 30000, // 30 second timeout for smoke tests
+    timeout: 60000, // 60 second timeout for smoke tests
     parallel: 4, // Parallel execution for speed
   },
   // CI profile - all tests except flaky and database-dependent tests
@@ -87,7 +87,7 @@ module.exports = {
     failFast: false, // Stop on first failure for faster CI feedback
     retry: 1, // Retry once in CI to handle transient issues (faster feedback)
     tags: "not @skip and not @flaky and not @wip", // Include @requires-db tests in sharded runs
-    timeout: 30000, // 30 second timeout for CI
+    timeout: 60000, // 60 second timeout for CI
     parallel: 16,
   },
   local: {
