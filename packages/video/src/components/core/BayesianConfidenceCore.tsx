@@ -75,6 +75,7 @@ export const BayesianConfidenceCore: FC<BayesianConfidenceCoreProps> = ({
             fontSize="48"
             fontWeight="800"
             fontFamily="JetBrains Mono, monospace"
+            dominantBaseline="middle"
           >
             {Math.round(confidence * 100)}%
           </text>

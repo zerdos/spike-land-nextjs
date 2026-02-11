@@ -57,14 +57,20 @@ export const AgentLoopCore: FC<AgentLoopCoreProps> = ({
     >
       <div 
         style={{ 
-          width: 1920, 
-          height: 1080, 
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%) scale(0.6)", // Default scale for blog
+          width: "100%", 
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
+        <div style={{
+          position: "relative",
+          width: 1920,
+          height: 1080,
+          transformOrigin: "center",
+          transform: "scale(min(1, calc(100vw / 1920)))", // Responsive scaling
+        }}>
         {/* Connection lines (SVG) */}
         <svg
           style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none" }}
@@ -191,6 +197,7 @@ export const AgentLoopCore: FC<AgentLoopCoreProps> = ({
             </span>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

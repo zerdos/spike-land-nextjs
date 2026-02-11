@@ -84,15 +84,6 @@ export function buildEmbedHtml(params: EmbedHtmlParams): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${sanitize(params.codeSpace)} - spike.land</title>
-  <link
-    rel="preload"
-    href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap"
-    as="style"
-  />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap"
-    rel="stylesheet"
-  />
   <script type="importmap">${importMapJson}</script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }

@@ -87,7 +87,8 @@ export const ModelCascadeCore: FC<ModelCascadeCoreProps> = ({
           display: "flex",
           gap: 0,
           opacity: progress,
-          width: 720,
+          width: "100%",
+          maxWidth: 720,
           padding: "0 24px",
         }}
       >
@@ -121,7 +122,8 @@ export const ModelCascadeCore: FC<ModelCascadeCoreProps> = ({
         return (
           <GlassmorphismCardCore
             key={model.name}
-            width={720}
+            width="100%"
+            style={{ maxWidth: 720 }}
             progress={rowProgress}
             color={model.color}
           >
@@ -142,6 +144,7 @@ export const ModelCascadeCore: FC<ModelCascadeCoreProps> = ({
                   fontWeight: 700,
                   color: model.color,
                   fontFamily: "JetBrains Mono, monospace",
+                  minWidth: 80,
                 }}
               >
                 {model.name}
