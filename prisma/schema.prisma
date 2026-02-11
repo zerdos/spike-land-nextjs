@@ -5321,3 +5321,69 @@ model SyncEvent {
   @@index([eventType])
   @@index([createdAt])
 }
+
+// ===== Agent Learning System =====
+
+model AgentLearningNote {
+  id              String   @id @default(cuid())
+
+  // What triggers this note
+  trigger         String   // e.g., "framer-motion AnimatePresence"
+  triggerType     String   // "library" | "pattern" | "error_class" | "component_type" | "universal"
+
+  // The lesson
+  lesson          String   // e.g., "Always wrap children in motion.div with exit prop"
+
+  // Matching criteria (for retrieval)
+  libraries       String[] // ["framer-motion", "react"]
+  errorPatterns   String[] // ["Cannot read property 'exit'"]
+  tags            String[] // ["animation", "layout", "react"]
+
+  // Effectiveness tracking (Bayesian beta-binomial)
+  helpCount       Int      @default(0)
+  failCount       Int      @default(0)
+  confidenceScore Float    @default(0.5)
+
+  // Lifecycle: CANDIDATE → ACTIVE → DEPRECATED
+  status          String   @default("CANDIDATE")
+
+  // Source tracing
+  sourceSlug      String?
+  sourceError     String?  @db.Text
+  sourceFix       String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([triggerType])
+  @@map("agent_learning_notes")
+}
+
+model GenerationAttempt {
+  id              String   @id @default(cuid())
+  slug            String
+
+  // Outcome
+  success         Boolean
+  iterations      Int
+  totalDurationMs Int
+
+  // What notes were used
+  notesApplied    String[]
+
+  // Errors encountered
+  errors          Json[]
+
+  // Model and token usage
+  model           String
+  inputTokens     Int
+  outputTokens    Int
+  cachedTokens    Int      @default(0)
+
+  createdAt       DateTime @default(now())
+
+  @@index([slug])
+  @@index([createdAt])
+  @@map("generation_attempts")
+}

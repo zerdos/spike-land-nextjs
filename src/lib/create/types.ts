@@ -1,5 +1,20 @@
+export type AgentPhase =
+  | "PLANNING"
+  | "GENERATING"
+  | "TRANSPILING"
+  | "VERIFYING"
+  | "FIXING"
+  | "LEARNING"
+  | "PUBLISHED"
+  | "FAILED";
+
 export type StreamEvent =
-  | { type: "status"; message: string; }
+  | { type: "status"; message: string }
+  | { type: "phase"; phase: AgentPhase; message: string; iteration?: number }
+  | { type: "code_generated"; codePreview: string }
+  | { type: "error_detected"; error: string; iteration: number }
+  | { type: "error_fixed"; iteration: number }
+  | { type: "learning"; notePreview: string }
   | {
     type: "complete";
     slug: string;
@@ -8,4 +23,4 @@ export type StreamEvent =
     description: string;
     relatedApps: string[];
   }
-  | { type: "error"; message: string; codespaceUrl?: string; };
+  | { type: "error"; message: string; codespaceUrl?: string };

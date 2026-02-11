@@ -2201,6 +2201,38 @@ erDiagram
   Json details "nullable"
   DateTime createdAt
 }
+"agent_learning_notes" {
+  String id PK
+  String trigger
+  String triggerType
+  String lesson
+  String libraries
+  String errorPatterns
+  String tags
+  Int helpCount
+  Int failCount
+  Float confidenceScore
+  String status
+  String sourceSlug "nullable"
+  String sourceError "nullable"
+  String sourceFix "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"generation_attempts" {
+  String id PK
+  String slug
+  Boolean success
+  Int iterations
+  Int totalDurationMs
+  String notesApplied
+  Json errors
+  String model
+  Int inputTokens
+  Int outputTokens
+  Int cachedTokens
+  DateTime createdAt
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
@@ -5185,6 +5217,44 @@ Properties as follows:
 - `source`:
 - `itemId`:
 - `details`:
+- `createdAt`:
+
+### `agent_learning_notes`
+
+Properties as follows:
+
+- `id`:
+- `trigger`:
+- `triggerType`:
+- `lesson`:
+- `libraries`:
+- `errorPatterns`:
+- `tags`:
+- `helpCount`:
+- `failCount`:
+- `confidenceScore`:
+- `status`:
+- `sourceSlug`:
+- `sourceError`:
+- `sourceFix`:
+- `createdAt`:
+- `updatedAt`:
+
+### `generation_attempts`
+
+Properties as follows:
+
+- `id`:
+- `slug`:
+- `success`:
+- `iterations`:
+- `totalDurationMs`:
+- `notesApplied`:
+- `errors`:
+- `model`:
+- `inputTokens`:
+- `outputTokens`:
+- `cachedTokens`:
 - `createdAt`:
 
 ### `_ConnectionToConnectionTag`
