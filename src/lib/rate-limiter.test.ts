@@ -573,6 +573,8 @@ describe("rate-limiter", () => {
   });
 
   describe("cleanup interval", () => {
+    // Note: Cleanup interval is fixed at 60s
+    const CLEANUP_INTERVAL_MS = 60 * 1000;
     const config = { maxRequests: 5, windowMs: 1000 };
 
     it("should clean up stale entries", async () => {
@@ -581,39 +583,37 @@ describe("rate-limiter", () => {
 
       expect(getRateLimitStoreSize()).toBe(2);
 
-      // Advance past 2x window to trigger cleanup
-      vi.advanceTimersByTime(2001);
-
-      // Trigger cleanup by making another request
-      // (cleanup runs on interval, advance timers again)
-      vi.advanceTimersByTime(1000);
+      // Advance past expiry and cleanup interval
+      // Window is 1s, cleanup is 60s.
+      // Need to advance > 60s to trigger cleanup
+      vi.advanceTimersByTime(CLEANUP_INTERVAL_MS + 100);
 
       // The entries should be cleaned up
-      // Note: Cleanup removes entries older than windowMs * 2
       expect(getRateLimitStoreSize()).toBe(0);
     });
 
-    it("should not clean up recent entries", async () => {
-      await checkRateLimit("user1", config);
+    it("should not clean up valid entries (long window)", async () => {
+      // Use a window longer than the cleanup interval
+      const longConfig = { maxRequests: 5, windowMs: 2 * 60 * 1000 }; // 2 minutes
 
-      // Advance time but not past 2x window (windowMs * 2 = 2000)
-      vi.advanceTimersByTime(1000);
+      await checkRateLimit("user1", longConfig);
 
-      // Add another user
-      await checkRateLimit("user2", config);
-
-      expect(getRateLimitStoreSize()).toBe(2);
-
-      // Advance past user1's 2x window threshold but not user2's
-      // user1 was at t=0, user2 at t=1000
-      // At t=2500, user1 is 2500ms old (> 2000 threshold), user2 is 1500ms old (< 2000 threshold)
-      vi.advanceTimersByTime(1500);
-
-      // Trigger cleanup (runs on windowMs interval = 1000ms)
-      vi.advanceTimersByTime(1000);
-
-      // User1 should be cleaned (over 2x window), user2 should remain
       expect(getRateLimitStoreSize()).toBe(1);
+
+      // Advance time by cleanup interval (60s)
+      vi.advanceTimersByTime(CLEANUP_INTERVAL_MS + 100);
+
+      // User1 should still be valid (expiry is 120s away, only 60s passed)
+      // Cleanup runs, but shouldn't delete valid entry
+      expect(getRateLimitStoreSize()).toBe(1);
+
+      // Advance past expiry (another 60s+)
+      // Note: We need to advance enough to trigger the NEXT cleanup interval
+      // because at exactly 120s, 120s > 120s is false.
+      vi.advanceTimersByTime(CLEANUP_INTERVAL_MS * 2);
+
+      // Now it should be cleaned up
+      expect(getRateLimitStoreSize()).toBe(0);
     });
 
     it("should stop cleanup interval when stopCleanupInterval called", async () => {
@@ -621,11 +621,10 @@ describe("rate-limiter", () => {
 
       stopCleanupInterval();
 
-      // Advance time significantly
-      vi.advanceTimersByTime(10000);
+      // Advance time significantly past cleanup interval
+      vi.advanceTimersByTime(CLEANUP_INTERVAL_MS * 2);
 
       // Entry should still exist (no cleanup running)
-      // New request would start cleanup again, so we just verify no error
       expect(getRateLimitStoreSize()).toBe(1);
     });
 
@@ -646,7 +645,7 @@ describe("rate-limiter", () => {
       await checkRateLimit("user2", config);
 
       // Advance time past cleanup threshold
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(CLEANUP_INTERVAL_MS + 100);
 
       // Entries should be cleaned
       expect(getRateLimitStoreSize()).toBe(0);
