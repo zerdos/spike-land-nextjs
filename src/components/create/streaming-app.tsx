@@ -13,22 +13,35 @@ interface StreamingAppProps {
 
 import type { StreamEvent } from "@/lib/create/types";
 
+interface BuildMessage {
+  text: string;
+  type: "status" | "phase" | "error" | "fix" | "learning";
+}
+
 export function StreamingApp({ path, className }: StreamingAppProps) {
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<BuildMessage[]>([]);
   const [status, setStatus] = useState<"connecting" | "generating" | "complete" | "error">(
     "connecting",
   );
+  const [currentPhase, setCurrentPhase] = useState<string | null>(null);
+  const [iteration, setIteration] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorCodespaceUrl, setErrorCodespaceUrl] = useState<string | null>(null);
   const router = useRouter();
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasAttemptedGeneration = useRef(false);
 
+  const addMessage = useCallback((text: string, type: BuildMessage["type"] = "status") => {
+    setMessages((prev) => [...prev, { text, type }]);
+  }, []);
+
   const startStreaming = useCallback(async () => {
     setStatus("connecting");
     setMessages([]);
     setError(null);
     setErrorCodespaceUrl(null);
+    setCurrentPhase(null);
+    setIteration(null);
     hasAttemptedGeneration.current = true;
 
     const controller = new AbortController();
@@ -54,17 +67,14 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
           return;
         }
         if (response.status === 202) {
-          // Already generating, wait a bit then refresh
           toast.info("App is already being generated. Waiting...");
           setStatus("generating");
-          setMessages(["Resuming generation monitoring..."]);
-          // Poll every 3 seconds
+          addMessage("Resuming generation monitoring...");
           if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
           pollIntervalRef.current = setInterval(() => {
             router.refresh();
           }, 3000);
 
-          // Clear interval after 60s
           setTimeout(() => {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
           }, 60000);
@@ -97,20 +107,49 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
             try {
               const event: StreamEvent = JSON.parse(data);
 
-              if (event.type === "status") {
-                setMessages((prev) => [...prev, event.message]);
-              } else if (event.type === "complete") {
-                setStatus("complete");
-                setMessages((prev) => [...prev, "Complete! Loading app..."]);
-                // Refresh to show the published state
-                router.refresh();
-              } else if (event.type === "error") {
-                setStatus("error");
-                setError(event.message);
-                if (event.codespaceUrl) {
-                  setErrorCodespaceUrl(event.codespaceUrl);
-                }
-                toast.error(`Generation failed: ${event.message}`);
+              switch (event.type) {
+                case "status":
+                  addMessage(event.message);
+                  break;
+
+                case "phase":
+                  setCurrentPhase(event.phase);
+                  if (event.iteration !== undefined) {
+                    setIteration(event.iteration);
+                  }
+                  addMessage(event.message, "phase");
+                  break;
+
+                case "code_generated":
+                  addMessage("Code generated successfully", "status");
+                  break;
+
+                case "error_detected":
+                  addMessage(`Error detected: ${event.error}`, "error");
+                  break;
+
+                case "error_fixed":
+                  addMessage(`Error fixed (attempt ${event.iteration + 1})`, "fix");
+                  break;
+
+                case "learning":
+                  addMessage(event.notePreview, "learning");
+                  break;
+
+                case "complete":
+                  setStatus("complete");
+                  addMessage("Complete! Loading app...");
+                  router.refresh();
+                  break;
+
+                case "error":
+                  setStatus("error");
+                  setError(event.message);
+                  if (event.codespaceUrl) {
+                    setErrorCodespaceUrl(event.codespaceUrl);
+                  }
+                  toast.error(`Generation failed: ${event.message}`);
+                  break;
               }
             } catch {
               // Skip invalid JSON
@@ -129,10 +168,9 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
     } finally {
       clearTimeout(timeoutId);
     }
-  }, [path, router]);
+  }, [path, router, addMessage]);
 
   useEffect(() => {
-    // Only start if we are mounted
     startStreaming();
 
     return () => {
@@ -199,6 +237,19 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
               /{path.join("/")}
             </span>
           </p>
+
+          {/* Phase indicator */}
+          {currentPhase && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 text-sm text-muted-foreground">
+              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+              {currentPhase}
+              {iteration !== null && iteration > 0 && (
+                <span className="text-xs opacity-70">
+                  (attempt {iteration + 1})
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
@@ -217,8 +268,25 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
                 key={i}
                 className="flex items-start gap-3 animate-in fade-in slide-in-from-left-2 duration-300"
               >
-                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
-                <span>{msg}</span>
+                <div
+                  className={cn(
+                    "mt-1.5 w-1.5 h-1.5 rounded-full shrink-0",
+                    msg.type === "error" && "bg-red-500",
+                    msg.type === "fix" && "bg-amber-500",
+                    msg.type === "learning" && "bg-blue-500",
+                    msg.type === "phase" && "bg-purple-500",
+                    msg.type === "status" && "bg-green-500",
+                  )}
+                />
+                <span
+                  className={cn(
+                    msg.type === "error" && "text-red-600 dark:text-red-400",
+                    msg.type === "fix" && "text-amber-600 dark:text-amber-400",
+                    msg.type === "learning" && "text-blue-600 dark:text-blue-400 text-xs",
+                  )}
+                >
+                  {msg.text}
+                </span>
               </div>
             ))}
             {status === "generating" && (

@@ -8,13 +8,14 @@ import {
   updateAppStatus,
 } from "@/lib/create/content-service";
 import { type StreamEvent } from "@/lib/create/types";
+import { agentGenerateApp } from "@/lib/create/agent-loop";
 import logger from "@/lib/logger";
 import { checkGenerationRateLimit, getClientIp } from "@/lib/rate-limit";
 import { CreatedAppStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-export const maxDuration = 60; // Allow 60s for generation
+export const maxDuration = 120; // 120s for agent loop (was 60s)
 export const dynamic = "force-dynamic";
 
 const CREATE_AGENT_URL = process.env["CREATE_AGENT_URL"]; // e.g. https://create-agent.your-tunnel.com
@@ -160,19 +161,13 @@ function createAgentProxyResponse(
               const event = JSON.parse(data) as Record<string, unknown>;
 
               if (event["type"] === "agent") {
-                // Forward agent identity to client
                 controller.enqueue(
                   encoder.encode(`data: ${data}\n\n`),
                 );
                 continue;
               }
 
-              if (event["type"] === "status" || event["type"] === "complete" || event["type"] === "error") {
-                controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-                continue;
-              }
-
-              // Forward any other events as-is
+              // Forward all other events as-is
               controller.enqueue(encoder.encode(`data: ${data}\n\n`));
             } catch (parseError) {
               if (parseError instanceof SyntaxError) continue;
@@ -216,7 +211,37 @@ function createAgentProxyResponse(
   });
 }
 
+/**
+ * Main generation stream — delegates to the Claude agent loop,
+ * with automatic fallback to Gemini if Claude is unavailable.
+ */
 async function* generateStream(
+  slug: string,
+  path: string[],
+  userId: string | undefined,
+): AsyncGenerator<StreamEvent> {
+  // Use Claude agent loop when API key is available
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      yield* agentGenerateApp(slug, path, userId);
+      return;
+    } catch (error) {
+      logger.warn("Agent loop failed, falling back to Gemini generation", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        slug,
+      });
+      // Fall through to Gemini fallback
+    }
+  }
+
+  // Fallback: Original Gemini-based generation
+  yield* geminiFallbackStream(slug, path, userId);
+}
+
+/**
+ * Original Gemini-based generation flow — kept as circuit breaker fallback.
+ */
+async function* geminiFallbackStream(
   slug: string,
   path: string[],
   userId: string | undefined,
@@ -228,8 +253,6 @@ async function* generateStream(
     yield { type: "agent", name: "Gemini Flash", model: "gemini-2.5-flash-preview-05-20" };
     yield { type: "status", message: "Initializing app generation..." };
 
-    // 1. Mark as generating in DB
-    // We need initial title/desc, use placeholders until we generate them
     const placeholderTitle = path[path.length - 1]?.replace(/-/g, " ") || "New App";
     await markAsGenerating(
       slug,
@@ -242,13 +265,10 @@ async function* generateStream(
       userId,
     );
 
-    // 2. Generate content with AI
     yield { type: "status", message: "Designing application logic..." };
 
-    // This might take 10-20s
     const { content, rawCode, error: genError } = await generateAppContent(path);
 
-    // Determine the best code to push — prefer validated content, fall back to raw
     const codeToPush = content?.code ?? rawCode;
 
     if (!codeToPush) {
@@ -257,10 +277,8 @@ async function* generateStream(
 
     yield { type: "status", message: "Writing code..." };
 
-    // 3. Update Codespace with whatever code we have
     let updateResult = await updateCodespace(codespaceId, codeToPush);
 
-    // 3a. If transpilation failed, attempt self-correction
     if (!updateResult.success && updateResult.error) {
       yield { type: "status", message: "Fixing transpilation error..." };
 
@@ -273,7 +291,6 @@ async function* generateStream(
       if (correctedCode) {
         updateResult = await updateCodespace(codespaceId, correctedCode);
 
-        // Update content code if correction succeeded
         if (updateResult.success && content) {
           content.code = correctedCode;
         }
@@ -284,7 +301,6 @@ async function* generateStream(
       throw new Error(updateResult.error || "Failed to update codespace");
     }
 
-    // If validation failed but we pushed raw code, report the error with codespace link
     if (!content) {
       logger.error(`App generation partially failed for ${slug}: ${genError}`);
       try {
@@ -300,16 +316,11 @@ async function* generateStream(
       return;
     }
 
-    // 4. Update DB as PUBLISHED
     yield { type: "status", message: "Finalizing..." };
 
-    // Extract outgoing links if any found in code or use the suggestions
-    // We prefer the explicit relatedApps from AI
     const relatedLinks = content.relatedApps || [];
 
-    // Update the title/description with the generated ones
     await updateAppContent(slug, content.title, content.description);
-
     await updateAppStatus(slug, CreatedAppStatus.PUBLISHED, relatedLinks);
 
     yield {
@@ -323,7 +334,6 @@ async function* generateStream(
     };
   } catch (error) {
     logger.error(`App generation failed for ${slug}:`, { error });
-    // Try to mark as failed, but don't let this mask the original error
     try {
       await updateAppStatus(slug, CreatedAppStatus.FAILED);
     } catch (updateError) {
