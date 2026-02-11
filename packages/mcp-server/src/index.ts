@@ -2,9 +2,10 @@
 /**
  * Spike Land MCP Server
  *
- * MCP (Model Context Protocol) server for Spike Land image generation and modification.
- * This server allows Claude Desktop and Claude Code to generate and modify images
- * using the Spike Land API.
+ * Progressive Context Disclosure (PCD) MCP server for spike.land.
+ * Starts with 5 always-on gateway discovery tools (~3K tokens).
+ * All other tools are discoverable via search_tools and enable_category,
+ * and activated on demand via McpServer's RegisteredTool.enable()/disable().
  *
  * Usage:
  *   SPIKE_LAND_API_KEY=sk_live_... npx @spike-npm-land/mcp-server
@@ -21,25 +22,36 @@
  *   }
  */
 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import type { Tool } from "@modelcontextprotocol/sdk/types.js";
-import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { SpikeLandClient } from "./client.js";
+import { ToolRegistry } from "./registry.js";
+import { registerGatewayMetaTools } from "./tools/gateway-meta/index.js";
 import {
   getCodeSpaceTools,
+  getCodeSpaceSchemas,
   handleCodeSpaceToolCall,
   isCodeSpaceAvailable,
 } from "./tools/codespace/index.js";
 import {
   getGatewayTools,
+  getGatewaySchemas,
   handleGatewayToolCall,
   isGatewayAvailable,
 } from "./tools/gateway/index.js";
-import { getJulesTools, handleJulesToolCall, isJulesAvailable } from "./tools/jules/index.js";
+import {
+  getJulesTools,
+  getJulesSchemas,
+  handleJulesToolCall,
+  isJulesAvailable,
+} from "./tools/jules/index.js";
 
-// Supported aspect ratios
+// ========================================
+// Image Tool Zod Schemas
+// ========================================
+
 const SUPPORTED_ASPECT_RATIOS = [
   "1:1",
   "3:2",
@@ -53,7 +65,6 @@ const SUPPORTED_ASPECT_RATIOS = [
   "21:9",
 ] as const;
 
-// Tool parameter schemas
 const GenerateImageSchema = z.object({
   prompt: z.string().describe("Text description of the image to generate"),
   tier: z
@@ -111,9 +122,15 @@ const CheckJobSchema = z.object({
   job_id: z.string().describe("The job ID to check"),
 });
 
-// Tool definitions
-const tools: Tool[] = [
-  {
+// ========================================
+// Image Tool Registration
+// ========================================
+
+function registerImageTools(
+  registry: ToolRegistry,
+  client: SpikeLandClient,
+): void {
+  registry.register({
     name: "generate_image",
     description: `Generate a new image from a text prompt using Spike Land's AI.
 
@@ -125,50 +142,59 @@ Token costs:
 - TIER_4K (4096px): 10 tokens
 
 Returns the generated image URL when complete.`,
-    inputSchema: {
-      type: "object",
-      properties: {
-        prompt: {
-          type: "string",
-          description: "Text description of the image to generate",
-        },
-        tier: {
-          type: "string",
-          enum: ["TIER_1K", "TIER_2K", "TIER_4K"],
-          default: "TIER_1K",
-          description: "Quality tier: TIER_1K (1024px), TIER_2K (2048px), TIER_4K (4096px)",
-        },
-        negative_prompt: {
-          type: "string",
-          description: "Things to avoid in the generated image",
-        },
-        aspect_ratio: {
-          type: "string",
-          enum: [
-            "1:1",
-            "3:2",
-            "2:3",
-            "3:4",
-            "4:3",
-            "4:5",
-            "5:4",
-            "9:16",
-            "16:9",
-            "21:9",
+    category: "image",
+    tier: "free",
+    inputSchema: GenerateImageSchema.shape,
+    handler: async ({
+      prompt,
+      tier,
+      negative_prompt,
+      aspect_ratio,
+      wait_for_completion,
+    }: z.infer<typeof GenerateImageSchema>): Promise<CallToolResult> => {
+      const result = await client.generateImage({
+        prompt,
+        tier,
+        negativePrompt: negative_prompt,
+        aspectRatio: aspect_ratio,
+      });
+
+      if (!result.success || !result.jobId) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Failed to start image generation: ${result.error || "Unknown error"}`,
+            },
           ],
-          default: "1:1",
-          description: "Output aspect ratio for the generated image",
-        },
-        wait_for_completion: {
-          type: "boolean",
-          default: true,
-          description: "Wait for the job to complete before returning",
-        },
-      },
-      required: ["prompt"],
+          isError: true,
+        };
+      }
+
+      if (wait_for_completion) {
+        const status = await client.waitForJob(result.jobId);
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Image generated successfully!\n\n**Job ID:** ${status.job.id}\n**Image URL:** ${status.job.outputImageUrl}\n**Dimensions:** ${status.job.outputWidth}x${status.job.outputHeight}\n**Tokens Used:** ${status.job.tokensCost}`,
+            },
+          ],
+        };
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Image generation started!\n\n**Job ID:** ${result.jobId}\n**Tokens Reserved:** ${result.tokensCost}\n\nUse check_job with this job ID to check the status.`,
+          },
+        ],
+      };
     },
-  },
-  {
+  });
+
+  registry.register({
     name: "modify_image",
     description: `Modify an existing image using a text prompt.
 
@@ -181,72 +207,171 @@ Token costs:
 - TIER_4K (4096px): 10 tokens
 
 Returns the modified image URL when complete.`,
-    inputSchema: {
-      type: "object",
-      properties: {
-        prompt: {
-          type: "string",
-          description: "Text description of how to modify the image",
-        },
-        image_url: {
-          type: "string",
-          description: "URL of the image to modify",
-        },
-        image_base64: {
-          type: "string",
-          description: "Base64-encoded image data",
-        },
-        mime_type: {
-          type: "string",
-          default: "image/jpeg",
-          description: "MIME type of the image",
-        },
-        tier: {
-          type: "string",
-          enum: ["TIER_1K", "TIER_2K", "TIER_4K"],
-          default: "TIER_1K",
-          description: "Quality tier",
-        },
-        wait_for_completion: {
-          type: "boolean",
-          default: true,
-          description: "Wait for the job to complete before returning",
-        },
-      },
-      required: ["prompt"],
+    category: "image",
+    tier: "free",
+    inputSchema: ModifyImageSchema.shape,
+    handler: async ({
+      prompt,
+      image_url,
+      image_base64,
+      mime_type,
+      tier,
+      wait_for_completion,
+    }: z.infer<typeof ModifyImageSchema>): Promise<CallToolResult> => {
+      let imageBase64: string;
+      let mimeType = mime_type || "image/jpeg";
+
+      if (image_base64) {
+        imageBase64 = image_base64;
+      } else if (image_url) {
+        const response = await fetch(image_url);
+        if (!response.ok) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to fetch image from URL: ${response.statusText}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        imageBase64 = Buffer.from(arrayBuffer).toString("base64");
+        mimeType = response.headers.get("content-type") || mimeType;
+      } else {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Either image_url or image_base64 must be provided",
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      const result = await client.modifyImage({
+        prompt,
+        image: imageBase64,
+        mimeType,
+        tier,
+      });
+
+      if (!result.success || !result.jobId) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Failed to start image modification: ${result.error || "Unknown error"}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      if (wait_for_completion) {
+        const status = await client.waitForJob(result.jobId);
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Image modified successfully!\n\n**Job ID:** ${status.job.id}\n**Image URL:** ${status.job.outputImageUrl}\n**Dimensions:** ${status.job.outputWidth}x${status.job.outputHeight}\n**Tokens Used:** ${status.job.tokensCost}`,
+            },
+          ],
+        };
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Image modification started!\n\n**Job ID:** ${result.jobId}\n**Tokens Reserved:** ${result.tokensCost}\n\nUse check_job with this job ID to check the status.`,
+          },
+        ],
+      };
     },
-  },
-  {
+  });
+
+  registry.register({
     name: "check_job",
-    description: "Check the status of an image generation or modification job",
-    inputSchema: {
-      type: "object",
-      properties: {
-        job_id: {
-          type: "string",
-          description: "The job ID to check",
-        },
+    description:
+      "Check the status of an image generation or modification job",
+    category: "image",
+    tier: "free",
+    inputSchema: CheckJobSchema.shape,
+    handler: async ({
+      job_id,
+    }: z.infer<typeof CheckJobSchema>): Promise<CallToolResult> => {
+      const status = await client.getJobStatus(job_id);
+
+      let statusText = `**Job ID:** ${status.job.id}\n**Type:** ${status.job.type}\n**Status:** ${status.job.status}\n**Tokens Cost:** ${status.job.tokensCost}\n**Prompt:** ${status.job.prompt}`;
+
+      if (
+        status.job.status === "COMPLETED" &&
+        status.job.outputImageUrl
+      ) {
+        statusText += `\n**Image URL:** ${status.job.outputImageUrl}\n**Dimensions:** ${status.job.outputWidth}x${status.job.outputHeight}`;
+      }
+
+      if (status.job.status === "FAILED" && status.job.errorMessage) {
+        statusText += `\n**Error:** ${status.job.errorMessage}`;
+      }
+
+      return { content: [{ type: "text", text: statusText }] };
+    },
+  });
+}
+
+// ========================================
+// Legacy Tool Bridge
+// ========================================
+
+/**
+ * Register existing tools from a module that uses the old getTools/handleToolCall pattern.
+ * Maps each tool to the registry with its Zod schema and delegates to the existing handler.
+ */
+function registerLegacyTools(
+  registry: ToolRegistry,
+  category: string,
+  tier: "free" | "workspace",
+  tools: Array<{ name: string; description?: string }>,
+  schemas: Record<string, z.ZodObject<z.ZodRawShape>>,
+  handler: (
+    name: string,
+    args: unknown,
+  ) => Promise<{ content: Array<{ type: string; text?: string; data?: string; mimeType?: string }>; isError?: boolean }>,
+): void {
+  for (const tool of tools) {
+    const schema = schemas[tool.name];
+    registry.register({
+      name: tool.name,
+      description: tool.description || tool.name,
+      category,
+      tier,
+      inputSchema: schema?.shape,
+      handler: async (
+        args: unknown,
+      ): Promise<CallToolResult> => {
+        const result = await handler(tool.name, args);
+        return result as CallToolResult;
       },
-      required: ["job_id"],
-    },
-  },
-  {
-    name: "get_balance",
-    description: "Get the current token balance for image generation and modification",
-    inputSchema: {
-      type: "object",
-      properties: {},
-      required: [],
-    },
-  },
-];
+    });
+  }
+}
+
+// ========================================
+// Main
+// ========================================
 
 async function main() {
   // Get API key from environment
   const apiKey = process.env.SPIKE_LAND_API_KEY;
 
   if (!apiKey) {
-    console.error("Error: SPIKE_LAND_API_KEY environment variable is required");
+    console.error(
+      "Error: SPIKE_LAND_API_KEY environment variable is required",
+    );
     console.error("Get your API key at: https://spike.land/settings");
     process.exit(1);
   }
@@ -254,289 +379,86 @@ async function main() {
   // Create client
   const client = new SpikeLandClient(apiKey);
 
-  // Create MCP server
-  const server = new Server(
+  // Create MCP server with Progressive Context Disclosure
+  const mcpServer = new McpServer(
     {
       name: "spike-land",
-      version: "0.1.0",
+      version: "1.0.0",
     },
     {
       capabilities: {
-        tools: {},
+        tools: { listChanged: true },
       },
     },
   );
 
-  // Get all available tools (including Jules, CodeSpace, and Gateway if configured)
-  const allTools = [...tools, ...getJulesTools(), ...getCodeSpaceTools(), ...getGatewayTools()];
+  // Create progressive tool registry
+  const registry = new ToolRegistry(mcpServer);
 
-  // Handle list tools request
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    return { tools: allTools };
-  });
+  // Register always-on gateway meta tools (5 tools, ~3K tokens)
+  registerGatewayMetaTools(registry, client);
 
-  // Handle tool calls
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;
+  // Register image tools (disabled by default, discoverable)
+  registerImageTools(registry, client);
 
-    try {
-      switch (name) {
-        case "generate_image": {
-          const params = GenerateImageSchema.parse(args);
+  // Register CodeSpace tools (disabled by default, discoverable)
+  if (isCodeSpaceAvailable()) {
+    registerLegacyTools(
+      registry,
+      "codespace",
+      "free",
+      getCodeSpaceTools(),
+      getCodeSpaceSchemas(),
+      handleCodeSpaceToolCall,
+    );
+  }
 
-          const result = await client.generateImage({
-            prompt: params.prompt,
-            tier: params.tier,
-            negativePrompt: params.negative_prompt,
-            aspectRatio: params.aspect_ratio,
-          });
+  // Register Jules tools (disabled by default, discoverable)
+  if (isJulesAvailable()) {
+    registerLegacyTools(
+      registry,
+      "jules",
+      "free",
+      getJulesTools(),
+      getJulesSchemas(),
+      handleJulesToolCall,
+    );
+  }
 
-          if (!result.success || !result.jobId) {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Failed to start image generation: ${result.error || "Unknown error"}`,
-                },
-              ],
-              isError: true,
-            };
-          }
-
-          if (params.wait_for_completion) {
-            const status = await client.waitForJob(result.jobId);
-
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Image generated successfully!
-
-**Job ID:** ${status.job.id}
-**Image URL:** ${status.job.outputImageUrl}
-**Dimensions:** ${status.job.outputWidth}x${status.job.outputHeight}
-**Tokens Used:** ${status.job.tokensCost}`,
-                },
-              ],
-            };
-          } else {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Image generation started!
-
-**Job ID:** ${result.jobId}
-**Tokens Reserved:** ${result.tokensCost}
-
-Use check_job with this job ID to check the status.`,
-                },
-              ],
-            };
-          }
-        }
-
-        case "modify_image": {
-          const params = ModifyImageSchema.parse(args);
-
-          // Get image data
-          let imageBase64: string;
-          let mimeType = params.mime_type || "image/jpeg";
-
-          if (params.image_base64) {
-            imageBase64 = params.image_base64;
-          } else if (params.image_url) {
-            // Fetch image from URL
-            const response = await fetch(params.image_url);
-            if (!response.ok) {
-              return {
-                content: [
-                  {
-                    type: "text",
-                    text: `Failed to fetch image from URL: ${response.statusText}`,
-                  },
-                ],
-                isError: true,
-              };
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            imageBase64 = Buffer.from(arrayBuffer).toString("base64");
-            mimeType = response.headers.get("content-type") || mimeType;
-          } else {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: "Either image_url or image_base64 must be provided",
-                },
-              ],
-              isError: true,
-            };
-          }
-
-          const result = await client.modifyImage({
-            prompt: params.prompt,
-            image: imageBase64,
-            mimeType,
-            tier: params.tier,
-          });
-
-          if (!result.success || !result.jobId) {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Failed to start image modification: ${result.error || "Unknown error"}`,
-                },
-              ],
-              isError: true,
-            };
-          }
-
-          if (params.wait_for_completion) {
-            const status = await client.waitForJob(result.jobId);
-
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Image modified successfully!
-
-**Job ID:** ${status.job.id}
-**Image URL:** ${status.job.outputImageUrl}
-**Dimensions:** ${status.job.outputWidth}x${status.job.outputHeight}
-**Tokens Used:** ${status.job.tokensCost}`,
-                },
-              ],
-            };
-          } else {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Image modification started!
-
-**Job ID:** ${result.jobId}
-**Tokens Reserved:** ${result.tokensCost}
-
-Use check_job with this job ID to check the status.`,
-                },
-              ],
-            };
-          }
-        }
-
-        case "check_job": {
-          const params = CheckJobSchema.parse(args);
-          const status = await client.getJobStatus(params.job_id);
-
-          let statusText = `**Job ID:** ${status.job.id}
-**Type:** ${status.job.type}
-**Status:** ${status.job.status}
-**Tokens Cost:** ${status.job.tokensCost}
-**Prompt:** ${status.job.prompt}`;
-
-          if (status.job.status === "COMPLETED" && status.job.outputImageUrl) {
-            statusText += `
-**Image URL:** ${status.job.outputImageUrl}
-**Dimensions:** ${status.job.outputWidth}x${status.job.outputHeight}`;
-          }
-
-          if (status.job.status === "FAILED" && status.job.errorMessage) {
-            statusText += `
-**Error:** ${status.job.errorMessage}`;
-          }
-
-          return {
-            content: [
-              {
-                type: "text",
-                text: statusText,
-              },
-            ],
-          };
-        }
-
-        case "get_balance": {
-          const balance = await client.getBalance();
-
-          return {
-            content: [
-              {
-                type: "text",
-                text: `**Token Balance:** ${balance.balance}
-
-Token costs:
-- 1K Quality (1024px): 2 tokens
-- 2K Quality (2048px): 5 tokens
-- 4K Quality (4096px): 10 tokens
-
-Get more tokens at: https://spike.land/settings`,
-              },
-            ],
-          };
-        }
-
-        default:
-          // Check if it's a Jules tool
-          if (name.startsWith("jules_") && isJulesAvailable()) {
-            return await handleJulesToolCall(name, args);
-          }
-          // Check if it's a CodeSpace tool
-          if (name.startsWith("codespace_") && isCodeSpaceAvailable()) {
-            return await handleCodeSpaceToolCall(name, args);
-          }
-          // Check if it's a Gateway tool (bridgemind_, github_, sync_, bolt_)
-          if (
-            (name.startsWith("bridgemind_") ||
-              name.startsWith("github_") ||
-              name.startsWith("sync_") ||
-              name.startsWith("bolt_")) &&
-            isGatewayAvailable()
-          ) {
-            return await handleGatewayToolCall(name, args);
-          }
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Unknown tool: ${name}`,
-              },
-            ],
-            isError: true,
-          };
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Unknown error";
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error: ${errorMessage}`,
-          },
-        ],
-        isError: true,
-      };
-    }
-  });
+  // Register Gateway tools (disabled by default, discoverable)
+  if (isGatewayAvailable()) {
+    registerLegacyTools(
+      registry,
+      "gateway",
+      "free",
+      getGatewayTools(),
+      getGatewaySchemas(),
+      handleGatewayToolCall,
+    );
+  }
 
   // Start the server
   const transport = new StdioServerTransport();
-  await server.connect(transport);
+  await mcpServer.connect(transport);
 
-  console.error("Spike Land MCP Server started");
-  if (isJulesAvailable()) {
-    console.error("Jules integration enabled (JULES_API_KEY detected)");
-  }
+  console.error(
+    `Spike Land MCP Server started (${registry.getToolCount()} tools registered, ${registry.getEnabledCount()} active)`,
+  );
+  console.error(
+    "Progressive Context Disclosure: Only 5 gateway tools loaded initially.",
+  );
+  console.error(
+    'Use search_tools or enable_category to discover and activate tools.',
+  );
+
   if (isCodeSpaceAvailable()) {
-    console.error(
-      "CodeSpace integration enabled (SPIKE_LAND_API_KEY detected)",
-    );
+    console.error("CodeSpace integration available (discoverable)");
+  }
+  if (isJulesAvailable()) {
+    console.error("Jules integration available (discoverable)");
   }
   if (isGatewayAvailable()) {
-    console.error("Gateway tools enabled (BridgeMind/GitHub Projects detected)");
+    console.error("Gateway tools available (discoverable)");
   }
 }
 

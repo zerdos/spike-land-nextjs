@@ -1,10 +1,11 @@
 /**
  * Spike Land API Client
  *
- * HTTP client for communicating with the Spike Land MCP API
+ * HTTP client for communicating with the Spike Land MCP API.
+ * Extends BaseApiClient for authentication and request handling.
  */
 
-const DEFAULT_BASE_URL = "https://spike.land";
+import { BaseApiClient } from "./base-client.js";
 
 interface GenerateRequest {
   prompt: string;
@@ -53,51 +54,7 @@ interface BalanceResponse {
   lastRegeneration: string;
 }
 
-export class SpikeLandClient {
-  private baseUrl: string;
-  private apiKey: string;
-
-  constructor(apiKey: string, baseUrl?: string) {
-    if (!apiKey) {
-      throw new Error("API key is required");
-    }
-    this.apiKey = apiKey;
-    this.baseUrl = baseUrl || process.env.SPIKE_LAND_BASE_URL ||
-      DEFAULT_BASE_URL;
-  }
-
-  private async request<T>(
-    endpoint: string,
-    method: string = "GET",
-    body?: Record<string, unknown>,
-  ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${this.apiKey}`,
-      "Content-Type": "application/json",
-    };
-
-    const options: RequestInit = {
-      method,
-      headers,
-    };
-
-    if (body) {
-      options.body = JSON.stringify(body);
-    }
-
-    const response = await fetch(url, options);
-    const data = await response.json() as { error?: string; };
-
-    if (!response.ok) {
-      throw new Error(
-        data.error || `Request failed with status ${response.status}`,
-      );
-    }
-
-    return data as T;
-  }
+export class SpikeLandClient extends BaseApiClient {
 
   /**
    * Generate a new image from a text prompt

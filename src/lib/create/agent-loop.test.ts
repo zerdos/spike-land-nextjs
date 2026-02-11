@@ -283,7 +283,7 @@ describe("agentGenerateApp", () => {
       expect(events[6]).toEqual({
         type: "complete",
         slug: "my-app",
-        url: "/api/codespace/test-codespace-123/embed",
+        url: "https://testing.spike.land/live/test-codespace-123/",
         title: "Test App",
         description: "A test app",
         relatedApps: ["related/one"],
@@ -301,7 +301,7 @@ describe("agentGenerateApp", () => {
         "my app",
         "Generating app...",
         "test-codespace-123",
-        "/api/codespace/test-codespace-123/embed",
+        "https://testing.spike.land/live/test-codespace-123/",
         "Agent loop: my-app",
         "user-1",
       );
@@ -575,7 +575,7 @@ describe("agentGenerateApp", () => {
       expect(errorEvent).toHaveLength(1);
       expect(errorEvent[0]!.message).toBe("Failed after 2 fix attempts");
       expect(errorEvent[0]!.codespaceUrl).toBe(
-        "/api/codespace/test-codespace-123/embed",
+        "https://testing.spike.land/live/test-codespace-123/",
       );
     });
 
@@ -856,7 +856,7 @@ describe("agentGenerateApp", () => {
       );
 
       expect(buildAgentSystemPrompt).toHaveBeenCalledWith("", []);
-      expect(buildAgentUserPrompt).toHaveBeenCalledWith([]);
+      expect(buildAgentUserPrompt).toHaveBeenCalledWith([], undefined);
     });
 
     it("uses last path segment with dashes replaced by spaces for title", async () => {
@@ -1307,7 +1307,7 @@ describe("agentGenerateApp", () => {
 
       const completeEvent = findEvent(events, "complete");
       expect(completeEvent!.url).toBe(
-        "/api/codespace/custom-id-456/embed",
+        "https://testing.spike.land/live/custom-id-456/",
       );
     });
   });

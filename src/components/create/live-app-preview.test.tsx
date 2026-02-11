@@ -48,7 +48,7 @@ describe("LiveAppPreview", () => {
     expect(screen.getByTitle("Test App").tagName).toBe("IFRAME");
     expect(screen.getByTitle("Test App")).toHaveAttribute(
       "src",
-      "/api/codespace/test-cs/embed",
+      "https://testing.spike.land/live/test-cs/",
     );
   });
 

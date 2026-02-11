@@ -46,10 +46,7 @@ export class CodeRoutes {
   }
 
   async handleJsRoute(): Promise<Response> {
-    const replaced = importMapReplace(
-      this.code.getSession().transpiled,
-      this.code.getOrigin(),
-    );
+    const replaced = importMapReplace(this.code.getSession().transpiled);
 
     return new Response(replaced, {
       headers: {

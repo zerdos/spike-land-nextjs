@@ -68,6 +68,17 @@ const SendMessageSchema = z.object({
   message: z.string().min(1).max(4000).describe("Message to send"),
 });
 
+// Zod schema map for registry integration
+export function getJulesSchemas(): Record<string, z.ZodObject<z.ZodRawShape>> {
+  return {
+    jules_list_sessions: ListSessionsSchema,
+    jules_create_session: CreateSessionSchema,
+    jules_get_session: GetSessionSchema,
+    jules_approve_plan: ApprovePlanSchema,
+    jules_send_message: SendMessageSchema,
+  };
+}
+
 // Tool definitions
 export function getJulesTools(): Tool[] {
   if (!isJulesAvailable()) {

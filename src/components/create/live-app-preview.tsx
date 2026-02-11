@@ -29,7 +29,7 @@ export function LiveAppPreview({
   const [isVisible, setIsVisible] = useState(!lazy);
   const loadStartedRef = useRef(false);
 
-  const iframeSrc = `/api/codespace/${codespaceId}/embed`;
+  const iframeSrc = `https://testing.spike.land/live/${codespaceId}/`;
 
   const handleLoad = useCallback(() => {
     setState("loaded");

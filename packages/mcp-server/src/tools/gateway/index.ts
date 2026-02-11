@@ -81,6 +81,30 @@ const SyncTriggerSchema = z.object({
 });
 
 // ========================================
+// Zod Schema Map for Registry Integration
+// ========================================
+
+export function getGatewaySchemas(): Record<string, z.ZodObject<z.ZodRawShape>> {
+  return {
+    bridgemind_list_tasks: BridgeMindListTasksSchema,
+    bridgemind_create_task: BridgeMindCreateTaskSchema,
+    bridgemind_update_task: BridgeMindUpdateTaskSchema,
+    bridgemind_get_knowledge: BridgeMindGetKnowledgeSchema,
+    bridgemind_add_knowledge: BridgeMindAddKnowledgeSchema,
+    bridgemind_list_sprints: z.object({}),
+    github_list_issues: GitHubListIssuesSchema,
+    github_create_issue: GitHubCreateIssueSchema,
+    github_update_project_item: GitHubUpdateProjectItemSchema,
+    github_get_pr_status: GitHubGetPRStatusSchema,
+    sync_bridgemind_to_github: SyncTriggerSchema,
+    sync_status: z.object({}),
+    bolt_status: z.object({}),
+    bolt_pause: z.object({}),
+    bolt_resume: z.object({}),
+  };
+}
+
+// ========================================
 // Tool Definitions
 // ========================================
 

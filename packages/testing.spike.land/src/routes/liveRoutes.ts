@@ -271,10 +271,7 @@ export class LiveRoutes {
         });
 
       case "js": {
-        const replaced = importMapReplace(
-          version.transpiled,
-          this.code.getOrigin(),
-        );
+        const replaced = importMapReplace(version.transpiled);
         return new Response(replaced, {
           status: 200,
           headers: {

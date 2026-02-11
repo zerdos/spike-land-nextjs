@@ -78,6 +78,18 @@ const LinkAppSchema = z.object({
     .describe("Description for new app"),
 });
 
+// Zod schema map for registry integration
+export function getCodeSpaceSchemas(): Record<string, z.ZodObject<z.ZodRawShape>> {
+  return {
+    codespace_update: UpdateCodeSchema,
+    codespace_run: CodeSpaceIdSchema,
+    codespace_screenshot: CodeSpaceIdSchema,
+    codespace_get: CodeSpaceIdSchema,
+    codespace_link_app: LinkAppSchema,
+    codespace_list_my_apps: z.object({}),
+  };
+}
+
 // Tool definitions
 export function getCodeSpaceTools(): Tool[] {
   if (!isCodeSpaceAvailable()) {

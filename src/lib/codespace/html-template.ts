@@ -5,7 +5,7 @@ const D = ESM_DEPS_PARAM;
 export const HTML_TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
   <head>
-    <base href="/" />
+    <base href="https://testing.spike.land/" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>spike.land</title>

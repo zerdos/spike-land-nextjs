@@ -243,7 +243,7 @@ export const useSpeedy = async (codeSpace: string) => {
   const updateCssPaths = (css: string, codeSpace: string) => {
     return css.replace(
       /url\((["']?)\/assets\//g,
-      `url($1https:/testing.spike.land/live/${codeSpace}/api/my-cms/assets/`,
+      `url($1https://testing.spike.land/live/${codeSpace}/api/my-cms/assets/`,
     );
   };
   let updatedCss = "";

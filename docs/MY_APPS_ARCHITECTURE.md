@@ -874,6 +874,24 @@ ANTHROPIC_AUTH_TOKEN=...
 
 ## Troubleshooting
 
+### Module Resolution for Live Apps
+
+Live app iframes **must** point to `testing.spike.land/live/{codespaceId}/` where
+the Cloudflare Worker correctly handles module resolution:
+
+- **npm packages** (react, framer-motion, recharts, etc.) resolve to absolute
+  `esm.sh` CDN URLs via the import map in `packages/code/src/@/lib/importmap-utils.ts`
+- **`@/` component `.mjs` files** (e.g., `/@/components/ui/card.mjs`) are served
+  directly from testing.spike.land
+- **`importMapReplace()`** converts bare specifiers in transpiled code to CDN URLs
+  at serve-time (called in `codeRoutes.ts` and `liveRoutes.ts`)
+- The `/api/codespace/{id}/embed` Next.js route exists for standalone use but sets
+  `<base href="https://testing.spike.land/">` so relative paths resolve correctly
+
+**Key constraint**: iframes cannot use `srcdoc` (Next.js CSP blocks inline scripts)
+and cannot use same-origin embed routes for module loading (npm modules and `@/`
+paths only exist on testing.spike.land).
+
 ### Common Issues
 
 **Preview iframe not loading**:
@@ -881,6 +899,7 @@ ANTHROPIC_AUTH_TOKEN=...
 - Check that `codespaceUrl` is set on the app
 - Verify testing.spike.land is accessible
 - Check browser console for CORS errors
+- Ensure `frame-src` in `src/proxy.ts` includes `https://testing.spike.land`
 
 **Agent not responding**:
 
