@@ -662,6 +662,7 @@ export default function CodeSpacePage() {
                 } else if (data.type === "error") {
                   setAgentStage("error");
                   setAgentError(data.content);
+                  toast.error(`Agent error: ${data.content}`);
                 }
               } catch {
                 // Intentionally silent: Partial or invalid JSON chunks during streaming are expected.
@@ -738,16 +739,17 @@ export default function CodeSpacePage() {
         setIsStreaming(false);
         setStreamingResponse("");
         // Reset agent progress after a short delay to show completion
-        const AGENT_COMPLETION_DISPLAY_MS = 1500;
+        // Use longer timeout for errors so users can read the message
+        const displayMs = agentError ? 10000 : 1500;
         setTimeout(() => {
           setAgentStage(null);
           setAgentStartTime(undefined);
           setCurrentTool(undefined);
           setAgentError(undefined);
-        }, AGENT_COMPLETION_DISPLAY_MS);
+        }, displayMs);
       }
     },
-    [fetchMessages], // messages removed - using messagesRef to prevent stale closures
+    [fetchMessages, agentError], // messages removed - using messagesRef to prevent stale closures
   );
 
   // Create app from prompt (prompt mode)

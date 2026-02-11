@@ -1,4 +1,6 @@
+import { getClaudeClient, isClaudeConfigured } from "@/lib/ai/claude-client";
 import { generateStructuredResponse } from "@/lib/ai/gemini-client";
+import logger from "@/lib/logger";
 import { z } from "zod";
 
 const LearnItGeneratedSchema = z.object({
@@ -17,59 +19,107 @@ const LearnItGeneratedSchema = z.object({
 
 export type GeneratedLearnItContent = z.infer<typeof LearnItGeneratedSchema>;
 
+const LEARNIT_STRUCTURED_PROMPT = `You are an expert technical educator creating a high-quality, interactive learning wiki called LearnIt.
+
+The content should be:
+1. **Beginner-friendly but deep**: targeted at developers learning this specific concept.
+2. **Structured**: Broken into clear sections with H2 headings.
+3. **Interactive**: Include code examples where relevant.
+4. **Interconnected**: Use [[Wiki Link]] syntax to link to related concepts. For example, if you mention "State Management", write it as [[State Management]].
+
+Format requirements:
+- Return valid JSON matching the schema.
+- Content must be valid MDX (Markdown + React components if needed, but stick to standard MDX).
+- Do NOT include the main title in the sections, it will be rendered separately.
+- Ensure code blocks have language tags (e.g. \`\`\`typescript).
+
+Expected JSON Structure:
+{
+  "title": "string",
+  "description": "string",
+  "sections": [
+    { "heading": "string", "content": "string (markdown)" }
+  ],
+  "relatedTopics": ["string", "string"]
+}`;
+
+/**
+ * Generate LearnIt content using Claude Opus 4.6 (primary) with Gemini fallback.
+ */
 export async function generateLearnItTopic(
   path: string[],
-): Promise<GeneratedLearnItContent | null> {
+): Promise<GeneratedLearnItContent & { aiModel: string } | null> {
   const topic = path.join(" > ");
 
-  const prompt = `
-    You are an expert technical educator creating a high-quality, interactive learning wiki called LearnIt.
-    
-    Your task is to generate a comprehensive tutorial for the topic: "${topic}".
-    
-    The content should be:
-    1. **Beginner-friendly but deep**: targeted at developers learning this specific concept.
-    2. **Structured**: Broken into clear sections with H2 headings.
-    3. **Interactive**: Include code examples where relevant.
-    4. **Interconnected**: Use [[Wiki Link]] syntax to link to related concepts. For example, if you mention "State Management", writ it as [[State Management]].
-    
-    Format requirements:
-    - Return valid JSON matching the schema.
-    - Content must be valid MDX (Markdown + React components if needed, but stick to standard MDX).
-    - Do NOT include the main title in the sections, it will be rendered separately.
-    - Ensure code blocks have language tags (e.g. \`\`\`typescript).
-  `;
-
-  try {
-    // const jsonSchema = JSON.stringify(zodToJsonSchema(LearnItGeneratedSchema)); // We will need zod-to-json-schema or just stringify the description manually.
-    // Since I don't want to add a dependency right now, I'll rely on the detailed prompt description I added previously, but I'll make it explicit.
-
-    // Actually, simply constructing the prompt to be explicit about the JSON structure is better.
-    const promptWithSchema = `${prompt}
-    
-    Expected JSON Structure:
-    {
-      "title": "string",
-      "description": "string",
-      "sections": [
-        { "heading": "string", "content": "string (markdown)" }
-      ],
-      "relatedTopics": ["string", "string"]
+  // Try Claude Opus 4.6 first
+  if (isClaudeConfigured()) {
+    try {
+      const result = await generateWithClaude(topic);
+      if (result) return { ...result, aiModel: "claude-opus-4-6" };
+    } catch (error) {
+      logger.warn("LearnIt: Claude Opus failed, falling back to Gemini", {
+        topic,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
-    `;
-
-    const result = await generateStructuredResponse<GeneratedLearnItContent>({
-      prompt: promptWithSchema,
-      maxTokens: 8192,
-      // responseSchema: LearnItGeneratedSchema, // REMOVED
-      // schemaName: "LearnItContent", // REMOVED
-      temperature: 0.3,
-    });
-
-    const parsedResult = LearnItGeneratedSchema.parse(result);
-    return parsedResult;
-  } catch (error) {
-    console.error("Failed to generate LearnIt content:", error);
-    return null;
   }
+
+  // Fallback to Gemini
+  try {
+    const result = await generateWithGemini(topic);
+    if (result) return { ...result, aiModel: "gemini-3-flash-preview" };
+  } catch (error) {
+    logger.error("LearnIt: Gemini fallback also failed", {
+      topic,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  return null;
+}
+
+async function generateWithClaude(
+  topic: string,
+): Promise<GeneratedLearnItContent | null> {
+  const anthropic = getClaudeClient();
+
+  const prompt = `${LEARNIT_STRUCTURED_PROMPT}
+
+Your task is to generate a comprehensive tutorial for the topic: "${topic}".
+
+Return ONLY valid JSON, no markdown code fences.`;
+
+  const response = await anthropic.messages.create({
+    model: "claude-opus-4-6",
+    max_tokens: 8192,
+    temperature: 0.3,
+    system: "You are an expert technical educator for the LearnIt wiki platform. Always respond with valid JSON only.",
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const text = response.content
+    .filter((block) => block.type === "text")
+    .map((block) => block.text)
+    .join("");
+
+  // Strip markdown code fences if present
+  const cleaned = text.replace(/^```json\s*/m, "").replace(/```\s*$/m, "").trim();
+  const parsed = JSON.parse(cleaned);
+  return LearnItGeneratedSchema.parse(parsed);
+}
+
+async function generateWithGemini(
+  topic: string,
+): Promise<GeneratedLearnItContent | null> {
+  const prompt = `${LEARNIT_STRUCTURED_PROMPT}
+
+Your task is to generate a comprehensive tutorial for the topic: "${topic}".`;
+
+  const result = await generateStructuredResponse<GeneratedLearnItContent>({
+    prompt,
+    maxTokens: 8192,
+    temperature: 0.3,
+  });
+
+  return LearnItGeneratedSchema.parse(result);
 }

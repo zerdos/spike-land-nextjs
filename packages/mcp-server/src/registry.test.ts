@@ -43,12 +43,10 @@ function makeDef(overrides: Partial<ToolDefinition> = {}): ToolDefinition {
 
 describe("ToolRegistry", () => {
   let mockServer: ReturnType<typeof createMockMcpServer>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let registry: ToolRegistry;
 
   beforeEach(() => {
     mockServer = createMockMcpServer();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registry = new ToolRegistry(mockServer as any);
   });
 

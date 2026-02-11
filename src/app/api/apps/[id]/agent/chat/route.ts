@@ -114,16 +114,28 @@ export async function POST(
     return NextResponse.json({ error: "Invalid content" }, { status: 400 });
   }
 
-  // Create user message in DB
-  const { data: userMessage, error: messageError } = await tryCatch(
-    prisma.appMessage.create({
-      data: {
-        appId: id,
-        role: "USER",
-        content,
-      },
+  // Create user message in DB (deduplicate if POST /api/apps already created one)
+  const { data: recentMessage } = await tryCatch(
+    prisma.appMessage.findFirst({
+      where: { appId: id, role: "USER", content },
+      orderBy: { createdAt: "desc" },
     }),
   );
+
+  const isRecent = recentMessage &&
+    (Date.now() - new Date(recentMessage.createdAt).getTime()) < 30000;
+
+  const { data: userMessage, error: messageError } = isRecent
+    ? { data: recentMessage, error: null }
+    : await tryCatch(
+      prisma.appMessage.create({
+        data: {
+          appId: id,
+          role: "USER",
+          content,
+        },
+      }),
+    );
 
   if (messageError || !userMessage) {
     console.error("[agent/chat] Failed to create user message:", messageError);
@@ -364,7 +376,6 @@ export async function POST(
         });
 
         let finalResponse = "";
-        let codeUpdated = false; // Track if any code-modifying tools were used
         let processingEmitted = false; // Track if processing stage was emitted
 
         for await (const message of result) {
@@ -393,18 +404,10 @@ export async function POST(
               controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
             }
 
-            // Notify about tool use and track code-modifying tools
+            // Notify about tool use
             const toolUseParts = contentArray.filter((c) => c.type === "tool_use");
             for (const toolUse of toolUseParts) {
               const toolName = toolUse.name || "";
-              // Track if any code-modifying tools are used
-              if (
-                toolName.includes("update_code") ||
-                toolName.includes("edit_code") ||
-                toolName.includes("search_and_replace")
-              ) {
-                codeUpdated = true;
-              }
               // Emit executing_tool stage with tool name
               emitStage(controller, "executing_tool", toolName || "tool");
               const statusData = JSON.stringify({
@@ -464,53 +467,41 @@ export async function POST(
           }
         }
 
-        // Broadcast code update to SSE clients if any code-modifying tools were used
-        if (codeUpdated) {
-          console.log(
-            "[agent/chat] Code was updated, broadcasting to SSE clients",
+        // Always verify if code was actually updated (don't rely on tool detection)
+        // The SDK may not expose tool_use blocks, so codeUpdated flag is unreliable
+        emitStage(controller, "validating");
+
+        const { data: verifySession } = await tryCatch(
+          getOrCreateSession(app.codespaceId!),
+        );
+
+        if (verifySession && verifySession.code !== currentCode) {
+          console.log("[agent/chat] Code was updated, broadcasting to SSE clients");
+
+          // Create code version snapshot
+          const crypto = await import("crypto");
+          const hash = crypto.createHash("sha256")
+            .update(verifySession.code)
+            .digest("hex");
+
+          await tryCatch(
+            prisma.appCodeVersion.create({
+              data: {
+                appId: id,
+                messageId: agentMessageId,
+                code: verifySession.code,
+                hash,
+              },
+            }),
           );
+          console.log("[agent/chat] Created code version snapshot");
 
-          // Emit validating stage
-          emitStage(controller, "validating");
-
-          // Verify the update actually happened via session service
-          const { data: verifySession } = await tryCatch(
-            getOrCreateSession(app.codespaceId!),
-          );
-
-          if (verifySession) {
-            const actuallyChanged = verifySession.code !== currentCode;
-            console.log(
-              `[agent/chat] Code verification: ${actuallyChanged ? "SUCCESS" : "FAILED"}`,
-            );
-
-            if (!actuallyChanged) {
-              console.error(
-                "[agent/chat] Tool claimed success but code unchanged!",
-              );
-            }
-
-            // Create code version snapshot if code was actually updated
-            if (actuallyChanged && verifySession.code) {
-              const crypto = await import("crypto");
-              const hash = crypto.createHash("sha256")
-                .update(verifySession.code)
-                .digest("hex");
-
-              // Use the captured agentMessageId directly (no query needed)
-              await prisma.appCodeVersion.create({
-                data: {
-                  appId: id,
-                  messageId: agentMessageId,
-                  code: verifySession.code,
-                  hash,
-                },
-              });
-              console.log("[agent/chat] Created code version snapshot");
-            }
-          }
+          // Update the code hash for next time
+          await setCodeHash(id, hash);
 
           broadcastCodeUpdated(id);
+        } else if (verifySession) {
+          console.log("[agent/chat] Agent completed but code unchanged");
         }
 
         // Emit complete stage

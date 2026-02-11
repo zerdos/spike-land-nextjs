@@ -170,11 +170,13 @@ export async function handleReplicateRequest(
     const replicate = new Replicate({ auth: env.REPLICATE_API_TOKEN });
     const imageU = await replicate.run(REPLICATE_MODEL, { input });
 
-    const image_url = imageU.toString(); // Ensure it's a string
-
-    if (typeof image_url !== "string" || !image_url) {
-      console.error("Invalid image URL:", image_url);
-      throw new Error("Invalid image URL from Replicate API" + image_url);
+    if (!imageU) {
+      throw new Error("No response from Replicate API");
+    }
+    const imageArray = Array.isArray(imageU) ? imageU : [imageU];
+    const image_url = imageArray[0]?.toString();
+    if (!image_url) {
+      throw new Error("Invalid image URL from Replicate API");
     }
 
     resp = await fetchAndSaveImage(

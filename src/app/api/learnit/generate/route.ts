@@ -38,10 +38,17 @@ export async function POST(req: Request) {
     }
 
     if (existing?.status === "GENERATING") {
-      // Basic safeguard: if it was generated < 2 mins ago, assume it's still running
-      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
-      if (existing.generatedAt > twoMinutesAgo) {
-        return NextResponse.json({ status: "GENERATING" }, { status: 202 });
+      // Clean up stale GENERATING records older than 5 minutes
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      if (existing.generatedAt && existing.generatedAt < fiveMinutesAgo) {
+        await markAsFailed(slug);
+        // Continue to re-generate below
+      } else {
+        // Basic safeguard: if it was generated < 2 mins ago, assume it's still running
+        const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+        if (existing.generatedAt > twoMinutesAgo) {
+          return NextResponse.json({ status: "GENERATING" }, { status: 202 });
+        }
       }
     }
 
@@ -68,7 +75,7 @@ export async function POST(req: Request) {
       description: generated.description,
       content: generateMdxFromResponse(generated), // Helper to stitch sections
       generatedById: userId,
-      aiModel: "gemini-3-flash-preview",
+      aiModel: generated.aiModel,
     });
 
     return NextResponse.json(saved);

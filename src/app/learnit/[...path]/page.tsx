@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { ReadAloudArticle } from "@/components/blog/ReadAloudArticle";
 import { LearnItContent } from "@/components/learnit/content";
+import { GeneratingPoller } from "@/components/learnit/generating-poller";
 import { Prerequisites } from "@/components/learnit/prerequisites";
 import { RegenerateButton } from "@/components/learnit/regenerate-button";
 import { RelatedTopics } from "@/components/learnit/related-topics";
@@ -86,22 +87,25 @@ export default async function LearnItTopicPage({ params }: PageProps) {
         <p className="text-muted-foreground">
           This usually takes about 10-20 seconds. This page will automatically refresh.
         </p>
-        {
-          /* Auto-refresh meta tag or script could be added here, simplified by client refresh in GenerateButton
-             but if they navigated away and came back, we need polling.
-             For MVP we rely on user refresh or basic revalidation.
-         */
-        }
-        <meta httpEquiv="refresh" content="5" />
+        <GeneratingPoller />
       </div>
     );
   }
 
   if (content.status === "FAILED") {
+    // Re-attempt generation instead of showing a dead end
     return (
-      <div className="max-w-3xl mx-auto py-12 text-center">
-        <h2 className="text-2xl font-bold text-destructive">Generation Failed</h2>
-        <p>Something went wrong creating this content.</p>
+      <div className="max-w-3xl mx-auto py-8 space-y-8">
+        <Breadcrumbs items={breadcrumbs} />
+        <header className="mb-6">
+          <h1 className="text-3xl font-bold capitalize">
+            {path[path.length - 1]?.replace(/-/g, " ") ?? "Topic"}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Previous generation failed. Retrying...
+          </p>
+        </header>
+        <StreamingContent path={normalizedPath} />
       </div>
     );
   }

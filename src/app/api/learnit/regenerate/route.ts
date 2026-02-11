@@ -67,7 +67,7 @@ export async function POST(req: Request) {
       description: generated.description,
       content: generateMdxFromResponse(generated),
       generatedById: session.user.id,
-      aiModel: "gemini-3-flash-preview",
+      aiModel: generated.aiModel,
     });
 
     return NextResponse.json(saved);
