@@ -10,6 +10,9 @@ import {
 
 vi.mock("@/lib/prisma", () => ({
   default: {
+    user: {
+      findUnique: vi.fn(),
+    },
     creativeSet: {
       create: vi.fn(),
       update: vi.fn(),
@@ -45,6 +48,7 @@ describe("Variant Generator Integration", () => {
 
   describe("createGenerationJob", () => {
     it("should create a pending job and return ID", async () => {
+      (prisma.user.findUnique as any).mockResolvedValue({ id: "user-123" });
       (prisma.creativeSet.create as any).mockResolvedValue({ id: "job-123" });
 
       const result = await createGenerationJob(mockJobParams);

@@ -130,6 +130,7 @@ describe("LearnIt Regenerate API", () => {
       description: "Learn about React Hooks",
       sections: [{ heading: "Intro", content: "Hooks are..." }],
       relatedTopics: ["State Management"],
+      aiModel: "gemini-3-flash-preview",
     });
 
     const savedContent = {
