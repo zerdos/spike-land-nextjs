@@ -179,8 +179,8 @@ function CTAButton({
 }) {
   return (
     <div className="my-8 flex justify-center">
-      <Button asChild size="lg" className="shadow-glow-cyan">
-        <Link href={href}>{children}</Link>
+      <Button asChild size="lg" className="shadow-glow-cyan text-white no-underline">
+        <Link href={href} className="text-white no-underline">{children}</Link>
       </Button>
     </div>
   );
