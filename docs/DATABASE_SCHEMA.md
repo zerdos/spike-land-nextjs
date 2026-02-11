@@ -196,6 +196,31 @@ erDiagram
   String description "nullable"
   DateTime createdAt
 }
+"codespace_sessions" {
+  String id PK
+  String codeSpace UK
+  String code
+  String transpiled
+  String html
+  String css
+  String hash
+  Json messages "nullable"
+  Boolean requiresReRender
+  DateTime createdAt
+  DateTime updatedAt
+  String appId FK,UK "nullable"
+}
+"codespace_versions" {
+  String id PK
+  String sessionId FK
+  Int number
+  String code
+  String transpiled
+  String html
+  String css
+  String hash
+  DateTime createdAt
+}
 "enhanced_images" {
   String id PK
   String userId FK
@@ -2233,13 +2258,13 @@ erDiagram
   Int cachedTokens
   DateTime createdAt
 }
-"_ConnectionToConnectionTag" {
+"_ConnectionTags" {
   String A FK
   String B FK
 }
-"campaign_briefs" }o--o| "workspaces" : workspace
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
+"campaign_briefs" }o--o| "workspaces" : workspace
 "campaign_target_audiences" |o--|| "campaign_briefs" : brief
 "campaign_objectives" }o--|| "campaign_briefs" : brief
 "accounts" }o--|| "users" : user
@@ -2253,14 +2278,16 @@ erDiagram
 "app_messages" }o--|| "apps" : app
 "app_status_history" }o--|| "apps" : app
 "app_images" }o--|| "apps" : app
-"app_attachments" }o--|| "app_messages" : message
 "app_attachments" }o--|| "app_images" : image
+"app_attachments" }o--|| "app_messages" : message
 "app_code_versions" }o--|| "apps" : app
 "app_code_versions" |o--o| "app_messages" : message
+"codespace_sessions" |o--o| "apps" : app
+"codespace_versions" }o--|| "codespace_sessions" : session
 "enhanced_images" }o--|| "users" : user
+"image_enhancement_jobs" }o--|| "enhanced_images" : image
 "image_enhancement_jobs" }o--o| "enhancement_pipelines" : pipeline
 "image_enhancement_jobs" }o--o| "enhanced_images" : sourceImage
-"image_enhancement_jobs" }o--|| "enhanced_images" : image
 "image_enhancement_jobs" }o--|| "users" : user
 "subscriptions" |o--|| "users" : user
 "albums" }o--o| "enhancement_pipelines" : pipeline
@@ -2268,18 +2295,18 @@ erDiagram
 "album_images" }o--|| "albums" : album
 "album_images" }o--|| "enhanced_images" : image
 "audit_logs" }o--|| "users" : user
-"workspace_audit_logs" }o--|| "workspaces" : workspace
 "workspace_audit_logs" }o--|| "users" : user
-"ai_decision_logs" }o--o| "workspaces" : workspace
+"workspace_audit_logs" }o--|| "workspaces" : workspace
 "ai_decision_logs" }o--o| "users" : user
+"ai_decision_logs" }o--o| "workspaces" : workspace
 "audit_retention_policies" }o--o| "workspaces" : workspace
 "inbox_suggested_responses" }o--|| "inbox_items" : inboxItem
 "escalation_events" }o--|| "inbox_items" : inboxItem
+"featured_gallery_items" }o--|| "users" : creator
 "featured_gallery_items" }o--o| "enhanced_images" : sourceImage
 "featured_gallery_items" }o--o| "image_enhancement_jobs" : sourceJob
-"featured_gallery_items" }o--|| "users" : creator
-"boxes" }o--|| "users" : user
 "boxes" }o--o| "box_tiers" : tier
+"boxes" }o--|| "users" : user
 "claude_code_agents" }o--|| "users" : user
 "agent_messages" }o--|| "claude_code_agents" : agent
 "box_actions" }o--|| "boxes" : box
@@ -2288,8 +2315,8 @@ erDiagram
 "email_logs" }o--|| "users" : user
 "tracked_urls" }o--|| "users" : createdBy
 "api_keys" }o--|| "users" : user
-"mcp_generation_jobs" }o--|| "users" : user
 "mcp_generation_jobs" }o--o| "api_keys" : apiKey
+"mcp_generation_jobs" }o--|| "users" : user
 "box_messages" }o--|| "boxes" : box
 "enhancement_pipelines" }o--o| "users" : user
 "visitor_sessions" }o--o| "users" : user
@@ -2302,14 +2329,14 @@ erDiagram
 "merch_variants" }o--|| "merch_products" : product
 "merch_carts" |o--|| "users" : user
 "merch_cart_items" }o--|| "merch_carts" : cart
+"merch_cart_items" }o--o| "enhanced_images" : image
 "merch_cart_items" }o--|| "merch_products" : product
 "merch_cart_items" }o--o| "merch_variants" : variant
-"merch_cart_items" }o--o| "enhanced_images" : image
 "merch_orders" }o--|| "users" : user
 "merch_order_items" }o--|| "merch_orders" : order
 "merch_order_items" }o--|| "merch_products" : product
-"merch_order_items" }o--o| "merch_variants" : variant
 "merch_order_items" }o--o| "merch_shipments" : shipment
+"merch_order_items" }o--o| "merch_variants" : variant
 "merch_shipments" }o--|| "merch_orders" : order
 "merch_order_events" }o--|| "merch_orders" : order
 "agent_session_activities" }o--|| "external_agent_sessions" : session
@@ -2319,119 +2346,119 @@ erDiagram
 "social_accounts" }o--|| "users" : user
 "social_accounts" }o--|| "workspaces" : workspace
 "social_posts" }o--|| "users" : createdBy
-"social_post_accounts" }o--|| "social_posts" : post
 "social_post_accounts" }o--|| "social_accounts" : account
+"social_post_accounts" }o--|| "social_posts" : post
 "social_metrics" }o--|| "social_accounts" : account
 "social_metric_anomalies" }o--|| "social_accounts" : account
-"Hypothesis" }o--|| "workspaces" : workspace
 "Hypothesis" |o--o| "social_post_ab_tests" : experiment
-"social_post_ab_tests" }o--|| "workspaces" : workspace
+"Hypothesis" }o--|| "workspaces" : workspace
 "social_post_ab_tests" }o--|| "social_posts" : originalPost
+"social_post_ab_tests" }o--|| "workspaces" : workspace
 "social_post_ab_test_variants" }o--|| "social_post_ab_tests" : test
 "ExperimentResult" }o--|| "social_post_ab_tests" : experiment
 "ExperimentResult" }o--o| "social_post_ab_test_variants" : variant
-"workspace_apps" }o--|| "workspaces" : workspace
 "workspace_apps" |o--|| "apps" : app
+"workspace_apps" }o--|| "workspaces" : workspace
 "workspace_favorites" }o--|| "users" : user
 "workspace_favorites" }o--|| "workspaces" : workspace
 "workspace_recent_access" }o--|| "users" : user
 "workspace_recent_access" }o--|| "workspaces" : workspace
-"workspace_members" }o--|| "workspaces" : workspace
-"workspace_members" }o--|| "users" : user
 "workspace_members" }o--o| "users" : invitedBy
-"connections" }o--|| "workspaces" : workspace
+"workspace_members" }o--|| "users" : user
+"workspace_members" }o--|| "workspaces" : workspace
 "connections" |o--o| "identities" : identity
+"connections" }o--|| "workspaces" : workspace
 "connection_platform_presence" }o--|| "connections" : connection
 "connection_tags" }o--|| "workspaces" : workspace
 "connection_reminders" }o--|| "connections" : connection
 "meetup_status_history" }o--|| "connections" : connection
-"brand_profiles" |o--|| "workspaces" : workspace
 "brand_profiles" }o--|| "users" : createdBy
 "brand_profiles" }o--o| "users" : updatedBy
+"brand_profiles" |o--|| "workspaces" : workspace
 "brand_guardrails" }o--|| "brand_profiles" : brandProfile
 "brand_vocabulary" }o--|| "brand_profiles" : brandProfile
-"content_rewrites" }o--|| "workspaces" : workspace
 "content_rewrites" }o--|| "brand_profiles" : brandProfile
 "content_rewrites" }o--|| "users" : createdBy
-"scheduled_posts" }o--|| "workspaces" : workspace
+"content_rewrites" }o--|| "workspaces" : workspace
 "scheduled_posts" }o--|| "users" : createdBy
-"scheduled_post_accounts" }o--|| "scheduled_posts" : post
+"scheduled_posts" }o--|| "workspaces" : workspace
 "scheduled_post_accounts" }o--|| "social_accounts" : account
+"scheduled_post_accounts" }o--|| "scheduled_posts" : post
 "posting_time_recommendations" }o--|| "social_accounts" : account
 "calendar_content_suggestions" }o--|| "workspaces" : workspace
-"inbox_items" }o--|| "workspaces" : workspace
 "inbox_items" }o--|| "social_accounts" : account
 "inbox_items" }o--o| "workspace_members" : assignedTo
 "inbox_items" }o--o| "workspace_members" : escalatedTo
+"inbox_items" }o--|| "workspaces" : workspace
 "relay_drafts" }o--|| "inbox_items" : inboxItem
 "relay_drafts" }o--o| "users" : reviewedBy
-"draft_edit_history" }o--|| "users" : editedBy
 "draft_edit_history" }o--|| "relay_drafts" : draft
-"draft_audit_logs" }o--|| "users" : performedBy
+"draft_edit_history" }o--|| "users" : editedBy
 "draft_audit_logs" }o--|| "relay_drafts" : draft
-"crisis_detection_events" }o--|| "workspaces" : workspace
+"draft_audit_logs" }o--|| "users" : performedBy
 "crisis_detection_events" }o--o| "users" : acknowledgedBy
 "crisis_detection_events" }o--o| "users" : resolvedBy
+"crisis_detection_events" }o--|| "workspaces" : workspace
 "crisis_response_templates" }o--o| "workspaces" : workspace
 "crisis_alert_rules" }o--|| "workspaces" : workspace
 "social_account_health" |o--|| "social_accounts" : account
 "account_health_events" }o--|| "social_accounts" : account
-"account_health_events" }o--|| "workspaces" : workspace
 "account_health_events" }o--o| "users" : resolvedBy
+"account_health_events" }o--|| "workspaces" : workspace
 "notifications" }o--|| "workspaces" : workspace
 "policy_rules" }o--o| "workspaces" : workspace
-"policy_checks" }o--|| "workspaces" : workspace
 "policy_checks" }o--o| "users" : checkedBy
+"policy_checks" }o--|| "workspaces" : workspace
 "policy_violations" }o--|| "policy_checks" : check
+"policy_violations" }o--o| "users" : overriddenBy
 "policy_violations" }o--|| "policy_rules" : rule
 "policy_violations" }o--|| "workspaces" : workspace
-"policy_violations" }o--o| "users" : overriddenBy
 "scout_topics" }o--|| "workspaces" : workspace
 "scout_results" }o--|| "scout_topics" : topic
 "content_suggestions" }o--|| "workspaces" : workspace
 "allocator_campaigns" }o--|| "workspaces" : workspace
 "allocator_ad_sets" }o--|| "allocator_campaigns" : campaign
-"allocator_autopilot_configs" }o--|| "workspaces" : workspace
 "allocator_autopilot_configs" }o--o| "allocator_campaigns" : campaign
-"allocator_guardrail_alerts" }o--|| "workspaces" : workspace
+"allocator_autopilot_configs" }o--|| "workspaces" : workspace
 "allocator_guardrail_alerts" }o--o| "allocator_campaigns" : campaign
-"allocator_autopilot_executions" }o--|| "workspaces" : workspace
+"allocator_guardrail_alerts" }o--|| "workspaces" : workspace
 "allocator_autopilot_executions" }o--|| "allocator_campaigns" : campaign
 "allocator_autopilot_executions" |o--o| "allocator_autopilot_executions" : rollbackOf
-"workflows" }o--|| "workspaces" : workspace
+"allocator_autopilot_executions" }o--|| "workspaces" : workspace
 "workflows" }o--|| "users" : createdBy
+"workflows" }o--|| "workspaces" : workspace
 "workflow_versions" }o--|| "workflows" : workflow
-"workflow_steps" }o--|| "workflow_versions" : workflowVersion
 "workflow_steps" }o--o| "workflow_steps" : parentStep
+"workflow_steps" }o--|| "workflow_versions" : workflowVersion
 "workflow_runs" }o--|| "workflows" : workflow
 "workflow_run_logs" }o--|| "workflow_runs" : workflowRun
 "workflow_schedules" }o--|| "workflows" : workflow
 "workflow_webhooks" }o--|| "workflows" : workflow
 "workflow_event_subscriptions" }o--|| "workflows" : workflow
 "allocator_daily_budget_moves" }o--|| "allocator_campaigns" : campaign
-"allocator_audit_logs" }o--|| "workspaces" : workspace
 "allocator_audit_logs" }o--o| "allocator_autopilot_executions" : execution
+"allocator_audit_logs" }o--|| "workspaces" : workspace
 "AbTestVariant" }o--|| "AbTest" : abTest
-"AbTestResult" }o--|| "visitor_sessions" : visitorSession
 "AbTestResult" }o--|| "AbTestVariant" : abTestVariant
-"asset_folders" }o--|| "workspaces" : workspace
-"asset_folders" }o--o| "asset_folders" : parent
+"AbTestResult" }o--|| "visitor_sessions" : visitorSession
 "asset_folders" }o--|| "users" : createdBy
+"asset_folders" }o--o| "asset_folders" : parent
+"asset_folders" }o--|| "workspaces" : workspace
 "asset_tags" }o--|| "workspaces" : workspace
-"assets" }o--|| "workspaces" : workspace
 "assets" }o--o| "asset_folders" : folder
 "assets" }o--|| "users" : uploadedBy
+"assets" }o--|| "workspaces" : workspace
 "asset_tag_assignments" }o--|| "assets" : asset
-"asset_tag_assignments" }o--|| "asset_tags" : tag
 "asset_tag_assignments" }o--|| "users" : assignedBy
-"post_assets" }o--|| "social_posts" : post
+"asset_tag_assignments" }o--|| "asset_tags" : tag
 "post_assets" }o--|| "assets" : asset
-"scheduled_post_assets" }o--|| "scheduled_posts" : post
+"post_assets" }o--|| "social_posts" : post
 "scheduled_post_assets" }o--|| "assets" : asset
+"scheduled_post_assets" }o--|| "scheduled_posts" : post
 "post_performance" }o--|| "workspaces" : workspace
 "post_boost_recommendations" }o--|| "post_performance" : postPerformance
-"post_boost_recommendations" }o--|| "workspaces" : workspace
 "post_boost_recommendations" }o--|| "users" : user
+"post_boost_recommendations" }o--|| "workspaces" : workspace
 "applied_boosts" |o--|| "post_boost_recommendations" : recommendation
 "applied_boosts" }o--|| "workspaces" : workspace
 "organic_post_conversions" }o--|| "workspaces" : workspace
@@ -2440,24 +2467,24 @@ erDiagram
 "identities" |o--o| "users" : user
 "identifiers" }o--|| "identities" : identity
 "workspace_white_label_configs" |o--|| "workspaces" : workspace
-"brief_templates" }o--|| "workspaces" : workspace
 "brief_templates" }o--|| "users" : createdBy
+"brief_templates" }o--|| "workspaces" : workspace
 "creative_channels" }o--|| "campaign_briefs" : brief
 "creative_sets" }o--o| "campaign_briefs" : brief
 "creative_sets" }o--|| "users" : generatedBy
-"creative_variants" }o--|| "creative_sets" : set
 "creative_variants" }o--o| "assets" : asset
 "creative_variants" |o--o| "mcp_generation_jobs" : imageJob
+"creative_variants" }o--|| "creative_sets" : set
 "variant_performance_predictions" |o--|| "creative_variants" : variant
 "creative_performance" }o--|| "creative_variants" : variant
-"creative_fatigue_alerts" }o--|| "creative_variants" : variant
 "creative_fatigue_alerts" }o--o| "users" : resolvedBy
+"creative_fatigue_alerts" }o--|| "creative_variants" : variant
 "learnit_content" }o--o| "users" : generatedBy
 "learnit_relations" }o--|| "learnit_content" : fromTopic
 "learnit_relations" }o--|| "learnit_content" : toTopic
 "created_apps" }o--o| "users" : generatedBy
-"_ConnectionToConnectionTag" }o--|| "connections" : Connection
-"_ConnectionToConnectionTag" }o--|| "connection_tags" : ConnectionTag
+"_ConnectionTags" }o--|| "connections" : connections
+"_ConnectionTags" }o--|| "connection_tags" : connection_tags
 ```
 
 ### `users`
@@ -2697,6 +2724,37 @@ Properties as follows:
 - `code`:
 - `hash`:
 - `description`:
+- `createdAt`:
+
+### `codespace_sessions`
+
+Properties as follows:
+
+- `id`:
+- `codeSpace`:
+- `code`:
+- `transpiled`:
+- `html`:
+- `css`:
+- `hash`:
+- `messages`:
+- `requiresReRender`:
+- `createdAt`:
+- `updatedAt`:
+- `appId`:
+
+### `codespace_versions`
+
+Properties as follows:
+
+- `id`:
+- `sessionId`:
+- `number`:
+- `code`:
+- `transpiled`:
+- `html`:
+- `css`:
+- `hash`:
 - `createdAt`:
 
 ### `enhanced_images`
@@ -5221,6 +5279,8 @@ Properties as follows:
 
 ### `agent_learning_notes`
 
+This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+
 Properties as follows:
 
 - `id`:
@@ -5257,9 +5317,7 @@ Properties as follows:
 - `cachedTokens`:
 - `createdAt`:
 
-### `_ConnectionToConnectionTag`
-
-Pair relationship table between [connections](#connections) and [connection_tags](#connection_tags)
+### `_ConnectionTags`
 
 Properties as follows:
 

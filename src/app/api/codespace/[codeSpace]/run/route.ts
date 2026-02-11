@@ -1,12 +1,14 @@
 import { computeSessionHash } from "@/lib/codespace/hash-utils";
 import { SessionService } from "@/lib/codespace/session-service";
 import { transpileCode } from "@/lib/codespace/transpiler";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { codeSpace: string } }
+  props: { params: Promise<{ codeSpace: string }> }
 ) {
+  const params = await props.params;
   const { codeSpace } = params;
   const session = await SessionService.getSession(codeSpace);
 

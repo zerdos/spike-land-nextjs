@@ -1,10 +1,12 @@
 import { SessionService } from "@/lib/codespace/session-service";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { codeSpace: string } }
+  _request: NextRequest,
+  props: { params: Promise<{ codeSpace: string }> }
 ) {
+  const params = await props.params;
   const { codeSpace } = params;
   const session = await SessionService.getSession(codeSpace);
 
@@ -17,8 +19,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { codeSpace: string } }
+  props: { params: Promise<{ codeSpace: string }> }
 ) {
+  const params = await props.params;
   const { codeSpace } = params;
   const { code, hash } = await request.json();
 

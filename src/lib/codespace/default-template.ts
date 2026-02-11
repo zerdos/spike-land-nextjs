@@ -1,4 +1,4 @@
-import { ICodeSession } from "./types";
+import type { ICodeSession } from "./types";
 
 export const DEFAULT_TEMPLATE: Omit<ICodeSession, "codeSpace"> = {
   code: `export default function LandingPage() {
@@ -163,7 +163,7 @@ export const DEFAULT_TEMPLATE: Omit<ICodeSession, "codeSpace"> = {
       \`}</style>
     </div>
   );
-}\`,
+}`,
   transpiled: "",
   html: "<div></div>",
   css: "",

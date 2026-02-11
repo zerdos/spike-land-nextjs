@@ -50,13 +50,13 @@ export function LandingHero({ stats }: LandingHeroProps) {
         </motion.div>
 
         {/* Headline */}
-        <div className="relative inline-block">
+        <div className="relative inline-block py-4">
           <div className="absolute -inset-10 bg-cyan-500/20 blur-[100px] rounded-full pointer-events-none mix-blend-screen" />
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-            className="relative text-5xl sm:text-7xl md:text-9xl font-bold text-white max-w-5xl mx-auto leading-[0.9] mb-8 tracking-tighter"
+            className="relative text-5xl sm:text-7xl md:text-9xl font-bold text-white max-w-5xl mx-auto leading-none mb-8 tracking-tighter py-2"
           >
             Build the <br />
             <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient-x font-black shadow-[0_0_30px_rgba(232,121,249,0.3)]">
