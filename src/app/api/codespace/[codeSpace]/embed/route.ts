@@ -1,6 +1,10 @@
 import { CORS_HEADERS, corsOptions } from "@/lib/codespace/cors";
 import { buildEmbedHtml } from "@/lib/codespace/html-template";
-import { getOrCreateSession } from "@/lib/codespace/session-service";
+import {
+  getOrCreateSession,
+  upsertSession,
+} from "@/lib/codespace/session-service";
+import { transpileCode } from "@/lib/codespace/transpile";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 
@@ -41,8 +45,31 @@ export async function GET(
     });
   }
 
+  // Auto-transpile if session has code but no transpiled output (e.g. migrated data)
+  let { transpiled } = session;
+  if (!transpiled && session.code) {
+    const { data: result, error: transpileError } = await tryCatch(
+      transpileCode(session.code),
+    );
+    if (transpileError) {
+      console.error(
+        `[Codespace Embed] Auto-transpile failed for "${codeSpace}":`,
+        transpileError,
+      );
+    } else if (result) {
+      transpiled = result;
+      // Persist so subsequent requests don't need to re-transpile
+      upsertSession({
+        ...session,
+        transpiled,
+      }).catch((err) =>
+        console.error(`[Codespace Embed] Failed to persist transpiled code:`, err),
+      );
+    }
+  }
+
   const html = buildEmbedHtml({
-    transpiled: session.transpiled,
+    transpiled,
     html: session.html,
     css: session.css,
     codeSpace: session.codeSpace,
