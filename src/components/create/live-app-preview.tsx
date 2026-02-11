@@ -122,6 +122,7 @@ export function LiveAppPreview({
             title={fallbackTitle || `App ${codespaceId}`}
             loading={lazy ? "lazy" : "eager"}
             sandbox="allow-scripts allow-same-origin allow-popups"
+            allow="autoplay"
             onLoad={handleLoad}
             onError={handleError}
           />

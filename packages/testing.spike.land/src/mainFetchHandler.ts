@@ -11,6 +11,7 @@ import { handleUnauthorizedRequest } from "./utils";
 const securityHeaders: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",
   "X-XSS-Protection": "1; mode=block",
+  "Permissions-Policy": "autoplay=*",
 };
 
 /** CSP frame-ancestors directive — always applied to allow iframe embedding from spike.land */

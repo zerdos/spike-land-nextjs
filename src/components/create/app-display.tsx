@@ -60,7 +60,7 @@ export function AppDisplay({ url, title, className, slug }: AppDisplayProps) {
           src={url}
           className="w-full h-full border-none"
           title={title}
-          allow="accelerometer; camera; encrypted-media; geolocation; gyroscope; microphone; midi; clipboard-read; clipboard-write"
+          allow="accelerometer; autoplay; camera; encrypted-media; geolocation; gyroscope; microphone; midi; clipboard-read; clipboard-write"
           allowFullScreen
           onLoad={() => setLoading(false)}
         />

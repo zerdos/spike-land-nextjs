@@ -84,6 +84,7 @@ export function LiveAppDisplay({
           className="w-full h-full border-none"
           title={title}
           sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          allow="autoplay"
           onLoad={() => setLoading(false)}
         />
       </div>

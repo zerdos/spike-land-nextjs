@@ -290,6 +290,7 @@ export default function CodespacePage() {
               }}
               title={`Preview of ${codeSpace}`}
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              allow="autoplay"
             />
           </div>
         </div>
