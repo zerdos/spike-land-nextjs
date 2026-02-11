@@ -26,7 +26,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
             fontSize: 80,
             opacity: 0.1,
             fontFamily: "serif",
-            color: COLORS.bridgemindCyan,
+            color: COLORS.cyan,
           }}
         >
           “
@@ -52,7 +52,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
               marginTop: 24,
               fontSize: 18,
               fontWeight: 500,
-              color: COLORS.bridgemindCyan,
+              color: COLORS.cyan,
               textAlign: "right",
             }}
           >

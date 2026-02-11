@@ -1,6 +1,16 @@
+export { AccuracyDropChart } from "./AccuracyDropChart";
 export { AgentLoopDiagram } from "./AgentLoopDiagram";
+export { ComparisonTable } from "./ComparisonTable";
+export { CostValueChart } from "./CostValueChart";
 export { DataFlywheel } from "./DataFlywheel";
+export { DiminishingReturnsGraph } from "./DiminishingReturnsGraph";
+export { FiveLayerStack } from "./FiveLayerStack";
+export { ImpedanceMatchingAnalogy } from "./ImpedanceMatchingAnalogy";
 export { LearningNoteCard } from "./LearningNoteCard";
+export { ModelCascadeTable } from "./ModelCascadeTable";
 export { NoteLifecycle } from "./NoteLifecycle";
+export { PhysicsMapping } from "./PhysicsMapping";
 export { SingleShotDiagram } from "./SingleShotDiagram";
+export { SkillMatchingDiagram } from "./SkillMatchingDiagram";
 export { SuccessRateChart } from "./SuccessRateChart";
+export { TemperatureGauge } from "./TemperatureGauge";

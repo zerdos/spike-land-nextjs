@@ -8,9 +8,11 @@ export { ContextWindow } from "./ContextWindow";
 export { MementoCard } from "./MementoCard";
 export { TokenFlow } from "./TokenFlow";
 export { SubtitleOverlay } from "./SubtitleOverlay";
-
-// New BridgeMind components
 export { GlassmorphismCard } from "./GlassmorphismCard";
 export { QuoteCard } from "./QuoteCard";
-export { DeploymentSequence } from "./DeploymentSequence";
-export { AgentPanel } from "./AgentPanel";
+export { KineticText } from "./KineticText";
+export { TextOverlay } from "./TextOverlay";
+export { TakeawayCards } from "./TakeawayCards";
+export { SoftmaxEquation } from "./SoftmaxEquation";
+export { TokenBudgetMeter } from "./TokenBudgetMeter";
+export { ExamMetaphor } from "./ExamMetaphor";

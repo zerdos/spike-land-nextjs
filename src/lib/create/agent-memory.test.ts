@@ -16,7 +16,9 @@ vi.mock("@/lib/prisma", () => ({
     },
     generationAttempt: {
       create: vi.fn(),
+      findFirst: vi.fn(),
     },
+    $transaction: vi.fn(),
   },
 }));
 
@@ -50,6 +52,7 @@ import {
   recordFailure,
   recordGenerationAttempt,
   recordSuccess,
+  recordUserBugFeedback,
   retrieveRelevantNotes,
 } from "./agent-memory";
 
@@ -65,7 +68,9 @@ const mockPrisma = prisma as unknown as {
   };
   generationAttempt: {
     create: ReturnType<typeof vi.fn>;
+    findFirst: ReturnType<typeof vi.fn>;
   };
+  $transaction: ReturnType<typeof vi.fn>;
 };
 
 const mockLogger = logger as unknown as {
@@ -560,7 +565,8 @@ describe("agent-memory", () => {
 
     it("should increment helpCount for all given note IDs", async () => {
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 2 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue(null);
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([]);
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordSuccess(["note-a", "note-b"]);
 
@@ -570,27 +576,22 @@ describe("agent-memory", () => {
       });
     });
 
-    it("should recalculate confidence for each note ID", async () => {
+    it("should batch recalculate confidence via findMany + $transaction", async () => {
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 2 });
-      mockPrisma.agentLearningNote.findUnique
-        .mockResolvedValueOnce({
-          id: "note-a",
-          helpCount: 3,
-          failCount: 1,
-          status: "CANDIDATE",
-        })
-        .mockResolvedValueOnce({
-          id: "note-b",
-          helpCount: 1,
-          failCount: 0,
-          status: "ACTIVE",
-        });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "note-a", helpCount: 3, failCount: 1, status: "CANDIDATE" },
+        { id: "note-b", helpCount: 1, failCount: 0, status: "ACTIVE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordSuccess(["note-a", "note-b"]);
 
-      expect(mockPrisma.agentLearningNote.findUnique).toHaveBeenCalledTimes(2);
-      expect(mockPrisma.agentLearningNote.update).toHaveBeenCalledTimes(2);
+      // Should use findMany (batch) instead of findUnique (per-note)
+      expect(mockPrisma.agentLearningNote.findMany).toHaveBeenCalledWith({
+        where: { id: { in: ["note-a", "note-b"] } },
+      });
+      expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
     });
 
     it("should log warning and swallow error when updateMany throws", async () => {
@@ -618,7 +619,8 @@ describe("agent-memory", () => {
 
     it("should increment failCount for all given note IDs", async () => {
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue(null);
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([]);
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordFailure(["note-c"]);
 
@@ -628,20 +630,20 @@ describe("agent-memory", () => {
       });
     });
 
-    it("should recalculate confidence for each note ID", async () => {
+    it("should batch recalculate confidence via findMany + $transaction", async () => {
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValueOnce({
-        id: "note-c",
-        helpCount: 0,
-        failCount: 5,
-        status: "CANDIDATE",
-      });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "note-c", helpCount: 0, failCount: 5, status: "CANDIDATE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordFailure(["note-c"]);
 
-      expect(mockPrisma.agentLearningNote.findUnique).toHaveBeenCalledTimes(1);
-      expect(mockPrisma.agentLearningNote.update).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.agentLearningNote.findMany).toHaveBeenCalledWith({
+        where: { id: { in: ["note-c"] } },
+      });
+      expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
     });
 
     it("should log warning and swallow error when updateMany throws", async () => {
@@ -660,228 +662,270 @@ describe("agent-memory", () => {
   // =========================================================================
   // recalculateConfidence (tested through recordSuccess/recordFailure)
   // =========================================================================
-  describe("recalculateConfidence (via recordSuccess/recordFailure)", () => {
+  describe("batchRecalculateConfidence (via recordSuccess/recordFailure)", () => {
+    // Helper to extract update args from the $transaction call.
+    // batchRecalculateConfidence calls prisma.$transaction(updates.map(...))
+    // where each element is a prisma.agentLearningNote.update(...) promise.
+    // We verify via the individual update mock calls since $transaction
+    // receives the array of promises created by update().
+    function getUpdateCalls() {
+      return mockPrisma.agentLearningNote.update.mock.calls.map(
+        (c: unknown[]) => c[0] as { where: { id: string }; data: { confidenceScore: number; status: string } },
+      );
+    }
+
     it("should compute Bayesian score: (help+1)/(help+fail+2)", async () => {
       // helpCount=4, failCount=1 => score = (4+1)/(4+1+2) = 5/7 ~ 0.714
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue({
-        id: "note-x",
-        helpCount: 4,
-        failCount: 1,
-        status: "ACTIVE",
-      });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "note-x", helpCount: 4, failCount: 1, status: "ACTIVE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordSuccess(["note-x"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
-      expect(updateCall.where.id).toBe("note-x");
-      expect(updateCall.data.confidenceScore).toBeCloseTo(5 / 7, 10);
-      expect(updateCall.data.status).toBe("ACTIVE");
+      const updates = getUpdateCalls();
+      expect(updates).toHaveLength(1);
+      expect(updates[0]!.where.id).toBe("note-x");
+      expect(updates[0]!.data.confidenceScore).toBeCloseTo(5 / 7, 10);
+      expect(updates[0]!.data.status).toBe("ACTIVE");
     });
 
     it("should promote CANDIDATE to ACTIVE when helpCount >= 3 and score > 0.6", async () => {
       // helpCount=3, failCount=0 => score = (3+1)/(3+0+2) = 4/5 = 0.8 > 0.6
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue({
-        id: "candidate-note",
-        helpCount: 3,
-        failCount: 0,
-        status: "CANDIDATE",
-      });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "candidate-note", helpCount: 3, failCount: 0, status: "CANDIDATE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordSuccess(["candidate-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
-      expect(updateCall.data.status).toBe("ACTIVE");
-      expect(updateCall.data.confidenceScore).toBeCloseTo(0.8, 10);
+      const updates = getUpdateCalls();
+      expect(updates[0]!.data.status).toBe("ACTIVE");
+      expect(updates[0]!.data.confidenceScore).toBeCloseTo(0.8, 10);
     });
 
     it("should NOT promote CANDIDATE when helpCount < 3 even if score > 0.6", async () => {
       // helpCount=2, failCount=0 => score = 3/4 = 0.75 > 0.6, but helpCount < 3
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue({
-        id: "candidate-note",
-        helpCount: 2,
-        failCount: 0,
-        status: "CANDIDATE",
-      });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "candidate-note", helpCount: 2, failCount: 0, status: "CANDIDATE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordSuccess(["candidate-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
-      expect(updateCall.data.status).toBe("CANDIDATE");
+      const updates = getUpdateCalls();
+      expect(updates[0]!.data.status).toBe("CANDIDATE");
     });
 
     it("should NOT promote CANDIDATE when score <= 0.6 even if helpCount >= 3", async () => {
       // helpCount=3, failCount=4 => score = (3+1)/(3+4+2) = 4/9 ~ 0.444 <= 0.6
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue({
-        id: "candidate-note",
-        helpCount: 3,
-        failCount: 4,
-        status: "CANDIDATE",
-      });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "candidate-note", helpCount: 3, failCount: 4, status: "CANDIDATE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordSuccess(["candidate-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
-      expect(updateCall.data.status).toBe("CANDIDATE");
+      const updates = getUpdateCalls();
+      expect(updates[0]!.data.status).toBe("CANDIDATE");
     });
 
     it("should deprecate when score < 0.3 and total observations >= 5", async () => {
       // helpCount=0, failCount=6 => score = (0+1)/(0+6+2) = 1/8 = 0.125 < 0.3
       // total = 6 >= 5
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue({
-        id: "bad-note",
-        helpCount: 0,
-        failCount: 6,
-        status: "ACTIVE",
-      });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "bad-note", helpCount: 0, failCount: 6, status: "ACTIVE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordFailure(["bad-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
-      expect(updateCall.data.status).toBe("DEPRECATED");
-      expect(updateCall.data.confidenceScore).toBeCloseTo(1 / 8, 10);
+      const updates = getUpdateCalls();
+      expect(updates[0]!.data.status).toBe("DEPRECATED");
+      expect(updates[0]!.data.confidenceScore).toBeCloseTo(1 / 8, 10);
     });
 
     it("should NOT deprecate when total observations < 5 even if score < 0.3", async () => {
       // helpCount=0, failCount=3 => score = 1/5 = 0.2 < 0.3
       // total = 3 < 5
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue({
-        id: "early-note",
-        helpCount: 0,
-        failCount: 3,
-        status: "CANDIDATE",
-      });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "early-note", helpCount: 0, failCount: 3, status: "CANDIDATE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordFailure(["early-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
-      expect(updateCall.data.status).toBe("CANDIDATE");
+      const updates = getUpdateCalls();
+      expect(updates[0]!.data.status).toBe("CANDIDATE");
     });
 
     it("should NOT deprecate when score >= 0.3 even with >= 5 observations", async () => {
-      // helpCount=1, failCount=4 => score = 2/7 ~ 0.2857 < 0.3 ... actually that IS < 0.3
-      // Let's use helpCount=2, failCount=4 => score = 3/8 = 0.375 >= 0.3
+      // helpCount=2, failCount=4 => score = 3/8 = 0.375 >= 0.3
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue({
-        id: "borderline-note",
-        helpCount: 2,
-        failCount: 4,
-        status: "ACTIVE",
-      });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "borderline-note", helpCount: 2, failCount: 4, status: "ACTIVE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordFailure(["borderline-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
-      expect(updateCall.data.status).toBe("ACTIVE");
-      expect(updateCall.data.confidenceScore).toBeCloseTo(3 / 8, 10);
+      const updates = getUpdateCalls();
+      expect(updates[0]!.data.status).toBe("ACTIVE");
+      expect(updates[0]!.data.confidenceScore).toBeCloseTo(3 / 8, 10);
     });
 
-    it("should deprecate a CANDIDATE that gets promoted then deprecated in same calc", async () => {
-      // Edge case: CANDIDATE with helpCount=3, failCount=5 =>
-      // score = 4/10 = 0.4 -> NOT < 0.3, so no deprecation.
-      // Let's make a case where both branches fire:
+    it("should deprecate a CANDIDATE when score < 0.3 even if helpCount >= 3", async () => {
       // CANDIDATE, helpCount=3, failCount=10 => score = 4/15 ~ 0.267 < 0.3
       // Promotion check: helpCount >= 3 AND score > 0.6 => NO (score too low)
       // Deprecation check: score < 0.3 AND total >= 5 => YES
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue({
-        id: "double-check",
-        helpCount: 3,
-        failCount: 10,
-        status: "CANDIDATE",
-      });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "double-check", helpCount: 3, failCount: 10, status: "CANDIDATE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordFailure(["double-check"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
-      expect(updateCall.data.status).toBe("DEPRECATED");
+      const updates = getUpdateCalls();
+      expect(updates[0]!.data.status).toBe("DEPRECATED");
     });
 
-    it("should handle note not found (findUnique returns null)", async () => {
+    it("should handle no notes found (findMany returns empty)", async () => {
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue(null);
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([]);
 
       await recordSuccess(["nonexistent-note"]);
 
-      expect(mockPrisma.agentLearningNote.update).not.toHaveBeenCalled();
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     });
 
-    it("should process multiple note IDs sequentially", async () => {
-      mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 3 });
-      mockPrisma.agentLearningNote.findUnique
-        .mockResolvedValueOnce({
-          id: "a",
-          helpCount: 5,
-          failCount: 0,
-          status: "CANDIDATE",
-        })
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce({
-          id: "c",
-          helpCount: 1,
-          failCount: 1,
-          status: "ACTIVE",
-        });
+    it("should process multiple notes in a single batch", async () => {
+      mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 2 });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "a", helpCount: 5, failCount: 0, status: "CANDIDATE" },
+        { id: "c", helpCount: 1, failCount: 1, status: "ACTIVE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordSuccess(["a", "b", "c"]);
 
-      expect(mockPrisma.agentLearningNote.findUnique).toHaveBeenCalledTimes(3);
-      // Only 2 updates: 'a' and 'c' (not 'b' because findUnique returned null)
-      expect(mockPrisma.agentLearningNote.update).toHaveBeenCalledTimes(2);
+      // findMany fetches only existing notes; 'b' is not in the result
+      expect(mockPrisma.agentLearningNote.findMany).toHaveBeenCalledWith({
+        where: { id: { in: ["a", "b", "c"] } },
+      });
+      // Only 2 updates for the 2 found notes, batched in one $transaction
+      const updates = getUpdateCalls();
+      expect(updates).toHaveLength(2);
+      expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
     });
 
     it("should override CANDIDATE->ACTIVE promotion with DEPRECATED when both conditions met", async () => {
-      // CANDIDATE, helpCount=3, failCount=7 =>
-      // score = 4/12 = 0.333... > 0.3 so NO deprecation
-      // helpCount >= 3 but score 0.333 <= 0.6 so NO promotion
-      // Let's craft: helpCount=5, failCount=20 => score = 6/27 ~ 0.222 < 0.3
+      // helpCount=5, failCount=20 => score = 6/27 ~ 0.222 < 0.3
       // promotion: helpCount >= 3 AND score > 0.6 => NO
       // deprecation: score < 0.3 AND total = 25 >= 5 => YES
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue({
-        id: "both-cond",
-        helpCount: 5,
-        failCount: 20,
-        status: "CANDIDATE",
-      });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "both-cond", helpCount: 5, failCount: 20, status: "CANDIDATE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordSuccess(["both-cond"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
-      expect(updateCall.data.status).toBe("DEPRECATED");
+      const updates = getUpdateCalls();
+      expect(updates[0]!.data.status).toBe("DEPRECATED");
     });
 
     it("should score exactly (1)/(2) = 0.5 for a fresh note with 0 help and 0 fail", async () => {
       // helpCount=0, failCount=0 => score = (0+1)/(0+0+2) = 0.5
       mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.agentLearningNote.findUnique.mockResolvedValue({
-        id: "fresh-note",
-        helpCount: 0,
-        failCount: 0,
-        status: "CANDIDATE",
-      });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "fresh-note", helpCount: 0, failCount: 0, status: "CANDIDATE" },
+      ]);
       mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
 
       await recordSuccess(["fresh-note"]);
 
-      const updateCall = mockPrisma.agentLearningNote.update!.mock.calls[0]![0]!;
-      expect(updateCall.data.confidenceScore).toBe(0.5);
-      expect(updateCall.data.status).toBe("CANDIDATE");
+      const updates = getUpdateCalls();
+      expect(updates[0]!.data.confidenceScore).toBe(0.5);
+      expect(updates[0]!.data.status).toBe("CANDIDATE");
+    });
+  });
+
+  // =========================================================================
+  // recordUserBugFeedback
+  // =========================================================================
+  describe("recordUserBugFeedback", () => {
+    it("should find the most recent generation attempt and batch recalculate", async () => {
+      mockPrisma.generationAttempt.findFirst.mockResolvedValue({
+        notesApplied: ["note-1", "note-2"],
+      });
+      mockPrisma.agentLearningNote.updateMany.mockResolvedValue({ count: 2 });
+      mockPrisma.agentLearningNote.findMany.mockResolvedValue([
+        { id: "note-1", helpCount: 2, failCount: 3, status: "ACTIVE" },
+        { id: "note-2", helpCount: 1, failCount: 4, status: "CANDIDATE" },
+      ]);
+      mockPrisma.agentLearningNote.update.mockResolvedValue({});
+      mockPrisma.$transaction.mockResolvedValue([]);
+
+      await recordUserBugFeedback("apps/my-app");
+
+      expect(mockPrisma.generationAttempt.findFirst).toHaveBeenCalledWith({
+        where: { slug: "apps/my-app" },
+        orderBy: { createdAt: "desc" },
+        select: { notesApplied: true },
+      });
+      expect(mockPrisma.agentLearningNote.updateMany).toHaveBeenCalledWith({
+        where: { id: { in: ["note-1", "note-2"] } },
+        data: { failCount: { increment: 1 } },
+      });
+      expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+    });
+
+    it("should return early when no attempt is found", async () => {
+      mockPrisma.generationAttempt.findFirst.mockResolvedValue(null);
+
+      await recordUserBugFeedback("apps/nonexistent");
+
+      expect(mockPrisma.agentLearningNote.updateMany).not.toHaveBeenCalled();
+    });
+
+    it("should return early when notesApplied is empty", async () => {
+      mockPrisma.generationAttempt.findFirst.mockResolvedValue({
+        notesApplied: [],
+      });
+
+      await recordUserBugFeedback("apps/empty-notes");
+
+      expect(mockPrisma.agentLearningNote.updateMany).not.toHaveBeenCalled();
+    });
+
+    it("should log warning and swallow error when prisma throws", async () => {
+      const dbError = new Error("Connection refused");
+      mockPrisma.generationAttempt.findFirst.mockRejectedValue(dbError);
+
+      await recordUserBugFeedback("apps/broken");
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        "Failed to record user bug feedback",
+        { error: dbError, slug: "apps/broken" },
+      );
     });
   });
 

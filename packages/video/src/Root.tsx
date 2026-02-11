@@ -1,357 +1,282 @@
-import { Composition, Folder } from "remotion";
-import { BridgeMindPromo } from "./compositions/bridgemind/BridgeMindPromo";
+import React from "react";
+import { AbsoluteFill, Composition, Folder } from "remotion";
 import {
-  VeritasiumPitch,
+  VibeCodingParadox,
   Scene01_Hook,
-  Scene02_Problem,
-  Scene03_Solution,
-  Scene04_Magic,
-  Scene05_Proof,
-  Scene06_Implications,
-  Scene07_CTA,
-} from "./compositions/veritasium";
-import {
-  AIDiscovery,
-  ChatSolution,
-  EndCard,
-  GoingLive,
-  IntroHook,
-  LiveDeployment,
-  LiveUpdate,
-  MyAppsAgent,
-  OrbitDashboard,
-  PhysicsOfAttention,
-  PromoVideo,
-  ResultsProof,
-  TheProblem,
-  Transformation,
-} from "./Video";
+  Scene02_PhysicsOfAttention,
+  Scene03_BeforeState,
+  Scene04_FiveLayerStack,
+  Scene05_FixLoop,
+  Scene06_AgentMemory,
+  Scene07_SkillMatching,
+  Scene08_MetaBuild,
+  Scene09_Results,
+  Scene10_EndCard,
+} from "./compositions/vibe-coding-paradox";
+import { VCP_DURATIONS, VCP_TIMING, VIDEO_CONFIG, COLORS, TYPOGRAPHY } from "./lib/constants";
+import { VeritasiumPitch, VERITASIUM_SCENE_DURATION } from "./compositions/veritasium/VeritasiumPitch";
 
-import {
-  BRIDGEMIND_TIMING,
-  SCENE_DURATIONS,
-  VERITASIUM_DURATIONS,
-  VERITASIUM_TIMING,
-  VIDEO_CONFIG,
-} from "./lib/constants";
-import { FORMAT_CONFIGS } from "./lib/schemas";
+// Component imports for preview compositions
+import { TokenVisualization } from "./components/animations/TokenVisualization";
+import { SoftmaxEquation } from "./components/ui/SoftmaxEquation";
+import { FiveLayerStack } from "./components/diagrams/FiveLayerStack";
+import { DarwinianTree } from "./components/animations/DarwinianTree";
+import { PetriDishAnimation } from "./components/animations/PetriDishAnimation";
+import { RecursiveZoom } from "./components/animations/RecursiveZoom";
+import { AttentionSpotlight } from "./components/animations/AttentionSpotlight";
+import { SkillMatchingDiagram } from "./components/diagrams/SkillMatchingDiagram";
+import { TakeawayCards } from "./components/ui/TakeawayCards";
 
-/**
- * Remotion Root - Composition Registry
- */
+// Wrapper for component previews
+const PreviewWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <AbsoluteFill
+    style={{
+      backgroundColor: COLORS.darkBg,
+      fontFamily: TYPOGRAPHY.fontFamily.sans,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    {children}
+  </AbsoluteFill>
+);
+
+// Component preview compositions
+const TokenVisualizationPreview: React.FC = () => (
+  <TokenVisualization text="The quick brown fox jumps over the lazy dog" delay={5} />
+);
+
+const SoftmaxEquationPreview: React.FC = () => (
+  <PreviewWrapper>
+    <SoftmaxEquation variant="softmax" delay={5} />
+  </PreviewWrapper>
+);
+
+const FiveLayerStackPreview: React.FC = () => (
+  <PreviewWrapper>
+    <FiveLayerStack revealCount={5} delay={5} />
+  </PreviewWrapper>
+);
+
+const DarwinianTreePreview: React.FC = () => (
+  <DarwinianTree generations={3} delay={5} />
+);
+
+const PetriDishPreview: React.FC = () => (
+  <PetriDishAnimation
+    organisms={[
+      { label: "Import fix", status: "active", confidence: 0.85 },
+      { label: "ESM pattern", status: "active", confidence: 0.7 },
+      { label: "Wrong approach", status: "deprecated", confidence: 0.2 },
+      { label: "New pattern", status: "candidate", confidence: 0.5 },
+    ]}
+    delay={5}
+  />
+);
+
+const RecursiveZoomPreview: React.FC = () => (
+  <RecursiveZoom
+    labels={["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5"]}
+    delay={5}
+  />
+);
+
+const AttentionSpotlightPreview: React.FC = () => (
+  <AttentionSpotlight tokenCount={12} delay={5} />
+);
+
+const SkillMatchingPreview: React.FC = () => (
+  <PreviewWrapper>
+    <SkillMatchingDiagram url="spike.land/create/games/tetris" delay={5} />
+  </PreviewWrapper>
+);
+
+const TakeawayCardsPreview: React.FC = () => (
+  <PreviewWrapper>
+    <TakeawayCards delay={5} />
+  </PreviewWrapper>
+);
+
+const PREVIEW_DURATION = 300;
+
 export const RemotionRoot = () => {
   return (
     <>
+      {/* Main 11-minute composition */}
       <Composition
-        id="BridgeMindPromo"
-        component={BridgeMindPromo}
-        durationInFrames={BRIDGEMIND_TIMING.totalFrames}
-        fps={BRIDGEMIND_TIMING.fps}
-        width={FORMAT_CONFIGS.landscape.width}
-        height={FORMAT_CONFIGS.landscape.height}
-      />
-
-      <Composition
-        id="BridgeMindPromo-Vertical"
-        component={BridgeMindPromo}
-        durationInFrames={BRIDGEMIND_TIMING.totalFrames}
-        fps={BRIDGEMIND_TIMING.fps}
-        width={FORMAT_CONFIGS.portrait.width}
-        height={FORMAT_CONFIGS.portrait.height}
-      />
-
-      <Composition
-        id="BridgeMindPromo-Square"
-        component={BridgeMindPromo}
-        durationInFrames={BRIDGEMIND_TIMING.totalFrames}
-        fps={BRIDGEMIND_TIMING.fps}
-        width={FORMAT_CONFIGS.square.width}
-        height={FORMAT_CONFIGS.square.height}
-      />
-
-      <Composition
-        id="Physics-of-Attention"
-        component={PhysicsOfAttention}
-        durationInFrames={VIDEO_CONFIG.durationInFrames}
-        fps={VIDEO_CONFIG.fps}
+        id="VibeCodingParadox"
+        component={VibeCodingParadox}
+        durationInFrames={VCP_TIMING.totalFrames}
+        fps={VCP_TIMING.fps}
         width={VIDEO_CONFIG.width}
         height={VIDEO_CONFIG.height}
       />
 
-      <Composition
-        id="PromoVideo"
-        component={PromoVideo}
-        durationInFrames={1800}
-        fps={VIDEO_CONFIG.fps}
-        width={VIDEO_CONFIG.width}
-        height={VIDEO_CONFIG.height}
-      />
-
-      {/* Veritasium Pitch — "The AI That Remembers Every Mistake" (4 min) */}
       <Composition
         id="VeritasiumPitch"
         component={VeritasiumPitch}
-        durationInFrames={VERITASIUM_TIMING.totalFrames}
-        fps={VERITASIUM_TIMING.fps}
+        durationInFrames={VERITASIUM_SCENE_DURATION * 7}
+        fps={VCP_TIMING.fps}
         width={VIDEO_CONFIG.width}
         height={VIDEO_CONFIG.height}
       />
 
-      <Folder name="Veritasium">
-        <Composition
-          id="V-Scene1-Hook"
-          component={Scene01_Hook}
-          durationInFrames={VERITASIUM_DURATIONS.hook}
-          fps={VERITASIUM_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="V-Scene2-Problem"
-          component={Scene02_Problem}
-          durationInFrames={VERITASIUM_DURATIONS.problem}
-          fps={VERITASIUM_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="V-Scene3-Solution"
-          component={Scene03_Solution}
-          durationInFrames={VERITASIUM_DURATIONS.solution}
-          fps={VERITASIUM_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="V-Scene4-Magic"
-          component={Scene04_Magic}
-          durationInFrames={VERITASIUM_DURATIONS.magic}
-          fps={VERITASIUM_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="V-Scene5-Proof"
-          component={Scene05_Proof}
-          durationInFrames={VERITASIUM_DURATIONS.proof}
-          fps={VERITASIUM_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="V-Scene6-Implications"
-          component={Scene06_Implications}
-          durationInFrames={VERITASIUM_DURATIONS.implications}
-          fps={VERITASIUM_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-        <Composition
-          id="V-Scene7-CTA"
-          component={Scene07_CTA}
-          durationInFrames={VERITASIUM_DURATIONS.cta}
-          fps={VERITASIUM_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-      </Folder>
-
-      {/* YouTube Long-form Content */}
-      <Folder name="YouTube">
-        <Composition
-          id="PhysicsOfAttention"
-          component={PhysicsOfAttention}
-          durationInFrames={24578} // ~13.6 minutes @ 30fps
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-      </Folder>
-
-      {/* New 8-scene structure */}
+      {/* Individual scenes for preview */}
       <Folder name="Scenes">
         <Composition
-          id="Scene1-IntroHook"
-          component={IntroHook}
-          durationInFrames={SCENE_DURATIONS.scene1}
-          fps={VIDEO_CONFIG.fps}
+          id="VCP-Scene01-Hook"
+          component={Scene01_Hook}
+          durationInFrames={VCP_DURATIONS.hook}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-
         <Composition
-          id="Scene2-TheProblem"
-          component={TheProblem}
-          durationInFrames={SCENE_DURATIONS.scene2}
-          fps={VIDEO_CONFIG.fps}
+          id="VCP-Scene02-PhysicsOfAttention"
+          component={Scene02_PhysicsOfAttention}
+          durationInFrames={VCP_DURATIONS.physicsOfAttention}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-
         <Composition
-          id="Scene3-AIDiscovery"
-          component={AIDiscovery}
-          durationInFrames={SCENE_DURATIONS.scene3}
-          fps={VIDEO_CONFIG.fps}
+          id="VCP-Scene03-BeforeState"
+          component={Scene03_BeforeState}
+          durationInFrames={VCP_DURATIONS.beforeState}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-
         <Composition
-          id="Scene4-ChatSolution"
-          component={ChatSolution}
-          durationInFrames={SCENE_DURATIONS.scene4}
-          fps={VIDEO_CONFIG.fps}
+          id="VCP-Scene04-FiveLayerStack"
+          component={Scene04_FiveLayerStack}
+          durationInFrames={VCP_DURATIONS.fiveLayerStack}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-
         <Composition
-          id="Scene5-Transformation"
-          component={Transformation}
-          durationInFrames={SCENE_DURATIONS.scene5}
-          fps={VIDEO_CONFIG.fps}
+          id="VCP-Scene05-FixLoop"
+          component={Scene05_FixLoop}
+          durationInFrames={VCP_DURATIONS.fixLoop}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-
         <Composition
-          id="Scene6-GoingLive"
-          component={GoingLive}
-          durationInFrames={SCENE_DURATIONS.scene6}
-          fps={VIDEO_CONFIG.fps}
+          id="VCP-Scene06-AgentMemory"
+          component={Scene06_AgentMemory}
+          durationInFrames={VCP_DURATIONS.agentMemory}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-
         <Composition
-          id="Scene7-ResultsProof"
-          component={ResultsProof}
-          durationInFrames={SCENE_DURATIONS.scene7}
-          fps={VIDEO_CONFIG.fps}
+          id="VCP-Scene07-SkillMatching"
+          component={Scene07_SkillMatching}
+          durationInFrames={VCP_DURATIONS.skillMatching}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-
         <Composition
-          id="Scene8-EndCard"
-          component={EndCard}
-          durationInFrames={SCENE_DURATIONS.scene8}
-          fps={VIDEO_CONFIG.fps}
+          id="VCP-Scene08-MetaBuild"
+          component={Scene08_MetaBuild}
+          durationInFrames={VCP_DURATIONS.metaBuild}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-      </Folder>
-
-      {/* Extended durations for development/testing */}
-      <Folder name="Extended">
         <Composition
-          id="IntroHook-Extended"
-          component={IntroHook}
-          durationInFrames={300} // 10 seconds
-          fps={VIDEO_CONFIG.fps}
+          id="VCP-Scene09-Results"
+          component={Scene09_Results}
+          durationInFrames={VCP_DURATIONS.results}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-
         <Composition
-          id="TheProblem-Extended"
-          component={TheProblem}
-          durationInFrames={480} // 16 seconds
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-
-        <Composition
-          id="AIDiscovery-Extended"
-          component={AIDiscovery}
-          durationInFrames={360} // 12 seconds
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-
-        <Composition
-          id="ChatSolution-Extended"
-          component={ChatSolution}
-          durationInFrames={600} // 20 seconds
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-
-        <Composition
-          id="Transformation-Extended"
-          component={Transformation}
-          durationInFrames={480} // 16 seconds
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-
-        <Composition
-          id="GoingLive-Extended"
-          component={GoingLive}
-          durationInFrames={480} // 16 seconds
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-
-        <Composition
-          id="ResultsProof-Extended"
-          component={ResultsProof}
-          durationInFrames={360} // 12 seconds
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-
-        <Composition
-          id="EndCard-Extended"
-          component={EndCard}
-          durationInFrames={300} // 10 seconds
-          fps={VIDEO_CONFIG.fps}
+          id="VCP-Scene10-EndCard"
+          component={Scene10_EndCard}
+          durationInFrames={VCP_DURATIONS.endCard}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
       </Folder>
 
-      {/* Legacy scenes (from original 15s video) */}
-      <Folder name="Legacy">
+      {/* Component test compositions (300 frames each) */}
+      <Folder name="Components">
         <Composition
-          id="Legacy-OrbitDashboard"
-          component={OrbitDashboard}
-          durationInFrames={90}
-          fps={VIDEO_CONFIG.fps}
+          id="Preview-TokenVisualization"
+          component={TokenVisualizationPreview}
+          durationInFrames={PREVIEW_DURATION}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-
         <Composition
-          id="Legacy-MyAppsAgent"
-          component={MyAppsAgent}
-          durationInFrames={150}
-          fps={VIDEO_CONFIG.fps}
+          id="Preview-SoftmaxEquation"
+          component={SoftmaxEquationPreview}
+          durationInFrames={PREVIEW_DURATION}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-
         <Composition
-          id="Legacy-LiveUpdate"
-          component={LiveUpdate}
-          durationInFrames={120}
-          fps={VIDEO_CONFIG.fps}
+          id="Preview-FiveLayerStack"
+          component={FiveLayerStackPreview}
+          durationInFrames={PREVIEW_DURATION}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
-
         <Composition
-          id="Legacy-LiveDeployment"
-          component={LiveDeployment}
-          durationInFrames={240}
-          fps={VIDEO_CONFIG.fps}
+          id="Preview-DarwinianTree"
+          component={DarwinianTreePreview}
+          durationInFrames={PREVIEW_DURATION}
+          fps={VCP_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="Preview-PetriDish"
+          component={PetriDishPreview}
+          durationInFrames={PREVIEW_DURATION}
+          fps={VCP_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="Preview-RecursiveZoom"
+          component={RecursiveZoomPreview}
+          durationInFrames={PREVIEW_DURATION}
+          fps={VCP_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="Preview-AttentionSpotlight"
+          component={AttentionSpotlightPreview}
+          durationInFrames={PREVIEW_DURATION}
+          fps={VCP_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="Preview-SkillMatching"
+          component={SkillMatchingPreview}
+          durationInFrames={PREVIEW_DURATION}
+          fps={VCP_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="Preview-TakeawayCards"
+          component={TakeawayCardsPreview}
+          durationInFrames={PREVIEW_DURATION}
+          fps={VCP_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />

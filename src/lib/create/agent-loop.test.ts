@@ -639,21 +639,17 @@ describe("agentGenerateApp", () => {
   // 4. Generation returns no code
   // ----------------------------------------------------------------
   describe("generation returns no code", () => {
-    it("yields error event when parseGenerationResponse returns null", async () => {
+    it("throws when parseGenerationResponse returns null", async () => {
       vi.mocked(parseGenerationResponse).mockReturnValue(null as never);
 
-      const events = await collectEvents(
-        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
-
-      const errorEvent = findEvent(events, "error");
-      expect(errorEvent).toBeDefined();
-      expect(errorEvent!.message).toBe(
-        "Failed to generate valid code from Claude",
-      );
+      await expect(
+        collectEvents(
+          agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+        ),
+      ).rejects.toThrow("Failed to generate valid code from Claude");
     });
 
-    it("yields error event when parsed code is empty string", async () => {
+    it("throws when parsed code is empty string", async () => {
       vi.mocked(parseGenerationResponse).mockReturnValue({
         code: "",
         title: "T",
@@ -661,25 +657,21 @@ describe("agentGenerateApp", () => {
         relatedApps: [],
       } as never);
 
-      const events = await collectEvents(
-        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
-
-      const errorEvent = findEvent(events, "error");
-      expect(errorEvent).toBeDefined();
-      expect(errorEvent!.message).toBe(
-        "Failed to generate valid code from Claude",
-      );
+      await expect(
+        collectEvents(
+          agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+        ),
+      ).rejects.toThrow("Failed to generate valid code from Claude");
     });
 
-    it("calls updateAppStatus with FAILED on generation failure", async () => {
+    it("does not call updateAppStatus with FAILED (caller handles fallback)", async () => {
       vi.mocked(parseGenerationResponse).mockReturnValue(null as never);
 
       await collectEvents(
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
+      ).catch(() => {});
 
-      expect(updateAppStatus).toHaveBeenCalledWith("my-app", "FAILED");
+      expect(updateAppStatus).not.toHaveBeenCalledWith("my-app", "FAILED");
     });
 
     it("calls recordGenerationAttempt with the error in the errors array", async () => {
@@ -687,7 +679,7 @@ describe("agentGenerateApp", () => {
 
       await collectEvents(
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
+      ).catch(() => {});
 
       expect(recordGenerationAttempt).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -764,21 +756,16 @@ describe("agentGenerateApp", () => {
   // 6. Outer catch: callClaude for generation throws
   // ----------------------------------------------------------------
   describe("outer catch - generation callClaude throws", () => {
-    it("yields error event with the thrown error message", async () => {
+    it("throws with the error message (propagates to caller for fallback)", async () => {
       vi.mocked(callClaude).mockRejectedValue(
         new Error("Network failure"),
       );
 
-      const events = await collectEvents(
-        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
-
-      const errorEvent = findEvent(events, "error");
-      expect(errorEvent).toBeDefined();
-      expect(errorEvent!.message).toBe("Network failure");
-      expect(errorEvent!.codespaceUrl).toBe(
-        "https://testing.spike.land/live/test-codespace-123/",
-      );
+      await expect(
+        collectEvents(
+          agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+        ),
+      ).rejects.toThrow("Network failure");
     });
 
     it("calls logger.error with the error", async () => {
@@ -787,7 +774,7 @@ describe("agentGenerateApp", () => {
 
       await collectEvents(
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
+      ).catch(() => {});
 
       expect(logger.error).toHaveBeenCalledWith(
         "Agent loop failed for my-app:",
@@ -795,25 +782,24 @@ describe("agentGenerateApp", () => {
       );
     });
 
-    it("calls updateAppStatus with FAILED in catch block", async () => {
+    it("does not call updateAppStatus with FAILED (caller handles fallback)", async () => {
       vi.mocked(callClaude).mockRejectedValue(new Error("fail"));
 
       await collectEvents(
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
+      ).catch(() => {});
 
-      expect(updateAppStatus).toHaveBeenCalledWith("my-app", "FAILED");
+      expect(updateAppStatus).not.toHaveBeenCalledWith("my-app", "FAILED");
     });
 
-    it("yields 'Generation failed' for non-Error throws", async () => {
+    it("re-throws non-Error values", async () => {
       vi.mocked(callClaude).mockRejectedValue("string error");
 
-      const events = await collectEvents(
-        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
-
-      const errorEvent = findEvent(events, "error");
-      expect(errorEvent!.message).toBe("Generation failed");
+      await expect(
+        collectEvents(
+          agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+        ),
+      ).rejects.toBe("string error");
     });
 
     it("records 'Unknown' error for non-Error throws", async () => {
@@ -821,7 +807,7 @@ describe("agentGenerateApp", () => {
 
       await collectEvents(
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
+      ).catch(() => {});
 
       expect(recordGenerationAttempt).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -832,20 +818,14 @@ describe("agentGenerateApp", () => {
       );
     });
 
-    it("still calls recordGenerationAttempt when updateAppStatus throws in catch", async () => {
+    it("still calls recordGenerationAttempt even when error is thrown", async () => {
       vi.mocked(callClaude).mockRejectedValue(new Error("fail"));
-      vi.mocked(updateAppStatus).mockRejectedValue(
-        new Error("DB down"),
-      );
 
-      const events = await collectEvents(
+      await collectEvents(
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
+      ).catch(() => {});
 
       expect(recordGenerationAttempt).toHaveBeenCalled();
-      // Should still yield the error event
-      const errorEvent = findEvent(events, "error");
-      expect(errorEvent).toBeDefined();
     });
   });
 
@@ -1096,16 +1076,16 @@ describe("agentGenerateApp", () => {
       expect(updateAppStatus).toHaveBeenCalledWith("my-app", "FAILED");
     });
 
-    it("is called on outer catch error", async () => {
+    it("is not called on outer catch error (caller handles fallback)", async () => {
       vi.mocked(markAsGenerating).mockRejectedValue(
         new Error("DB error"),
       );
 
       await collectEvents(
         agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
+      ).catch(() => {});
 
-      expect(updateAppStatus).toHaveBeenCalledWith("my-app", "FAILED");
+      expect(updateAppStatus).not.toHaveBeenCalledWith("my-app", "FAILED");
     });
 
     it("swallows error if updateAppStatus throws on exhausted iterations", async () => {
@@ -1809,13 +1789,11 @@ describe("agentGenerateApp", () => {
         cacheCreationTokens: 0,
       } as never);
 
-      const events = await collectEvents(
-        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
-      );
-
-      const errorEvent = findEvent(events, "error");
-      expect(errorEvent).toBeDefined();
-      expect(errorEvent!.message).toContain("Token budget exceeded");
+      await expect(
+        collectEvents(
+          agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+        ),
+      ).rejects.toThrow("Token budget exceeded");
     });
 
     it("breaks fix loop when token budget exceeded during fix", async () => {

@@ -11,7 +11,7 @@ type BrowserFrameProps = {
 
 export const BrowserFrame: React.FC<BrowserFrameProps> = ({
   children,
-  url = "https://bridgemind.ai",
+  url = "https://spike.land",
   width = "100%",
   height = "100%",
 }) => {

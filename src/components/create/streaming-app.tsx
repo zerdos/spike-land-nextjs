@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import { toast } from "sonner";
 
 interface StreamingAppProps {
@@ -40,6 +41,8 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [errorCodespaceUrl, setErrorCodespaceUrl] = useState<string | null>(null);
+  const lastEventTime = useRef(Date.now());
+  const [connectionWarning, setConnectionWarning] = useState(false);
   const router = useRouter();
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasAttemptedGeneration = useRef(false);
@@ -119,6 +122,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
             const data = line.slice(6);
             try {
               const event: StreamEvent = JSON.parse(data);
+              lastEventTime.current = Date.now();
 
               switch (event.type) {
                 case "agent":
@@ -171,6 +175,19 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
                   }
                   toast.error(`Generation failed: ${event.message}`);
                   break;
+
+                case "heartbeat":
+                  setConnectionWarning(false);
+                  break;
+
+                case "timeout":
+                  setStatus("error");
+                  setProgress(100);
+                  setError(event.message);
+                  if (event.codespaceUrl) {
+                    setErrorCodespaceUrl(event.codespaceUrl);
+                  }
+                  break;
               }
             } catch {
               // Skip invalid JSON
@@ -200,6 +217,18 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
       }
     };
   }, [startStreaming]);
+
+  useEffect(() => {
+    if (status !== "generating") return;
+
+    const staleCheck = setInterval(() => {
+      if (Date.now() - lastEventTime.current > 30_000) {
+        setConnectionWarning(true);
+      }
+    }, 5_000);
+
+    return () => clearInterval(staleCheck);
+  }, [status]);
 
   // Error UI
   if (status === "error") {
@@ -333,6 +362,12 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
                 </span>
               </div>
             ))}
+            {connectionWarning && status === "generating" && (
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-xs px-4">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                Connection may be lost. Waiting for server...
+              </div>
+            )}
             {status === "generating" && (
               <div className="flex items-center gap-2 text-muted-foreground animate-pulse pl-4.5">
                 <span className="w-1 h-4 bg-primary/50 block" />
