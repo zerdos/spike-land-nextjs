@@ -63,8 +63,8 @@ export const RecursiveZoomCore: FC<RecursiveZoomCoreProps> = ({
 
         const opacity = interpolate(
           zoomFactor,
-          [i * 0.5, i * 0.5 + 0.5, i * 0.5 + 2.5, i * 0.5 + 3],
-          [0, 1, 1, 0.3]
+          [i * 0.5, i * 0.5 + 0.5, i * 0.5 + 2.0, i * 0.5 + 2.5],
+          [0, 1, 1, 0] // Fade to 0 completely
         );
 
         const size = 600 * animatedScale;

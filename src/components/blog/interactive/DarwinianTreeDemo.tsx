@@ -14,19 +14,27 @@ export function DarwinianTreeDemo() {
     if (!isActive) return undefined;
     
     let rafId: number;
-    const animate = () => {
-      setReplayProgress((prev) => {
-        if (prev === null) return null;
-        const next = prev + 0.01;
-        if (next >= 1) return null; // Exit condition (C5)
+    const startTime = performance.now();
+    const duration = 4000; // 4 seconds for full animation
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const next = Math.min(elapsed / duration, 1);
+      
+      setReplayProgress(next);
+
+      if (next < 1) {
         rafId = requestAnimationFrame(animate);
-        return next;
-      });
+      } else {
+        // Animation complete, reset to scroll control after a small delay or immediately
+        // Setting to null reverts to 'progress' (scroll-based), which is 1 if fully in view.
+        setReplayProgress(null); 
+      }
     };
     
     rafId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(rafId);
-  }, [isActive]); // Trigger when active state changes
+  }, [isActive]);
 
   const handleReplay = () => {
     setReplayProgress(0);

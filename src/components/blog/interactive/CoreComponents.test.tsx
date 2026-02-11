@@ -78,7 +78,7 @@ describe("Core Components Smoke Tests", () => {
 
   it("renders RecursiveZoomCore labels", () => {
     const labels = ["Layer 1", "Layer 2", "Layer 3"];
-    render(<RecursiveZoomCore progress={0.5} labels={labels} />);
+    render(<RecursiveZoomCore progress={0.05} labels={labels} />);
     expect(screen.getByText("Layer 1")).toBeTruthy();
     expect(screen.getAllByText(/Layer/i).length).toBeGreaterThan(0);
   });
