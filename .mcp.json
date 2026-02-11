@@ -34,8 +34,12 @@
       ]
     },
     "sentry": {
-      "type": "http",
-      "url": "https://mcp.sentry.dev/mcp"
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@sentry/mcp-server"],
+      "env": {
+        "SENTRY_AUTH_TOKEN": "${SENTRY_AUTH_TOKEN}"
+      }
     }
   }
 }
