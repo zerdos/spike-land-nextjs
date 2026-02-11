@@ -10,7 +10,7 @@ import {
   upsertSession,
 } from "@/lib/codespace/session-service";
 import { transpileCode } from "@/lib/codespace/transpile";
-import type { CodespaceSessionData } from "@/lib/codespace/types";
+import type { ICodeSession } from "@/lib/codespace/types";
 
 // ---------------------------------------------------------------------------
 // MCP Protocol Types
@@ -303,7 +303,7 @@ export const allTools: McpTool[] = [
  */
 async function updateCodespaceSession(
   _codeSpace: string,
-  updatedData: CodespaceSessionData,
+  updatedData: ICodeSession,
 ): Promise<void> {
   await upsertSession(updatedData);
 }
@@ -400,7 +400,7 @@ export function applyLineEdits(
 // ---------------------------------------------------------------------------
 
 function executeReadCode(
-  session: CodespaceSessionData,
+  session: ICodeSession,
   codeSpace: string,
 ): ReadCodeResult {
   return {
@@ -410,7 +410,7 @@ function executeReadCode(
 }
 
 function executeReadHtml(
-  session: CodespaceSessionData,
+  session: ICodeSession,
   codeSpace: string,
 ): ReadHtmlResult {
   return {
@@ -420,7 +420,7 @@ function executeReadHtml(
 }
 
 function executeReadSession(
-  session: CodespaceSessionData,
+  session: ICodeSession,
   codeSpace: string,
 ): ReadSessionResult {
   return {
@@ -432,7 +432,7 @@ function executeReadSession(
 }
 
 async function executeUpdateCode(
-  session: CodespaceSessionData,
+  session: ICodeSession,
   codeSpace: string,
   code: string,
   origin: string,
@@ -447,7 +447,7 @@ async function executeUpdateCode(
     transpilationFailed = true;
   }
 
-  const updatedSession: CodespaceSessionData = {
+  const updatedSession: ICodeSession = {
     ...session,
     code,
     transpiled,
@@ -471,7 +471,7 @@ async function executeUpdateCode(
 }
 
 async function executeEditCode(
-  session: CodespaceSessionData,
+  session: ICodeSession,
   codeSpace: string,
   edits: LineEdit[],
   origin: string,
@@ -486,7 +486,7 @@ async function executeEditCode(
     console.error("[MCP] Transpilation error in edit_code:", error);
   }
 
-  const updatedSession: CodespaceSessionData = {
+  const updatedSession: ICodeSession = {
     ...session,
     code: newCode,
     transpiled,
@@ -510,7 +510,7 @@ async function executeEditCode(
 }
 
 async function executeSearchAndReplace(
-  session: CodespaceSessionData,
+  session: ICodeSession,
   codeSpace: string,
   search: string,
   replace: string,
@@ -569,7 +569,7 @@ async function executeSearchAndReplace(
       );
     }
 
-    const updatedSession: CodespaceSessionData = {
+    const updatedSession: ICodeSession = {
       ...session,
       code: newCode,
       transpiled,
@@ -598,7 +598,7 @@ async function executeSearchAndReplace(
 }
 
 function executeFindLines(
-  session: CodespaceSessionData,
+  session: ICodeSession,
   codeSpace: string,
   pattern: string,
   isRegex: boolean,

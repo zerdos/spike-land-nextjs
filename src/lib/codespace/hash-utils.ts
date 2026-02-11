@@ -1,5 +1,5 @@
 import { Md5 } from "ts-md5";
-import { ICodeSession } from "./types";
+import type { ICodeSession } from "./types";
 
 export function md5(input: object | string): string {
   if (!input) input = "empty";

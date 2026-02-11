@@ -1,4 +1,5 @@
-import { VCP_DURATIONS } from "./constants";
+import { VCP_DURATIONS, VCP_TIMING } from "./constants";
+import { NARRATION_TIMESTAMPS } from "./narration-timestamps";
 
 export interface NarrationWord {
   word: string;
@@ -59,12 +60,68 @@ export function getSceneStartFrame(sceneId: keyof typeof VCP_DURATIONS): number 
 
 /**
  * Voice-active frame ranges for music ducking.
- * For now, assumes voice is active throughout each scene.
- * Will be refined with ElevenLabs word-level timestamps.
+ * Uses actual audio durations from ElevenLabs timestamps when available,
+ * falls back to full scene duration otherwise.
  */
 export function getVoiceActiveFrames(): [number, number][] {
-  return sceneKeys.map((key) => [
-    sceneStartFrames[key],
-    sceneStartFrames[key] + VCP_DURATIONS[key],
-  ]);
+  return sceneKeys.map((key) => {
+    const startFrame = sceneStartFrames[key] ?? 0;
+    const timestamps = NARRATION_TIMESTAMPS[key];
+
+    if (timestamps && timestamps.audioDurationSeconds > 0) {
+      const audioDurationFrames = Math.ceil(
+        timestamps.audioDurationSeconds * VCP_TIMING.fps,
+      );
+      return [startFrame, startFrame + audioDurationFrames] as [number, number];
+    }
+
+    // Fallback: assume voice active throughout scene
+    return [startFrame, startFrame + VCP_DURATIONS[key]] as [number, number];
+  });
+}
+
+/**
+ * Get scene audio entries for Remotion <Audio> components.
+ * Returns scene IDs with their start frames for audio sequencing.
+ */
+export function getSceneAudioEntries(): { sceneId: string; startFrame: number }[] {
+  return sceneKeys.map((key) => ({
+    sceneId: key,
+    startFrame: sceneStartFrames[key] ?? 0,
+  }));
+}
+
+/**
+ * Get the word being spoken at a given frame, for subtitle/highlight support.
+ * Returns null if no word is active at that frame.
+ */
+export function getWordAtFrame(frame: number): NarrationWord | null {
+  // Find which scene this frame belongs to
+  let sceneKey: string | null = null;
+  for (const key of sceneKeys) {
+    const sceneStart = sceneStartFrames[key] ?? 0;
+    const sceneEnd = sceneStart + VCP_DURATIONS[key];
+    if (frame >= sceneStart && frame < sceneEnd) {
+      sceneKey = key;
+      break;
+    }
+  }
+
+  if (!sceneKey) return null;
+
+  const timestamps = NARRATION_TIMESTAMPS[sceneKey];
+  if (!timestamps || timestamps.words.length === 0) return null;
+
+  // Convert frame to seconds relative to scene start
+  const sceneStart = sceneStartFrames[sceneKey] ?? 0;
+  const relativeSeconds = (frame - sceneStart) / VCP_TIMING.fps;
+
+  // Find the word at this time
+  for (const word of timestamps.words) {
+    if (relativeSeconds >= word.start && relativeSeconds <= word.end) {
+      return word;
+    }
+  }
+
+  return null;
 }

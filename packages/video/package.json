@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "description": "The Vibe Coding Paradox — Veritasium-style educational video",
+  "exports": {
+    "./compositions/*": "./src/compositions/*",
+    "./lib/*": "./src/lib/*"
+  },
   "scripts": {
     "dev": "remotion studio",
     "render:vcp": "remotion render VibeCodingParadox out/vibe-coding-paradox.mp4 --codec h264 --crf 18",

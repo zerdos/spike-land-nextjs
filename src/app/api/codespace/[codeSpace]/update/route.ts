@@ -1,9 +1,9 @@
 import { broadcastToCodespace } from "@/lib/codespace/broadcast";
 import { CORS_HEADERS, corsOptions } from "@/lib/codespace/cors";
 import { getSession, updateSession } from "@/lib/codespace/session-service";
-import { OptimisticLockError } from "@/lib/codespace/types";
+
 import { tryCatch } from "@/lib/try-catch";
-import type { NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 interface UpdateRequestBody {
   code: string;
@@ -28,7 +28,7 @@ export async function POST(
 ) {
   const { data: params, error: paramsError } = await tryCatch(context.params);
   if (paramsError) {
-    return Response.json(
+    return NextResponse.json(
       { error: "Invalid parameters" },
       { status: 400, headers: CORS_HEADERS },
     );
@@ -42,7 +42,7 @@ export async function POST(
   );
 
   if (bodyError || !body) {
-    return Response.json(
+    return NextResponse.json(
       { error: "Invalid JSON body" },
       { status: 400, headers: CORS_HEADERS },
     );
@@ -50,7 +50,7 @@ export async function POST(
 
   // Validate required fields
   if (!body.code || !body.expectedHash) {
-    return Response.json(
+    return NextResponse.json(
       { error: "Missing required fields: code, expectedHash" },
       { status: 400, headers: CORS_HEADERS },
     );
@@ -66,7 +66,7 @@ export async function POST(
       `[Codespace Update] Failed to get session for "${codeSpace}":`,
       getError,
     );
-    return Response.json(
+    return NextResponse.json(
       { error: "Failed to retrieve current session" },
       { status: 500, headers: CORS_HEADERS },
     );
@@ -79,35 +79,47 @@ export async function POST(
     transpiled: body.transpiled ?? currentSession?.transpiled ?? "",
     html: body.html ?? currentSession?.html ?? "",
     css: body.css ?? currentSession?.css ?? "",
+    messages: currentSession?.messages || [],
+    requiresReRender: currentSession?.requiresReRender,
   };
 
   // Attempt optimistic lock update
-  const { data: updatedSession, error: updateError } = await tryCatch(
+  const { data: updateResult, error: unexpectedError } = await tryCatch(
     updateSession(codeSpace, updateData, body.expectedHash),
   );
 
-  if (updateError) {
+  if (unexpectedError) {
+    console.error(
+      `[Codespace Update] Unexpected error for "${codeSpace}":`,
+      unexpectedError,
+    );
+    return NextResponse.json(
+      { error: "Failed to update session" },
+      { status: 500, headers: CORS_HEADERS },
+    );
+  }
+
+  if (!updateResult.success) {
     // Handle optimistic lock conflict
-    if (updateError instanceof OptimisticLockError) {
-      return Response.json(
+    if (updateResult.error === "Conflict: Hash mismatch") {
+       const session = updateResult.session;
+       return NextResponse.json(
         {
           error: "Conflict: session was modified by another client",
-          currentHash: updateError.actualHash,
-          expectedHash: updateError.expectedHash,
+          currentHash: session?.hash,
+          expectedHash: body.expectedHash,
         },
         { status: 409, headers: CORS_HEADERS },
       );
     }
 
-    console.error(
-      `[Codespace Update] Failed to update session for "${codeSpace}":`,
-      updateError,
-    );
-    return Response.json(
-      { error: "Failed to update session" },
+    return NextResponse.json(
+      { error: updateResult.error || "Failed to update session" },
       { status: 500, headers: CORS_HEADERS },
     );
   }
+
+  const updatedSession = updateResult.session!;
 
   // Broadcast the update to all SSE clients (local + Redis)
   broadcastToCodespace(codeSpace, {
@@ -126,7 +138,7 @@ export async function POST(
     );
   });
 
-  return Response.json(
+  return NextResponse.json(
     { success: true, hash: updatedSession.hash },
     { headers: CORS_HEADERS },
   );

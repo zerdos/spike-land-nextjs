@@ -1,8 +1,10 @@
 import React from "react";
-import { AbsoluteFill } from "remotion";
+import { AbsoluteFill, Audio, Sequence, staticFile } from "remotion";
 import { linearTiming, TransitionSeries } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { COLORS, TYPOGRAPHY, VCP_DURATIONS, VCP_TIMING } from "../../lib/constants";
+import { musicVolumeAtFrame } from "../../lib/audio-helpers";
+import { getVoiceActiveFrames, getSceneAudioEntries } from "../../lib/narration";
 
 import { Scene01_Hook } from "./Scene01_Hook";
 import { Scene02_PhysicsOfAttention } from "./Scene02_PhysicsOfAttention";
@@ -28,6 +30,9 @@ const SCENES = [
   { component: Scene10_EndCard, duration: VCP_DURATIONS.endCard },
 ] as const;
 
+const voiceActiveFrames = getVoiceActiveFrames();
+const sceneAudioEntries = getSceneAudioEntries();
+
 export const VibeCodingParadox: React.FC = () => {
   const transitionDuration = VCP_TIMING.transitionFrames;
 
@@ -38,6 +43,21 @@ export const VibeCodingParadox: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
+      {/* Background music — full duration, auto-ducked when voiceover is active */}
+      <Audio
+        src={staticFile("audio/background-music.mp3")}
+        volume={(f) => musicVolumeAtFrame(f, voiceActiveFrames)}
+        startFrom={0}
+      />
+
+      {/* Per-scene voiceover audio */}
+      {sceneAudioEntries.map(({ sceneId, startFrame }) => (
+        <Sequence key={sceneId} from={startFrame} durationInFrames={VCP_DURATIONS[sceneId as keyof typeof VCP_DURATIONS]}>
+          <Audio src={staticFile(`audio/vcp-${sceneId}.mp3`)} volume={1.0} />
+        </Sequence>
+      ))}
+
+      {/* Visual scenes */}
       <TransitionSeries>
         {SCENES.map((scene, index) => {
           const SceneComponent = scene.component;

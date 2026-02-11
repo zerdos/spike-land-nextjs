@@ -186,6 +186,7 @@ async function executeTool(
         transpiled,
         html: current.html,
         css: current.css,
+        messages: current.messages,
       });
       return "success";
     }
@@ -227,6 +228,7 @@ async function executeTool(
         transpiled,
         html: session.html,
         css: session.css,
+        messages: session.messages,
       });
       return "success";
     }
@@ -268,6 +270,7 @@ async function executeTool(
         transpiled,
         html: session.html,
         css: session.css,
+        messages: session.messages,
       });
       return "success";
     }

@@ -49,6 +49,9 @@
       ],
       "@prisma/client/*": [
         "./src/generated/prisma/*"
+      ],
+      "@spike-npm-land/video/*": [
+        "./packages/video/src/*"
       ]
     },
     "types": [

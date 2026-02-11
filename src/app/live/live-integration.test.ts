@@ -1,6 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { GET as getSession } from "@/app/api/live/[codeSpace]/route";
-import { POST as syncCode } from "@/app/api/live/[codeSpace]/sync/route";
 import { GET as renderHTML } from "@/app/live/[codeSpace]/route";
 import { GET as renderAsset } from "@/app/live/[codeSpace]/[asset]/route";
 import { SessionService } from "@/lib/codespace/session-service";

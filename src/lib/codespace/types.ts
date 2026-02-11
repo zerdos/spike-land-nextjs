@@ -44,7 +44,9 @@ export interface ICodeSession {
   html: string;
   css: string;
   transpiled: string;
+  hash?: string;
   requiresReRender?: boolean;
+  appId?: string;
   messages: Message[];
 }
 
