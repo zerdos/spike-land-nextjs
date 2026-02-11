@@ -66,6 +66,7 @@ describe("GET /api/cron/create-agent-alert", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
     delete process.env.CRON_SECRET;
   });
 
@@ -95,7 +96,6 @@ describe("GET /api/cron/create-agent-alert", () => {
     vi.stubEnv("NODE_ENV", "development");
     const res = await GET(makeRequest());
     expect(res.status).toBe(200);
-    vi.stubEnv("NODE_ENV", "test");
   });
 
   // Alert condition tests
