@@ -204,8 +204,9 @@ describe("agent-client", () => {
     it("should propagate API errors", async () => {
       mockStream.mockImplementation(() => { throw new Error("API rate limit exceeded"); });
 
+      // Use a model other than "opus" to avoid the Gemini fallback logic
       await expect(
-        callClaude({ systemPrompt: "sys", userPrompt: "usr" }),
+        callClaude({ systemPrompt: "sys", userPrompt: "usr", model: "haiku" }),
       ).rejects.toThrow("API rate limit exceeded");
     });
   });

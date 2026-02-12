@@ -174,7 +174,8 @@ function checkRateLimitMemory(
 
     // In Node.js, unref the timeout so it doesn't block process exit
     if (timeoutId && typeof timeoutId === 'object' && 'unref' in timeoutId) {
-      (timeoutId as any).unref();
+      // Cast to unknown first to avoid explicit-any error
+      (timeoutId as unknown as { unref: () => void }).unref();
     }
 
     rateLimitStore.set(identifier, {
