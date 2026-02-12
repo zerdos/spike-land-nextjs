@@ -92,7 +92,7 @@ Here's how software development actually works now:
 | **Planning** | Claude Code (multiple agents) | Explores codebase, interviews you, considers edge cases |
 | **Implementation** | Jules | Follows the plan exactly, adds the tests the plan specifies |
 | **CI/CD** | Your pipeline | Fast feedback, sharded tests, cached builds |
-| **Code Review** | Claude Code (Opus) | Strict. Catches real issues 50%+ of the time |
+| **Code Review** | Claude Code (Opus) | Strict. Consistently catches real issues |
 | **Fixes** | Jules | Iterates until CI and review both pass |
 | **Merge** | Automated | When all checks are green |
 
@@ -618,7 +618,7 @@ jobs:
 
 Claude Code can spawn specialized subagents for security audits, performance checks, and accessibility verification. The `mcp__playwright__*` tools even allow visual verification of UI changes.
 
-In my experience, Claude Code with Opus catches real issues more than half the time—bugs that would otherwise surface in production.
+In my experience, Claude Code with Opus consistently catches real issues—bugs that would otherwise surface in production.
 
 The review should evolve based on what slips through. Track patterns in escaped bugs and add specific checks to your review prompt.
 
