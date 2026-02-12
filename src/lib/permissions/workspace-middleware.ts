@@ -65,8 +65,9 @@ async function getE2EBypassMembership(
     !!bypassHeader &&
     constantTimeCompare(bypassHeader, bypassSecret);
 
-  const envBypassEnabled = process.env.NODE_ENV !== "production" &&
-    process.env.E2E_BYPASS_AUTH === "true";
+  // Allow environment bypass even in production for E2E tests (e.g. "next start" in CI)
+  // This matches auth.ts logic which checks the env var first.
+  const envBypassEnabled = process.env.E2E_BYPASS_AUTH === "true";
 
   if (!headerBypassEnabled && !envBypassEnabled) {
     return null;

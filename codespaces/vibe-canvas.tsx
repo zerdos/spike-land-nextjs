@@ -89,7 +89,8 @@ export default function VibeCanvas({
     return () => {
       cancelled = true;
     };
-  }, [resolved]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolved.join(",")]);
 
   // Pan handlers
   const onMouseDown = useCallback(
