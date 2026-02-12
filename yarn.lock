@@ -44,6 +44,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/google@npm:^3.0.26":
+  version: 3.0.26
+  resolution: "@ai-sdk/google@npm:3.0.26"
+  dependencies:
+    "@ai-sdk/provider": "npm:3.0.8"
+    "@ai-sdk/provider-utils": "npm:4.0.14"
+  peerDependencies:
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c9/01b29546c450cb302163c07e21acb651315770c7eae1744b302e0b76aa6949d0e7d78e6947a4e8f820ebade9ba91608459aa2070d519a3154952bfab5cfba2cf
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/provider-utils@npm:4.0.14":
   version: 4.0.14
   resolution: "@ai-sdk/provider-utils@npm:4.0.14"
@@ -2962,7 +2974,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@google/genai@npm:1.41.0":
+"@google/genai@npm:1.41.0, @google/genai@npm:^1.41.0":
   version: 1.41.0
   resolution: "@google/genai@npm:1.41.0"
   dependencies:
@@ -8550,8 +8562,10 @@ __metadata:
   resolution: "@spike-npm-land/spike-land-backend@workspace:packages/testing.spike.land"
   dependencies:
     "@ai-sdk/anthropic": "npm:3.0.42"
+    "@ai-sdk/google": "npm:^3.0.26"
     "@cloudflare/workers-types": "npm:4.20260210.0"
     "@eslint/js": "npm:10.0.1"
+    "@google/genai": "npm:^1.41.0"
     "@spike-npm-land/code": "npm:0.9.57"
     "@spike-npm-land/transpile": "npm:0.9.56"
     "@types/mime-types": "npm:3.0.1"

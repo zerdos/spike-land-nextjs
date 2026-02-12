@@ -474,7 +474,7 @@ export async function POST(
   const { codeSpace } = params;
 
   // Check Claude is configured
-  if (!isClaudeConfigured()) {
+  if (!(await isClaudeConfigured())) {
     return Response.json(
       {
         error:
@@ -535,7 +535,7 @@ export async function POST(
         // Emit initialize stage
         controller.enqueue(sseEvent("stage", { stage: "initialize" }));
 
-        const anthropic = getClaudeClient();
+        const anthropic = await getClaudeClient();
 
         // Convert our simplified messages to Anthropic format
         const anthropicMessages: Anthropic.MessageParam[] = messages.map(

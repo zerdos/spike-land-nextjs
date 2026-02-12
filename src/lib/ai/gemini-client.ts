@@ -2,6 +2,7 @@ import logger from "@/lib/logger";
 import { tryCatch } from "@/lib/try-catch";
 import { GoogleGenAI } from "@google/genai";
 import { type AspectRatio, detectAspectRatio } from "./aspect-ratio";
+import { resolveAIProviderConfig } from "./ai-config-resolver";
 import type { AnalysisConfig, PromptConfig } from "./pipeline-types";
 
 export class StructuredResponseParseError extends Error {
@@ -17,6 +18,7 @@ export class StructuredResponseParseError extends Error {
  */
 export const VALID_GEMINI_MODELS = [
   "gemini-3-pro-image-preview",
+  "gemini-3-flash-preview",
   "gemini-2.5-flash-image",
 ] as const;
 
@@ -47,7 +49,7 @@ export function getModelForTier(tier: TierModelKey): string {
  * Default model for backward compatibility.
  * Uses premium model (gemini-3-pro-image-preview) as default.
  */
-export const DEFAULT_MODEL = "gemini-3-pro-image-preview";
+export const DEFAULT_MODEL = "gemini-3-flash-preview";
 export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defaults
 
 /**
@@ -56,7 +58,7 @@ export const DEFAULT_TEMPERATURE: number | null = null; // Uses Gemini API defau
  * gemini-2.5-flash-image always outputs 1024px and doesn't accept imageSize.
  */
 function supportsImageSize(model: string): boolean {
-  return model === "gemini-3-pro-image-preview";
+  return model === "gemini-3-pro-image-preview" || model === "gemini-3-flash-preview";
 }
 
 // Timeout for Gemini API requests (configurable via env, default 10 minutes)
@@ -101,11 +103,13 @@ The JSON MUST strictly adhere to this structure, with no additional text before 
 
 let genAI: GoogleGenAI | null = null;
 
-export function getGeminiClient(): GoogleGenAI {
+export async function getGeminiClient(): Promise<GoogleGenAI> {
   if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const config = await resolveAIProviderConfig("google");
+    const apiKey = config?.token ?? process.env.GEMINI_API_KEY;
+
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY environment variable is not set");
+      throw new Error("GEMINI_API_KEY environment variable is not set and no google provider configured in DB");
     }
     genAI = new GoogleGenAI({
       apiKey,
@@ -571,7 +575,7 @@ export async function analyzeImageV2(
     },
   );
 
-  const ai = getGeminiClient();
+  const ai = await getGeminiClient();
   let structuredAnalysis: AnalysisDetailedResult;
 
   // Create analysis promise with timeout protection
@@ -894,7 +898,7 @@ async function processGeminiStream(
 export async function enhanceImageWithGemini(
   params: EnhanceImageParams,
 ): Promise<Buffer> {
-  const ai = getGeminiClient();
+  const ai = await getGeminiClient();
 
   // Use promptOverride if provided, otherwise run analysis to generate prompt
   let enhancementPrompt: string;
@@ -1002,8 +1006,9 @@ export async function enhanceImageWithGemini(
   });
 }
 
-export function isGeminiConfigured(): boolean {
-  return !!process.env.GEMINI_API_KEY;
+export async function isGeminiConfigured(): Promise<boolean> {
+  const config = await resolveAIProviderConfig("google");
+  return !!(config?.token || process.env.GEMINI_API_KEY);
 }
 
 // Asset Library Analysis types and functions
@@ -1047,7 +1052,7 @@ export async function analyzeAssetForLibrary(
   imageBuffer: Buffer,
   mimeType: string,
 ): Promise<AssetAnalysisResult> {
-  const ai = getGeminiClient();
+  const ai = await getGeminiClient();
 
   const prompt = `Analyze this image for content library management.
 Provide a JSON response with:
@@ -1187,7 +1192,7 @@ export interface GenerateAgentResponseParams {
 export async function generateAgentResponse(
   params: GenerateAgentResponseParams,
 ): Promise<string> {
-  const ai = getGeminiClient();
+  const ai = await getGeminiClient();
 
   const defaultSystemPrompt =
     `You are a helpful AI assistant running in a cloud development environment (Box).
@@ -1260,7 +1265,7 @@ export interface GenerateStructuredResponseParams {
 export async function generateStructuredResponse<T>(
   params: GenerateStructuredResponseParams,
 ): Promise<T> {
-  const ai = getGeminiClient();
+  const ai = await getGeminiClient();
 
   const { data: response, error } = await tryCatch(
     ai.models.generateContent({
@@ -1370,7 +1375,7 @@ const MODIFICATION_BASE_PROMPT =
 export async function generateImageWithGemini(
   params: GenerateImageParams,
 ): Promise<Buffer> {
-  const ai = getGeminiClient();
+  const ai = await getGeminiClient();
 
   const resolutionMap = {
     "1K": "1024x1024",
@@ -1446,7 +1451,7 @@ export async function generateImageWithGemini(
 export async function modifyImageWithGemini(
   params: ModifyImageParams,
 ): Promise<Buffer> {
-  const ai = getGeminiClient();
+  const ai = await getGeminiClient();
 
   const resolutionMap = {
     "1K": "1024x1024",

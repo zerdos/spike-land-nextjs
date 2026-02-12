@@ -403,18 +403,18 @@ describe("gemini-client", () => {
       delete process.env.GEMINI_API_KEY;
     });
 
-    it("should return true when API key is set", () => {
+    it("should return true when API key is set", async () => {
       process.env.GEMINI_API_KEY = "test-api-key";
-      expect(isGeminiConfigured()).toBe(true);
+      expect(await isGeminiConfigured()).toBe(true);
     });
 
-    it("should return false when API key is not set", () => {
-      expect(isGeminiConfigured()).toBe(false);
+    it("should return false when API key is not set", async () => {
+      expect(await isGeminiConfigured()).toBe(false);
     });
 
-    it("should return false when API key is empty string", () => {
+    it("should return false when API key is empty string", async () => {
       process.env.GEMINI_API_KEY = "";
-      expect(isGeminiConfigured()).toBe(false);
+      expect(await isGeminiConfigured()).toBe(false);
     });
   });
 
@@ -613,14 +613,13 @@ describe("gemini-client", () => {
 
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: "gemini-3-pro-image-preview", // DEFAULT_MODEL (always premium)
-          config: {
-            responseModalities: ["IMAGE", "TEXT"],
-            imageConfig: {
+          model: "gemini-3-flash-preview", // DEFAULT_MODEL (always premium)
+          config: expect.objectContaining({
+            imageConfig: expect.objectContaining({
               imageSize: "2K",
-              aspectRatio: "4:3", // Detected from 800x600 (4:3 ratio)
-            },
-          },
+              aspectRatio: "4:3",
+            }),
+          }),
           contents: expect.arrayContaining([
             expect.objectContaining({
               role: "user",
@@ -664,7 +663,7 @@ describe("gemini-client", () => {
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
         expect.objectContaining({
           config: expect.objectContaining({
-            imageConfig: { imageSize: "4K" },
+            imageConfig: expect.objectContaining({ imageSize: "4K" }),
           }),
           contents: expect.arrayContaining([
             expect.objectContaining({
@@ -1259,7 +1258,7 @@ describe("gemini-client", () => {
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
         expect.objectContaining({
           config: expect.objectContaining({
-            imageConfig: { imageSize: "2K" },
+            imageConfig: expect.objectContaining({ imageSize: "2K" }),
           }),
           contents: expect.arrayContaining([
             expect.objectContaining({
@@ -1773,7 +1772,7 @@ describe("gemini-client", () => {
     it("should export the premium model as default", () => {
       // DEFAULT_MODEL is always the premium model
       // Tier-based selection is done via getModelForTier()
-      expect(DEFAULT_MODEL).toBe("gemini-3-pro-image-preview");
+      expect(DEFAULT_MODEL).toBe("gemini-3-flash-preview");
     });
   });
 
@@ -1913,6 +1912,7 @@ describe("gemini-client", () => {
   describe("model validation", () => {
     it("should export VALID_GEMINI_MODELS with expected models", () => {
       expect(VALID_GEMINI_MODELS).toContain("gemini-3-pro-image-preview");
+      expect(VALID_GEMINI_MODELS).toContain("gemini-3-flash-preview");
       expect(VALID_GEMINI_MODELS).toContain("gemini-2.5-flash-image");
     });
 

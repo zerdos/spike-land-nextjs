@@ -231,11 +231,11 @@ async function callClaudeForSuggestions(
   context: string,
   maxSuggestions: number,
 ): Promise<RawAISuggestion[]> {
-  if (!isClaudeConfigured()) {
+  if (!(await isClaudeConfigured())) {
     throw new Error("Claude is not configured. Set ANTHROPIC_AUTH_TOKEN or CLAUDE_CODE_OAUTH_TOKEN.");
   }
 
-  const client = getClaudeClient();
+  const client = await getClaudeClient();
 
   const systemPrompt =
     `You are an expert social media content strategist. Based on the provided context including brand voice guidelines, trending topics, and competitor analysis, generate creative and engaging content suggestions.

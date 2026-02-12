@@ -2301,6 +2301,15 @@ erDiagram
   String refreshTokenId "nullable"
   DateTime createdAt
 }
+"ai_providers" {
+  String id PK
+  String name UK
+  String token
+  Json config "nullable"
+  Boolean isDefault
+  DateTime createdAt
+  DateTime updatedAt
+}
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
 "campaign_briefs" }o--o| "workspaces" : workspace
@@ -5414,3 +5423,15 @@ Properties as follows:
 - `revokedAt`:
 - `refreshTokenId`:
 - `createdAt`:
+
+### `ai_providers`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `token`:
+- `config`:
+- `isDefault`:
+- `createdAt`:
+- `updatedAt`:
