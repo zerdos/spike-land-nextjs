@@ -22,13 +22,15 @@ describe("prompt-builder", () => {
   });
 
   describe("OUTPUT_SPEC", () => {
-    it("should describe JSON output format", () => {
+    it("should describe markdown output format with TITLE, DESCRIPTION, RELATED and tsx fence", () => {
       expect(typeof OUTPUT_SPEC).toBe("string");
       expect(OUTPUT_SPEC).toContain("## OUTPUT FORMAT");
-      expect(OUTPUT_SPEC).toContain('"title"');
-      expect(OUTPUT_SPEC).toContain('"code"');
-      expect(OUTPUT_SPEC).toContain('"relatedApps"');
+      expect(OUTPUT_SPEC).toContain("TITLE:");
+      expect(OUTPUT_SPEC).toContain("DESCRIPTION:");
+      expect(OUTPUT_SPEC).toContain("RELATED:");
+      expect(OUTPUT_SPEC).toContain("```tsx");
       expect(OUTPUT_SPEC).toContain("CRITICAL RULES");
+      expect(OUTPUT_SPEC).toContain("default export");
     });
   });
 
@@ -129,11 +131,13 @@ describe("prompt-builder", () => {
       expect(prompt).toContain('"/create/games/tetris"');
     });
 
-    it("should include example JSON responses", () => {
+    it("should include example responses in markdown format", () => {
       const prompt = buildUserPrompt("anything");
       expect(prompt).toContain("EXAMPLE RESPONSES");
       expect(prompt).toContain("Click Counter");
       expect(prompt).toContain("Quick Tasks");
+      expect(prompt).toContain("TITLE:");
+      expect(prompt).toContain("```tsx");
     });
 
     it("should include URL param instruction for dashboard topics", () => {

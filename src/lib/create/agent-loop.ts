@@ -199,6 +199,19 @@ export async function* agentGenerateApp(
       throw new Error("Failed to generate valid code from Claude");
     }
 
+    // Validate code completeness — incomplete code (e.g. truncated response)
+    // will fail transpilation with cryptic esbuild errors
+    if (!parsed.code.includes("export default")) {
+      logger.warn("Generated code missing 'export default', likely truncated", {
+        slug,
+        codeLength: parsed.code.length,
+        truncated: genResponse.truncated,
+      });
+      throw new Error(
+        "Generated code is incomplete (missing export default). Response may have been truncated.",
+      );
+    }
+
     ctx.currentCode = cleanCode(parsed.code);
     ctx.title = parsed.title;
     ctx.description = parsed.description;

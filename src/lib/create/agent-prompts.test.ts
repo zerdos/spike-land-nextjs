@@ -20,12 +20,13 @@ describe("buildAgentSystemPrompt", () => {
     expect(result.full).toContain("You are an expert React developer");
     expect(result.full).toContain("spike.land's app creator");
 
-    // Check for output spec
+    // Check for output spec (markdown format)
     expect(result.full).toContain("## OUTPUT FORMAT");
-    expect(result.full).toContain('"title": "App Title"');
-    expect(result.full).toContain('"code": "// Complete React component code');
-    expect(result.full).toContain('"relatedApps": ["path/one"');
-    expect(result.full).toContain("CRITICAL RULES for the \"code\" field:");
+    expect(result.full).toContain("TITLE: App Title");
+    expect(result.full).toContain("DESCRIPTION:");
+    expect(result.full).toContain("RELATED: path/one");
+    expect(result.full).toContain("```tsx");
+    expect(result.full).toContain("CRITICAL RULES:");
 
     // Should NOT include notes section
     expect(result.full).not.toContain("## Lessons Learned");

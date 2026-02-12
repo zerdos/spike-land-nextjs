@@ -646,17 +646,17 @@ describe("content-generator", () => {
       expect(prompt).toContain("QuickTasks");
     });
 
-    it("should include plan field mention in the response format", () => {
+    it("should include PLAN line mention in the response format", () => {
       const prompt = buildUserPrompt("games/tetris");
-      expect(prompt).toContain('"plan"');
-      expect(prompt).toContain("architecture");
+      expect(prompt).toContain("PLAN line");
+      expect(prompt).toContain("before TITLE");
     });
 
-    it("should show plan field usage in examples", () => {
+    it("should show PLAN line usage in examples", () => {
       const prompt = buildUserPrompt("anything");
-      // Both examples include a plan field
-      expect(prompt).toContain('"plan": "useState for count');
-      expect(prompt).toContain('"plan": "useState for tasks');
+      // Both examples include a PLAN line
+      expect(prompt).toContain("PLAN: useState for count");
+      expect(prompt).toContain("PLAN: useState for tasks");
     });
   });
 

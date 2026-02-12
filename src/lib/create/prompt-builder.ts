@@ -19,21 +19,22 @@ You learn from your mistakes — pay close attention to the lessons learned sect
 // --- Output Specification (Layer 5 — stable, cacheable) ---
 
 export const OUTPUT_SPEC = `## OUTPUT FORMAT
-You MUST respond with a JSON object. Do NOT wrap it in markdown code fences.
+Respond with the following sections in order. Do NOT use JSON.
 
-{
-  "title": "App Title",
-  "description": "A concise 1-sentence description",
-  "code": "// Complete React component code as a raw string",
-  "relatedApps": ["path/one", "path/two", "path/three"]
-}
+TITLE: App Title
+DESCRIPTION: A concise 1-sentence description
+RELATED: path/one, path/two, path/three
 
-CRITICAL RULES for the "code" field:
-- Must be a raw string value (use \\n for newlines since it's JSON)
+\`\`\`tsx
+// Complete React component code here
+\`\`\`
+
+CRITICAL RULES:
+- The code MUST be inside a \`\`\`tsx fence
 - The component MUST have exactly one default export
 - All imports must be at the top of the code
-- Do NOT wrap the code in markdown fences inside the JSON string
-- The JSON must be parseable — escape special characters properly`;
+- TITLE, DESCRIPTION, and RELATED lines must appear BEFORE the code fence
+- RELATED paths should NOT include the "/create/" prefix`;
 
 // --- Valid Lucide Icon Names (shared by prompt + post-processing validation) ---
 
@@ -645,27 +646,90 @@ Interpret this path as user intent. Examples:
 ## EXAMPLE RESPONSES (follow this structure exactly)
 
 Example 1 — Simple counter:
-{
-  "title": "Click Counter",
-  "description": "A satisfying click counter with animations and streak tracking",
-  "plan": "useState for count and streak. Button with motion.div scale animation on click. Badge shows streak. Card layout with semantic colors.",
-  "code": "import { useState } from \\"react\\";\\nimport { motion } from \\"framer-motion\\";\\nimport { Button } from \\"@/components/ui/button\\";\\nimport { Card, CardHeader, CardTitle, CardContent } from \\"@/components/ui/card\\";\\nimport { Badge } from \\"@/components/ui/badge\\";\\n\\nexport default function ClickCounter() {\\n  const [count, setCount] = useState(0);\\n  return (\\n    <div className=\\"min-h-screen bg-background flex items-center justify-center p-4\\">\\n      <Card className=\\"w-full max-w-sm\\">\\n        <CardHeader><CardTitle className=\\"tracking-tight\\">Counter</CardTitle></CardHeader>\\n        <CardContent className=\\"flex flex-col items-center gap-4\\">\\n          <motion.div key={count} initial={{ scale: 1.3 }} animate={{ scale: 1 }}>\\n            <span className=\\"text-6xl font-bold text-foreground\\">{count}</span>\\n          </motion.div>\\n          <Badge variant=\\"secondary\\">{count > 10 ? '🔥 On fire!' : 'Keep going'}</Badge>\\n          <div className=\\"flex gap-2\\">\\n            <Button onClick={() => setCount(c => c + 1)}>+1</Button>\\n            <Button variant=\\"outline\\" onClick={() => setCount(0)}>Reset</Button>\\n          </div>\\n        </CardContent>\\n      </Card>\\n    </div>\\n  );\\n}",
-  "relatedApps": ["tools/timer", "games/clicker", "tools/scoreboard"]
+PLAN: useState for count and streak. Button with motion.div scale animation on click. Badge shows streak. Card layout with semantic colors.
+TITLE: Click Counter
+DESCRIPTION: A satisfying click counter with animations and streak tracking
+RELATED: tools/timer, games/clicker, tools/scoreboard
+
+\`\`\`tsx
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+export default function ClickCounter() {
+  const [count, setCount] = useState(0);
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader><CardTitle className="tracking-tight">Counter</CardTitle></CardHeader>
+        <CardContent className="flex flex-col items-center gap-4">
+          <motion.div key={count} initial={{ scale: 1.3 }} animate={{ scale: 1 }}>
+            <span className="text-6xl font-bold text-foreground">{count}</span>
+          </motion.div>
+          <Badge variant="secondary">{count > 10 ? 'On fire!' : 'Keep going'}</Badge>
+          <div className="flex gap-2">
+            <Button onClick={() => setCount(c => c + 1)}>+1</Button>
+            <Button variant="outline" onClick={() => setCount(0)}>Reset</Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
+\`\`\`
 
 Example 2 — Task tracker:
-{
-  "title": "Quick Tasks",
-  "description": "A minimal task tracker with animations and completion effects",
-  "plan": "useState for tasks array and input. AnimatePresence for add/remove animations. Input + Button for adding. Map tasks with Check/Trash2 icons. Filter completed vs pending.",
-  "code": "import { useState } from \\"react\\";\\nimport { motion, AnimatePresence } from \\"framer-motion\\";\\nimport { Check, Trash2 } from \\"lucide-react\\";\\nimport { Button } from \\"@/components/ui/button\\";\\nimport { Input } from \\"@/components/ui/input\\";\\nimport { Card, CardHeader, CardTitle, CardContent } from \\"@/components/ui/card\\";\\n\\nexport default function QuickTasks() {\\n  const [tasks, setTasks] = useState<{ id: number; text: string; done: boolean }[]>([]);\\n  const [input, setInput] = useState('');\\n  const addTask = () => { if (!input.trim()) return; setTasks(t => [...t, { id: Date.now(), text: input.trim(), done: false }]); setInput(''); };\\n  return (\\n    <div className=\\"min-h-screen bg-background flex items-center justify-center p-4\\">\\n      <Card className=\\"w-full max-w-md\\">\\n        <CardHeader><CardTitle className=\\"tracking-tight\\">Tasks</CardTitle></CardHeader>\\n        <CardContent className=\\"space-y-3\\">\\n          <div className=\\"flex gap-2\\"><Input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTask()} placeholder=\\"Add a task...\\" /><Button onClick={addTask}>Add</Button></div>\\n          <div className=\\"divide-y divide-border/30\\">\\n            <AnimatePresence>{tasks.map(task => (\\n              <motion.div key={task.id} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 50 }} className=\\"flex items-center justify-between py-2\\">\\n                <span className={task.done ? 'line-through text-muted-foreground' : 'text-foreground'}>{task.text}</span>\\n                <div className=\\"flex gap-1\\">\\n                  <Button size=\\"icon\\" variant=\\"ghost\\" onClick={() => setTasks(t => t.map(x => x.id === task.id ? { ...x, done: !x.done } : x))}><Check className=\\"h-4 w-4\\" /></Button>\\n                  <Button size=\\"icon\\" variant=\\"ghost\\" onClick={() => setTasks(t => t.filter(x => x.id !== task.id))}><Trash2 className=\\"h-4 w-4\\" /></Button>\\n                </div>\\n              </motion.div>\\n            ))}</AnimatePresence>\\n          </div>\\n          {tasks.length === 0 && <p className=\\"text-center text-muted-foreground text-sm\\">No tasks yet</p>}\\n        </CardContent>\\n      </Card>\\n    </div>\\n  );\\n}",
-  "relatedApps": ["tools/notes", "tools/kanban", "tools/checklist"]
+PLAN: useState for tasks array and input. AnimatePresence for add/remove animations. Input + Button for adding. Map tasks with Check/Trash2 icons.
+TITLE: Quick Tasks
+DESCRIPTION: A minimal task tracker with animations and completion effects
+RELATED: tools/notes, tools/kanban, tools/checklist
+
+\`\`\`tsx
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+
+export default function QuickTasks() {
+  const [tasks, setTasks] = useState<{ id: number; text: string; done: boolean }[]>([]);
+  const [input, setInput] = useState('');
+  const addTask = () => { if (!input.trim()) return; setTasks(t => [...t, { id: Date.now(), text: input.trim(), done: false }]); setInput(''); };
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader><CardTitle className="tracking-tight">Tasks</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2">
+            <Input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTask()} placeholder="Add a task..." />
+            <Button onClick={addTask}>Add</Button>
+          </div>
+          <AnimatePresence>
+            {tasks.map(task => (
+              <motion.div key={task.id} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 50 }} className="flex items-center justify-between py-2">
+                <span className={task.done ? 'line-through text-muted-foreground' : 'text-foreground'}>{task.text}</span>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => setTasks(t => t.map(x => x.id === task.id ? { ...x, done: !x.done } : x))}><Check className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => setTasks(t => t.filter(x => x.id !== task.id))}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          {tasks.length === 0 && <p className="text-center text-muted-foreground text-sm">No tasks yet</p>}
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
+\`\`\`
 ${urlParamInstruction}
-Respond with JSON: { title, description, code, relatedApps }
-- Optionally include a "plan" field (1-2 sentences) describing your architecture before writing code
-- code: raw string (no markdown fences), single default-exported React component
-- relatedApps: 3-5 related paths without "/create/" prefix`;
+Respond with TITLE, DESCRIPTION, RELATED lines followed by a \`\`\`tsx code fence.
+- Optionally include a PLAN line (1-2 sentences) before TITLE
+- The code must be a single default-exported React component
+- RELATED: 3-5 related paths without "/create/" prefix`;
 }
 
 /**

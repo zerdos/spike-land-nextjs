@@ -637,6 +637,55 @@ describe("agentGenerateApp", () => {
   });
 
   // ----------------------------------------------------------------
+  // 3b. Code completeness validation (export default)
+  // ----------------------------------------------------------------
+  describe("code completeness validation", () => {
+    it("throws when generated code is missing export default", async () => {
+      vi.mocked(parseGenerationResponse).mockReturnValue({
+        code: "import { useState } from 'react';\nfunction App() { return <div/>; }",
+        title: "Test",
+        description: "Test",
+        relatedApps: [],
+      } as never);
+
+      await expect(
+        collectEvents(
+          agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+        ),
+      ).rejects.toThrow("Generated code is incomplete (missing export default)");
+    });
+
+    it("logs warning when generated code is missing export default", async () => {
+      vi.mocked(parseGenerationResponse).mockReturnValue({
+        code: "function App() { return <div/>; }",
+        title: "Test",
+        description: "Test",
+        relatedApps: [],
+      } as never);
+      vi.mocked(callClaude).mockResolvedValue({
+        text: "gen",
+        inputTokens: 100,
+        outputTokens: 200,
+        cacheReadTokens: 50,
+        cacheCreationTokens: 10,
+        truncated: true,
+      } as never);
+
+      await collectEvents(
+        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+      ).catch(() => {});
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        "Generated code missing 'export default', likely truncated",
+        expect.objectContaining({
+          slug: "my-app",
+          truncated: true,
+        }),
+      );
+    });
+  });
+
+  // ----------------------------------------------------------------
   // 4. Generation returns no code
   // ----------------------------------------------------------------
   describe("generation returns no code", () => {
@@ -1315,7 +1364,7 @@ describe("agentGenerateApp", () => {
 
   describe("code preview truncation", () => {
     it("truncates code preview to 200 characters", async () => {
-      const longCode = "x".repeat(500);
+      const longCode = "export default function App() { " + "x".repeat(500) + " }";
       vi.mocked(parseGenerationResponse).mockReturnValue({
         code: longCode,
         title: "T",

@@ -125,11 +125,12 @@ export async function GET(
       `[Codespace Bundle] Build failed for "${codeSpace}":`,
       bundleError,
     );
-    const status = bundleError.message?.includes("timed out") ? 504 : 500;
-    return new Response(
-      status === 504 ? "Bundle build timed out" : "Bundle build failed",
-      { status, headers: { ...CORS_HEADERS, "Content-Type": "text/plain" } },
-    );
+
+    // esbuild-wasm doesn't work on Vercel's serverless runtime.
+    // Fall back to redirecting to the testing.spike.land live page
+    // which uses import maps and works without bundling.
+    const liveUrl = `https://testing.spike.land/live/${codeSpace}/`;
+    return Response.redirect(liveUrl, 302);
   }
 
   const html = buildBundleHtml({
