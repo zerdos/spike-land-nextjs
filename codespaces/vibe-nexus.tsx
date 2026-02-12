@@ -131,8 +131,17 @@ export default function VibeNexus({
         </div>
 
         {/* Left resize handle */}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
         <div
+          role="separator"
+          aria-label="Resize left panel"
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+          tabIndex={0}
           onMouseDown={() => setResizing("left")}
+          onKeyDown={(e) => {
+             if (e.key === 'ArrowLeft') setLeftPct(p => Math.max(15, p - 1));
+             if (e.key === 'ArrowRight') setLeftPct(p => Math.min(45, p + 1));
+          }}
           style={{
             width: 3,
             cursor: "col-resize",
@@ -153,6 +162,7 @@ export default function VibeNexus({
           {mode === "now" ? (
             <div style={{ flex: 1, position: "relative", background: "#fff" }}>
               <iframe
+                title={`Live preview of ${selectedCS}`}
                 key={selectedCS}
                 src={`/live/${selectedCS}/embed`}
                 style={{ width: "100%", height: "100%", border: "none" }}
@@ -165,8 +175,17 @@ export default function VibeNexus({
         </div>
 
         {/* Right resize handle */}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
         <div
-          onMouseDown={() => setResizing("right")}
+           role="separator"
+           aria-label="Resize right panel"
+           // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+           tabIndex={0}
+           onMouseDown={() => setResizing("right")}
+           onKeyDown={(e) => {
+              if (e.key === 'ArrowLeft') setRightPct(p => Math.min(35, p + 1));
+              if (e.key === 'ArrowRight') setRightPct(p => Math.max(10, p - 1));
+           }}
           style={{
             width: 3,
             cursor: "col-resize",
@@ -210,6 +229,12 @@ export default function VibeNexus({
             <motion.div
               key={cs}
               onClick={() => setSelectedCS(cs)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') setSelectedCS(cs);
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Select ${cs}`}
               style={{
                 cursor: "pointer",
                 padding: 6,

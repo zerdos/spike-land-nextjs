@@ -3,32 +3,30 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { checkRateLimit, rateLimitConfigs } from './rate-limiter';
 
 describe('Rate Limiter Security Bypass', () => {
-  const originalEnv = process.env;
-
   beforeEach(() => {
     vi.resetModules();
-    process.env = { ...originalEnv };
+    vi.unstubAllEnvs();
   });
 
   afterEach(() => {
-    process.env = originalEnv;
+    vi.unstubAllEnvs();
   });
 
   it('should NOT allow bypass in production environment', async () => {
-    process.env.NODE_ENV = 'production';
-    process.env.SKIP_RATE_LIMIT = 'true';
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('SKIP_RATE_LIMIT', 'true');
 
     const config = rateLimitConfigs.general;
     const result = await checkRateLimit('test-user-prod', config);
 
     // Should NOT match the bypass signature (bypass returns maxRequests)
-    // Real logic should decrement remaining (or return 0 if full, but first request consumes 1)
+    // Real logic should decrement remaining (or return max-1 if new)
     expect(result.remaining).toBeLessThan(config.maxRequests);
   });
 
   it('should allow bypass in development environment', async () => {
-    process.env.NODE_ENV = 'development';
-    process.env.SKIP_RATE_LIMIT = 'true';
+    vi.stubEnv('NODE_ENV', 'development');
+    vi.stubEnv('SKIP_RATE_LIMIT', 'true');
 
     const config = rateLimitConfigs.general;
     const result = await checkRateLimit('test-user-dev', config);
@@ -38,8 +36,8 @@ describe('Rate Limiter Security Bypass', () => {
   });
 
   it('should allow bypass in test environment', async () => {
-    process.env.NODE_ENV = 'test';
-    process.env.E2E_BYPASS_AUTH = 'true';
+    vi.stubEnv('NODE_ENV', 'test');
+    vi.stubEnv('E2E_BYPASS_AUTH', 'true');
 
     const config = rateLimitConfigs.general;
     const result = await checkRateLimit('test-user-test', config);

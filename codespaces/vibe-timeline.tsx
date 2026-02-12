@@ -179,6 +179,17 @@ export default function VibeTimeline({
     [versions.length]
   );
 
+  const handleTimelineKeyDown = useCallback(
+      (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'ArrowLeft') {
+            setSelIdx(i => Math.max(0, i - 1));
+        } else if (e.key === 'ArrowRight') {
+            setSelIdx(i => Math.min(versions.length - 1, i + 1));
+        }
+      },
+      [versions.length]
+  );
+
   if (loading) {
     return (
       <div
@@ -255,23 +266,27 @@ export default function VibeTimeline({
               label: "\u25C0",
               onClick: () => setSelIdx((i) => Math.max(0, i - 1)),
               disabled: selIdx <= 0,
+              desc: "Previous version"
             },
             {
               label: playing ? "\u23F8" : "\u25B6",
               onClick: () => setPlaying(!playing),
               disabled: false,
               accent: true,
+              desc: playing ? "Pause" : "Play"
             },
             {
               label: "\u25B6",
               onClick: () => setSelIdx((i) => Math.min(versions.length - 1, i + 1)),
               disabled: selIdx >= versions.length - 1,
+              desc: "Next version"
             },
           ].map((btn, i) => (
             <button
               key={i}
               onClick={btn.onClick}
               disabled={btn.disabled}
+              aria-label={btn.desc}
               style={{
                 background: btn.accent ? (playing ? "#ef4444" : ACCENT) : "none",
                 border: btn.accent ? "none" : `1px solid #334155`,
@@ -317,6 +332,7 @@ export default function VibeTimeline({
           </div>
           {selVer && (
             <iframe
+              title={`Preview of version ${selVer.number}`}
               key={`${resolvedCS}-${selVer.number}`}
               src={`/live/${resolvedCS}/version/${selVer.number}/embed`}
               style={{
@@ -402,6 +418,13 @@ export default function VibeTimeline({
 
       {/* Timeline scrubber */}
       <div
+        role="slider"
+        aria-label="Timeline scrubber"
+        aria-valuenow={selIdx}
+        aria-valuemin={0}
+        aria-valuemax={versions.length - 1}
+        aria-valuetext={`Version ${selVer?.number}`}
+        tabIndex={0}
         style={{
           height: 44,
           background: BG_DARK,
@@ -411,6 +434,7 @@ export default function VibeTimeline({
           flexShrink: 0,
         }}
         onClick={handleTimelineClick}
+        onKeyDown={handleTimelineKeyDown}
       >
         {versions.map((v, i) => {
           const pct =

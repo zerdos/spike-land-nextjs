@@ -146,8 +146,11 @@ export default function VibeCanvas({
   }, [cards]);
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <div
       ref={containerRef}
+      role="region"
+      aria-label="Vibe Canvas Code Space Visualization"
       style={{
         width: width || "100%",
         height: height || "100%",
@@ -162,6 +165,8 @@ export default function VibeCanvas({
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseUp}
       onWheel={onWheel}
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+      tabIndex={0}
     >
       {/* Grid */}
       <svg
@@ -247,6 +252,14 @@ export default function VibeCanvas({
               updatePos(card.codeSpace, info.offset.x / zoom, info.offset.y / zoom);
             }}
             onClick={() => handleSelect(card.codeSpace)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handleSelect(card.codeSpace);
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label={`Select ${card.codeSpace}`}
             style={{
               position: "absolute",
               left: card.x,
@@ -302,6 +315,7 @@ export default function VibeCanvas({
               }}
             >
               <iframe
+                title={`Preview of ${card.codeSpace}`}
                 src={`/live/${card.codeSpace}/embed`}
                 style={{
                   width: `${Math.round(100 / THUMB_SCALE)}%`,
@@ -354,6 +368,7 @@ export default function VibeCanvas({
       >
         <button
           onClick={() => setZoom((z) => Math.min(3, z * 1.2))}
+          aria-label="Zoom in"
           style={{
             background: "none",
             border: "none",
@@ -370,6 +385,7 @@ export default function VibeCanvas({
         </span>
         <button
           onClick={() => setZoom((z) => Math.max(0.2, z / 1.2))}
+          aria-label="Zoom out"
           style={{
             background: "none",
             border: "none",
@@ -387,6 +403,7 @@ export default function VibeCanvas({
             setPan({ x: 40, y: 40 });
             setZoom(1);
           }}
+          aria-label="Reset view"
           style={{
             background: "none",
             border: "none",
