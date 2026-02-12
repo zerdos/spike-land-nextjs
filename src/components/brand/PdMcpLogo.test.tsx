@@ -91,9 +91,9 @@ describe("PdMcpLogo", () => {
     // Three bars with increasing widths
     const rects = svg!.querySelectorAll("g[filter] rect");
     expect(rects).toHaveLength(3);
-    expect(rects[0]).toHaveAttribute("width", "12");
-    expect(rects[1]).toHaveAttribute("width", "20");
-    expect(rects[2]).toHaveAttribute("width", "28");
+    expect(rects[0]!).toHaveAttribute("width", "12");
+    expect(rects[1]!).toHaveAttribute("width", "20");
+    expect(rects[2]!).toHaveAttribute("width", "28");
   });
 
   it("should render MCP text in SVG", () => {

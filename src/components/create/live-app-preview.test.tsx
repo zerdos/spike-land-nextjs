@@ -160,7 +160,7 @@ describe("LiveAppPreview", () => {
 
     // Should show error state
     expect(screen.getByText("Preview unavailable")).toBeInTheDocument();
-    expect(screen.queryByTagName?.("IFRAME")).toBeUndefined();
+    expect(screen.queryByTitle("Unhealthy App")).not.toBeInTheDocument();
   });
 
   it("calls onHealthStatus callback with health result", async () => {

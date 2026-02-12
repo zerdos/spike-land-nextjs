@@ -145,7 +145,8 @@ export class HypothesisAgent {
 
     // 3. Generate with AI
     try {
-      const response = await this.ai.models.generateContent({
+      const ai = await this.ai;
+      const response = await ai.models.generateContent({
         model: this.model,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
@@ -391,7 +392,8 @@ export class HypothesisAgent {
 
     let insightText = "Analysis pending.";
     try {
-      const response = await this.ai.models.generateContent({
+      const ai = await this.ai;
+      const response = await ai.models.generateContent({
         model: this.model,
         contents: [{ role: "user", parts: [{ text: insightsPrompt }] }],
       });

@@ -54,6 +54,11 @@ describe("Suggestion Generator", () => {
   });
 
   describe("buildAIContext", () => {
+    beforeEach(() => {
+      // @ts-expect-error - mockResolvedValue expectation mismatch
+      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
+    });
+
     it("should build context with brand voice", () => {
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
@@ -229,6 +234,11 @@ describe("Suggestion Generator", () => {
   });
 
   describe("generateSuggestions", () => {
+    beforeEach(() => {
+       // @ts-expect-error - mockResolvedValue expectation mismatch
+      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
+    });
+
     it("should generate suggestions with valid input", async () => {
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
@@ -297,7 +307,8 @@ describe("Suggestion Generator", () => {
     });
 
     it("should throw error when Claude is not configured", async () => {
-      vi.mocked(isClaudeConfigured).mockReturnValue(false);
+      // @ts-expect-error - mockResolvedValue expectation mismatch
+      vi.mocked(isClaudeConfigured).mockResolvedValue(false);
 
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",

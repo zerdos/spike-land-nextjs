@@ -50,7 +50,8 @@ Format the output as a valid JSON object matching this schema:
 `;
 
   try {
-    const result = await genAI.models.generateContent({
+    const ai = await genAI;
+    const result = await ai.models.generateContent({
       model: ANALYSIS_MODEL,
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {

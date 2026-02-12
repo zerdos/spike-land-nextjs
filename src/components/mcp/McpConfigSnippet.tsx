@@ -7,22 +7,26 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface McpConfigSnippetProps {
-  serverName: string;
-  config: Record<string, unknown>;
+  label?: string;
+  code?: string;
+  config?: Record<string, unknown>;
+  language?: string;
   className?: string;
 }
 
 export function McpConfigSnippet({
-  serverName,
+  label = "Config",
+  code,
   config,
+  language = "json",
   className,
 }: McpConfigSnippetProps) {
   const [copied, setCopied] = useState(false);
 
-  const configString = JSON.stringify(config, null, 2);
+  const displayCode = code || (config ? JSON.stringify(config, null, 2) : "");
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(configString);
+    await navigator.clipboard.writeText(displayCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -38,7 +42,7 @@ export function McpConfigSnippet({
           </div>
           <div className="ml-2 flex items-center gap-1.5 rounded-md bg-background/50 px-2 py-0.5 text-xs text-muted-foreground ring-1 ring-border/50">
             <Terminal className="h-3 w-3" />
-            <span className="font-medium">claude_desktop_config.json</span>
+            <span className="font-medium">{label}</span>
           </div>
         </div>
         <Button
@@ -68,13 +72,12 @@ export function McpConfigSnippet({
               </motion.div>
             )}
           </AnimatePresence>
-          <span className="sr-only">Copy configuration</span>
+          <span className="sr-only">Copy code</span>
         </Button>
       </div>
       <div className="relative overflow-x-auto p-4 font-mono text-sm leading-relaxed">
         <pre className="text-muted-foreground">
-          <span className="text-blue-400">"{serverName}"</span>:{" "}
-          <span className="text-orange-300">{configString}</span>
+          {displayCode}
         </pre>
       </div>
     </Card>
