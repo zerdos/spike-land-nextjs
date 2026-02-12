@@ -10,8 +10,8 @@ interface ExtraLib {
   content: string;
 }
 
-// Consolidated path cleaning logic (remains the same)
-function cleanFilePath(filePath: string, originToUse: string): string {
+// Consolidated path cleaning logic
+export function cleanFilePath(filePath: string, originToUse: string): string {
   // Remove potential origins and CDN prefixes
   let cleaned = filePath
     .replace(originToUse, "")
@@ -47,8 +47,8 @@ function cleanFilePath(filePath: string, originToUse: string): string {
   return cleaned;
 }
 
-// Consolidated content cleaning logic (remains the same)
-function cleanFileContent(content: string, originToUse: string): string {
+// Consolidated content cleaning logic
+export function cleanFileContent(content: string, originToUse: string): string {
   // Perform similar cleaning on content, focusing on import/reference paths
   let cleaned = content
     .replace(new RegExp(originToUse, "g"), "")
@@ -82,7 +82,7 @@ function cleanFileContent(content: string, originToUse: string): string {
 }
 
 // Helper to extract import specifiers from code
-function extractImportSpecifiers(code: string): string[] {
+export function extractImportSpecifiers(code: string): string[] {
   const sourceFile = ts.createSourceFile(
     "temp.tsx", // Temporary filename, doesn't matter
     code,
@@ -161,7 +161,7 @@ export async function ata({
   const extCode = `${code}
 import "react";
 import "@emotion/react";
-import * as JSXruntime "@emotion/react/jsx-runtime.d.ts";
+import * as JSXruntime from "@emotion/react/jsx-runtime";
 import "react/jsx-runtime";
 import "react/jsx-dev-runtime";
 import "react/jsx-runtime/jsx-dev-runtime";
@@ -210,9 +210,10 @@ import "react/jsx-dev-runtime/jsx-dev-runtime.d.ts";
     }
   }
 
-  // 4. Identify & Fetch Missing Aliased Imports
+  // 4. Identify & Fetch Missing Aliased Imports and /live/ Imports
   const aliasPrefix = "@/";
-  const aliasFetchPromises: Array<Promise<void>> = [];
+  const livePrefix = "/live/";
+  const extraFetchPromises: Array<Promise<void>> = [];
 
   for (const specifier of importSpecifiers) {
     if (specifier.startsWith(aliasPrefix)) {
@@ -224,24 +225,19 @@ import "react/jsx-dev-runtime/jsx-dev-runtime.d.ts";
       ); // Assume .d.ts extension
 
       if (!processedLibs[expectedCleanedPath]) {
-        // Construct URL with single quotes around the path as requested
         const fetchUrl = `${originToUse}/${mappedPath}.d.ts`;
 
-        aliasFetchPromises.push(
+        extraFetchPromises.push(
           queuedFetch.fetch(fetchUrl)
             .then(async (response) => {
               if (response.ok) {
                 const content = await response.text();
-                const finalFilePath = cleanFilePath(fetchUrl, originToUse); // Use the final URL after redirects
+                const finalFilePath = cleanFilePath(fetchUrl, originToUse);
                 const cleanedContent = cleanFileContent(content, originToUse);
 
                 if (!processedLibs[finalFilePath]) {
                   processedLibs[finalFilePath] = cleanedContent;
                 }
-
-                // Recursively fetch imports from this newly added file?
-                // For simplicity, let's assume the initial ATA run + direct alias fetches are sufficient.
-                // Adding recursion here would significantly increase complexity.
               }
             })
             .catch((error) => {
@@ -253,12 +249,47 @@ import "react/jsx-dev-runtime/jsx-dev-runtime.d.ts";
         );
       }
     }
+
+    // Handle /live/ cross-codespace imports
+    if (specifier.startsWith(livePrefix)) {
+      const codeSpaceName = specifier.slice(livePrefix.length).split("/")[0];
+      if (!codeSpaceName) continue;
+
+      const fetchUrl = `${originToUse}/live/${codeSpaceName}/index.tsx`;
+      const dtsPath = `/live/${codeSpaceName}.d.ts`;
+      const barePath = `/live/${codeSpaceName}`;
+
+      if (!processedLibs[dtsPath]) {
+        extraFetchPromises.push(
+          queuedFetch.fetch(fetchUrl)
+            .then(async (response) => {
+              if (response.ok) {
+                const content = await response.text();
+                if (!processedLibs[dtsPath]) {
+                  processedLibs[dtsPath] = content;
+                }
+                if (!processedLibs[barePath]) {
+                  processedLibs[barePath] = content;
+                }
+              }
+            })
+            .catch((error) => {
+              console.error(
+                `[ATA] Error fetching /live/ import ${specifier}:`,
+                error,
+              );
+            }),
+        );
+      }
+    }
   }
 
-  // Wait for all alias fetches to complete
-  const { error: aliasError } = await tryCatch(Promise.all(aliasFetchPromises));
-  if (aliasError) {
-    console.error("[ATA] Error during alias fetches:", aliasError);
+  // Wait for all extra fetches to complete
+  const { error: extraFetchError } = await tryCatch(
+    Promise.all(extraFetchPromises),
+  );
+  if (extraFetchError) {
+    console.error("[ATA] Error during extra fetches:", extraFetchError);
   }
 
   // 5. Finalize
