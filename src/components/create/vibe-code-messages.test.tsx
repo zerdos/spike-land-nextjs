@@ -166,32 +166,46 @@ describe("VibeCodeMessages", () => {
   });
 
   it("passes stable startTime to AgentProgressIndicator", () => {
+    // Use fake timers so Date.now() is deterministic across renders
+    vi.useFakeTimers({ now: 1000000 });
     mockIsStreaming = true;
     mockAgentStage = "processing";
 
     const { rerender } = render(<VibeCodeMessages />);
     const progress1 = screen.getByTestId("agent-progress");
     const startTime1 = Number(progress1.getAttribute("data-start-time"));
-    expect(startTime1).toBeGreaterThan(0);
+    expect(startTime1).toBe(1000000);
+
+    // Advance time to prove the ref is stable (not re-assigned on rerender)
+    vi.advanceTimersByTime(500);
 
     // Re-render should keep same startTime
     rerender(<VibeCodeMessages />);
     const progress2 = screen.getByTestId("agent-progress");
     const startTime2 = Number(progress2.getAttribute("data-start-time"));
     expect(startTime2).toBe(startTime1);
+
+    vi.useRealTimers();
   });
 
   it("resets startTime when streaming restarts", () => {
+    // Use fake timers to make timestamps deterministic
+    vi.useFakeTimers({ now: 1000000 });
     mockIsStreaming = true;
     mockAgentStage = "processing";
 
     const { rerender } = render(<VibeCodeMessages />);
-    screen.getByTestId("agent-progress");
+    const progress1 = screen.getByTestId("agent-progress");
+    const startTime1 = Number(progress1.getAttribute("data-start-time"));
+    expect(startTime1).toBe(1000000);
 
     // Stop streaming
     mockIsStreaming = false;
     mockAgentStage = null;
     rerender(<VibeCodeMessages />);
+
+    // Advance time so the new startTime is clearly different
+    vi.advanceTimersByTime(5000);
 
     // Start streaming again
     mockIsStreaming = true;
@@ -199,8 +213,11 @@ describe("VibeCodeMessages", () => {
     rerender(<VibeCodeMessages />);
     const progress3 = screen.getByTestId("agent-progress");
     const startTime3 = Number(progress3.getAttribute("data-start-time"));
-    // New start time should be set (could be same ms, but should be > 0)
-    expect(startTime3).toBeGreaterThan(0);
+    // New start time should reflect the advanced clock
+    expect(startTime3).toBe(1005000);
+    expect(startTime3).not.toBe(startTime1);
+
+    vi.useRealTimers();
   });
 
   it("does not render empty state when messages exist", () => {

@@ -126,6 +126,14 @@ function OnboardingCard({
 export function VibeCodeMessages() {
   const { messages, agentStage, isStreaming, sendMessage } = useVibeCode();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const streamingStartTime = useRef<number>(0);
+
+  // Set ref during render so it's available before JSX evaluates
+  if (isStreaming && streamingStartTime.current === 0) {
+    streamingStartTime.current = Date.now();
+  } else if (!isStreaming) {
+    streamingStartTime.current = 0;
+  }
 
   const handleSuggestionClick = useCallback(
     (text: string) => {
@@ -151,7 +159,7 @@ export function VibeCodeMessages() {
           <AgentProgressIndicator
             stage={agentStage}
             isVisible={true}
-            startTime={Date.now()}
+            startTime={streamingStartTime.current}
           />
         </div>
       )}

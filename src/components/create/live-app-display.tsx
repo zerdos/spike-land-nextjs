@@ -114,7 +114,7 @@ export function LiveAppDisplay({
           src={iframeSrc}
           className="w-full h-full border-none"
           title={title}
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          sandbox="allow-scripts allow-popups allow-forms"
           allow="autoplay"
           onLoad={() => setLoading(false)}
         />
