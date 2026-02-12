@@ -51,9 +51,10 @@ describe("AppShowcaseSection", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders LiveAppCard for each app", () => {
+  it("renders LiveAppCard for each app (repeated by Marquee)", () => {
     render(<AppShowcaseSection apps={mockApps} />);
-    expect(screen.getAllByTestId("live-app-card")).toHaveLength(2);
+    // Marquee repeats children 4 times by default, so 2 apps * 4 = 8
+    expect(screen.getAllByTestId("live-app-card")).toHaveLength(8);
   });
 
   it("renders the see all apps link", () => {

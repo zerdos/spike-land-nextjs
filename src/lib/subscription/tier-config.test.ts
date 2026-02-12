@@ -20,10 +20,10 @@ describe("tier-config", () => {
   describe("WORKSPACE_TIER_LIMITS", () => {
     it("should define FREE tier with correct limits", () => {
       expect(WORKSPACE_TIER_LIMITS["FREE"]).toEqual({
-        maxSocialAccounts: 3,
-        maxScheduledPosts: 30,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
+        maxSocialAccounts: 5,
+        maxScheduledPosts: 100,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
         maxTeamMembers: 1,
         priceUSD: 0,
       });
