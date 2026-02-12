@@ -25,6 +25,16 @@ export type StreamEvent =
     relatedApps: string[];
     agent?: string;
   }
-  | { type: "error"; message: string; codespaceUrl?: string }
+  | { type: "error"; message: string; codespaceUrl?: string; generatedCode?: string }
   | { type: "heartbeat"; timestamp: number }
-  | { type: "timeout"; message: string; codespaceUrl?: string };
+  | { type: "timeout"; message: string; codespaceUrl?: string; generatedCode?: string };
+
+export interface CreateGenerationResult {
+  success: boolean;
+  codeSpace: string;
+  code?: string;
+  title?: string;
+  description?: string;
+  error?: string;
+  buildLog?: string[];
+}

@@ -444,6 +444,7 @@ export async function* agentGenerateApp(
       type: "error",
       message: `Failed after ${ctx.maxIterations} fix attempts`,
       codespaceUrl,
+      generatedCode: ctx.currentCode ?? undefined,
     };
   } catch (error) {
     logger.error(`Agent loop failed for ${slug}:`, { error });
