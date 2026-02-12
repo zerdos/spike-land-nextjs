@@ -7,17 +7,17 @@ const config: Config = {
       colors: {
         // spike.land brand colors
         spike: {
-          cyan: "#00E5FF",
-          fuchsia: "#FF00FF",
-          purple: "#9945FF",
+          cyan: "#8B5CF6", // Replaced with Violet
+          fuchsia: "#EC4899", // Replaced with Pink-500
+          purple: "#8B5CF6",
           amber: "#F59E0B",
           gold: "#FBBF24",
         },
         // Dark theme colors
         dark: {
-          bg: "#0a0a0f",
-          card: "#1a1a2e",
-          border: "#2a2a3e",
+          bg: "#0F172A",
+          card: "#1E293B",
+          border: "#334155",
         },
       },
       fontFamily: {

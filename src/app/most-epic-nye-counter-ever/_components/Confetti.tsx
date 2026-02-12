@@ -14,11 +14,11 @@ interface Piece {
 }
 
 const COLORS = [
-  "#00E5FF", // Cyan
+  "#8B5CF6", // Violet
   "#FFD700", // Gold
-  "#FF00FF", // Pink
+  "#EC4899", // Pink
   "#FFFFFF", // White
-  "#9D4EDD", // Purple
+  "#A855F7", // Purple
 ];
 
 /**

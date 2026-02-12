@@ -9,14 +9,14 @@
     </filter>
     <radialGradient id="sparkGradient" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#FFFFFF" />
-      <stop offset="30%" stop-color="#00E5FF" />
-      <stop offset="70%" stop-color="#FF00FF" stop-opacity="0.9" />
-      <stop offset="100%" stop-color="#FF00FF" stop-opacity="0.7" />
+      <stop offset="30%" stop-color="#8B5CF6" />
+      <stop offset="70%" stop-color="#EC4899" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#EC4899" stop-opacity="0.7" />
     </radialGradient>
     <linearGradient id="sparkShine" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.7" />
-      <stop offset="40%" stop-color="#00E5FF" stop-opacity="0.3" />
-      <stop offset="100%" stop-color="#FF00FF" stop-opacity="0.4" />
+      <stop offset="40%" stop-color="#8B5CF6" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#EC4899" stop-opacity="0.4" />
     </linearGradient>
     <linearGradient id="cellGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#E0E0E0" />

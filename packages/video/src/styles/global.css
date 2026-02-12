@@ -10,25 +10,25 @@ body {
   margin: 0;
   padding: 0;
   font-family: "Inter", system-ui, sans-serif;
-  background: #0a0a0f;
-  color: #ffffff;
+  background: #0F172A;
+  color: #F8FAFC;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Utility classes for common patterns */
-.glow-cyan {
+.glow-cyan, .glow-purple {
   box-shadow:
-    0 0 20px rgba(0, 229, 255, 0.5),
-    0 0 40px rgba(0, 229, 255, 0.3),
-    0 0 60px rgba(0, 229, 255, 0.1);
+    0 0 20px rgba(139, 92, 246, 0.5),
+    0 0 40px rgba(139, 92, 246, 0.3),
+    0 0 60px rgba(139, 92, 246, 0.1);
 }
 
-.glow-fuchsia {
+.glow-fuchsia, .glow-pink {
   box-shadow:
-    0 0 20px rgba(255, 0, 255, 0.5),
-    0 0 40px rgba(255, 0, 255, 0.3),
-    0 0 60px rgba(255, 0, 255, 0.1);
+    0 0 20px rgba(236, 72, 153, 0.5),
+    0 0 40px rgba(236, 72, 153, 0.3),
+    0 0 60px rgba(236, 72, 153, 0.1);
 }
 
 .glow-amber {
@@ -38,23 +38,23 @@ body {
     0 0 60px rgba(245, 158, 11, 0.1);
 }
 
-.text-glow-cyan {
+.text-glow-cyan, .text-glow-purple {
   text-shadow:
-    0 0 10px rgba(0, 229, 255, 0.8),
-    0 0 20px rgba(0, 229, 255, 0.5),
-    0 0 30px rgba(0, 229, 255, 0.3);
+    0 0 10px rgba(139, 92, 246, 0.8),
+    0 0 20px rgba(139, 92, 246, 0.5),
+    0 0 30px rgba(139, 92, 246, 0.3);
 }
 
-.text-glow-fuchsia {
+.text-glow-fuchsia, .text-glow-pink {
   text-shadow:
-    0 0 10px rgba(255, 0, 255, 0.8),
-    0 0 20px rgba(255, 0, 255, 0.5),
-    0 0 30px rgba(255, 0, 255, 0.3);
+    0 0 10px rgba(236, 72, 153, 0.8),
+    0 0 20px rgba(236, 72, 153, 0.5),
+    0 0 30px rgba(236, 72, 153, 0.3);
 }
 
 /* Glass morphism effect */
 .glass {
-  background: rgba(26, 26, 46, 0.8);
+  background: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -62,10 +62,10 @@ body {
 /* Gradient backgrounds */
 .gradient-mesh {
   background:
-    radial-gradient(ellipse at 20% 30%, rgba(0, 229, 255, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 70%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(153, 69, 255, 0.1) 0%, transparent 60%),
-    #0a0a0f;
+    radial-gradient(ellipse at 20% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 60%),
+    #0F172A;
 }
 
 /* Scan line overlay */
