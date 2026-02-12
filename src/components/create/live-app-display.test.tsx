@@ -4,8 +4,9 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Use vi.hoisted so the mock value is available when vi.mock factories run
-const { mockContextValue } = vi.hoisted(() => {
-  return { mockContextValue: { refreshCounter: 0 } };
+const { mockContextValue, hoistedCreateContext } = vi.hoisted(async () => {
+  const { createContext } = await import("react");
+  return { mockContextValue: { refreshCounter: 0 }, hoistedCreateContext: createContext };
 });
 
 // Mock next/link as a simple <a> tag
@@ -53,12 +54,9 @@ vi.mock("@/lib/utils", () => ({
 }));
 
 // Mock the VibeCodeContext from vibe-code-provider using the hoisted value
-vi.mock("./vibe-code-provider", () => {
-  const { createContext } = require("react");
-  return {
-    VibeCodeContext: createContext(mockContextValue),
-  };
-});
+vi.mock("./vibe-code-provider", () => ({
+  VibeCodeContext: hoistedCreateContext(mockContextValue),
+}));
 
 import { LiveAppDisplay } from "./live-app-display";
 

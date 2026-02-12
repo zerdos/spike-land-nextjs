@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
                 type: "user" as const,
                 message: {
                   role: "user" as const,
-                  content: userContent as MessageParam["content"],
+                  content: userContent as unknown as MessageParam["content"],
                 },
                 parent_tool_use_id: null,
                 session_id: "",

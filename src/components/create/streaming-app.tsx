@@ -50,7 +50,7 @@ const PHASE_GRADIENT: Record<string, string> = {
 
 function getStepStatus(step: (typeof PHASE_STEPS)[number], currentPhase: string | null) {
   if (!currentPhase) return "future";
-  const currentStepIndex = PHASE_STEPS.findIndex((s) => s.phases.includes(currentPhase));
+  const currentStepIndex = PHASE_STEPS.findIndex((s) => (s.phases as readonly string[]).includes(currentPhase));
   const stepIndex = PHASE_STEPS.indexOf(step);
   if (stepIndex < currentStepIndex) return "completed";
   if (stepIndex === currentStepIndex) return "active";
