@@ -2,7 +2,7 @@
 
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { cn } from "@/lib/utils";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { Check, ExternalLink, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -31,6 +31,32 @@ const PHASE_PROGRESS: Record<string, number> = {
   FAILED: 100,
 };
 
+const PHASE_STEPS = [
+  { label: "Plan", phases: ["PLANNING"] },
+  { label: "Generate", phases: ["GENERATING"] },
+  { label: "Build", phases: ["TRANSPILING", "FIXING"] },
+  { label: "Verify", phases: ["VERIFYING", "LEARNING"] },
+  { label: "Done", phases: ["PUBLISHED"] },
+] as const;
+
+const PHASE_GRADIENT: Record<string, string> = {
+  PLANNING: "from-blue-500 to-indigo-500",
+  GENERATING: "from-indigo-500 to-purple-500",
+  TRANSPILING: "from-cyan-500 to-blue-500",
+  FIXING: "from-amber-500 to-orange-500",
+  VERIFYING: "from-green-500 to-emerald-500",
+  LEARNING: "from-green-500 to-emerald-500",
+};
+
+function getStepStatus(step: (typeof PHASE_STEPS)[number], currentPhase: string | null) {
+  if (!currentPhase) return "future";
+  const currentStepIndex = PHASE_STEPS.findIndex((s) => (s.phases as readonly string[]).includes(currentPhase));
+  const stepIndex = PHASE_STEPS.indexOf(step);
+  if (stepIndex < currentStepIndex) return "completed";
+  if (stepIndex === currentStepIndex) return "active";
+  return "future";
+}
+
 export function StreamingApp({ path, className }: StreamingAppProps) {
   const [messages, setMessages] = useState<BuildMessage[]>([]);
   const [status, setStatus] = useState<"connecting" | "generating" | "complete" | "error">(
@@ -42,6 +68,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [errorCodespaceUrl, setErrorCodespaceUrl] = useState<string | null>(null);
+  const [celebrating, setCelebrating] = useState(false);
   const lastEventTime = useRef(Date.now());
   const [connectionWarning, setConnectionWarning] = useState(false);
   const router = useRouter();
@@ -170,9 +197,13 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
 
                 case "complete":
                   setStatus("complete");
+                  setCurrentPhase("PUBLISHED");
                   setProgress(100);
+                  setCelebrating(true);
                   addMessage("Complete! Loading app...");
-                  router.refresh();
+                  setTimeout(() => {
+                    router.refresh();
+                  }, 1500);
                   break;
 
                 case "error":
@@ -276,10 +307,19 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center space-y-4">
           <div className="relative inline-flex">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            <div
+              className={cn(
+                "w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-500",
+                celebrating
+                  ? "bg-gradient-to-br from-green-500 to-emerald-600 shadow-green-500/25 shadow-[0_0_30px_rgba(34,197,94,0.4)]"
+                  : "bg-gradient-to-br from-indigo-500 to-purple-600 shadow-indigo-500/25",
+              )}
+            >
+              {celebrating
+                ? <Check className="w-8 h-8 text-white" />
+                : <Loader2 className="w-8 h-8 text-white animate-spin" />}
             </div>
-            {status === "generating" && (
+            {status === "generating" && !celebrating && (
               <span className="absolute -top-1 -right-1 flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75">
                 </span>
@@ -289,7 +329,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight">
-            Building your app...
+            {celebrating ? "Ready!" : "Building your app..."}
           </h1>
           <p className="text-muted-foreground">
             Spike Land AI is crafting a React application based on
@@ -306,24 +346,96 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
           )}
 
           {/* Progress bar */}
-          {status === "generating" && (
+          {(status === "generating" || celebrating) && (
             <div className="w-full max-w-xs mx-auto">
               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-700 ease-out"
+                  className={cn(
+                    "h-full bg-gradient-to-r rounded-full transition-all duration-700 ease-out",
+                    currentPhase && PHASE_GRADIENT[currentPhase]
+                      ? PHASE_GRADIENT[currentPhase]
+                      : "from-indigo-500 to-purple-500",
+                    celebrating && "from-green-500 to-emerald-500",
+                  )}
                   style={{ width: `${progress}%` }}
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-1 text-center">
                 {progress}%
               </p>
+
+              {/* Phase stepper dots */}
+              <div className="flex items-center justify-between mt-3 px-1">
+                {PHASE_STEPS.map((step, i) => {
+                  const stepStatus = getStepStatus(step, currentPhase);
+                  return (
+                    <div key={step.label} className="flex items-center">
+                      <div className="flex flex-col items-center gap-1">
+                        <div
+                          className={cn(
+                            "w-2.5 h-2.5 rounded-full flex items-center justify-center transition-all duration-300",
+                            stepStatus === "completed" && "bg-green-500",
+                            stepStatus === "active" && "bg-current ring-2 ring-offset-1 ring-offset-background",
+                            stepStatus === "active" && currentPhase && PHASE_GRADIENT[currentPhase]
+                              ? {
+                                PLANNING: "bg-blue-500 ring-blue-500/50",
+                                GENERATING: "bg-purple-500 ring-purple-500/50",
+                                TRANSPILING: "bg-cyan-500 ring-cyan-500/50",
+                                FIXING: "bg-amber-500 ring-amber-500/50",
+                                VERIFYING: "bg-green-500 ring-green-500/50",
+                                LEARNING: "bg-green-500 ring-green-500/50",
+                                PUBLISHED: "bg-green-500 ring-green-500/50",
+                              }[currentPhase] ?? "bg-indigo-500 ring-indigo-500/50"
+                              : stepStatus === "active" ? "bg-indigo-500 ring-indigo-500/50" : "",
+                            stepStatus === "future" && "bg-muted-foreground/30",
+                          )}
+                        >
+                          {stepStatus === "completed" && (
+                            <Check className="w-1.5 h-1.5 text-white" strokeWidth={3} />
+                          )}
+                        </div>
+                        <span
+                          className={cn(
+                            "text-[10px] leading-none transition-colors duration-300",
+                            stepStatus === "active" && "text-foreground font-medium",
+                            stepStatus === "completed" && "text-green-600 dark:text-green-400",
+                            stepStatus === "future" && "text-muted-foreground/50",
+                          )}
+                        >
+                          {step.label}
+                        </span>
+                      </div>
+                      {i < PHASE_STEPS.length - 1 && (
+                        <div
+                          className={cn(
+                            "h-px w-6 mx-1 -mt-3 transition-colors duration-300",
+                            stepStatus === "completed" ? "bg-green-500" : "bg-muted-foreground/20",
+                          )}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
           {/* Phase indicator */}
-          {currentPhase && (
+          {currentPhase && !celebrating && (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 text-sm text-muted-foreground">
-              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+              <span className={cn(
+                "w-2 h-2 rounded-full animate-pulse",
+                currentPhase && PHASE_GRADIENT[currentPhase]
+                  ? {
+                    PLANNING: "bg-blue-500",
+                    GENERATING: "bg-purple-500",
+                    TRANSPILING: "bg-cyan-500",
+                    FIXING: "bg-amber-500",
+                    VERIFYING: "bg-green-500",
+                    LEARNING: "bg-green-500",
+                  }[currentPhase] ?? "bg-indigo-500"
+                  : "bg-indigo-500",
+              )} />
               {currentPhase}
               {iteration !== null && iteration > 0 && (
                 <span className="text-xs opacity-70">

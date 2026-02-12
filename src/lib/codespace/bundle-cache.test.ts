@@ -1,0 +1,77 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Mock redis
+const mockGet = vi.fn();
+const mockSet = vi.fn();
+vi.mock("@/lib/upstash/client", () => ({
+  redis: {
+    get: (...args: unknown[]) => mockGet(...args),
+    set: (...args: unknown[]) => mockSet(...args),
+  },
+}));
+
+import {
+  getBundleCache,
+  getPackageCache,
+  setBundleCache,
+  setPackageCache,
+} from "./bundle-cache";
+
+describe("bundle-cache", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSet.mockResolvedValue("OK");
+  });
+
+  describe("getBundleCache", () => {
+    it("returns cached HTML on hit", async () => {
+      mockGet.mockResolvedValue("<html>cached</html>");
+      const result = await getBundleCache("test-cs", "hash123");
+      expect(result).toBe("<html>cached</html>");
+      expect(mockGet).toHaveBeenCalledWith("codespace:bundle:test-cs:hash123");
+    });
+
+    it("returns null on miss", async () => {
+      mockGet.mockResolvedValue(null);
+      const result = await getBundleCache("test-cs", "hash123");
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("setBundleCache", () => {
+    it("sets with correct key and 1h TTL", async () => {
+      await setBundleCache("test-cs", "hash123", "<html>bundle</html>");
+      expect(mockSet).toHaveBeenCalledWith(
+        "codespace:bundle:test-cs:hash123",
+        "<html>bundle</html>",
+        { ex: 3600 },
+      );
+    });
+  });
+
+  describe("getPackageCache", () => {
+    it("returns cached package content", async () => {
+      mockGet.mockResolvedValue("package-content");
+      const result = await getPackageCache("urlhash");
+      expect(result).toBe("package-content");
+      expect(mockGet).toHaveBeenCalledWith("esm:pkg:urlhash");
+    });
+
+    it("returns null on miss", async () => {
+      mockGet.mockResolvedValue(null);
+      const result = await getPackageCache("urlhash");
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("setPackageCache", () => {
+    it("sets with correct key and 7d TTL", async () => {
+      await setPackageCache("urlhash", "package-content");
+      expect(mockSet).toHaveBeenCalledWith(
+        "esm:pkg:urlhash",
+        "package-content",
+        { ex: 604800 },
+      );
+    });
+  });
+});

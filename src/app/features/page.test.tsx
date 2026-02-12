@@ -10,12 +10,13 @@ describe("FeaturesPage", () => {
     );
   });
 
-  it("should render all four feature cards", () => {
+  it("should render all five feature cards", () => {
     render(<FeaturesPage />);
     expect(screen.getByRole("heading", { name: /a\/b testing/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /ai calendar/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /brand brain/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /analytics/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /ai tools/i })).toBeInTheDocument();
   });
 
   it("should have links to individual feature pages", () => {
@@ -36,13 +37,17 @@ describe("FeaturesPage", () => {
       "href",
       "/features/analytics",
     );
+    expect(screen.getByRole("link", { name: /ai tools/i })).toHaveAttribute(
+      "href",
+      "/features/ai-tools",
+    );
   });
 
-  it("should have a Get Started with Orbit CTA", () => {
+  it("should have a Try It Free CTA", () => {
     render(<FeaturesPage />);
-    const orbitLinks = screen.getAllByRole("link", { name: /orbit/i });
-    expect(orbitLinks.length).toBeGreaterThanOrEqual(1);
-    expect(orbitLinks[0]).toHaveAttribute("href", "/orbit");
+    const tryItLinks = screen.getAllByRole("link", { name: /try it free/i });
+    expect(tryItLinks.length).toBeGreaterThanOrEqual(1);
+    expect(tryItLinks[0]).toHaveAttribute("href", "/create");
   });
 
   it("should have a View Pricing link", () => {
@@ -66,6 +71,9 @@ describe("FeaturesPage", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(/deep performance insights across all platforms/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/intelligent automation suite for content creation/i),
     ).toBeInTheDocument();
   });
 

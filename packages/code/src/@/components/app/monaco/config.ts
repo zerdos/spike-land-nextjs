@@ -186,8 +186,9 @@ export function getCompilerOptions() {
     paths: {
       "tslib": ["/tslib"],
       "./*": ["/live/*"],
-      "@/": [`${originToUse}/@/`],
-      "/*": [`${originToUse}/`],
+      "@/*": [`${originToUse}/@/*`],
+      "/live/*": [`${originToUse}/live/*`],
+      "/*": [`${originToUse}/*`],
     },
     jsxImportSource: "@emotion/react",
     jsx: typescript.JsxEmit.ReactJSX,

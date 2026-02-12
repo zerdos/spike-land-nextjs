@@ -11,7 +11,8 @@ export {
 } from "./session-service";
 
 export { CORS_HEADERS, corsOptions } from "./cors";
-export { transpileCode } from "./transpile";
+// Note: transpileCode is NOT re-exported here to avoid pulling esbuild-wasm
+// into client bundles. Import directly from "@/lib/codespace/transpile" instead.
 export {
   broadcastToCodespace,
   getCodespaceInstanceId,

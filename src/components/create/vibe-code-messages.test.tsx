@@ -6,11 +6,14 @@ const mockMessages: VibeMessage[] = [];
 let mockAgentStage: string | null = null;
 let mockIsStreaming = false;
 
+const mockSendMessage = vi.fn();
+
 vi.mock("./vibe-code-provider", () => ({
   useVibeCode: () => ({
     messages: mockMessages,
     agentStage: mockAgentStage,
     isStreaming: mockIsStreaming,
+    sendMessage: mockSendMessage,
   }),
 }));
 
@@ -18,12 +21,14 @@ vi.mock("@/components/my-apps/AgentProgressIndicator", () => ({
   AgentProgressIndicator: ({
     stage,
     isVisible,
+    startTime,
   }: {
     stage: string | null;
     isVisible: boolean;
+    startTime: number;
   }) =>
     isVisible ? (
-      <div data-testid="agent-progress" data-stage={stage}>
+      <div data-testid="agent-progress" data-stage={stage} data-start-time={startTime}>
         Progress
       </div>
     ) : null,
@@ -41,12 +46,7 @@ describe("VibeCodeMessages", () => {
   it("renders empty state when no messages", () => {
     render(<VibeCodeMessages />);
     expect(
-      screen.getByText("Start a conversation to modify your app."),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Use Plan mode to brainstorm or Edit mode to make changes.",
-      ),
+      screen.getByText("What would you like to change?"),
     ).toBeInTheDocument();
   });
 
@@ -165,6 +165,61 @@ describe("VibeCodeMessages", () => {
     expect(screen.queryByTestId("agent-progress")).not.toBeInTheDocument();
   });
 
+  it("passes stable startTime to AgentProgressIndicator", () => {
+    // Use fake timers so Date.now() is deterministic across renders
+    vi.useFakeTimers({ now: 1000000 });
+    mockIsStreaming = true;
+    mockAgentStage = "processing";
+
+    const { rerender } = render(<VibeCodeMessages />);
+    const progress1 = screen.getByTestId("agent-progress");
+    const startTime1 = Number(progress1.getAttribute("data-start-time"));
+    expect(startTime1).toBe(1000000);
+
+    // Advance time to prove the ref is stable (not re-assigned on rerender)
+    vi.advanceTimersByTime(500);
+
+    // Re-render should keep same startTime
+    rerender(<VibeCodeMessages />);
+    const progress2 = screen.getByTestId("agent-progress");
+    const startTime2 = Number(progress2.getAttribute("data-start-time"));
+    expect(startTime2).toBe(startTime1);
+
+    vi.useRealTimers();
+  });
+
+  it("resets startTime when streaming restarts", () => {
+    // Use fake timers to make timestamps deterministic
+    vi.useFakeTimers({ now: 1000000 });
+    mockIsStreaming = true;
+    mockAgentStage = "processing";
+
+    const { rerender } = render(<VibeCodeMessages />);
+    const progress1 = screen.getByTestId("agent-progress");
+    const startTime1 = Number(progress1.getAttribute("data-start-time"));
+    expect(startTime1).toBe(1000000);
+
+    // Stop streaming
+    mockIsStreaming = false;
+    mockAgentStage = null;
+    rerender(<VibeCodeMessages />);
+
+    // Advance time so the new startTime is clearly different
+    vi.advanceTimersByTime(5000);
+
+    // Start streaming again
+    mockIsStreaming = true;
+    mockAgentStage = "initialize";
+    rerender(<VibeCodeMessages />);
+    const progress3 = screen.getByTestId("agent-progress");
+    const startTime3 = Number(progress3.getAttribute("data-start-time"));
+    // New start time should reflect the advanced clock
+    expect(startTime3).toBe(1005000);
+    expect(startTime3).not.toBe(startTime1);
+
+    vi.useRealTimers();
+  });
+
   it("does not render empty state when messages exist", () => {
     mockMessages.push({
       id: "msg-1",
@@ -175,7 +230,7 @@ describe("VibeCodeMessages", () => {
 
     render(<VibeCodeMessages />);
     expect(
-      screen.queryByText("Start a conversation to modify your app."),
+      screen.queryByText("What would you like to change?"),
     ).not.toBeInTheDocument();
   });
 

@@ -39,10 +39,10 @@ describe("WorkspaceSubscriptionService", () => {
       mockPrisma.workspace.findUnique.mockResolvedValue({
         id: "ws-1",
         subscriptionTier: "FREE" as WorkspaceSubscriptionTier,
-        maxSocialAccounts: 3,
-        maxScheduledPosts: 30,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
+        maxSocialAccounts: 5,
+        maxScheduledPosts: 100,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
         usedAiCredits: 0,
         maxTeamMembers: 1,
         billingCycleStart: null,
@@ -53,23 +53,23 @@ describe("WorkspaceSubscriptionService", () => {
 
       expect(result.allowed).toBe(true);
       expect(result.currentCount).toBe(1);
-      expect(result.limit).toBe(3);
+      expect(result.limit).toBe(5);
       expect(result.upgradeRequired).toBe(false);
-      expect(result.message).toContain("2 more social account");
+      expect(result.message).toContain("4 more social account");
     });
 
     it("should deny when at limit", async () => {
       mockPrisma.workspace.findUnique.mockResolvedValue({
         id: "ws-1",
         subscriptionTier: "FREE" as WorkspaceSubscriptionTier,
-        maxSocialAccounts: 3,
-        maxScheduledPosts: 30,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
+        maxSocialAccounts: 5,
+        maxScheduledPosts: 100,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
         usedAiCredits: 0,
         maxTeamMembers: 1,
         billingCycleStart: null,
-        _count: { socialAccounts: 3, scheduledPosts: 0, members: 1 },
+        _count: { socialAccounts: 5, scheduledPosts: 0, members: 1 },
       });
 
       const result = await WorkspaceSubscriptionService.canAddSocialAccount("ws-1");
@@ -115,10 +115,10 @@ describe("WorkspaceSubscriptionService", () => {
       mockPrisma.workspace.findUnique.mockResolvedValue({
         id: "ws-1",
         subscriptionTier: "FREE" as WorkspaceSubscriptionTier,
-        maxSocialAccounts: 3,
-        maxScheduledPosts: 30,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
+        maxSocialAccounts: 5,
+        maxScheduledPosts: 100,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
         usedAiCredits: 0,
         maxTeamMembers: 1,
         billingCycleStart: null,
@@ -129,21 +129,21 @@ describe("WorkspaceSubscriptionService", () => {
 
       expect(result.allowed).toBe(true);
       expect(result.currentCount).toBe(10);
-      expect(result.limit).toBe(30);
+      expect(result.limit).toBe(100);
     });
 
     it("should deny when at limit", async () => {
       mockPrisma.workspace.findUnique.mockResolvedValue({
         id: "ws-1",
         subscriptionTier: "FREE" as WorkspaceSubscriptionTier,
-        maxSocialAccounts: 3,
-        maxScheduledPosts: 30,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
+        maxSocialAccounts: 5,
+        maxScheduledPosts: 100,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
         usedAiCredits: 0,
         maxTeamMembers: 1,
         billingCycleStart: null,
-        _count: { socialAccounts: 1, scheduledPosts: 30, members: 1 },
+        _count: { socialAccounts: 1, scheduledPosts: 100, members: 1 },
       });
 
       const result = await WorkspaceSubscriptionService.canCreateScheduledPost("ws-1");
@@ -177,8 +177,8 @@ describe("WorkspaceSubscriptionService", () => {
     it("should allow when under limit", async () => {
       mockPrisma.workspace.findUnique.mockResolvedValue({
         subscriptionTier: "FREE" as WorkspaceSubscriptionTier,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
         usedAiCredits: 0,
       });
 
@@ -186,7 +186,7 @@ describe("WorkspaceSubscriptionService", () => {
 
       expect(result.allowed).toBe(true);
       expect(result.currentCount).toBe(0); // Not implemented yet
-      expect(result.limit).toBe(1);
+      expect(result.limit).toBe(3);
     });
 
     it("should return not found for missing workspace", async () => {
@@ -203,25 +203,25 @@ describe("WorkspaceSubscriptionService", () => {
     it("should allow when enough credits remain", async () => {
       mockPrisma.workspace.findUnique.mockResolvedValue({
         subscriptionTier: "FREE" as WorkspaceSubscriptionTier,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
-        usedAiCredits: 50,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
+        usedAiCredits: 250,
       });
 
-      const result = await WorkspaceSubscriptionService.canUseAiCredits("ws-1", 25);
+      const result = await WorkspaceSubscriptionService.canUseAiCredits("ws-1", 100);
 
       expect(result.allowed).toBe(true);
-      expect(result.currentCount).toBe(50);
-      expect(result.limit).toBe(100);
-      expect(result.message).toContain("50 AI credits remaining");
+      expect(result.currentCount).toBe(250);
+      expect(result.limit).toBe(500);
+      expect(result.message).toContain("250 AI credits remaining");
     });
 
     it("should deny when insufficient credits", async () => {
       mockPrisma.workspace.findUnique.mockResolvedValue({
         subscriptionTier: "FREE" as WorkspaceSubscriptionTier,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
-        usedAiCredits: 90,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
+        usedAiCredits: 490,
       });
 
       const result = await WorkspaceSubscriptionService.canUseAiCredits("ws-1", 25);
@@ -273,10 +273,10 @@ describe("WorkspaceSubscriptionService", () => {
       mockPrisma.workspace.findUnique.mockResolvedValue({
         id: "ws-1",
         subscriptionTier: "FREE" as WorkspaceSubscriptionTier,
-        maxSocialAccounts: 3,
-        maxScheduledPosts: 30,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
+        maxSocialAccounts: 5,
+        maxScheduledPosts: 100,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
         usedAiCredits: 0,
         maxTeamMembers: 1,
         billingCycleStart: null,
@@ -295,21 +295,21 @@ describe("WorkspaceSubscriptionService", () => {
       // First call for limit check
       mockPrisma.workspace.findUnique.mockResolvedValue({
         subscriptionTier: "FREE" as WorkspaceSubscriptionTier,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
-        usedAiCredits: 50,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
+        usedAiCredits: 250,
       });
 
       // Second call for update
       mockPrisma.workspace.update.mockResolvedValue({
-        monthlyAiCredits: 100,
-        usedAiCredits: 75,
+        monthlyAiCredits: 500,
+        usedAiCredits: 275,
       });
 
       const result = await WorkspaceSubscriptionService.consumeAiCredits("ws-1", 25);
 
       expect(result.success).toBe(true);
-      expect(result.remaining).toBe(25);
+      expect(result.remaining).toBe(225);
       expect(mockPrisma.workspace.update).toHaveBeenCalledWith({
         where: { id: "ws-1" },
         data: { usedAiCredits: { increment: 25 } },
@@ -320,9 +320,9 @@ describe("WorkspaceSubscriptionService", () => {
     it("should fail when insufficient credits", async () => {
       mockPrisma.workspace.findUnique.mockResolvedValue({
         subscriptionTier: "FREE" as WorkspaceSubscriptionTier,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
-        usedAiCredits: 90,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
+        usedAiCredits: 490,
       });
 
       const result = await WorkspaceSubscriptionService.consumeAiCredits("ws-1", 25);
@@ -343,8 +343,8 @@ describe("WorkspaceSubscriptionService", () => {
     it("should handle update failure", async () => {
       mockPrisma.workspace.findUnique.mockResolvedValue({
         subscriptionTier: "FREE" as WorkspaceSubscriptionTier,
-        maxAbTests: 1,
-        monthlyAiCredits: 100,
+        maxAbTests: 3,
+        monthlyAiCredits: 500,
         usedAiCredits: 0,
       });
 

@@ -118,16 +118,16 @@ describe("SpikeLandLogo", () => {
   });
 
   describe("icon styling", () => {
-    it("Zap icon has fill-amber-400 class", () => {
+    it("Zap icon has fill-accent class", () => {
       const { container } = render(<SpikeLandLogo />);
       const svg = container.querySelector("svg");
-      expect(svg).toHaveClass("fill-amber-400");
+      expect(svg).toHaveClass("fill-accent");
     });
 
-    it("Zap icon has stroke-amber-500 class", () => {
+    it("Zap icon has stroke-primary class", () => {
       const { container } = render(<SpikeLandLogo />);
       const svg = container.querySelector("svg");
-      expect(svg).toHaveClass("stroke-amber-500");
+      expect(svg).toHaveClass("stroke-primary");
     });
 
     it("Zap icon has flex-shrink-0 class", () => {

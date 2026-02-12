@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, cleanup, renderHook } from "@testing-library/react";
 import { signIn, useSession } from "next-auth/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useVibeCode, VibeCodeProvider } from "./vibe-code-provider";
@@ -15,11 +15,35 @@ vi.mock("next-auth/react", () => ({
 
 const fetchMock = vi.fn();
 
+// Helper: flush all pending microtasks/promises so React state updates settle
+function flushPromises() {
+  return new Promise<void>((resolve) => setTimeout(resolve, 0));
+}
+
+// Helper: create a ReadableStream from SSE text (deterministic, single-enqueue)
+function createSSEStream(sseText: string): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(sseText));
+      controller.close();
+    },
+  });
+}
+
+// Counter to generate unique slugs per test, preventing sessionStorage bleed
+let testCounter = 0;
+
 describe("VibeCodeProvider", () => {
+  let testSlug: string;
+
   beforeEach(() => {
+    testCounter++;
+    testSlug = `test-app-${testCounter}`;
     vi.stubGlobal("fetch", fetchMock);
     fetchMock.mockReset();
     vi.mocked(signIn).mockClear();
+    sessionStorage.clear();
     vi.mocked(useSession).mockReturnValue({
       data: { user: { name: "Test User", id: "test-id", role: "USER" }, expires: "1" },
       status: "authenticated",
@@ -28,6 +52,7 @@ describe("VibeCodeProvider", () => {
   });
 
   afterEach(() => {
+    cleanup();
     vi.unstubAllGlobals();
   });
 
@@ -127,35 +152,26 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
     });
 
-    // Mock SSE response
-    const sseData = [
-      'data: {"type":"stage","stage":"processing"}\n',
-      'data: {"type":"chunk","content":"Hello "}\n',
-      'data: {"type":"chunk","content":"world"}\n',
-      'data: {"type":"complete"}\n',
-    ].join("\n");
-
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(encoder.encode(sseData));
-        controller.close();
-      },
-    });
+    const sseData =
+      'data: {"type":"stage","stage":"processing"}\n\n' +
+      'data: {"type":"chunk","content":"Hello "}\n\n' +
+      'data: {"type":"chunk","content":"world"}\n\n' +
+      'data: {"type":"complete"}\n\n';
 
     fetchMock.mockResolvedValue({
       ok: true,
-      body: stream,
+      body: createSSEStream(sseData),
     });
 
     await act(async () => {
       await result.current.sendMessage("test message");
+      await flushPromises();
     });
 
     expect(result.current.messages).toHaveLength(2);
@@ -172,22 +188,16 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
     });
 
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          new TextEncoder().encode('data: {"type":"complete"}\n\n'),
-        );
-        controller.close();
-      },
+    fetchMock.mockResolvedValue({
+      ok: true,
+      body: createSSEStream('data: {"type":"complete"}\n\n'),
     });
-
-    fetchMock.mockResolvedValue({ ok: true, body: stream });
 
     const file = new File(["fake-image-data"], "test.png", {
       type: "image/png",
@@ -195,6 +205,7 @@ describe("VibeCodeProvider", () => {
 
     await act(async () => {
       await result.current.sendMessage("with image", [file]);
+      await flushPromises();
     });
 
     // User message should have images
@@ -216,19 +227,10 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
-    });
-
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          new TextEncoder().encode('data: {"type":"complete"}\n\n'),
-        );
-        controller.close();
-      },
     });
 
     // First call: screenshot, second call: vibe-chat
@@ -237,15 +239,19 @@ describe("VibeCodeProvider", () => {
         ok: true,
         json: async () => ({ base64: "data:image/png;base64,screenshot" }),
       })
-      .mockResolvedValueOnce({ ok: true, body: stream });
+      .mockResolvedValueOnce({
+        ok: true,
+        body: createSSEStream('data: {"type":"complete"}\n\n'),
+      });
 
     await act(async () => {
       await result.current.sendMessage("with screenshot", undefined, true);
+      await flushPromises();
     });
 
     // First fetch should be screenshot
     expect(fetchMock.mock.calls[0]![0]).toBe(
-      "/api/create/screenshot?slug=test-app",
+      `/api/create/screenshot?slug=${testSlug}`,
     );
     // User message should have screenshot image
     expect(result.current.messages[0]!.images).toEqual([
@@ -258,27 +264,22 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
     });
 
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          new TextEncoder().encode('data: {"type":"complete"}\n\n'),
-        );
-        controller.close();
-      },
-    });
-
     fetchMock
       .mockRejectedValueOnce(new Error("Network error"))
-      .mockResolvedValueOnce({ ok: true, body: stream });
+      .mockResolvedValueOnce({
+        ok: true,
+        body: createSSEStream('data: {"type":"complete"}\n\n'),
+      });
 
     await act(async () => {
       await result.current.sendMessage("with screenshot", undefined, true);
+      await flushPromises();
     });
 
     // Should still succeed even though screenshot failed
@@ -291,27 +292,22 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
     });
 
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          new TextEncoder().encode(
-            'data: {"type":"error","message":"Something went wrong"}\n\ndata: {"type":"complete"}\n\n',
-          ),
-        );
-        controller.close();
-      },
+    fetchMock.mockResolvedValue({
+      ok: true,
+      body: createSSEStream(
+        'data: {"type":"error","message":"Something went wrong"}\n\ndata: {"type":"complete"}\n\n',
+      ),
     });
-
-    fetchMock.mockResolvedValue({ ok: true, body: stream });
 
     await act(async () => {
       await result.current.sendMessage("test");
+      await flushPromises();
     });
 
     expect(result.current.messages[1]!.content).toContain(
@@ -324,27 +320,22 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
     });
 
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          new TextEncoder().encode(
-            'data: {"type":"code_updated"}\n\ndata: {"type":"complete"}\n\n',
-          ),
-        );
-        controller.close();
-      },
+    fetchMock.mockResolvedValue({
+      ok: true,
+      body: createSSEStream(
+        'data: {"type":"code_updated"}\n\ndata: {"type":"complete"}\n\n',
+      ),
     });
-
-    fetchMock.mockResolvedValue({ ok: true, body: stream });
 
     await act(async () => {
       await result.current.sendMessage("test");
+      await flushPromises();
     });
 
     expect(result.current.refreshCounter).toBe(1);
@@ -355,7 +346,7 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
@@ -369,6 +360,7 @@ describe("VibeCodeProvider", () => {
 
     await act(async () => {
       await result.current.sendMessage("test");
+      await flushPromises();
     });
 
     expect(result.current.messages[1]!.content).toContain(
@@ -382,7 +374,7 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
@@ -395,6 +387,7 @@ describe("VibeCodeProvider", () => {
 
     await act(async () => {
       await result.current.sendMessage("test");
+      await flushPromises();
     });
 
     expect(result.current.messages[1]!.content).toContain("Request failed");
@@ -406,27 +399,22 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
     });
 
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          new TextEncoder().encode(
-            "data: not-valid-json\n\ndata: {\"type\":\"complete\"}\n\n",
-          ),
-        );
-        controller.close();
-      },
+    fetchMock.mockResolvedValue({
+      ok: true,
+      body: createSSEStream(
+        "data: not-valid-json\n\ndata: {\"type\":\"complete\"}\n\n",
+      ),
     });
-
-    fetchMock.mockResolvedValue({ ok: true, body: stream });
 
     await act(async () => {
       await result.current.sendMessage("test");
+      await flushPromises();
     });
 
     // Should still complete without crashing
@@ -439,7 +427,7 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
@@ -449,6 +437,7 @@ describe("VibeCodeProvider", () => {
 
     await act(async () => {
       await result.current.sendMessage("test");
+      await flushPromises();
     });
 
     expect(result.current.messages[1]!.content).toContain("Network failure");
@@ -461,27 +450,22 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
     });
 
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          new TextEncoder().encode(
-            "event: message\ndata: {\"type\":\"chunk\",\"content\":\"ok\"}\n\ndata: {\"type\":\"complete\"}\n\n",
-          ),
-        );
-        controller.close();
-      },
+    fetchMock.mockResolvedValue({
+      ok: true,
+      body: createSSEStream(
+        "event: message\ndata: {\"type\":\"chunk\",\"content\":\"ok\"}\n\ndata: {\"type\":\"complete\"}\n\n",
+      ),
     });
-
-    fetchMock.mockResolvedValue({ ok: true, body: stream });
 
     await act(async () => {
       await result.current.sendMessage("test");
+      await flushPromises();
     });
 
     expect(result.current.messages[1]!.content).toBe("ok");
@@ -492,7 +476,7 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
@@ -502,9 +486,48 @@ describe("VibeCodeProvider", () => {
 
     await act(async () => {
       await result.current.sendMessage("test");
+      await flushPromises();
     });
 
     expect(result.current.messages[1]!.content).toContain("Unknown error");
+  });
+
+  it("sendMessage correctly parses double-newline separated SSE events", async () => {
+    const { result } = renderHook(() => useVibeCode(), { wrapper });
+
+    act(() => {
+      result.current.setAppContext({
+        slug: testSlug,
+        title: "Test",
+        codespaceId: "cs-1",
+      });
+    });
+
+    // Send chunks separated by \n\n (standard SSE format)
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        const encoder = new TextEncoder();
+        // First chunk delivers partial events
+        controller.enqueue(
+          encoder.encode('data: {"type":"chunk","content":"Hello "}\n\n'),
+        );
+        // Second chunk
+        controller.enqueue(
+          encoder.encode('data: {"type":"chunk","content":"world"}\n\ndata: {"type":"complete"}\n\n'),
+        );
+        controller.close();
+      },
+    });
+
+    fetchMock.mockResolvedValue({ ok: true, body: stream });
+
+    await act(async () => {
+      await result.current.sendMessage("test");
+      await flushPromises();
+    });
+
+    expect(result.current.messages[1]!.content).toBe("Hello world");
+    expect(result.current.isStreaming).toBe(false);
   });
 
   it("sendMessage handles screenshot non-ok response", async () => {
@@ -512,27 +535,22 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
     });
 
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          new TextEncoder().encode('data: {"type":"complete"}\n\n'),
-        );
-        controller.close();
-      },
-    });
-
     fetchMock
       .mockResolvedValueOnce({ ok: false, status: 404 })
-      .mockResolvedValueOnce({ ok: true, body: stream });
+      .mockResolvedValueOnce({
+        ok: true,
+        body: createSSEStream('data: {"type":"complete"}\n\n'),
+      });
 
     await act(async () => {
       await result.current.sendMessage("test", undefined, true);
+      await flushPromises();
     });
 
     // Should complete without screenshot
@@ -545,26 +563,21 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
       result.current.setMode("edit");
     });
 
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          new TextEncoder().encode('data: {"type":"complete"}\n\n'),
-        );
-        controller.close();
-      },
+    fetchMock.mockResolvedValue({
+      ok: true,
+      body: createSSEStream('data: {"type":"complete"}\n\n'),
     });
-
-    fetchMock.mockResolvedValue({ ok: true, body: stream });
 
     await act(async () => {
       await result.current.sendMessage("test");
+      await flushPromises();
     });
 
     const postCall = fetchMock.mock.calls.find(
@@ -572,7 +585,7 @@ describe("VibeCodeProvider", () => {
     );
     const body = JSON.parse(postCall![1].body);
     expect(body.mode).toBe("edit");
-    expect(body.slug).toBe("test-app");
+    expect(body.slug).toBe(testSlug);
   });
 
   it("sendMessage processes stage events", async () => {
@@ -580,28 +593,22 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
     });
 
-    // We'll check that agentStage is set to null after complete
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          new TextEncoder().encode(
-            'data: {"type":"stage","stage":"processing"}\n\ndata: {"type":"stage","stage":"executing_tool"}\n\ndata: {"type":"complete"}\n\n',
-          ),
-        );
-        controller.close();
-      },
+    fetchMock.mockResolvedValue({
+      ok: true,
+      body: createSSEStream(
+        'data: {"type":"stage","stage":"processing"}\n\ndata: {"type":"stage","stage":"executing_tool"}\n\ndata: {"type":"complete"}\n\n',
+      ),
     });
-
-    fetchMock.mockResolvedValue({ ok: true, body: stream });
 
     await act(async () => {
       await result.current.sendMessage("test");
+      await flushPromises();
     });
 
     // After complete, stage should be null
@@ -631,7 +638,7 @@ describe("VibeCodeProvider", () => {
 
     act(() => {
       result.current.setAppContext({
-        slug: "test-app",
+        slug: testSlug,
         title: "Test",
         codespaceId: "cs-1",
       });
@@ -645,6 +652,7 @@ describe("VibeCodeProvider", () => {
 
     await act(async () => {
       await result.current.sendMessage("test");
+      await flushPromises();
     });
 
     expect(signIn).toHaveBeenCalled();

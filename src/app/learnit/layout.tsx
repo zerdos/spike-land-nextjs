@@ -1,4 +1,5 @@
-import { BookMarked, Search } from "lucide-react";
+import { HeaderSearch } from "@/components/learnit/header-search";
+import { BookMarked } from "lucide-react";
 import Link from "next/link";
 import "katex/dist/katex.min.css";
 
@@ -19,13 +20,7 @@ export default function LearnItLayout({
             <span>LearnIt</span>
           </Link>
           <nav>
-            <Link
-              href="/learnit"
-              className="p-2 rounded-lg text-zinc-400 hover:text-emerald-400 hover:bg-white/10 transition-all"
-              aria-label="Search topics"
-            >
-              <Search className="w-5 h-5" />
-            </Link>
+            <HeaderSearch />
           </nav>
         </div>
       </header>

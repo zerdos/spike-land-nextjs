@@ -48,6 +48,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // esbuild-wasm uses __dirname/__filename to locate its WASM binary — must not be bundled by Turbopack/webpack
+  serverExternalPackages: ["esbuild-wasm"],
   // Configure Turbopack for Yarn PnP compatibility
   turbopack: {
     root: __dirname,

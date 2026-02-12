@@ -1,9 +1,17 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
+
+// Import the context directly to safely check without throwing
+import { VibeCodeContext } from "./vibe-code-provider";
+
+function useVibeCodeRefreshCounter(): number {
+  const ctx = useContext(VibeCodeContext);
+  return ctx?.refreshCounter ?? 0;
+}
 
 interface LiveAppDisplayProps {
   codespaceId: string;
@@ -15,7 +23,6 @@ interface LiveAppDisplayProps {
 
 export function LiveAppDisplay({
   codespaceId,
-  codespaceUrl,
   title,
   slug,
   className,
@@ -28,7 +35,15 @@ export function LiveAppDisplay({
     setIframeKey((prev) => prev + 1);
   }, []);
 
-  const iframeSrc = `https://testing.spike.land/live/${codespaceId}/`;
+  // Auto-refresh iframe when vibe-code edits update the code
+  const refreshCounter = useVibeCodeRefreshCounter();
+  useEffect(() => {
+    if (refreshCounter > 0) {
+      handleRefresh();
+    }
+  }, [refreshCounter, handleRefresh]);
+
+  const iframeSrc = `/api/codespace/${codespaceId}/bundle`;
 
   return (
     <div className={cn("flex flex-col h-[calc(100vh-4rem)] w-full", className)}>
@@ -53,6 +68,14 @@ export function LiveAppDisplay({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/create"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-xs font-semibold hover:from-cyan-400 hover:to-purple-400 transition-all shadow-sm"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Create Your Own
+          </Link>
+          <div className="h-5 w-px bg-border" />
           <button
             onClick={handleRefresh}
             className="p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors"
@@ -61,7 +84,7 @@ export function LiveAppDisplay({
             <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
           </button>
           <a
-            href={codespaceUrl}
+            href={`/api/codespace/${codespaceId}/bundle`}
             target="_blank"
             rel="noopener noreferrer"
             className="p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors"
@@ -69,10 +92,18 @@ export function LiveAppDisplay({
           >
             <ExternalLink className="w-4 h-4" />
           </a>
+          <a
+            href={`/api/codespace/${codespaceId}/bundle?download=true`}
+            download={`${codespaceId}.html`}
+            className="p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors"
+            title="Download as HTML"
+          >
+            <Download className="w-4 h-4" />
+          </a>
         </div>
       </div>
 
-      <div className="flex-1 relative bg-white">
+      <div className="flex-1 relative bg-muted/20">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10">
             <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
@@ -83,7 +114,7 @@ export function LiveAppDisplay({
           src={iframeSrc}
           className="w-full h-full border-none"
           title={title}
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          sandbox="allow-scripts allow-popups allow-forms"
           allow="autoplay"
           onLoad={() => setLoading(false)}
         />
