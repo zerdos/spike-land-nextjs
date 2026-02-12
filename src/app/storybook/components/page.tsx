@@ -63,7 +63,7 @@ export default function ComponentsPage() {
         ]}
         donts={[
           "Avoid nesting glass containers of the same tier to prevent visual muddiness.",
-          "Don't use Primary Cyan for text unless it's a critical label with high contrast requirements.",
+          "Don't use Primary Violet for text unless it's a critical label with high contrast requirements.",
           "Avoid small touch targets (< 44px) for interactive elements on mobile.",
           "Don't drop opacity below 50% for disabled states; use grayscale and desaturation instead.",
         ]}

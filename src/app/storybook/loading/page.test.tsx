@@ -75,7 +75,7 @@ describe("LoadingPage", () => {
     it("should render spinner labels", () => {
       render(<LoadingPage />);
       expect(screen.getByText("Spinner")).toBeInTheDocument();
-      expect(screen.getByText("Pulse Cyan")).toBeInTheDocument();
+      expect(screen.getByText("Pulse Violet")).toBeInTheDocument();
       expect(screen.getByText("Pulse Aura")).toBeInTheDocument();
     });
   });

@@ -39,17 +39,17 @@ export const storybookIconMap = {
 export const colorPalette = {
   brand: [
     {
-      name: "spike.land Cyan",
-      var: "--pixel-cyan",
-      hex: "#00E5FF",
+      name: "spike.land Violet",
+      var: "--pixel-cyan", /* Preserved for compatibility */
+      hex: "#8B5CF6",
       desc: "Primary brand accent colors",
       role: "Primary",
       contrastPass: true,
     },
     {
-      name: "spike.land Fuchsia",
+      name: "spike.land Pink",
       var: "--pixel-fuchsia",
-      hex: "#FF00FF",
+      hex: "#EC4899",
       desc: "Secondary accent",
       role: "Secondary",
       contrastPass: true,
@@ -57,27 +57,21 @@ export const colorPalette = {
   ],
   dark: [
     {
-      name: "Surface Blue",
-      var: "--surface-blue",
-      hex: "#112244",
+      name: "Slate Surface",
+      var: "--card",
+      hex: "#1E293B",
       desc: "Card backgrounds",
     },
     {
       name: "Border",
-      var: "--border-dark",
-      hex: "#221144",
+      var: "--border",
+      hex: "#334155",
       desc: "Primary borders",
-    },
-    {
-      name: "Border Item",
-      var: "--border-item",
-      hex: "#222244",
-      desc: "Item borders",
     },
     {
       name: "Deep Space",
       var: "--background",
-      hex: "#08081C",
+      hex: "#0F172A",
       desc: "Dark background",
     },
     {

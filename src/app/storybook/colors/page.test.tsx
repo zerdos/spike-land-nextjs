@@ -41,7 +41,7 @@ describe("ColorsPage", () => {
     it("should render theme foundations section", () => {
       render(<ColorsPage />);
       expect(screen.getByText("Theme Foundations")).toBeInTheDocument();
-      expect(screen.getByText(/Dark Mode \(Deep Space\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Dark Mode \(Nebula\)/i)).toBeInTheDocument();
       expect(screen.getByText(/Light Mode \(Carbon\)/i)).toBeInTheDocument();
     });
 
@@ -52,14 +52,14 @@ describe("ColorsPage", () => {
   });
 
   describe("swatches", () => {
-    it("should render spike.land Cyan swatch", () => {
+    it("should render spike.land Violet swatch", () => {
       render(<ColorsPage />);
-      expect(screen.getAllByText("spike.land Cyan").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("spike.land Violet").length).toBeGreaterThan(0);
     });
 
-    it("should render spike.land Fuchsia swatch", () => {
+    it("should render spike.land Pink swatch", () => {
       render(<ColorsPage />);
-      expect(screen.getAllByText("spike.land Fuchsia").length).toBeGreaterThan(
+      expect(screen.getAllByText("spike.land Pink").length).toBeGreaterThan(
         0,
       );
     });

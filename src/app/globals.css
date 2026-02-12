@@ -34,10 +34,10 @@
 /**
  * spike.land design system
  *
- * Brand Philosophy: Dark Futuristic - "The AI Spark"
- * Primary Color: spike.land Cyan #00E5FF
+ * Brand Philosophy: Dark Futuristic - "Nebula Intelligence"
+ * Primary Color: spike.land Violet #8B5CF6
  *
- * Theme: Dark Mode Only - Deep Space with Surface Blue cards
+ * Theme: Dark Mode Only - Deep Space with Violet/Pink accents
  */
 
 @layer base {
@@ -65,65 +65,66 @@
     --shadow-opacity-light: 0.05;
     --shadow-opacity-dark: 0.4;
 
-    /* Dark Mode - Aurora / Project Sonic (Default & Only Theme) */
-    --background: 0 0% 9.5%;
-    /* rgb(24, 24, 24) matches approx hsl(0, 0%, 9.4%) */
-    --foreground: 0 0% 98%;
+    /* Dark Mode - Nebula Intelligence (Default & Only Theme) */
+    --background: 222 47% 11%;
+    /* Deep Slate #0F172A */
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 12%;
-    /* Slightly lighter than background */
-    --card-foreground: 0 0% 98%;
+    --card: 215 28% 17%;
+    /* Slate 800 #1E293B */
+    --card-foreground: 210 40% 98%;
 
-    --popover: 240 4% 8%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 160 84% 39%;
-    /* Emerald */
-    --primary-foreground: 240 5% 4%;
-    --primary-text: 160 84% 39%;
+    --primary: 258 90% 66%;
+    /* Violet #8B5CF6 */
+    --primary-foreground: 210 40% 98%;
+    --primary-text: 258 90% 66%;
 
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 330 81% 60%;
+    /* Pink #EC4899 */
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 173 80% 40%;
-    /* Teal */
-    --accent-foreground: 240 5% 4%;
+    --accent: 38 92% 50%;
+    /* Amber #F59E0B */
+    --accent-foreground: 222 47% 11%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 160 84% 39%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 258 90% 66%;
     --radius: 9999px;
     /* Pill shape default */
 
     /* Aurora Palette - Defined for usage */
-    --aurora-green: 160 84% 39%;
-    --aurora-teal: 173 80% 40%;
-    --aurora-lime: 84 81% 44%;
-    --aurora-yellow: 48 89% 47%;
+    --aurora-green: 258 90% 66%; /* Replaced with Violet */
+    --aurora-teal: 330 81% 60%; /* Replaced with Pink */
+    --aurora-lime: 280 65% 60%; /* Replaced with Light Purple */
+    --aurora-yellow: 35 92% 50%; /* Amber */
 
     /* Semantic Colors */
-    --success: 150 90% 35%;
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 45 90% 45%;
+    --warning: 45 93% 47%;
     --warning-foreground: 0 0% 0%;
 
     /* Brand-specific variables */
-    --pixel-cyan: 187 100% 50%;
-    --pixel-fuchsia: 320 90% 60%;
-    --grid-inactive: 220 15% 25%;
+    --pixel-cyan: 258 90% 66%; /* Using Violet as the new "Pixel" color */
+    --pixel-fuchsia: 330 81% 60%; /* Pink */
+    --grid-inactive: 215 28% 17%;
     /* Lighter than background for visibility */
 
     /* Chart Colors */
-    --chart-1: 160 84% 39%;
-    --chart-2: 173 80% 40%;
-    --chart-3: 84 81% 44%;
-    --chart-4: 48 89% 47%;
+    --chart-1: 258 90% 66%;
+    --chart-2: 330 81% 60%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 142 71% 45%;
     --chart-5: 220 14% 96%;
 
     /* Animation Duration Tokens */
@@ -494,16 +495,24 @@
     box-shadow: 0 0 20px hsl(var(--secondary) / 0.3), 0 4px 12px hsl(var(--secondary) / 0.2);
   }
 
-  /* Pixel Cyan glow effects */
-  .shadow-glow-cyan {
+  /* Pixel Purple glow effects */
+  .shadow-glow-purple {
     box-shadow:
-      0 0 20px hsl(var(--pixel-cyan) / 0.4),
-      0 0 40px hsl(var(--pixel-cyan) / 0.2),
-      0 4px 12px hsl(var(--pixel-cyan) / 0.3);
+      0 0 20px hsl(var(--primary) / 0.4),
+      0 0 40px hsl(var(--primary) / 0.2),
+      0 4px 12px hsl(var(--primary) / 0.3);
   }
 
-  .shadow-glow-cyan-sm {
-    box-shadow: 0 0 10px hsl(var(--pixel-cyan) / 0.3), 0 2px 8px hsl(var(--pixel-cyan) / 0.2);
+  .shadow-glow-purple-sm {
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.3), 0 2px 8px hsl(var(--primary) / 0.2);
+  }
+
+  /* Legacy support for transition */
+  .shadow-glow-cyan {
+    box-shadow:
+      0 0 20px hsl(var(--primary) / 0.4),
+      0 0 40px hsl(var(--primary) / 0.2),
+      0 4px 12px hsl(var(--primary) / 0.3);
   }
 
   .shadow-negative {
@@ -521,7 +530,7 @@
     box-shadow:
       0 50px 100px -20px rgba(0, 0, 0, 0.6),
       0 30px 60px -30px rgba(0, 0, 0, 0.7),
-      inset 0 1px 1px 0 rgba(0, 229, 255, 0.1);
+      inset 0 1px 1px 0 rgba(139, 92, 246, 0.1);
   }
 
   /* Grid background pattern - REMOVED per user request for clean look */
@@ -529,23 +538,28 @@
     background-image: none;
   }
 
-  /* Cyan pulse animation for loading and active states */
-  @keyframes pulse-cyan {
+  /* Purple pulse animation for loading and active states */
+  @keyframes pulse-purple {
 
     0%,
     100% {
-      box-shadow: 0 0 20px hsl(var(--pixel-cyan) / 0.3), 0 0 40px hsl(var(--pixel-cyan) / 0.1);
-      background-color: hsl(var(--pixel-cyan) / 0.4);
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.3), 0 0 40px hsl(var(--primary) / 0.1);
+      background-color: hsl(var(--primary) / 0.4);
     }
 
     50% {
-      box-shadow: 0 0 30px hsl(var(--pixel-cyan) / 0.5), 0 0 60px hsl(var(--pixel-cyan) / 0.2);
-      background-color: hsl(var(--pixel-cyan) / 0.7);
+      box-shadow: 0 0 30px hsl(var(--primary) / 0.5), 0 0 60px hsl(var(--primary) / 0.2);
+      background-color: hsl(var(--primary) / 0.7);
     }
   }
 
+  .animate-pulse-purple {
+    animation: pulse-purple 3s ease-in-out infinite;
+  }
+
+  /* Legacy support */
   .animate-pulse-cyan {
-    animation: pulse-cyan 3s ease-in-out infinite;
+    animation: pulse-purple 3s ease-in-out infinite;
   }
 
   /* Vibrant Pulse Aura */
@@ -633,13 +647,23 @@
   }
 
   /* Border glow effect for active/drag states */
+  .border-glow-purple {
+    box-shadow: inset 0 0 0 1px hsl(var(--primary)), 0 0 15px hsl(var(--primary) / 0.3);
+  }
+
+  /* Legacy */
   .border-glow-cyan {
     box-shadow: inset 0 0 0 1px hsl(var(--primary)), 0 0 15px hsl(var(--primary) / 0.3);
   }
 
-  /* Cyan-to-Fuchsia gradient */
+  /* Violet-to-Pink gradient */
+  .gradient-violet-pink {
+    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  }
+
+  /* Legacy */
   .gradient-cyan-fuchsia {
-    background: linear-gradient(135deg, #00e5ff 0%, #ff00ff 100%);
+    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
   }
 
   /* Card gradient background */
@@ -655,15 +679,21 @@
       0 4px 12px hsl(300 100% 50% / 0.3);
   }
 
-  /* Combined cyan-fuchsia glow */
+  /* Combined violet-pink glow */
   .shadow-glow-gradient {
-    box-shadow: 0 0 20px rgba(0, 229, 255, 0.3), 0 0 30px rgba(255, 0, 255, 0.2);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 30px rgba(236, 72, 153, 0.2);
   }
 
   /* Input focus glow (for glow effects demo) */
+  .input-glow-purple {
+    box-shadow: 0 0 0 1px hsl(var(--primary)), 0 0 15px hsl(var(--primary) / 0.4);
+    border-color: hsl(var(--primary));
+  }
+
+  /* Legacy */
   .input-glow-cyan {
-    box-shadow: 0 0 0 1px hsl(var(--pixel-cyan)), 0 0 15px hsl(var(--pixel-cyan) / 0.4);
-    border-color: hsl(var(--pixel-cyan));
+    box-shadow: 0 0 0 1px hsl(var(--primary)), 0 0 15px hsl(var(--primary) / 0.4);
+    border-color: hsl(var(--primary));
   }
 
   /**
@@ -979,11 +1009,11 @@
 
     0%,
     100% {
-      text-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+      text-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
     }
 
     50% {
-      text-shadow: 0 0 40px rgba(34, 211, 238, 0.8), 0 0 60px rgba(34, 211, 238, 0.2);
+      text-shadow: 0 0 40px rgba(139, 92, 246, 0.8), 0 0 60px rgba(139, 92, 246, 0.2);
     }
   }
 
@@ -1240,9 +1270,14 @@
     animation: countdown-ring 12s linear infinite reverse;
   }
 
-  /* Cyan text glow */
+  /* Purple text glow */
+  .text-glow-purple {
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+
+  /* Legacy */
   .text-glow-cyan {
-    text-shadow: 0 0 10px rgba(34, 211, 238, 0.5), 0 0 20px rgba(34, 211, 238, 0.3);
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3);
   }
 
   /* Beat flash - synced to seconds during countdown */

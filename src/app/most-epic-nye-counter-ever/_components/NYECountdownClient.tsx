@@ -592,7 +592,7 @@ export default function NYECountdownClient() {
                   background: [
                     "#FFD700",
                     "#FFFFFF",
-                    "#00E5FF",
+                    "#8B5CF6",
                     "#FF69B4",
                     "#9D4EDD",
                   ][i % 5],
@@ -600,7 +600,7 @@ export default function NYECountdownClient() {
                     [
                       "#FFD700",
                       "#FFFFFF",
-                      "#00E5FF",
+                      "#8B5CF6",
                       "#FF69B4",
                       "#9D4EDD",
                     ][i % 5]
@@ -774,7 +774,7 @@ export default function NYECountdownClient() {
                 style={{
                   background: [
                     "#FFD700",
-                    "#00E5FF",
+                    "#8B5CF6",
                     "#FF00FF",
                     "#00FF00",
                     "#FF4500",
@@ -806,7 +806,7 @@ export default function NYECountdownClient() {
                 key={`arc-${i}`}
                 className="animate-electric-arc"
                 d={`M ${10 + i * 15}% 0 Q ${20 + i * 10}% 50% ${50}% 50% T ${90 - i * 10}% 100%`}
-                stroke={i % 2 === 0 ? "#00E5FF" : "#A855F7"}
+                stroke={i % 2 === 0 ? "#8B5CF6" : "#A855F7"}
                 strokeWidth="2"
                 fill="none"
                 filter="url(#electric-glow)"
@@ -826,7 +826,7 @@ export default function NYECountdownClient() {
                 top: `${20 + (i * 10) % 60}%`,
                 left: `${10 + (i * 12) % 80}%`,
                 animationDelay: `${i * 0.15}s`,
-                boxShadow: "0 0 10px #00E5FF, 0 0 20px #00E5FF",
+                boxShadow: "0 0 10px #8B5CF6, 0 0 20px #8B5CF6",
               }}
             />
           ))}

@@ -44,16 +44,16 @@ export const VCP_TIMING = {
  */
 export const COLORS = {
   // Primary brand colors
-  cyan: "#00E5FF",
-  fuchsia: "#FF00FF",
-  purple: "#9945FF",
+  cyan: "#8B5CF6", // Replaced with Violet (Primary)
+  fuchsia: "#EC4899", // Replaced with Pink (Secondary)
+  purple: "#7C3AED", // Darker Violet
   amber: "#F59E0B",
   gold: "#FBBF24",
 
   // Dark theme
-  darkBg: "#0a0a0f",
-  darkCard: "#1a1a2e",
-  darkBorder: "#2a2a3e",
+  darkBg: "#0F172A",
+  darkCard: "#1E293B",
+  darkBorder: "#334155",
 
   // Text colors
   textPrimary: "#ffffff",
@@ -66,8 +66,8 @@ export const COLORS = {
   error: "#ef4444",
 
   // Chart colors for A/B testing
-  variantA: "#00E5FF", // Cyan
-  variantB: "#FF00FF", // Fuchsia
+  variantA: "#8B5CF6", // Violet
+  variantB: "#EC4899", // Pink
 } as const;
 
 /**
@@ -136,5 +136,5 @@ export const VERITASIUM_COLORS = {
   bayesian: "#A78BFA",
 
   // Flywheel
-  flywheel: "#00E5FF",
+  flywheel: "#8B5CF6",
 } as const;

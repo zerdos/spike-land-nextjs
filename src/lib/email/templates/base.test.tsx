@@ -112,13 +112,13 @@ describe("emailStyles", () => {
   });
 
   it("should use Pixel Cyan brand color", () => {
-    expect(emailStyles.logo.color).toBe("#00E5FF");
-    expect(emailStyles.link.color).toBe("#00E5FF");
-    expect(emailStyles.button.backgroundColor).toBe("#00E5FF");
+    expect(emailStyles.logo.color).toBe("#8B5CF6");
+    expect(emailStyles.link.color).toBe("#8B5CF6");
+    expect(emailStyles.button.backgroundColor).toBe("#8B5CF6");
   });
 
   it("should have proper button styles", () => {
-    expect(emailStyles.button.backgroundColor).toBe("#00E5FF");
+    expect(emailStyles.button.backgroundColor).toBe("#8B5CF6");
     expect(emailStyles.button.color).toBe("#08081C");
     expect(emailStyles.button.textDecoration).toBe("none");
     expect(emailStyles.button.fontWeight).toBe("bold");
