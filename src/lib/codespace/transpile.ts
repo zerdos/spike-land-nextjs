@@ -1,36 +1,39 @@
 /**
- * Transpile helper — uses esbuild-wasm locally to transpile JSX/TSX code.
+ * Transpile helper — delegates to the js.spike.land Cloudflare Worker
+ * which runs esbuild-wasm natively. This avoids WASM initialization
+ * issues on Vercel's serverless runtime.
  *
  * Used by codespace API routes to convert raw source code into browser-ready JavaScript.
- * Transform options match packages/code/src/@/lib/transpile.ts:65-81 (same as js.spike.land).
  */
+
+const JS_SPIKE_LAND_URL = "https://js.spike.land";
+const TRANSPILE_TIMEOUT_MS = 15_000;
 
 export async function transpileCode(
   code: string,
-  _origin?: string,
+  origin = "https://spike.land",
 ): Promise<string> {
-  const { ensureEsbuildInitialized } = await import("./esbuild-init");
-  await ensureEsbuildInitialized();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), TRANSPILE_TIMEOUT_MS);
 
-  const { transform } = await import("esbuild-wasm");
-  const result = await transform(code, {
-    loader: "tsx",
-    format: "esm",
-    treeShaking: true,
-    platform: "browser",
-    minify: false,
-    charset: "utf8",
-    keepNames: true,
-    tsconfigRaw: {
-      compilerOptions: {
-        jsx: "react-jsx",
-        jsxFragmentFactory: "Fragment",
-        jsxImportSource: "@emotion/react",
-      },
-    },
-    target: "es2024",
-  });
-  return result.code;
+  try {
+    const response = await fetch(JS_SPIKE_LAND_URL, {
+      method: "POST",
+      headers: { "TR_ORIGIN": origin },
+      body: code,
+      signal: controller.signal,
+    });
+
+    const text = await response.text();
+
+    if (!response.ok) {
+      throw new Error(text || `Transpilation failed with status ${response.status}`);
+    }
+
+    return text;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 /**
