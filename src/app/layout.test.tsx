@@ -89,12 +89,25 @@ describe("RootLayout", () => {
 
   it("should render body element inside html", async () => {
     const result = await RootLayout({ children: <div>Test</div> });
-    expect(result.props.children.type).toBe("body");
+    const children = Array.isArray(result.props.children)
+      ? result.props.children
+      : [result.props.children];
+    const body = children.find(
+      (c: React.ReactElement) => c && c.type === "body",
+    );
+    expect(body).toBeDefined();
+    expect(body.type).toBe("body");
   });
 
   it("should apply font class variables to body", async () => {
     const result = await RootLayout({ children: <div>Test</div> });
-    const bodyClassName = result.props.children.props.className;
+    const children = Array.isArray(result.props.children)
+      ? result.props.children
+      : [result.props.children];
+    const body = children.find(
+      (c: React.ReactElement) => c && c.type === "body",
+    );
+    const bodyClassName = body.props.className;
     expect(bodyClassName).toContain("--font-geist-sans");
     expect(bodyClassName).toContain("--font-geist-mono");
     expect(bodyClassName).toContain("--font-montserrat");
@@ -104,7 +117,13 @@ describe("RootLayout", () => {
   it("should wrap children in ThemeProvider and SessionProvider", async () => {
     const testChild = <div>Test Child</div>;
     const result = await RootLayout({ children: testChild });
-    const bodyChildren = result.props.children.props.children;
+    const children = Array.isArray(result.props.children)
+      ? result.props.children
+      : [result.props.children];
+    const body = children.find(
+      (c: React.ReactElement) => c && c.type === "body",
+    );
+    const bodyChildren = body.props.children;
     expect(bodyChildren).toBeDefined();
   });
 
