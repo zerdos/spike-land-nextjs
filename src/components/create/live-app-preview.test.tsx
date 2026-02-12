@@ -160,8 +160,7 @@ describe("LiveAppPreview", () => {
 
     // Should show error state
     expect(screen.getByText("Preview unavailable")).toBeInTheDocument();
-    // eslint-disable-next-line testing-library/no-node-access
-    expect(document.querySelector("iframe")).not.toBeInTheDocument();
+    expect(screen.queryByTitle("Unhealthy App")).not.toBeInTheDocument();
   });
 
   it("calls onHealthStatus callback with health result", async () => {

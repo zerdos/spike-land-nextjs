@@ -146,8 +146,6 @@ export class HypothesisAgent {
     try {
       const ai = await getGeminiClient();
       const response = await ai.models.generateContent({
-      const ai = await getGeminiClient();
-      const response = await ai.models.generateContent({
         model: this.model,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
