@@ -51,6 +51,9 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   codespace: "Live React application development on testing.spike.land",
   jules: "Async coding agent for background development tasks",
   gateway: "BridgeMind project management, GitHub sync, and Bolt orchestration",
+  vault: "Encrypted secret storage for agent integrations",
+  tools: "Dynamic tool registration and management",
+  bootstrap: "One-session workspace setup: create workspace, store secrets, deploy apps",
 };
 
 export class ToolRegistry {
