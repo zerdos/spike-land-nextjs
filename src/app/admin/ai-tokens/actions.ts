@@ -28,7 +28,7 @@ export async function upsertAIProvider(data: {
 }) {
   await ensureAdmin();
 
-  const { id: _id, ...rest } = data;
+  const { id: _id, config, ...rest } = data;
 
   if (rest.isDefault) {
     // Unset other defaults if this one is set as default
@@ -40,8 +40,14 @@ export async function upsertAIProvider(data: {
 
   const result = await prisma.aIProvider.upsert({
     where: { name: rest.name },
-    update: rest,
-    create: rest,
+    update: {
+      ...rest,
+      config: config as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    },
+    create: {
+      ...rest,
+      config: config as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    },
   });
 
   revalidatePath("/admin/ai-tokens");
