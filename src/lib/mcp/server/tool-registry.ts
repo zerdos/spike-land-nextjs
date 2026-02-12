@@ -1,8 +1,7 @@
 /**
  * Server-Side Progressive Tool Registry
  *
- * Port of packages/mcp-server/src/registry.ts for server-side use.
- * Same progressive disclosure pattern: 5 always-on gateway tools,
+ * Progressive disclosure pattern: 5 always-on gateway-meta tools,
  * all others discoverable via search_tools and enable_category.
  */
 

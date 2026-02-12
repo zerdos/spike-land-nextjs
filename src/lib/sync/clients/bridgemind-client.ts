@@ -6,8 +6,6 @@
  * tool execution, and resilience patterns (retry with exponential backoff,
  * circuit breaker).
  *
- * NOTE: This is a synced copy of packages/mcp-server/src/clients/bridgemind-client.ts.
- * Cannot import from packages/mcp-server due to Next.js bundler constraints.
  */
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";

@@ -296,12 +296,8 @@ async function createTempMcpConfig(): Promise<string> {
   const config = {
     mcpServers: {
       "spike-land": {
-        type: "stdio",
-        command: "npx",
-        args: ["-y", "@spike-npm-land/mcp-server"],
-        env: {
-          SPIKE_LAND_API_KEY: process.env["SPIKE_LAND_API_KEY"] || "",
-        },
+        type: "url",
+        url: "https://spike.land/api/mcp",
       },
       "playwright": {
         type: "stdio",

@@ -24,7 +24,7 @@
         "e2e/**",
         "prisma/**",
         "scripts/**",
-        "packages/mcp-server/dist/**"
+
       ],
       "ignoreBinaries": ["outdated"],
       "ignoreDependencies": [

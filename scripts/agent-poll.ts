@@ -883,7 +883,7 @@ function formatPromptWithHistory(
  * Build the system prompt for the agent
  *
  * Tool names follow the pattern: mcp__<server-name>__<tool-name>
- * The @spike-npm-land/mcp-server provides these codespace tools:
+ * The spike-land MCP server provides these codespace tools:
  * - codespace_update: Create/update React code
  * - codespace_run: Transpile and run code
  * - codespace_screenshot: Get a screenshot
@@ -956,11 +956,7 @@ Available spike-land MCP tools:
 /**
  * Create temporary MCP config file
  *
- * Uses stdio transport with @spike-npm-land/mcp-server npm package
- * which provides codespace tools: codespace_update, codespace_run,
- * codespace_screenshot, codespace_link
- *
- * Claude CLI only supports stdio and sse transports, not http
+ * Uses Streamable HTTP transport via the server-side MCP endpoint.
  */
 async function createTempMcpConfig(): Promise<string> {
   const tmpDir = join(tmpdir(), `claude-mcp-${Date.now()}`);
@@ -972,14 +968,8 @@ async function createTempMcpConfig(): Promise<string> {
   const config = {
     mcpServers: {
       "spike-land": {
-        // Use stdio transport with npm package for codespace operations
-        // This spawns npx as a subprocess and communicates via stdin/stdout
-        type: "stdio",
-        command: "npx",
-        args: ["-y", "@spike-npm-land/mcp-server"],
-        env: {
-          SPIKE_LAND_API_KEY: process.env["SPIKE_LAND_API_KEY"] || "",
-        },
+        type: "url",
+        url: "https://spike.land/api/mcp",
       },
       "MCP_DOCKER": {
         type: "sse",

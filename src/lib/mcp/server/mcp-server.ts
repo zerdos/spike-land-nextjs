@@ -11,6 +11,7 @@ import { registerGatewayMetaTools } from "./tools/gateway-meta";
 import { registerImageTools } from "./tools/image";
 import { registerCodeSpaceTools } from "./tools/codespace";
 import { registerJulesTools, isJulesAvailable } from "./tools/jules";
+import { registerGatewayTools, isGatewayAvailable } from "./tools/gateway";
 
 /**
  * Create a fully configured MCP server for a specific user.
@@ -43,6 +44,11 @@ export function createMcpServer(userId: string): McpServer {
   // Jules tools (discoverable, if configured)
   if (isJulesAvailable()) {
     registerJulesTools(registry, userId);
+  }
+
+  // Gateway tools (BridgeMind, GitHub, sync, Bolt — discoverable, if configured)
+  if (isGatewayAvailable()) {
+    registerGatewayTools(registry, userId);
   }
 
   return mcpServer;
