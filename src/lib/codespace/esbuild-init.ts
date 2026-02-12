@@ -6,9 +6,6 @@
  * and caches the promise so concurrent callers share the same init.
  */
 
-import { readFileSync } from "fs";
-import { dirname, join } from "path";
-
 let initPromise: Promise<void> | null = null;
 
 /**
@@ -30,19 +27,8 @@ export async function ensureEsbuildInitialized(): Promise<void> {
 async function doInit(): Promise<void> {
   const { initialize } = await import("esbuild-wasm");
 
-  // Locate the WASM binary relative to the esbuild-wasm package.
-  // require.resolve finds the package entry, then we navigate to esbuild.wasm.
-  let wasmPath: string;
-  try {
-    const esbuildEntry = require.resolve("esbuild-wasm");
-    wasmPath = join(dirname(esbuildEntry), "esbuild.wasm");
-  } catch {
-    // Fallback: try relative to cwd (works locally and most Vercel setups)
-    wasmPath = join(process.cwd(), "node_modules/esbuild-wasm/esbuild.wasm");
-  }
-
-  const wasmBinary = readFileSync(wasmPath);
-  const wasmModule = await WebAssembly.compile(wasmBinary);
-
-  await initialize({ wasmModule, worker: false });
+  // In Node.js, esbuild-wasm auto-locates esbuild.wasm via __dirname.
+  // We only need worker: false to avoid spawning a Worker thread
+  // (which fails in serverless environments like Vercel).
+  await initialize({ worker: false });
 }
