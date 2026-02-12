@@ -41,7 +41,7 @@ vi.mock("@/lib/ai/claude-client", () => ({
   getClaudeClient: vi.fn(() => ({
     messages: { create: mockCreate },
   })),
-  isClaudeConfigured: vi.fn().mockResolvedValue(true),
+  isClaudeConfigured: vi.fn(() => true),
 }));
 
 // Import the mocked module so we can control it per-test
@@ -50,12 +50,12 @@ import { isClaudeConfigured } from "@/lib/ai/claude-client";
 describe("Suggestion Generator", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(isClaudeConfigured).mockResolvedValue(true);
+    vi.mocked(isClaudeConfigured).mockReturnValue(true);
   });
 
   describe("buildAIContext", () => {
     beforeEach(() => {
-      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
+      vi.mocked(isClaudeConfigured).mockReturnValue(true);
     });
 
     it("should build context with brand voice", () => {
@@ -234,7 +234,7 @@ describe("Suggestion Generator", () => {
 
   describe("generateSuggestions", () => {
     beforeEach(() => {
-      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
+      vi.mocked(isClaudeConfigured).mockReturnValue(true);
     });
 
     it("should generate suggestions with valid input", async () => {
@@ -305,7 +305,7 @@ describe("Suggestion Generator", () => {
     });
 
     it("should throw error when Claude is not configured", async () => {
-      vi.mocked(isClaudeConfigured).mockResolvedValue(false);
+      vi.mocked(isClaudeConfigured).mockReturnValue(false);
 
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
