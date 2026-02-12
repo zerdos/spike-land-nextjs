@@ -62,12 +62,21 @@ export async function createGenerationJob(
     }
   }
 
+  // Verify user exists to avoid FK constraint violation (P2003)
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true },
+  });
+  if (!user) {
+    throw new Error(`User ${userId} not found in database`);
+  }
+
   // Create the job record (CreativeSet)
   const set = await prisma.creativeSet.create({
     data: {
       name: setName,
       briefId: briefId || null, // Allow null if using seed content
-      generatedById: userId,
+      generatedById: user.id,
       modelVersion: "gemini-3-flash-preview",
       generationPrompt: `Generate ${count} variants with tone: ${tone || "auto"}`,
       status: "DRAFT",

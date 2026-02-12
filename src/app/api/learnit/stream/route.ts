@@ -80,12 +80,19 @@ export async function POST(req: Request) {
 
   // Check if already generating
   if (existing?.status === "GENERATING") {
-    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
-    if (existing.generatedAt > twoMinutesAgo) {
-      return new NextResponse(
-        JSON.stringify({ status: "GENERATING", message: "Content is already being generated" }),
-        { status: 202 },
-      );
+    // Clean up stale GENERATING records older than 5 minutes
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    if (existing.generatedAt && existing.generatedAt < fiveMinutesAgo) {
+      await markAsFailed(slug);
+      // Continue to re-generate below
+    } else {
+      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+      if (existing.generatedAt > twoMinutesAgo) {
+        return new NextResponse(
+          JSON.stringify({ status: "GENERATING", message: "Content is already being generated" }),
+          { status: 202 },
+        );
+      }
     }
   }
 
@@ -244,6 +251,7 @@ function createAgentProxyResponse(
             );
           }
         } catch (_geminiError) {
+          await markAsFailed(slug).catch(() => {});
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({ type: "error", message: "Generation failed" })}\n\n`,

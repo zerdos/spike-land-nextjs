@@ -5,6 +5,9 @@ import { startVariantGeneration } from "../variant-generator";
 
 vi.mock("@/lib/prisma", () => ({
   default: {
+    user: {
+      findUnique: vi.fn(),
+    },
     campaignBrief: {
       findUnique: vi.fn(),
     },
@@ -33,6 +36,7 @@ describe("startVariantGeneration", () => {
   });
 
   it("should create a job and return set ID", async () => {
+    (prisma.user.findUnique as any).mockResolvedValue({ id: "user-1" });
     (prisma.creativeSet.create as any).mockResolvedValue({ id: "set-123" });
     (copyGenerator.generateCopyVariants as any).mockResolvedValue([]);
 
@@ -54,6 +58,7 @@ describe("startVariantGeneration", () => {
   });
 
   it("should fetch brief if briefId is provided", async () => {
+    (prisma.user.findUnique as any).mockResolvedValue({ id: "user-1" });
     (prisma.campaignBrief.findUnique as any).mockResolvedValue({
       id: "brief-1",
       name: "My Brief",

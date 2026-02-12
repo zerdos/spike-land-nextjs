@@ -56,16 +56,30 @@ export async function searchLearnItContent(query: string, limit = 10) {
 export async function createOrUpdateContent(input: CreateContentInput) {
   const { links } = parseWikiLinks(input.content);
 
+  // Verify user exists to avoid FK constraint violation (P2003)
+  let validGeneratedById: string | undefined = undefined;
+  if (input.generatedById) {
+    const user = await prisma.user.findUnique({
+      where: { id: input.generatedById },
+      select: { id: true },
+    });
+    validGeneratedById = user ? input.generatedById : undefined;
+  }
+
+  const data = {
+    ...input,
+    generatedById: validGeneratedById,
+    wikiLinks: links,
+  };
+
   const content = await prisma.learnItContent.upsert({
     where: { slug: input.slug },
     create: {
-      ...input,
-      wikiLinks: links,
+      ...data,
       status: "PUBLISHED",
     },
     update: {
-      ...input,
-      wikiLinks: links,
+      ...data,
       status: "PUBLISHED",
       updatedAt: new Date(),
     },

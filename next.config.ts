@@ -70,6 +70,9 @@ const nextConfig: NextConfig = {
   // output: process.env.STANDALONE === "true" ? "standalone" : undefined,
   ...(process.env.STANDALONE === "true" ? { output: "standalone" } : {}),
   images: {
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: "https",
@@ -153,6 +156,11 @@ export default withSentryConfig(nextConfig, {
 
   // Suppress source map upload logs during build
   silent: !process.env.CI,
+
+  // Skip source map upload on PR branches to reduce build overhead and memory usage
+  sourcemaps: {
+    disable: process.env.CI === "true" && process.env["GITHUB_REF"] !== "refs/heads/main",
+  },
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
   bundleSizeOptimizations: {
