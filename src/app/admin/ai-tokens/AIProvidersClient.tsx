@@ -32,7 +32,9 @@ interface AIProvider {
   name: string;
   token: string;
   isDefault: boolean;
-  config: Record<string, unknown> | null;
+  config: any; // Using any for JsonValue compatibility
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export function AIProvidersClient({ initialProviders }: { initialProviders: AIProvider[] }) {

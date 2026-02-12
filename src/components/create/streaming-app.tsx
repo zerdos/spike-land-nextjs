@@ -4,7 +4,7 @@ import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { cn } from "@/lib/utils";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -53,6 +53,10 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
     setMessages((prev) => [...prev, { text, type }]);
   }, []);
 
+  const pathKey = JSON.stringify(path);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stablePath = useMemo(() => path, [pathKey]);
+
   const startStreaming = useCallback(async () => {
     setStatus("connecting");
     setMessages([]);
@@ -69,7 +73,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
       const response = await fetch("/api/create/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path }),
+        body: JSON.stringify({ path: stablePath }),
         signal: controller.signal,
       });
 
@@ -207,7 +211,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
     } finally {
       clearTimeout(timeoutId);
     }
-  }, [path, router, addMessage, redirectToSignIn]);
+  }, [stablePath, router, addMessage, redirectToSignIn]);
 
   useEffect(() => {
     startStreaming();
