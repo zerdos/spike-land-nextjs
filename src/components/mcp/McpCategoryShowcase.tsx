@@ -2,25 +2,11 @@
 
 import { motion, type Variants } from "framer-motion";
 import {
-  Activity,
-  AppWindow,
   Bot,
-  Calendar,
   Code2,
   Compass,
-  FileText,
   ImagePlus,
-  Inbox,
-  Music,
   Network,
-  Palette,
-  Search,
-  Send,
-  Share2,
-  Shield,
-  Sparkles,
-  Users,
-  Zap,
 } from "lucide-react";
 import type React from "react";
 
@@ -41,20 +27,6 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Code2,
   Bot,
   Network,
-  Palette,
-  AppWindow,
-  Sparkles,
-  FileText,
-  Music,
-  Activity,
-  Inbox,
-  Calendar,
-  Search,
-  Zap,
-  Shield,
-  Send,
-  Share2,
-  Users,
 };
 
 interface McpCategoryShowcaseProps {
@@ -127,60 +99,27 @@ function CategoryCard({
 export function McpCategoryShowcase({
   onCategorySelect,
 }: McpCategoryShowcaseProps) {
-  const availableNow = MCP_CATEGORIES.filter(
-    (c) => c.tier === "free" && c.toolCount > 0,
-  );
-  const comingSoon = MCP_CATEGORIES.filter(
-    (c) => c.tier === "workspace" || c.toolCount === 0,
-  );
-
   return (
     <section className="space-y-12">
       <h2 className="text-center text-3xl font-bold tracking-tight">
         Tool Categories
       </h2>
 
-      {/* Available Now */}
-      <div className="space-y-6">
-        <h3 className="text-xl font-semibold text-white/90">Available Now</h3>
-        <motion.div
-          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
-        >
-          {availableNow.map((category) => (
-            <CategoryCard
-              key={category.id}
-              category={category}
-              onSelect={onCategorySelect}
-            />
-          ))}
-        </motion.div>
-      </div>
-
-      {/* Coming Soon */}
-      {comingSoon.length > 0 && (
-        <div className="space-y-6">
-          <h3 className="text-xl font-semibold text-white/90">Coming Soon</h3>
-          <motion.div
-            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-          >
-            {comingSoon.map((category) => (
-              <CategoryCard
-                key={category.id}
-                category={category}
-                onSelect={onCategorySelect}
-              />
-            ))}
-          </motion.div>
-        </div>
-      )}
+      <motion.div
+        className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+      >
+        {MCP_CATEGORIES.map((category) => (
+          <CategoryCard
+            key={category.id}
+            category={category}
+            onSelect={onCategorySelect}
+          />
+        ))}
+      </motion.div>
     </section>
   );
 }

@@ -10,11 +10,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useWorkspaceCredits } from "@/hooks/useWorkspaceCredits";
-import { ENHANCEMENT_COSTS } from "@/lib/credits/costs";
-import { Check, Loader2, Sparkles, Zap } from "lucide-react";
+import {
+  BookOpen,
+  Check,
+  Code,
+  ImageIcon,
+  Loader2,
+  Terminal,
+  Zap,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -24,9 +30,6 @@ export default function PricingPage() {
   const isAuthenticated = status === "authenticated" && session?.user;
   const router = useRouter();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
-
-  // Fetch credit balance for logged-in users
-  const { remaining, isLoading } = useWorkspaceCredits();
 
   async function handleTierCheckout(tierId: "PRO" | "BUSINESS") {
     if (!isAuthenticated) {
@@ -60,56 +63,84 @@ export default function PricingPage() {
     <div className="container mx-auto pt-24 pb-12 px-4">
       {/* Hero Section */}
       <div className="text-center mb-16">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Sparkles className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold">Pricing</h1>
-        </div>
+        <h1 className="text-4xl font-bold mb-4">Most of spike.land is free.</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Choose a workspace plan that fits your social media and AI needs.
-          All plans include monthly AI credits for image enhancement.
+          Vibe code apps, use MCP developer tools, enhance images, and learn
+          anything — all without paying. Orbit plans are for when you need
+          serious social media management.
         </p>
       </div>
 
-      {/* Hero card about AI Credits */}
-      <div className="max-w-4xl mx-auto mb-16">
-        <Card className="overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardHeader className="text-center pb-2">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Sparkles className="h-6 w-6 text-primary" />
-              <CardTitle className="text-2xl">
-                Pixel AI Photo Enhancement
-              </CardTitle>
-            </div>
-            <CardDescription className="text-base">
-              Use Orbit's built-in AI to enhance your brand photography directly in your workflow.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="relative w-full aspect-[2/1] max-w-2xl mx-auto rounded-lg overflow-hidden border shadow-lg">
-              <Image
-                src="/token-well.jpeg"
-                alt="Orbit AI Credits"
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-            
-            {isAuthenticated && (
-              <div className="text-center p-4 rounded-lg bg-primary/10 border border-primary/20">
-                <p className="text-sm text-muted-foreground mb-1">
-                  Your current balance
-                </p>
-                <p className="text-2xl font-bold text-primary">
-                  {isLoading ? "..." : `${remaining} credits`}
-                </p>
+      {/* Free Platform Features */}
+      <div className="max-w-4xl mx-auto mb-16" data-testid="free-features-section">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Code className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg">Vibe Coding</CardTitle>
+                <Badge variant="secondary" className="ml-auto">Free</Badge>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Build web apps from natural language. Describe what you want,
+                watch it come to life.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Terminal className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg">MCP Developer Tools</CardTitle>
+                <Badge variant="secondary" className="ml-auto">Free</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Connect Claude, Cursor, or any MCP client directly to
+                spike.land.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <ImageIcon className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg">Pixel Image Enhancement</CardTitle>
+                <Badge variant="secondary" className="ml-auto">Free</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Enhance any image with AI. Free tier includes nano-model
+                enhancements.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg">LearnIt Wiki</CardTitle>
+                <Badge variant="secondary" className="ml-auto">Free</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                AI-generated knowledge base. Ask anything, get a structured
+                article.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Orbit Workspace Tiers */}
+      {/* Orbit Social Media Management */}
       <div
         className="max-w-6xl mx-auto mb-16"
         data-testid="workspace-tiers-section"
@@ -117,10 +148,11 @@ export default function PricingPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Zap className="h-6 w-6 text-blue-500" />
-            <h2 className="text-2xl font-bold">Orbit Workspace Plans</h2>
+            <h2 className="text-2xl font-bold">Orbit Social Media Management</h2>
           </div>
           <p className="text-muted-foreground">
-            Power your social media management with Orbit workspace subscriptions
+            When you need to manage multiple accounts, schedule posts, and run
+            A/B tests.
           </p>
         </div>
 
@@ -140,19 +172,27 @@ export default function PricingPage() {
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-green-500" />
-                  <span>3 social accounts</span>
+                  <span>Vibe coding (unlimited)</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-green-500" />
-                  <span>30 scheduled posts/month</span>
+                  <span>MCP tools (unlimited)</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-green-500" />
-                  <span>1 A/B test</span>
+                  <span>5 social accounts</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-green-500" />
-                  <span>100 AI credits/month</span>
+                  <span>100 scheduled posts/month</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>3 A/B tests</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>500 AI credits/month</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-green-500" />
@@ -161,9 +201,17 @@ export default function PricingPage() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full" disabled>
-                Current Plan
-              </Button>
+              {isAuthenticated ? (
+                <Button variant="outline" className="w-full" disabled>
+                  Your Plan
+                </Button>
+              ) : (
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/auth/signin?callbackUrl=/pricing">
+                    Get Started Free
+                  </Link>
+                </Button>
+              )}
             </CardFooter>
           </Card>
 
@@ -183,6 +231,9 @@ export default function PricingPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <p className="text-sm font-medium text-muted-foreground mb-3">
+                Everything in Free, plus:
+              </p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-green-500" />
@@ -234,6 +285,9 @@ export default function PricingPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <p className="text-sm font-medium text-muted-foreground mb-3">
+                Everything in Free, plus:
+              </p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-green-500" />
@@ -279,55 +333,6 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* Credit Usage Info */}
-      <div className="max-w-3xl mx-auto mb-16">
-        <Card className="bg-muted/30">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              AI Credit Usage Guide
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-6 text-center">
-              <div className="space-y-2">
-                <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary font-bold text-xl mx-auto">
-                  {ENHANCEMENT_COSTS.TIER_1K}
-                </div>
-                <div>
-                  <p className="font-semibold">1K Enhancement</p>
-                  <p className="text-xs text-muted-foreground">
-                    1 credit per image
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary font-bold text-xl mx-auto">
-                  {ENHANCEMENT_COSTS.TIER_2K}
-                </div>
-                <div>
-                  <p className="font-semibold">2K Enhancement</p>
-                  <p className="text-xs text-muted-foreground">
-                    2 credits per image
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary font-bold text-xl mx-auto">
-                  {ENHANCEMENT_COSTS.TIER_4K}
-                </div>
-                <div>
-                  <p className="font-semibold">4K Enhancement</p>
-                  <p className="text-xs text-muted-foreground">
-                    5 credits per image
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* FAQ */}
       <div className="max-w-2xl mx-auto">
         <h2 className="text-2xl font-bold text-center mb-8">
@@ -336,43 +341,37 @@ export default function PricingPage() {
         <div className="space-y-6">
           <Card>
             <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">What are AI credits used for?</h3>
+              <h3 className="font-semibold mb-2">
+                Why is so much of this free?
+              </h3>
               <p className="text-muted-foreground">
-                Credits are used to enhance your images with AI in Pixel. Higher resolution
-                enhancements cost more credits. All Orbit plans include a monthly allocation
-                of AI credits.
+                I quit my job to build spike.land full-time. I believe
+                developer tools and creative tools should be accessible to
+                everyone. The free tier isn't a trial — it's the real product.
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <h3 className="font-semibold mb-2">
-                How do I get more credits?
+                What actually costs money?
               </h3>
               <p className="text-muted-foreground">
-                Upgrading your Orbit plan increases your monthly AI credit limit. 
-                Pro and Business plans include significantly higher monthly allocations 
-                to support larger workflows.
+                Orbit Pro and Business plans for teams that need advanced social
+                media management. Everything else — vibe coding, MCP tools,
+                image enhancement, LearnIt — is free.
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">Do credits roll over?</h3>
+              <h3 className="font-semibold mb-2">
+                How can I support the project?
+              </h3>
               <p className="text-muted-foreground">
-                No, monthly credits from your workspace plan reset at the start of each billing cycle.
-                Make sure to use your allocated credits each month or upgrade your plan if you
-                consistently need more.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">What happens if an enhancement fails?</h3>
-              <p className="text-muted-foreground">
-                If an enhancement fails, your credits are automatically refunded to your 
-                workspace balance. You can try the enhancement again or contact support 
-                if you experience persistent issues.
+                Use it, tell someone about it, or grab a paid Orbit plan if you
+                need the features. Revenue from Orbit funds development. The
+                project is also open source on GitHub.
               </p>
             </CardContent>
           </Card>

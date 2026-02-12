@@ -49,6 +49,7 @@ const ACTIVATED_TOOLS = [
   "github_list_issues",
   "github_create_issue",
   "github_get_pr_status",
+  "github_update_project_item",
   "sync_bridgemind_to_github",
   "sync_status",
   "bolt_status",

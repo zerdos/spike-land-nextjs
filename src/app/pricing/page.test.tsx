@@ -17,96 +17,60 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-// Mock next/image
-vi.mock("next/image", () => ({
-  default: function MockImage(
-    { src, alt, ...props }: {
-      src: string;
-      alt: string;
-      [key: string]: unknown;
-    },
-  ) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt} {...props} />;
-  },
-}));
-
 // Mock sonner toast
 vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
 
-// Mock fetch for the useWorkspaceCredits hook
+// Mock fetch for checkout
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
-
-// Helper to setup fetch mock for credit balance
-function setupCreditBalanceMock(remaining = 5) {
-  mockFetch.mockImplementation((url: string) => {
-    if (url === "/api/credits/balance") {
-      return Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            remaining,
-            limit: 100,
-            used: 100 - remaining,
-            tier: "FREE",
-            workspaceId: "ws_123",
-          }),
-      });
-    }
-    return Promise.reject(new Error(`Unexpected fetch: ${url}`));
-  });
-}
 
 describe("PricingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders the pricing page with title", () => {
+  it("renders the new hero copy", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Pricing")).toBeDefined();
+    expect(screen.getByText("Most of spike.land is free.")).toBeDefined();
     expect(
       screen.getByText(
-        /Choose a workspace plan that fits your social media and AI needs/,
+        /Vibe code apps, use MCP developer tools, enhance images, and learn anything/,
       ),
     ).toBeDefined();
   });
 
-  it("displays AI credit usage guide", () => {
+  it("renders free platform features section", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByText("AI Credit Usage Guide")).toBeDefined();
-    expect(screen.getByText("1K Enhancement")).toBeDefined();
-    expect(screen.getByText("2K Enhancement")).toBeDefined();
-    expect(screen.getByText("4K Enhancement")).toBeDefined();
+    const section = screen.getByTestId("free-features-section");
+    expect(within(section).getByText("Vibe Coding")).toBeDefined();
+    expect(within(section).getByText("MCP Developer Tools")).toBeDefined();
+    expect(within(section).getByText("Pixel Image Enhancement")).toBeDefined();
+    expect(within(section).getByText("LearnIt Wiki")).toBeDefined();
   });
 
-  it("displays credit cost descriptions for each tier", () => {
+  it("shows Free badges on platform features", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByText("1 credit per image")).toBeDefined();
-    expect(screen.getByText("2 credits per image")).toBeDefined();
-    expect(screen.getByText("5 credits per image")).toBeDefined();
+    const section = screen.getByTestId("free-features-section");
+    const badges = within(section).getAllByText("Free");
+    expect(badges.length).toBe(4);
   });
 
   it("renders all three workspace tier cards", () => {
@@ -114,7 +78,6 @@ describe("PricingPage", () => {
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
@@ -129,7 +92,6 @@ describe("PricingPage", () => {
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
@@ -143,7 +105,6 @@ describe("PricingPage", () => {
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
@@ -156,7 +117,6 @@ describe("PricingPage", () => {
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
@@ -164,30 +124,53 @@ describe("PricingPage", () => {
     expect(within(tiersSection).getByText("Best Value")).toBeDefined();
   });
 
-  it("shows monthly AI credit allocations for each tier", () => {
+  it("shows updated Free tier limits", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByText("100 AI credits/month")).toBeDefined();
+    expect(screen.getByText("5 social accounts")).toBeDefined();
+    expect(screen.getByText("100 scheduled posts/month")).toBeDefined();
+    expect(screen.getByText("3 A/B tests")).toBeDefined();
+    expect(screen.getByText("500 AI credits/month")).toBeDefined();
+    expect(screen.getByText("1 team member")).toBeDefined();
+  });
+
+  it("shows vibe coding and MCP tools in Free tier", () => {
+    (useSession as Mock).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+    });
+
+    render(<PricingPage />);
+
+    expect(screen.getByText("Vibe coding (unlimited)")).toBeDefined();
+    expect(screen.getByText("MCP tools (unlimited)")).toBeDefined();
+  });
+
+  it("shows monthly AI credit allocations for Pro and Business", () => {
+    (useSession as Mock).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+    });
+
+    render(<PricingPage />);
+
     expect(screen.getByText("1,000 AI credits/month")).toBeDefined();
     expect(screen.getByText("5,000 AI credits/month")).toBeDefined();
   });
 
-  it("shows social account limits for each tier", () => {
+  it("shows social account limits for Pro tier", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByText("3 social accounts")).toBeDefined();
     expect(screen.getByText("10 social accounts")).toBeDefined();
   });
 
@@ -196,7 +179,6 @@ describe("PricingPage", () => {
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
@@ -205,16 +187,40 @@ describe("PricingPage", () => {
     expect(screen.getByText("10 team members")).toBeDefined();
   });
 
-  it('shows "Current Plan" button on Free tier', () => {
+  it('shows "Everything in Free, plus:" header on Pro and Business', () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Current Plan")).toBeDefined();
+    const headers = screen.getAllByText("Everything in Free, plus:");
+    expect(headers.length).toBe(2);
+  });
+
+  it('shows "Get Started Free" button for unauthenticated users on Free tier', () => {
+    (useSession as Mock).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+    });
+
+    render(<PricingPage />);
+
+    expect(screen.getByText("Get Started Free")).toBeDefined();
+  });
+
+  it('shows "Your Plan" disabled button for authenticated users on Free tier', () => {
+    (useSession as Mock).mockReturnValue({
+      data: { user: { id: "123", email: "test@test.com" } },
+      status: "authenticated",
+    });
+
+    render(<PricingPage />);
+
+    const button = screen.getByText("Your Plan");
+    expect(button).toBeDefined();
+    expect(button.closest("button")?.disabled).toBe(true);
   });
 
   it('shows "Get Started" buttons on Pro and Business tiers', () => {
@@ -222,7 +228,6 @@ describe("PricingPage", () => {
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
@@ -235,90 +240,47 @@ describe("PricingPage", () => {
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
     expect(screen.getByTestId("workspace-tiers-section")).toBeDefined();
   });
 
-  it("renders Orbit Workspace Plans heading", () => {
+  it("renders Orbit Social Media Management heading", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Orbit Workspace Plans")).toBeDefined();
+    expect(
+      screen.getByText("Orbit Social Media Management"),
+    ).toBeDefined();
     expect(
       screen.getByText(
-        /Power your social media management with Orbit workspace subscriptions/,
+        /When you need to manage multiple accounts, schedule posts, and run/,
       ),
     ).toBeDefined();
   });
 
-  it("renders AI hero card with enhancement description", () => {
+  it("renders new FAQ section with 3 questions", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
-
-    render(<PricingPage />);
-
-    expect(
-      screen.getByText("Pixel AI Photo Enhancement"),
-    ).toBeDefined();
-    expect(
-      screen.getByText(
-        /Use Orbit's built-in AI to enhance your brand photography/,
-      ),
-    ).toBeDefined();
-  });
-
-  it("does not show credit balance for unauthenticated users", () => {
-    (useSession as Mock).mockReturnValue({
-      data: null,
-      status: "unauthenticated",
-    });
-    setupCreditBalanceMock();
-
-    render(<PricingPage />);
-
-    expect(screen.queryByText("Your current balance")).toBeNull();
-  });
-
-  it("shows credit balance for authenticated users", async () => {
-    (useSession as Mock).mockReturnValue({
-      data: { user: { id: "123", email: "test@test.com" } },
-      status: "authenticated",
-    });
-    setupCreditBalanceMock(42);
-
-    render(<PricingPage />);
-
-    expect(screen.getByText("Your current balance")).toBeDefined();
-  });
-
-  it("renders FAQ section with updated questions", () => {
-    (useSession as Mock).mockReturnValue({
-      data: null,
-      status: "unauthenticated",
-    });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
     expect(screen.getByText("Frequently Asked Questions")).toBeDefined();
     expect(
-      screen.getByText("What are AI credits used for?"),
+      screen.getByText("Why is so much of this free?"),
     ).toBeDefined();
-    expect(screen.getByText("How do I get more credits?")).toBeDefined();
-    expect(screen.getByText("Do credits roll over?")).toBeDefined();
     expect(
-      screen.getByText("What happens if an enhancement fails?"),
+      screen.getByText("What actually costs money?"),
+    ).toBeDefined();
+    expect(
+      screen.getByText("How can I support the project?"),
     ).toBeDefined();
   });
 
@@ -327,17 +289,13 @@ describe("PricingPage", () => {
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    // Old token package test IDs should not exist
     expect(screen.queryByTestId("package-card-starter")).toBeNull();
     expect(screen.queryByTestId("package-card-basic")).toBeNull();
     expect(screen.queryByTestId("package-card-power")).toBeNull();
     expect(screen.queryByTestId("token-packages-grid")).toBeNull();
-
-    // Old copy should not exist
     expect(
       screen.queryByText("One-time purchase. No subscription required."),
     ).toBeNull();
@@ -345,30 +303,20 @@ describe("PricingPage", () => {
     expect(screen.queryByText("Sign in to get free credits")).toBeNull();
   });
 
-  it("renders hero image with correct alt text", () => {
+  it("does not render deleted sections", () => {
     (useSession as Mock).mockReturnValue({
       data: null,
       status: "unauthenticated",
     });
-    setupCreditBalanceMock();
 
     render(<PricingPage />);
 
-    expect(screen.getByAltText("Orbit AI Credits")).toBeDefined();
-  });
-
-  it("shows loading state for credit balance", () => {
-    (useSession as Mock).mockReturnValue({
-      data: { user: { id: "123", email: "test@test.com" } },
-      status: "authenticated",
-    });
-
-    // Return a promise that never resolves to keep loading state
-    mockFetch.mockImplementation(() => new Promise(() => {}));
-
-    render(<PricingPage />);
-
-    expect(screen.getByText("Your current balance")).toBeDefined();
-    expect(screen.getByText("...")).toBeDefined();
+    expect(
+      screen.queryByText("Pixel AI Photo Enhancement"),
+    ).toBeNull();
+    expect(screen.queryByText("AI Credit Usage Guide")).toBeNull();
+    expect(screen.queryByText("What are AI credits used for?")).toBeNull();
+    expect(screen.queryByText("Do credits roll over?")).toBeNull();
+    expect(screen.queryByText("Your current balance")).toBeNull();
   });
 });

@@ -5,21 +5,22 @@ import { PdMcpLogo } from "@/components/brand";
 import { ArrowDown, Wrench, LayoutGrid, Zap } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
+import { TOTAL_TOOL_COUNT, TOTAL_CATEGORY_COUNT, GATEWAY_TOOL_COUNT } from "@/components/mcp/mcp-tool-registry";
 
 interface McpHeroProps {
   onExploreClick?: () => void;
 }
 
 const stats = [
-  { icon: Wrench, value: "34", label: "Tools" },
-  { icon: LayoutGrid, value: "19", label: "Categories" },
-  { icon: Zap, value: "5", label: "Gateway Tools" },
+  { icon: Wrench, value: String(TOTAL_TOOL_COUNT), label: "Tools" },
+  { icon: LayoutGrid, value: String(TOTAL_CATEGORY_COUNT), label: "Categories" },
+  { icon: Zap, value: String(GATEWAY_TOOL_COUNT), label: "Gateway Tools" },
 ];
 
 const configSnippet = `{
   "mcpServers": {
     "spike-land": {
-      "url": "https://testing.spike.land/mcp"
+      "url": "https://spike.land/api/mcp"
     }
   }
 }`;
@@ -67,7 +68,7 @@ export function McpHero({ onExploreClick }: McpHeroProps) {
             transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
             className="relative text-5xl sm:text-7xl md:text-9xl font-bold text-white max-w-5xl mx-auto leading-none mb-8 tracking-tighter py-2"
           >
-            40+ AI Tools.
+            {TOTAL_TOOL_COUNT} AI Tools.
             <br />
             <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient-x font-black drop-shadow-[0_0_30px_rgba(168,85,247,0.25)]">
               One Protocol.
@@ -85,7 +86,7 @@ export function McpHero({ onExploreClick }: McpHeroProps) {
           Spike Land&apos;s MCP server uses{" "}
           <span className="text-white font-medium">Progressive Context Disclosure</span>
           {" "}&mdash; agents start with 5 lightweight gateway tools and progressively
-          discover 40+ tools across 19 categories.
+          discover {TOTAL_TOOL_COUNT} tools across {TOTAL_CATEGORY_COUNT} categories.
         </motion.p>
 
         {/* Stats Row */}

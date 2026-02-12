@@ -8,31 +8,25 @@ import { ExternalLink } from "lucide-react";
 const claudeDesktopConfig = `{
   "mcpServers": {
     "spike-land": {
-      "command": "npx",
-      "args": ["-y", "@spike-npm-land/mcp-server"],
-      "env": {
-        "SPIKE_LAND_API_KEY": "your-api-key-here"
-      }
+      "url": "https://spike.land/api/mcp"
     }
   }
 }`;
 
-const claudeCodeConfig = `claude mcp add spike-land -- npx -y @spike-npm-land/mcp-server`;
+const claudeCodeConfig = `claude mcp add --transport http spike-land https://spike.land/api/mcp`;
 
 const cursorConfig = `{
   "mcpServers": {
     "spike-land": {
-      "command": "npx",
-      "args": ["-y", "@spike-npm-land/mcp-server"],
-      "env": {
-        "SPIKE_LAND_API_KEY": "your-api-key-here"
-      }
+      "url": "https://spike.land/api/mcp"
     }
   }
 }`;
 
-const npmConfig = `npm install -g @spike-npm-land/mcp-server
-SPIKE_LAND_API_KEY=your-api-key spike-land-mcp`;
+const httpConfig = `curl -X POST https://spike.land/api/mcp \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'`;
 
 export function McpIntegrationGuide() {
   return (
@@ -49,7 +43,7 @@ export function McpIntegrationGuide() {
           <TabsTrigger value="claude-desktop">Claude Desktop</TabsTrigger>
           <TabsTrigger value="claude-code">Claude Code</TabsTrigger>
           <TabsTrigger value="cursor">Cursor</TabsTrigger>
-          <TabsTrigger value="npm">npm</TabsTrigger>
+          <TabsTrigger value="http">HTTP</TabsTrigger>
         </TabsList>
 
         <TabsContent value="claude-desktop">
@@ -64,8 +58,8 @@ export function McpIntegrationGuide() {
           <McpConfigSnippet code={cursorConfig} language="json" />
         </TabsContent>
 
-        <TabsContent value="npm">
-          <McpConfigSnippet code={npmConfig} language="bash" />
+        <TabsContent value="http">
+          <McpConfigSnippet code={httpConfig} language="bash" />
         </TabsContent>
       </Tabs>
 

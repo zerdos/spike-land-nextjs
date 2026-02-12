@@ -28,10 +28,10 @@ export interface TierLimits {
  */
 export const WORKSPACE_TIER_LIMITS: Record<WorkspaceSubscriptionTier, TierLimits> = {
   FREE: {
-    maxSocialAccounts: 3,
-    maxScheduledPosts: 30,
-    maxAbTests: 1,
-    monthlyAiCredits: 100,
+    maxSocialAccounts: 5,
+    maxScheduledPosts: 100,
+    maxAbTests: 3,
+    monthlyAiCredits: 500,
     maxTeamMembers: 1,
     priceUSD: 0,
   },
