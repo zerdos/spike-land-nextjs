@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface McpConfigSnippetProps {
   serverName: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   className?: string;
 }
 
