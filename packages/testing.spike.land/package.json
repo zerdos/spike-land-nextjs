@@ -42,11 +42,11 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "3.0.42",
-    "@ai-sdk/google": "^3.0.26",
+    "@ai-sdk/google": "^3.0.28",
     "@google/genai": "^1.41.0",
     "@spike-npm-land/code": "0.9.57",
     "@types/node": "25.2.3",
-    "ai": "6.0.82",
+    "ai": "6.0.83",
     "esbuild-wasm": "0.27.3",
     "hono": "4.11.9",
     "immutable": "5.1.4",

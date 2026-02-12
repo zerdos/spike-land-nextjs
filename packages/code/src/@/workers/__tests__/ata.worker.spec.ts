@@ -232,11 +232,12 @@ import { useState } from "react";
     const origin = "https://testing.spike.land";
 
     function setupAtaMock(vfsEntries: Array<[string, string]>) {
-      mockSetupTypeAcquisition.mockReturnValue((code: string) => {
+      mockSetupTypeAcquisition.mockReturnValue((_code: string) => {
         // Simulate ATA calling finished immediately
-        const config = mockSetupTypeAcquisition.mock.calls[
+        const lastCall = mockSetupTypeAcquisition.mock.calls[
           mockSetupTypeAcquisition.mock.calls.length - 1
-        ][0];
+        ];
+        const config = lastCall![0];
         const delegate = config.delegate;
         const vfsMap = new Map(vfsEntries);
         // Use setTimeout to allow the promise to be set up
@@ -309,10 +310,10 @@ import { useState } from "react";
       await ata({ code: "const x = 1;", originToUse: origin });
 
       // The code passed to ATA should include implicit imports
-      const ataCall = mockSetupTypeAcquisition.mock.calls[0][0];
+      const ataCall = mockSetupTypeAcquisition.mock.calls[0]![0];
       expect(ataCall).toBeDefined();
       // Verify setupTypeAcquisition was called (the returned function is invoked with extCode)
-      const ataRunner = mockSetupTypeAcquisition.mock.results[0].value;
+      const ataRunner = mockSetupTypeAcquisition.mock.results[0]!.value;
       expect(ataRunner).toBeDefined();
     });
 
@@ -492,9 +493,10 @@ import { helper } from "/live/vibe-pulse/utils";
     it("calls errorMessage delegate and logs to console", async () => {
       const testError = new Error("type fetch failed");
       mockSetupTypeAcquisition.mockReturnValue((_code: string) => {
-        const config = mockSetupTypeAcquisition.mock.calls[
+        const lastCall = mockSetupTypeAcquisition.mock.calls[
           mockSetupTypeAcquisition.mock.calls.length - 1
-        ][0];
+        ];
+        const config = lastCall![0];
         const delegate = config.delegate;
         // Trigger errorMessage before finishing
         delegate.errorMessage("Could not fetch types", testError);
@@ -663,7 +665,7 @@ import { z } from "z-lib";
       // Verify sorted order
       for (let i = 1; i < result.length; i++) {
         expect(
-          result[i - 1].filePath.localeCompare(result[i].filePath),
+          result[i - 1]!.filePath.localeCompare(result[i]!.filePath),
         ).toBeLessThanOrEqual(0);
       }
     });
@@ -685,7 +687,7 @@ import { z } from "z-lib";
         lib.filePath === "/react/index.d.ts"
       );
       expect(reactLibs).toHaveLength(1);
-      expect(reactLibs[0].content).toBe("content1");
+      expect(reactLibs[0]!.content).toBe("content1");
     });
   });
 });
