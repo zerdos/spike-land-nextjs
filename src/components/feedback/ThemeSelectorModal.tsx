@@ -41,6 +41,13 @@ const THEMES = [
     icon: Sparkles,
     class: "theme-minimalist",
   },
+  {
+    id: "nebula",
+    name: "Nebula Intelligence",
+    description: "Modern cosmic vibe with violet and pink accents",
+    icon: Sparkles,
+    class: "theme-nebula",
+  },
 ];
 
 interface ThemeSelectorModalProps {
