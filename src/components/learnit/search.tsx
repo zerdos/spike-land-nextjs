@@ -6,7 +6,7 @@ import { slugify } from "@/lib/learnit/utils";
 import { motion } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function LearnItSearch() {
   const [query, setQuery] = useState("");
@@ -15,6 +15,17 @@ export function LearnItSearch() {
     [],
   );
   const [isFocused, setIsFocused] = useState(false);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleBlur = useCallback(() => {
+    blurTimeoutRef.current = setTimeout(() => setIsFocused(false), 200);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+    };
+  }, []);
 
   const debouncedQuery = useDebounce(query, 300);
 
@@ -65,7 +76,7 @@ export function LearnItSearch() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setIsFocused(true)}
-            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+            onBlur={handleBlur}
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
             {query && (
