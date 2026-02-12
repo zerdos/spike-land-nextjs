@@ -12,7 +12,7 @@ import { useSession } from "next-auth/react";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/test-page",
+  usePathname: vi.fn(() => "/test-page"),
 }));
 
 // Mock sonner toast
@@ -23,6 +23,14 @@ vi.mock("sonner", () => ({
   },
 }));
 import { toast as mockToast } from "sonner";
+import { usePathname } from "next/navigation";
+
+// Mock ThemeSelectorModal
+vi.mock("./ThemeSelectorModal", () => ({
+  ThemeSelectorModal: ({ open }: { open: boolean; }) => (
+    open ? <div data-testid="theme-modal">Theme Modal</div> : null
+  ),
+}));
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -716,6 +724,51 @@ describe("FeedbackButton", () => {
 
       const otherButton = screen.getByRole("button", { name: /other/i });
       expect(otherButton).toHaveClass("bg-secondary/50");
+    });
+  });
+
+  describe("secret theme trigger", () => {
+    beforeEach(() => {
+      (useSession as Mock).mockReturnValue({
+        data: null,
+        status: "unauthenticated",
+      });
+      (usePathname as Mock).mockReturnValue("/");
+    });
+
+    it("triggers theme modal when 'themes' is typed on the home page", async () => {
+      const user = userEvent.setup();
+      render(<FeedbackButton />);
+
+      await user.click(screen.getByRole("button", { name: "Send feedback" }));
+      const textarea = screen.getByPlaceholderText("Describe your feedback...");
+      await user.type(textarea, "themes");
+
+      const submitBtn = screen.getByRole("button", { name: /submit/i });
+      await user.click(submitBtn);
+
+      expect(screen.getByTestId("theme-modal")).toBeInTheDocument();
+    });
+
+    it("does NOT trigger theme modal when 'themes' is typed on other pages", async () => {
+      (usePathname as Mock).mockReturnValue("/about");
+      const user = userEvent.setup();
+      render(<FeedbackButton />);
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true }),
+      });
+
+      await user.click(screen.getByRole("button", { name: "Send feedback" }));
+      const textarea = screen.getByPlaceholderText("Describe your feedback...");
+      await user.type(textarea, "themes");
+
+      const submitBtn = screen.getByRole("button", { name: /submit/i });
+      await user.click(submitBtn);
+
+      expect(screen.queryByTestId("theme-modal")).not.toBeInTheDocument();
+      expect(mockFetch).toHaveBeenCalled();
     });
   });
 });

@@ -65,47 +65,50 @@
     --shadow-opacity-light: 0.05;
     --shadow-opacity-dark: 0.4;
 
-    /* Dark Mode - Aurora / Project Sonic (Default & Only Theme) */
-    --background: 0 0% 9.5%;
-    /* rgb(24, 24, 24) matches approx hsl(0, 0%, 9.4%) */
-    --foreground: 0 0% 98%;
+    /* Dark Mode - Electric Midnight (Default & Only Theme) */
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 12%;
-    /* Slightly lighter than background */
-    --card-foreground: 0 0% 98%;
+    --card: 222 47% 7%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 240 4% 8%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 160 84% 39%;
-    /* Emerald */
-    --primary-foreground: 240 5% 4%;
-    --primary-text: 160 84% 39%;
+    --primary: 263 70% 50%;
+    /* Electric Violet */
+    --primary-foreground: 210 40% 98%;
+    --primary-text: 263 70% 50%;
 
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 231 48% 18%;
+    /* Deep Indigo */
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 222 47% 11%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 173 80% 40%;
-    /* Teal */
-    --accent-foreground: 240 5% 4%;
+    --accent: 187 100% 50%;
+    /* Cyber Cyan */
+    --accent-foreground: 222 47% 7%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 160 84% 39%;
-    --radius: 9999px;
-    /* Pill shape default */
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 263 70% 50%;
+    --radius: 0.75rem;
+    /* More standard tech radius */
 
-    /* Aurora Palette - Defined for usage */
-    --aurora-green: 160 84% 39%;
-    --aurora-teal: 173 80% 40%;
-    --aurora-lime: 84 81% 44%;
-    --aurora-yellow: 48 89% 47%;
+    /* Nebula Palette - New Brand Colors */
+    --aurora-green: 262 83% 58%;
+    /* Nebula Violet */
+    --aurora-teal: 187 100% 42%;
+    /* Nebula Cyan */
+    --aurora-lime: 322 81% 55%;
+    /* Nebula Pink */
+    --aurora-yellow: 230 100% 67%;
+    /* Nebula Indigo */
 
     /* Semantic Colors */
     --success: 150 90% 35%;
@@ -133,6 +136,72 @@
     /* Standard transitions (buttons, cards) */
     --animation-slow: 300ms;
     /* Longer transitions (modals, accordions) */
+  }
+
+  .theme-retro {
+    --background: 35 30% 15%;
+    --foreground: 45 100% 85%;
+    --card: 35 30% 12%;
+    --card-foreground: 45 100% 80%;
+    --popover: 35 30% 15%;
+    --popover-foreground: 45 100% 85%;
+    --primary: 25 80% 50%;
+    --primary-foreground: 45 100% 90%;
+    --secondary: 40 40% 25%;
+    --secondary-foreground: 45 100% 85%;
+    --muted: 35 20% 20%;
+    --muted-foreground: 40 30% 60%;
+    --accent: 15 90% 55%;
+    --accent-foreground: 45 100% 90%;
+    --border: 35 40% 25%;
+    --input: 35 40% 25%;
+    --ring: 25 80% 50%;
+    --radius: 0rem;
+    --pixel-cyan: 25 80% 50%;
+  }
+
+  .theme-cyberpunk {
+    --background: 280 100% 2%;
+    --foreground: 180 100% 50%;
+    --card: 280 100% 4%;
+    --card-foreground: 180 100% 60%;
+    --popover: 280 100% 2%;
+    --popover-foreground: 180 100% 50%;
+    --primary: 320 100% 50%;
+    --primary-foreground: 280 100% 2%;
+    --secondary: 250 100% 10%;
+    --secondary-foreground: 180 100% 50%;
+    --muted: 280 50% 10%;
+    --muted-foreground: 180 50% 60%;
+    --accent: 60 100% 50%;
+    --accent-foreground: 280 100% 2%;
+    --border: 320 100% 50%;
+    --input: 320 100% 50%;
+    --ring: 320 100% 50%;
+    --radius: 0rem;
+    --pixel-cyan: 180 100% 50%;
+  }
+
+  .theme-minimalist {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 10%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 90%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 80%;
+    --accent-foreground: 0 0% 0%;
+    --border: 0 0% 85%;
+    --input: 0 0% 85%;
+    --ring: 0 0% 10%;
+    --radius: 0.25rem;
+    --pixel-cyan: 0 0% 50%;
   }
 
   /* Global Styles */
@@ -245,36 +314,36 @@
   /* These are now mobile-first with simplified blurs */
   .glass-aura-blue {
     background: linear-gradient(135deg,
-        rgba(7, 89, 133, 0.6),
-        rgba(7, 89, 133, 0.3));
+        rgba(30, 58, 138, 0.6),
+        rgba(30, 58, 138, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
-      inset 0 1px 1px 0 rgba(14, 165, 233, 0.5),
-      0 10px 40px -10px rgba(14, 165, 233, 0.3);
-    border: 1px solid rgba(14, 165, 233, 0.2);
+      inset 0 1px 1px 0 rgba(165, 180, 252, 0.5),
+      0 10px 40px -10px rgba(165, 180, 252, 0.3);
+    border: 1px solid rgba(165, 180, 252, 0.2);
   }
 
   .glass-aura-green {
     background: linear-gradient(135deg,
-        rgba(20, 83, 45, 0.6),
-        rgba(20, 83, 45, 0.3));
+        rgba(88, 28, 135, 0.6),
+        rgba(88, 28, 135, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
-    box-shadow: inset 0 1px 1px 0 rgba(34, 197, 94, 0.5), 0 10px 40px -10px rgba(34, 197, 94, 0.3);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    box-shadow: inset 0 1px 1px 0 rgba(168, 85, 247, 0.5), 0 10px 40px -10px rgba(168, 85, 247, 0.3);
+    border: 1px solid rgba(168, 85, 247, 0.2);
   }
 
   .glass-aura-orange {
     background: linear-gradient(135deg,
-        rgba(124, 45, 18, 0.6),
-        rgba(124, 45, 18, 0.3));
+        rgba(157, 23, 77, 0.6),
+        rgba(157, 23, 77, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
-      inset 0 1px 1px 0 rgba(249, 115, 22, 0.5),
-      0 10px 40px -10px rgba(249, 115, 22, 0.3);
-    border: 1px solid rgba(249, 115, 22, 0.2);
+      inset 0 1px 1px 0 rgba(244, 114, 182, 0.5),
+      0 10px 40px -10px rgba(244, 114, 182, 0.3);
+    border: 1px solid rgba(244, 114, 182, 0.2);
   }
 
   .glass-aura-fuchsia {
@@ -284,9 +353,9 @@
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
-      inset 0 1px 1px 0 rgba(217, 70, 239, 0.5),
-      0 10px 40px -10px rgba(217, 70, 239, 0.3);
-    border: 1px solid rgba(217, 70, 239, 0.2);
+      inset 0 1px 1px 0 rgba(232, 121, 249, 0.5),
+      0 10px 40px -10px rgba(232, 121, 249, 0.3);
+    border: 1px solid rgba(232, 121, 249, 0.2);
   }
 
   .glass-aura-pink {

@@ -123,6 +123,7 @@ export default {
       },
       textColor: {
         primary: "hsl(var(--primary-text))",
+        accent: "hsl(var(--accent))",
       },
     },
   },
