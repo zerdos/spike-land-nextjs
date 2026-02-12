@@ -28,7 +28,7 @@ export function SpikeLandLogo({
   const zapIcon = (
     <Zap
       size={icon}
-      className="flex-shrink-0 fill-amber-400 stroke-amber-500"
+      className="flex-shrink-0 fill-accent stroke-primary"
       aria-hidden="true"
     />
   );
