@@ -1,9 +1,13 @@
 /**
  * Singleton initialization for esbuild-wasm.
  *
- * esbuild-wasm requires `initialize()` to be called once with a wasmURL
- * before `transform()` or `build()` can be used. This module ensures
+ * esbuild-wasm requires `initialize()` to be called once before
+ * `transform()` or `build()` can be used. This module ensures
  * initialization happens exactly once.
+ *
+ * In the browser, we must pass `wasmURL` so esbuild can fetch the WASM
+ * binary over HTTP. In Node.js, esbuild-wasm locates the binary via
+ * the filesystem automatically, and passing `wasmURL` causes an error.
  */
 
 let initialized = false;
@@ -16,11 +20,11 @@ export async function ensureEsbuildReady(): Promise<void> {
   initPromise = (async () => {
     const esbuild = await import("esbuild-wasm");
     try {
+      const isBrowser = typeof window !== "undefined";
       await esbuild.initialize({
-        wasmURL: new URL(
-          "esbuild-wasm/esbuild.wasm",
-          import.meta.url,
-        ).href,
+        ...(isBrowser && {
+          wasmURL: new URL("esbuild-wasm/esbuild.wasm", import.meta.url).href,
+        }),
         worker: false,
       });
     } catch (err) {

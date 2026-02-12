@@ -91,7 +91,23 @@ describe("esbuild-init", () => {
     expect(mockInitialize).toHaveBeenCalledTimes(2);
   });
 
-  it("passes wasmURL in initialize options", async () => {
+  it("does NOT pass wasmURL in Node.js (no window)", async () => {
+    const origWindow = globalThis.window;
+    // @ts-expect-error -- simulating Node.js where window is undefined
+    delete globalThis.window;
+    mockInitialize.mockResolvedValue(undefined);
+
+    await ensureEsbuildReady();
+
+    const options = mockInitialize.mock.calls[0]![0];
+    expect(options).not.toHaveProperty("wasmURL");
+    expect(options).toHaveProperty("worker", false);
+
+    globalThis.window = origWindow;
+  });
+
+  it("passes wasmURL when running in a browser (window defined)", async () => {
+    // jsdom already provides window, so this tests the default browser path
     mockInitialize.mockResolvedValue(undefined);
 
     await ensureEsbuildReady();
@@ -100,5 +116,6 @@ describe("esbuild-init", () => {
     expect(options).toHaveProperty("wasmURL");
     expect(typeof options.wasmURL).toBe("string");
     expect(options.wasmURL).toContain("esbuild.wasm");
+    expect(options).toHaveProperty("worker", false);
   });
 });
