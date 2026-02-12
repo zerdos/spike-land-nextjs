@@ -30,8 +30,8 @@ vi.mock("@/components/landing/PublicGallerySection", () => ({
   PublicGallerySection: () => <div data-testid="public-gallery-section">PublicGallerySection</div>,
 }));
 
-vi.mock("@/components/landing/PhotoMixDemo", () => ({
-  PhotoMixDemo: () => <div data-testid="photo-mix-demo">PhotoMixDemo</div>,
+vi.mock("@/components/landing/LearnItSection", () => ({
+  LearnItSection: () => <div data-testid="learnit-section">LearnItSection</div>,
 }));
 
 vi.mock("@/components/orbit-landing", () => ({
@@ -54,7 +54,7 @@ describe("Home Page", () => {
     expect(screen.getByTestId("landing-hero")).toBeInTheDocument();
     expect(screen.getByTestId("app-showcase-section")).toBeInTheDocument();
     expect(screen.getByTestId("public-gallery-section")).toBeInTheDocument();
-    expect(screen.getByTestId("photo-mix-demo")).toBeInTheDocument();
+    expect(screen.getByTestId("learnit-section")).toBeInTheDocument();
     expect(screen.getByTestId("blog-preview-section")).toBeInTheDocument();
     expect(screen.getByTestId("create-cta-section")).toBeInTheDocument();
   });

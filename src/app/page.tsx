@@ -2,7 +2,7 @@ import { BlogPreviewSection } from "@/components/orbit-landing";
 import { AppShowcaseSection } from "@/components/landing/AppShowcaseSection";
 import { CreateCTASection } from "@/components/landing/CreateCTASection";
 import { LandingHero } from "@/components/landing/LandingHero";
-import { PhotoMixDemo } from "@/components/landing/PhotoMixDemo";
+import { LearnItSection } from "@/components/landing/LearnItSection";
 import { PublicGallerySection } from "@/components/landing/PublicGallerySection";
 import { LandingPageStructuredData } from "@/components/seo/LandingPageStructuredData";
 import { getRecentPublicPhotos } from "@/lib/gallery/public-photos";
@@ -32,7 +32,7 @@ export default async function Home() {
         <LandingHero stats={stats ?? undefined} />
         <AppShowcaseSection apps={showcaseApps} />
         <PublicGallerySection photos={publicPhotos} />
-        <PhotoMixDemo />
+        <LearnItSection />
         <BlogPreviewSection />
         <CreateCTASection />
       </div>

@@ -2,6 +2,7 @@ import { LearnItSearch } from "@/components/learnit/search";
 import { TopicCard } from "@/components/learnit/topic-card";
 import type { LearnItContent as LearnItContentType } from "@/generated/prisma";
 import { getPopularContent, getRecentContent } from "@/lib/learnit/content-service";
+import { BookOpen } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +24,17 @@ export default async function LearnItLanding() {
     <div className="space-y-16 py-8">
       {/* Hero Section */}
       <section className="text-center space-y-6">
-        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
-          Learn anything. <span className="text-primary">Instantly.</span>
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-sm text-emerald-400">
+          <BookOpen className="w-4 h-4" />
+          <span className="font-semibold tracking-widest uppercase text-[10px]">AI-Powered Wiki</span>
+        </div>
+        <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold text-white tracking-tighter">
+          Learn anything.{" "}
+          <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+            Instantly.
+          </span>
         </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-xl text-zinc-400 max-w-2xl mx-auto font-light">
           An interactive, AI-powered learning wiki that grows with you. Search for any topic to
           generate a comprehensive tutorial.
         </p>
@@ -38,7 +46,7 @@ export default async function LearnItLanding() {
       {/* Popular Topics */}
       {popular.length > 0 && (
         <section>
-          <h2 className="text-2xl font-bold mb-6">Popular Topics</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white">Popular Topics</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {popular.map((topic) => (
               <TopicCard
@@ -55,7 +63,7 @@ export default async function LearnItLanding() {
 
       {/* Featured Starter Topics (Hardcoded for bootstrapping) */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">Start Learning</h2>
+        <h2 className="text-2xl font-bold mb-6 text-white">Start Learning</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {["Programming", "Machine Learning", "History", "Design"].map(tag => (
             <TopicCard
@@ -71,7 +79,7 @@ export default async function LearnItLanding() {
       {/* Recent Topics */}
       {recent.length > 0 && (
         <section>
-          <h2 className="text-2xl font-bold mb-6">Recently Added</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white">Recently Added</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recent.map((topic) => (
               <TopicCard

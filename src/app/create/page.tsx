@@ -1,9 +1,10 @@
 import { AppCard } from "@/components/create/app-card";
-import { CreateSearch } from "@/components/create/create-search";
+import { ComposerBox } from "@/components/create/composer-box";
 import { LiveAppCard } from "@/components/create/live-app-card";
 import { getRecentApps, getTopApps } from "@/lib/create/content-service";
 import type { CreatedApp } from "@prisma/client";
 import type { Metadata } from "next";
+import { Sparkles } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -56,23 +57,30 @@ export default async function CreateLanding() {
   return (
     <div className="container mx-auto px-4 space-y-16 py-8">
       {/* Hero Section */}
-      <section className="text-center space-y-6">
-        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
-          Describe it. <span className="text-primary">We build it.</span>
+      <section className="text-center space-y-6 pt-8">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-sm text-cyan-400">
+          <Sparkles className="w-4 h-4" />
+          <span className="font-semibold tracking-widest uppercase text-[10px]">AI App Builder</span>
+        </div>
+        <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold text-white tracking-tighter">
+          Describe it.{" "}
+          <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            We build it.
+          </span>
         </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-xl text-zinc-400 max-w-2xl mx-auto font-light">
           Type any app idea and watch AI generate a fully working React app in seconds. No setup, no
           boilerplate — just describe what you want.
         </p>
         <div className="pt-4">
-          <CreateSearch />
+          <ComposerBox />
         </div>
       </section>
 
       {/* Popular Apps — primary section */}
       {popular.length > 0 && (
         <section>
-          <h2 className="text-2xl font-bold mb-6">Popular Apps</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white">Popular Apps</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {popular.map((app) => (
               <LiveAppCard
@@ -91,7 +99,7 @@ export default async function CreateLanding() {
       {/* Recently Created */}
       {uniqueRecent.length > 0 && (
         <section>
-          <h2 className="text-2xl font-bold mb-6">Recently Created</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white">Recently Created</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {uniqueRecent.map((app) => (
               <LiveAppCard
@@ -109,7 +117,7 @@ export default async function CreateLanding() {
 
       {/* Starter Ideas — secondary, smaller section */}
       <section>
-        <h2 className="text-lg font-semibold mb-4 text-muted-foreground">
+        <h2 className="text-lg font-semibold mb-4 text-zinc-500">
           Or try one of these ideas
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

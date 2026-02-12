@@ -8,7 +8,7 @@ export default function CreateLayout({
 }) {
   return (
     <VibeCodeProvider>
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-zinc-950">
         <main className="flex-1">
           {children}
         </main>
