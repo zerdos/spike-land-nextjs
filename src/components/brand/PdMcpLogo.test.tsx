@@ -89,19 +89,20 @@ describe("PdMcpLogo", () => {
     render(<PdMcpLogo variant="icon" />);
     const svg = screen.getByRole("img").querySelector("svg");
     // Three bars with increasing widths
-    const rects = svg!.querySelectorAll("g[filter] rect");
+    const rects = svg?.querySelectorAll("g[filter] rect");
+    expect(rects).toBeDefined();
     expect(rects).toHaveLength(3);
-    expect(rects[0]).toHaveAttribute("width", "12");
-    expect(rects[1]).toHaveAttribute("width", "20");
-    expect(rects[2]).toHaveAttribute("width", "28");
+    expect(rects![0]).toHaveAttribute("width", "12");
+    expect(rects![1]).toHaveAttribute("width", "20");
+    expect(rects![2]).toHaveAttribute("width", "28");
   });
 
   it("should render MCP text in SVG", () => {
     render(<PdMcpLogo variant="icon" />);
     const svg = screen.getByRole("img").querySelector("svg");
-    const textEl = svg!.querySelector("text");
+    const textEl = svg?.querySelector("text");
     expect(textEl).toBeInTheDocument();
-    expect(textEl!.textContent).toBe("MCP");
+    expect(textEl?.textContent).toBe("MCP");
   });
 
   it("should have unique SVG IDs for multiple instances", () => {
@@ -114,8 +115,8 @@ describe("PdMcpLogo", () => {
     const svgs = container.querySelectorAll("svg");
     expect(svgs).toHaveLength(2);
     // Both start with "ssr" IDs on initial render (SSR-safe)
-    const filters0 = svgs[0].querySelectorAll("filter");
-    const filters1 = svgs[1].querySelectorAll("filter");
+    const filters0 = svgs[0]?.querySelectorAll("filter");
+    const filters1 = svgs[1]?.querySelectorAll("filter");
     expect(filters0).toHaveLength(1);
     expect(filters1).toHaveLength(1);
   });

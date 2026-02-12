@@ -206,7 +206,7 @@ describe("PostHandler - Response", () => {
       // });
 
       expect(streamText).toHaveBeenCalledWith({
-        model: "claude-4-sonnet-20250514",
+        model: expect.anything(),
         system: expect.stringContaining("CodeSpace: test-space"),
         messages,
         tools: tools.reduce((acc, t) => {

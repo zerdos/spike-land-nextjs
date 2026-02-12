@@ -84,9 +84,9 @@ function createAsyncIterable<T>(items: T[]): AsyncIterable<T> {
       return {
         async next() {
           if (index < items.length) {
-            return { value: items[index++], done: false };
+            return { value: items[index++]!, done: false };
           }
-          return { value: undefined as any, done: true };
+          return { value: undefined, done: true };
         },
       };
     },
@@ -111,7 +111,7 @@ async function readSSEStream(response: Response): Promise<any[]> {
 
     for (const line of lines) {
       const dataMatch = line.match(/^data: (.+)$/);
-      if (dataMatch) {
+      if (dataMatch && dataMatch[1]) {
         events.push(JSON.parse(dataMatch[1]));
       }
     }
@@ -162,14 +162,14 @@ describe("Vibe Chat API Route", () => {
 
       for (let i = 0; i < 10; i++) {
         await POST(
-          createRequest({ content: "test", mode: "plan" }, { "x-forwarded-for": testIp }),
+          createRequest({ content: "test", mode: "plan" }, { "x-forwarded-for": testIp as string }),
           { params: Promise.resolve({ slug: "test-slug" }) },
         );
       }
 
       // 11th request should be rate limited
       const response = await POST(
-        createRequest({ content: "test", mode: "plan" }, { "x-forwarded-for": testIp }),
+        createRequest({ content: "test", mode: "plan" }, { "x-forwarded-for": testIp as string }),
         { params: Promise.resolve({ slug: "test-slug" }) },
       );
 

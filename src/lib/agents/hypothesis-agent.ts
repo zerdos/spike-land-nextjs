@@ -145,7 +145,7 @@ export class HypothesisAgent {
 
     // 3. Generate with AI
     try {
-      const ai = await Promise.resolve(this.ai);
+      const ai = await this.ai;
       const response = await ai.models.generateContent({
         model: this.model,
         contents: [{ role: "user", parts: [{ text: prompt }] }],

@@ -203,7 +203,8 @@ describe("VibeCodeProvider", () => {
 
     // fetch POST should include images in body
     const postCall = fetchMock.mock.calls.find(
-      (c: string[]) => c[1]?.method === "POST",
+      (c: any[]) => c[1]?.method === "POST",
+      (c: any[]) => c[1]?.method === "POST",
     );
     expect(postCall).toBeDefined();
     const body = JSON.parse(postCall![1].body);
@@ -568,7 +569,7 @@ describe("VibeCodeProvider", () => {
     });
 
     const postCall = fetchMock.mock.calls.find(
-      (c: string[]) => c[1]?.method === "POST",
+      (c: any[]) => c[1]?.method === "POST",
     );
     const body = JSON.parse(postCall![1].body);
     expect(body.mode).toBe("edit");
