@@ -225,7 +225,7 @@ export function ComposerBox({ initialPrompt }: ComposerBoxProps) {
               ref={textareaRef}
               data-testid="composer-textarea"
               aria-label="Describe the app you want to create"
-              className="w-full rounded-xl glass-input px-5 py-4 text-base text-white/90 placeholder:text-zinc-500 focus:outline-none resize-none min-h-[96px] max-h-[224px] bg-transparent tracking-wide leading-relaxed"
+              className="w-full rounded-xl glass-input backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl px-5 py-4 text-base text-white/90 placeholder:text-zinc-500 focus:outline-none resize-none min-h-[96px] max-h-[224px] bg-transparent tracking-wide leading-relaxed"
               rows={3}
               value={query}
               onChange={(e) => {
@@ -265,7 +265,8 @@ export function ComposerBox({ initialPrompt }: ComposerBoxProps) {
               <Button
                 type="submit"
                 data-testid="composer-submit"
-                size="sm"
+                size="default"
+                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 shadow-lg shadow-cyan-500/20 border-0"
                 loading={isClassifying}
                 disabled={!query.trim()}
               >

@@ -53,8 +53,8 @@ export function LiveAppCard({
         {/* Gradient overlay — always visible, darker on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-300 group-hover:from-black/90 group-hover:via-black/40" />
 
-        {/* Title — always visible at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 transition-transform duration-300 group-hover:-translate-y-2">
+        {/* Title — visible initially, fades out on hover */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 group-hover:opacity-0 group-hover:-translate-y-2">
           <h3 className="text-white font-semibold text-lg leading-tight drop-shadow-lg truncate">
             {title}
           </h3>
