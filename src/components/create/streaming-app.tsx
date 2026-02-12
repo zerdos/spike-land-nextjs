@@ -48,6 +48,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
   const { redirectToSignIn } = useAuthRedirect();
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasAttemptedGeneration = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const addMessage = useCallback((text: string, type: BuildMessage["type"] = "status") => {
     setMessages((prev) => [...prev, { text, type }]);
@@ -58,6 +59,8 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
   const stablePath = useMemo(() => path, [pathKey]);
 
   const startStreaming = useCallback(async () => {
+    abortRef.current?.abort();
+
     setStatus("connecting");
     setMessages([]);
     setError(null);
@@ -67,6 +70,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
     hasAttemptedGeneration.current = true;
 
     const controller = new AbortController();
+    abortRef.current = controller;
     const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
 
     try {
@@ -217,6 +221,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
     startStreaming();
 
     return () => {
+      abortRef.current?.abort();
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
       }
