@@ -10,9 +10,17 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Mock codespace health — passthrough by default
+const mockFilterHealthyCodespaces = vi.fn();
+vi.mock("@/lib/create/codespace-health", () => ({
+  filterHealthyCodespaces: (...args: unknown[]) => mockFilterHealthyCodespaces(...args),
+}));
+
 describe("getLatestShowcaseApps", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: passthrough (return input)
+    mockFilterHealthyCodespaces.mockImplementation((items: unknown[]) => Promise.resolve(items));
   });
 
   it("should merge and sort apps from both sources by lastActivity desc", async () => {
@@ -213,5 +221,40 @@ describe("getLatestShowcaseApps", () => {
 
     expect(result[0]!.slug).toBe("app-no-slug");
     expect(result[0]!.description).toBe("");
+  });
+
+  it("should filter out unhealthy codespaces", async () => {
+    vi.mocked(prisma.app.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.createdApp.findMany).mockResolvedValue([
+      {
+        id: "ca-1",
+        title: "Healthy",
+        description: "desc",
+        slug: "healthy",
+        codespaceId: "cs-1",
+        generatedAt: new Date("2025-01-01"),
+        viewCount: 0,
+      },
+      {
+        id: "ca-2",
+        title: "Unhealthy",
+        description: "desc",
+        slug: "unhealthy",
+        codespaceId: "cs-2",
+        generatedAt: new Date("2025-01-02"),
+        viewCount: 0,
+      },
+    ] as any);
+
+    // Filter only passes the first item
+    mockFilterHealthyCodespaces.mockImplementation(async (items: any[]) => {
+      return items.filter((item: any) => item.codespaceId === "cs-1");
+    });
+
+    const result = await getLatestShowcaseApps(10);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.title).toBe("Healthy");
+    expect(mockFilterHealthyCodespaces).toHaveBeenCalled();
   });
 });

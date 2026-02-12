@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getCreatedApp,
   getRecentApps,
+  getRelatedPublishedApps,
   getTopApps,
   incrementViewCount,
   markAsGenerating,
@@ -31,9 +32,17 @@ vi.mock("@/lib/prisma", () => ({
   default: mockPrisma,
 }));
 
+// Mock codespace health — passthrough by default
+const mockFilterHealthyCodespaces = vi.fn();
+vi.mock("./codespace-health", () => ({
+  filterHealthyCodespaces: (...args: unknown[]) => mockFilterHealthyCodespaces(...args),
+}));
+
 describe("content-service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: passthrough (return input)
+    mockFilterHealthyCodespaces.mockImplementation((items: unknown[]) => Promise.resolve(items));
   });
 
   describe("getCreatedApp", () => {
@@ -155,27 +164,73 @@ describe("content-service", () => {
   });
 
   describe("getTopApps", () => {
-    it("should return top apps", async () => {
-      const apps = [{ slug: "test" }];
+    it("should fetch double limit and filter through health checks", async () => {
+      const apps = [
+        { slug: "app-1", codespaceId: "cs-1" },
+        { slug: "app-2", codespaceId: "cs-2" },
+      ];
       (prisma.createdApp.findMany as any).mockResolvedValue(apps);
 
-      const result = await getTopApps();
-      expect(result).toEqual(apps);
+      const result = await getTopApps(5);
+
       expect(prisma.createdApp.findMany).toHaveBeenCalledWith(expect.objectContaining({
         orderBy: { viewCount: "desc" },
+        take: 10, // 5 * 2
       }));
+      expect(mockFilterHealthyCodespaces).toHaveBeenCalledWith(apps);
+      expect(result).toEqual(apps);
+    });
+
+    it("should slice result to limit after filtering", async () => {
+      const apps = Array.from({ length: 8 }, (_, i) => ({
+        slug: `app-${i}`,
+        codespaceId: `cs-${i}`,
+      }));
+      (prisma.createdApp.findMany as any).mockResolvedValue(apps);
+      // Health filter passes all through
+      mockFilterHealthyCodespaces.mockResolvedValue(apps);
+
+      const result = await getTopApps(3);
+      expect(result).toHaveLength(3);
     });
   });
 
   describe("getRecentApps", () => {
-    it("should return recent apps", async () => {
-      const apps = [{ slug: "test" }];
+    it("should fetch double limit and filter through health checks", async () => {
+      const apps = [{ slug: "test", codespaceId: "cs-1" }];
       (prisma.createdApp.findMany as any).mockResolvedValue(apps);
 
-      const result = await getRecentApps();
-      expect(result).toEqual(apps);
+      const result = await getRecentApps(5);
+
       expect(prisma.createdApp.findMany).toHaveBeenCalledWith(expect.objectContaining({
         orderBy: { generatedAt: "desc" },
+        take: 10, // 5 * 2
+      }));
+      expect(mockFilterHealthyCodespaces).toHaveBeenCalledWith(apps);
+      expect(result).toEqual(apps);
+    });
+
+    it("should return empty when all apps are unhealthy", async () => {
+      const apps = [{ slug: "bad", codespaceId: "cs-bad" }];
+      (prisma.createdApp.findMany as any).mockResolvedValue(apps);
+      mockFilterHealthyCodespaces.mockResolvedValue([]);
+
+      const result = await getRecentApps();
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("getRelatedPublishedApps", () => {
+    it("should return related apps excluding the given slug", async () => {
+      const apps = [{ slug: "other", codespaceId: "cs-other" }];
+      (prisma.createdApp.findMany as any).mockResolvedValue(apps);
+
+      const result = await getRelatedPublishedApps("current-slug");
+      expect(result).toEqual(apps);
+      expect(prisma.createdApp.findMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: expect.objectContaining({
+          slug: { not: "current-slug" },
+        }),
       }));
     });
   });

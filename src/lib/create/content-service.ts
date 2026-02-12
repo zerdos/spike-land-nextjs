@@ -1,6 +1,7 @@
 import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { type CreatedApp, CreatedAppStatus } from "@prisma/client";
+import { filterHealthyCodespaces } from "./codespace-health";
 
 export type CreatedAppWithUser = CreatedApp & {
   generatedBy: { name: string | null; image: string | null; } | null;
@@ -125,19 +126,24 @@ export async function incrementViewCount(slug: string): Promise<void> {
 }
 
 export async function getTopApps(limit = 10): Promise<CreatedApp[]> {
-  return prisma.createdApp.findMany({
+  // Fetch extra to account for unhealthy ones being filtered out
+  const apps = await prisma.createdApp.findMany({
     where: { status: CreatedAppStatus.PUBLISHED },
     orderBy: { viewCount: "desc" },
-    take: limit,
+    take: limit * 2,
   });
+  const healthy = await filterHealthyCodespaces(apps);
+  return healthy.slice(0, limit);
 }
 
 export async function getRecentApps(limit = 10): Promise<CreatedApp[]> {
-  return prisma.createdApp.findMany({
+  const apps = await prisma.createdApp.findMany({
     where: { status: CreatedAppStatus.PUBLISHED },
     orderBy: { generatedAt: "desc" },
-    take: limit,
+    take: limit * 2,
   });
+  const healthy = await filterHealthyCodespaces(apps);
+  return healthy.slice(0, limit);
 }
 
 export async function getRelatedPublishedApps(

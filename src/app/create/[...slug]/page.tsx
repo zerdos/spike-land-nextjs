@@ -1,8 +1,7 @@
-import { ExitIntentDetector } from "@/components/create/exit-intent-detector";
-import { FeedbackTimer } from "@/components/create/feedback-timer";
 import { LiveAppDisplay } from "@/components/create/live-app-display";
-import { RelatedApps } from "@/components/create/related-apps";
 import { StreamingApp } from "@/components/create/streaming-app";
+import { VibeCodeActivator } from "@/components/create/vibe-code-activator";
+import { VibeCodeSidebar } from "@/components/create/vibe-code-sidebar";
 import {
   getCreatedApp,
   getRelatedPublishedApps,
@@ -69,20 +68,8 @@ export default async function CreatePage({ params }: PageProps) {
             slug={app.slug}
           />
         </div>
-        <RelatedApps
-          links={app.outgoingLinks}
-          publishedApps={relatedApps}
-        />
-        <FeedbackTimer
-          appSlug={app.slug}
-          appTitle={app.title}
-          codespaceId={app.codespaceId ?? undefined}
-        />
-        <ExitIntentDetector
-          appSlug={app.slug}
-          appTitle={app.title}
-          codespaceId={app.codespaceId ?? undefined}
-        />
+        <VibeCodeSidebar links={app.outgoingLinks} publishedApps={relatedApps} />
+        <VibeCodeActivator slug={app.slug} title={app.title} codespaceId={app.codespaceId!} />
       </div>
     );
   }

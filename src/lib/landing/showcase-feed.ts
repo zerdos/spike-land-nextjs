@@ -1,3 +1,4 @@
+import { filterHealthyCodespaces } from "@/lib/create/codespace-health";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { AppBuildStatus, CreatedAppStatus } from "@prisma/client";
@@ -101,8 +102,9 @@ export async function getLatestShowcaseApps(
       seen.add(item.codespaceId);
       deduplicated.push(item);
     }
-    if (deduplicated.length >= limit) break;
   }
 
-  return deduplicated;
+  // Filter out unhealthy codespaces
+  const healthy = await filterHealthyCodespaces(deduplicated);
+  return healthy.slice(0, limit);
 }

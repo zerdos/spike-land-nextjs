@@ -15,6 +15,7 @@ interface LiveAppPreviewProps {
   className?: string;
   lazy?: boolean;
   fallbackTitle?: string;
+  onHealthStatus?: (healthy: boolean) => void;
 }
 
 export function LiveAppPreview({
@@ -23,6 +24,7 @@ export function LiveAppPreview({
   className,
   lazy = true,
   fallbackTitle,
+  onHealthStatus,
 }: LiveAppPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<LoadState>("idle");
@@ -33,7 +35,19 @@ export function LiveAppPreview({
 
   const handleLoad = useCallback(() => {
     setState("loaded");
-  }, []);
+    // Background health check
+    fetch(`/api/create/health?codespaceId=${codespaceId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.healthy) {
+          setState("error");
+        }
+        onHealthStatus?.(data?.healthy ?? true);
+      })
+      .catch(() => {
+        // Don't fail on health check errors — the iframe loaded successfully
+      });
+  }, [codespaceId, onHealthStatus]);
 
   const handleError = useCallback(() => {
     setState("error");

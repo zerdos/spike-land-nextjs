@@ -19,10 +19,17 @@ class IntersectionObserverMock implements IntersectionObserver {
 
 vi.stubGlobal("IntersectionObserver", IntersectionObserverMock);
 
+// Mock fetch for health check calls
+const mockFetch = vi.fn();
+vi.stubGlobal("fetch", mockFetch);
+
 describe("LiveAppPreview", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
+    mockFetch.mockResolvedValue({
+      json: () => Promise.resolve({ healthy: true }),
+    });
   });
 
   it("renders skeleton initially when lazy", () => {
@@ -73,7 +80,7 @@ describe("LiveAppPreview", () => {
     expect(screen.queryByTitle("My Cool App")).not.toBeInTheDocument();
   });
 
-  it("shows loaded state after iframe onLoad fires", () => {
+  it("shows loaded state after iframe onLoad fires", async () => {
     render(
       <LiveAppPreview
         codespaceId="test-cs"
@@ -85,7 +92,7 @@ describe("LiveAppPreview", () => {
     const iframe = screen.getByTitle("Test App");
 
     // Simulate iframe load
-    act(() => {
+    await act(async () => {
       iframe.dispatchEvent(new Event("load"));
     });
 
@@ -110,5 +117,119 @@ describe("LiveAppPreview", () => {
       transform: "scale(0.35)",
       transformOrigin: "top left",
     });
+  });
+
+  it("calls health check API after iframe loads", async () => {
+    render(
+      <LiveAppPreview
+        codespaceId="test-cs"
+        lazy={false}
+        fallbackTitle="Test App"
+      />,
+    );
+
+    const iframe = screen.getByTitle("Test App");
+
+    await act(async () => {
+      iframe.dispatchEvent(new Event("load"));
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/create/health?codespaceId=test-cs",
+    );
+  });
+
+  it("switches to error state when health check returns unhealthy", async () => {
+    mockFetch.mockResolvedValue({
+      json: () => Promise.resolve({ healthy: false }),
+    });
+
+    render(
+      <LiveAppPreview
+        codespaceId="unhealthy-cs"
+        lazy={false}
+        fallbackTitle="Unhealthy App"
+      />,
+    );
+
+    const iframe = screen.getByTitle("Unhealthy App");
+
+    await act(async () => {
+      iframe.dispatchEvent(new Event("load"));
+    });
+
+    // Should show error state
+    expect(screen.getByText("Preview unavailable")).toBeInTheDocument();
+    expect(screen.queryByTagName?.("IFRAME")).toBeUndefined;
+  });
+
+  it("calls onHealthStatus callback with health result", async () => {
+    const onHealthStatus = vi.fn();
+    mockFetch.mockResolvedValue({
+      json: () => Promise.resolve({ healthy: true }),
+    });
+
+    render(
+      <LiveAppPreview
+        codespaceId="test-cs"
+        lazy={false}
+        fallbackTitle="Test App"
+        onHealthStatus={onHealthStatus}
+      />,
+    );
+
+    const iframe = screen.getByTitle("Test App");
+
+    await act(async () => {
+      iframe.dispatchEvent(new Event("load"));
+    });
+
+    expect(onHealthStatus).toHaveBeenCalledWith(true);
+  });
+
+  it("calls onHealthStatus with false when unhealthy", async () => {
+    const onHealthStatus = vi.fn();
+    mockFetch.mockResolvedValue({
+      json: () => Promise.resolve({ healthy: false }),
+    });
+
+    render(
+      <LiveAppPreview
+        codespaceId="bad-cs"
+        lazy={false}
+        fallbackTitle="Bad App"
+        onHealthStatus={onHealthStatus}
+      />,
+    );
+
+    const iframe = screen.getByTitle("Bad App");
+
+    await act(async () => {
+      iframe.dispatchEvent(new Event("load"));
+    });
+
+    expect(onHealthStatus).toHaveBeenCalledWith(false);
+  });
+
+  it("does not fail when health check fetch throws", async () => {
+    mockFetch.mockRejectedValue(new Error("Network error"));
+
+    render(
+      <LiveAppPreview
+        codespaceId="test-cs"
+        lazy={false}
+        fallbackTitle="Test App"
+      />,
+    );
+
+    const iframe = screen.getByTitle("Test App");
+
+    // Should not throw
+    await act(async () => {
+      iframe.dispatchEvent(new Event("load"));
+    });
+
+    // Iframe should still be visible (loaded state maintained)
+    expect(screen.getByTitle("Test App")).toBeInTheDocument();
   });
 });

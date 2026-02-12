@@ -2,6 +2,7 @@
 
 import { Eye } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { AppCard } from "./app-card";
 import { LiveAppPreview } from "./live-app-preview";
 
@@ -20,7 +21,9 @@ export function LiveAppCard({
   codespaceId,
   viewCount,
 }: LiveAppCardProps) {
-  if (!codespaceId) {
+  const [isHealthy, setIsHealthy] = useState(true);
+
+  if (!codespaceId || !isHealthy) {
     return (
       <AppCard
         title={title}
@@ -44,6 +47,7 @@ export function LiveAppCard({
           scale={0.35}
           className="w-full h-full"
           fallbackTitle={title}
+          onHealthStatus={setIsHealthy}
         />
 
         {/* Gradient overlay — always visible, darker on hover */}

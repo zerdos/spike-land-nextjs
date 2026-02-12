@@ -1,12 +1,15 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { LiveAppCard } from "./live-app-card";
 
+let capturedOnHealthStatus: ((healthy: boolean) => void) | undefined;
+
 // Mock LiveAppPreview to avoid iframe complexity in unit tests
 vi.mock("./live-app-preview", () => ({
-  LiveAppPreview: ({ fallbackTitle }: { fallbackTitle?: string }) => (
-    <div data-testid="live-preview">{fallbackTitle}</div>
-  ),
+  LiveAppPreview: ({ fallbackTitle, onHealthStatus }: { fallbackTitle?: string; onHealthStatus?: (healthy: boolean) => void }) => {
+    capturedOnHealthStatus = onHealthStatus;
+    return <div data-testid="live-preview">{fallbackTitle}</div>;
+  },
 }));
 
 describe("LiveAppCard", () => {
@@ -93,5 +96,57 @@ describe("LiveAppCard", () => {
 
     const link = screen.getByRole("link");
     expect(link.className).toContain("dark:bg-gray-900");
+  });
+
+  it("falls back to AppCard when onHealthStatus reports unhealthy", () => {
+    const { rerender } = render(
+      <LiveAppCard
+        title="Unhealthy App"
+        description="Will become unhealthy"
+        slug="unhealthy-app"
+        codespaceId="cs-unhealthy"
+      />,
+    );
+
+    // Initially shows live preview
+    expect(screen.getByTestId("live-preview")).toBeInTheDocument();
+
+    // Simulate health check reporting unhealthy
+    act(() => {
+      capturedOnHealthStatus?.(false);
+    });
+
+    // Re-render to reflect state change
+    rerender(
+      <LiveAppCard
+        title="Unhealthy App"
+        description="Will become unhealthy"
+        slug="unhealthy-app"
+        codespaceId="cs-unhealthy"
+      />,
+    );
+
+    // Should now show AppCard fallback
+    expect(screen.queryByTestId("live-preview")).not.toBeInTheDocument();
+    expect(screen.getByText("Unhealthy App")).toBeInTheDocument();
+  });
+
+  it("stays as live preview when onHealthStatus reports healthy", () => {
+    render(
+      <LiveAppCard
+        title="Healthy App"
+        description="Stays healthy"
+        slug="healthy-app"
+        codespaceId="cs-healthy"
+      />,
+    );
+
+    // Simulate health check reporting healthy
+    act(() => {
+      capturedOnHealthStatus?.(true);
+    });
+
+    // Should still show live preview
+    expect(screen.getByTestId("live-preview")).toBeInTheDocument();
   });
 });
