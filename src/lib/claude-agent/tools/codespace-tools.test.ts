@@ -1,4 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// Mock codespace barrel to avoid esbuild-wasm import in jsdom
+vi.mock("@/lib/codespace", () => ({
+  getOrCreateSession: vi.fn(),
+  transpileCode: vi.fn(),
+  upsertSession: vi.fn(),
+}));
+
+// Mock claude-agent-sdk
+vi.mock("@anthropic-ai/claude-agent-sdk", () => ({
+  createSdkMcpServer: vi.fn(({ name }: { name: string }) => ({ name })),
+  tool: vi.fn((schema: unknown, handler: unknown) => ({ schema, handler })),
+}));
+
 import { CODESPACE_TOOL_NAMES, createCodespaceServer } from "./codespace-tools";
 
 describe("codespace-tools", () => {

@@ -6,6 +6,11 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
 
+// Mock codespace barrel to avoid esbuild-wasm import in jsdom
+vi.mock("@/lib/codespace", () => ({
+  getOrCreateSession: vi.fn(),
+}));
+
 // Mock other dependencies to avoid running them
 vi.mock("@/lib/claude-agent/tools/codespace-tools", () => ({
   createCodespaceServer: vi.fn(),
