@@ -4,8 +4,8 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Use vi.hoisted so the mock value is available when vi.mock factories run
-const { mockContextValue, hoistedCreateContext } = vi.hoisted(() => {
-  return { mockContextValue: { refreshCounter: 0 }, hoistedCreateContext: React.createContext };
+const { mockContextValue } = vi.hoisted(() => {
+  return { mockContextValue: { refreshCounter: 0 } };
 });
 
 // Mock next/link as a simple <a> tag
@@ -53,9 +53,10 @@ vi.mock("@/lib/utils", () => ({
 }));
 
 // Mock the VibeCodeContext from vibe-code-provider using the hoisted value
-vi.mock("./vibe-code-provider", () => ({
-  VibeCodeContext: hoistedCreateContext(mockContextValue),
-}));
+vi.mock("./vibe-code-provider", async () => {
+  const { createContext } = await import("react");
+  return { VibeCodeContext: createContext(mockContextValue) };
+});
 
 import { LiveAppDisplay } from "./live-app-display";
 
@@ -188,6 +189,17 @@ describe("LiveAppDisplay", () => {
     // It should be inside a link to /create
     const anchor = allAppsText.closest("a");
     expect(anchor).toHaveAttribute("href", "/create");
+  });
+
+  it("does not include allow-same-origin in iframe sandbox", () => {
+    render(<LiveAppDisplay {...defaultProps} />);
+
+    const iframe = screen.getByTitle("My Test App");
+    const sandbox = iframe.getAttribute("sandbox");
+    expect(sandbox).not.toContain("allow-same-origin");
+    expect(sandbox).toContain("allow-scripts");
+    expect(sandbox).toContain("allow-popups");
+    expect(sandbox).toContain("allow-forms");
   });
 
   it("auto-refreshes when refreshCounter changes", () => {
