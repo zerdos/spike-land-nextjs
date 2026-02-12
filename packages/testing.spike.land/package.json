@@ -24,7 +24,7 @@
     "__STATIC_CONTENT_MANIFEST": "./src/staticContent.mjs"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20260210.0",
+    "@cloudflare/workers-types": "4.20260212.0",
     "@eslint/js": "10.0.1",
     "@spike-npm-land/transpile": "0.9.56",
     "@types/mime-types": "3.0.1",
@@ -46,7 +46,7 @@
     "@google/genai": "^1.41.0",
     "@spike-npm-land/code": "0.9.57",
     "@types/node": "25.2.3",
-    "ai": "6.0.81",
+    "ai": "6.0.82",
     "esbuild-wasm": "0.27.3",
     "hono": "4.11.9",
     "immutable": "5.1.4",

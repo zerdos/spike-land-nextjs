@@ -96,7 +96,7 @@
     "ci:download:e2e": "./scripts/download-e2e-reports.sh"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "0.2.39",
+    "@anthropic-ai/claude-agent-sdk": "0.2.40",
     "@anthropic-ai/sdk": "^0.74.0",
     "@aws-sdk/client-s3": "3.988.0",
     "@aws-sdk/lib-storage": "3.988.0",
