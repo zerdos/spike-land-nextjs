@@ -11,6 +11,7 @@ interface RateLimitEntry {
   count: number;
   firstRequest: number;
   expiry?: number;
+  timeoutId?: ReturnType<typeof setTimeout>;
 }
 
 interface RateLimitConfig {
@@ -25,10 +26,6 @@ const rateLimitStore = new Map<string, RateLimitEntry>();
 
 // Track Redis availability
 let kvAvailable: boolean | null = null;
-
-// Cleanup interval for in-memory store
-let cleanupInterval: ReturnType<typeof setInterval> | null = null;
-const CLEANUP_INTERVAL_MS = 60 * 1000; // 1 minute
 
 /**
  * Checks if Upstash Redis is available.
@@ -75,34 +72,6 @@ async function isKVAvailable(): Promise<boolean> {
  */
 export function resetKVAvailability(): void {
   kvAvailable = null;
-}
-
-/**
- * Starts the cleanup interval for in-memory store if not already running.
- * Only needed when using in-memory fallback.
- */
-function ensureCleanupInterval(): void {
-  if (cleanupInterval) return;
-
-  cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of rateLimitStore.entries()) {
-      // Use expiry if available (preferred), otherwise fall back to 2x global interval
-      // This fallback is only relevant for old entries if any, or if expiry wasn't set (shouldn't happen)
-      const isExpired = entry.expiry
-        ? now > entry.expiry
-        : now - entry.firstRequest > CLEANUP_INTERVAL_MS * 2;
-
-      if (isExpired) {
-        rateLimitStore.delete(key);
-      }
-    }
-  }, CLEANUP_INTERVAL_MS);
-
-  // Don't block process exit
-  if (cleanupInterval.unref) {
-    cleanupInterval.unref();
-  }
 }
 
 /**
@@ -172,7 +141,7 @@ async function checkRateLimitKV(
 
 /**
  * Checks rate limit using in-memory storage (fallback).
- * Same logic as Redis version but uses local Map.
+ * Uses per-entry timeout for precise cleanup.
  */
 function checkRateLimitMemory(
   identifier: string,
@@ -182,8 +151,6 @@ function checkRateLimitMemory(
   remaining: number;
   resetAt: number;
 } {
-  ensureCleanupInterval();
-
   const now = Date.now();
   const entry = rateLimitStore.get(identifier);
 
@@ -194,10 +161,27 @@ function checkRateLimitMemory(
     : entry && now - entry.firstRequest > config.windowMs;
 
   if (!entry || isExpired) {
+    // If we're overwriting an expired entry, clear its timeout to be safe
+    // (though it likely fired or is about to fire)
+    if (entry?.timeoutId) {
+      clearTimeout(entry.timeoutId);
+    }
+
+    // Schedule cleanup for exactly when the window expires
+    const timeoutId = setTimeout(() => {
+      rateLimitStore.delete(identifier);
+    }, config.windowMs);
+
+    // In Node.js, unref the timeout so it doesn't block process exit
+    if (timeoutId && typeof timeoutId === 'object' && 'unref' in timeoutId) {
+      (timeoutId as any).unref();
+    }
+
     rateLimitStore.set(identifier, {
       count: 1,
       firstRequest: now,
       expiry: now + config.windowMs,
+      timeoutId,
     });
     return {
       isLimited: false,
@@ -217,7 +201,7 @@ function checkRateLimitMemory(
 
   // Increment the count
   entry.count += 1;
-  // Preserve expiry if set, otherwise calculate it
+  // Preserve expiry if set, otherwise calculate it (should already be set)
   if (!entry.expiry) {
     entry.expiry = entry.firstRequest + config.windowMs;
   }
@@ -290,6 +274,10 @@ export async function resetRateLimit(identifier: string): Promise<void> {
     }
   }
 
+  const entry = rateLimitStore.get(identifier);
+  if (entry?.timeoutId) {
+    clearTimeout(entry.timeoutId);
+  }
   rateLimitStore.delete(identifier);
 }
 
@@ -314,17 +302,23 @@ export async function clearAllRateLimits(
     }
   }
 
+  for (const entry of rateLimitStore.values()) {
+    if (entry.timeoutId) {
+      clearTimeout(entry.timeoutId);
+    }
+  }
   rateLimitStore.clear();
 }
 
 /**
- * Stops the cleanup interval for in-memory store.
+ * Stops the cleanup mechanisms for in-memory store.
  * Should be called when shutting down the application or during testing.
  */
 export function stopCleanupInterval(): void {
-  if (cleanupInterval) {
-    clearInterval(cleanupInterval);
-    cleanupInterval = null;
+  for (const entry of rateLimitStore.values()) {
+    if (entry.timeoutId) {
+      clearTimeout(entry.timeoutId);
+    }
   }
 }
 
