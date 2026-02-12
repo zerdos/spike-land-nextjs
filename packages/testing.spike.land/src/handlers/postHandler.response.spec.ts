@@ -200,13 +200,13 @@ describe("PostHandler - Response", () => {
         "req-123",
       );
 
-      // expect(createAnthropic).toHaveBeenCalledWith({
-      //   baseURL: "https://test.spike.land/anthropic",
-      //   apiKey: "will be added later",
-      // });
+      expect(createAnthropic).toHaveBeenCalledWith({
+        baseURL: "https://test.spike.land/anthropic",
+        apiKey: "will be added later",
+      });
 
       expect(streamText).toHaveBeenCalledWith({
-        model: expect.anything(),
+        model: "claude-4-sonnet-20250514",
         system: expect.stringContaining("CodeSpace: test-space"),
         messages,
         tools: tools.reduce((acc, t) => {

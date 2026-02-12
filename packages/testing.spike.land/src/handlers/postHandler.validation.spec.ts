@@ -127,17 +127,19 @@ describe("PostHandler - Validation", () => {
       expect(callValidateMessages(messages)).toBeNull();
     });
 
-    // it("should validate parts array structure", () => {
-    //   const messages = [
-    //     {
-    //       role: "user",
-    //       parts: "not an array",
-    //     },
-    //   ];
-    //   expect(callValidateMessages(messages)).toBe(
-    //     "Message at index 0 parts must be an array",
-    //   );
-    // });
+    // SKIP REASON: Validation for non-array parts field is not currently enforced by validateMessages
+    // TRACKING: Parts field type checking deferred — current implementation accepts any truthy parts value
+    it.skip("should validate parts array structure", () => {
+      const messages = [
+        {
+          role: "user",
+          parts: "not an array",
+        },
+      ];
+      expect(callValidateMessages(messages)).toBe(
+        "Message at index 0 parts must be an array",
+      );
+    });
 
     it("should validate parts have type field", () => {
       const messages = [

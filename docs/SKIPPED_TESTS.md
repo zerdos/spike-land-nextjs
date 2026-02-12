@@ -41,15 +41,16 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 | **Total E2E scenarios** | 851 |
 | **Clean feature files (0 skips)** | 26 |
 | **Feature files with skips** | 31 |
-| **Unit test skips** | 1 (integration test - intentional) |
+| **Unit test skips** | 2 (intentional) |
 
 ## Current Inventory
 
-### Unit Tests: 1 skip (intentional)
+### Unit Tests: 2 skips (intentional)
 
 | File | Test | Reason | Status |
 |------|------|--------|--------|
 | `src/app/api/orbit/[workspaceSlug]/scout/competitors/[id]/metrics/route.integration.test.ts` | "Competitor Metrics API" (entire suite) | Integration test requiring real database | Keep |
+| `packages/testing.spike.land/src/handlers/postHandler.validation.spec.ts` | "should validate parts array structure" | Validation for non-array parts field not currently enforced by validateMessages | Keep |
 
 **Previously skipped, now fixed:**
 - Category C (AI SDK tests, 5 tests) - Fixed

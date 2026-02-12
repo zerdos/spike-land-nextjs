@@ -106,3 +106,10 @@ ralph-worktrees/
 # E2E test screenshots (generated artifacts)
 e2e/mobile-test-screenshots/
 e2e/smoke-test-screenshots/
+
+# Agent debug/scratch files
+reproduce_validation.ts
+repro_validation.ts
+build_output.txt
+test_output.txt
+verification/

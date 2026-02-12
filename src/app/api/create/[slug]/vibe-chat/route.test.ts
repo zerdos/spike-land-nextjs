@@ -94,10 +94,10 @@ function createAsyncIterable<T>(items: T[]): AsyncIterable<T> {
 }
 
 // Helper to read SSE stream into parsed events
-async function readSSEStream(response: Response): Promise<any[]> {
+async function readSSEStream(response: Response): Promise<Array<Record<string, unknown>>> {
   const reader = response.body!.getReader();
   const decoder = new TextDecoder();
-  const events: any[] = [];
+  const events: Array<Record<string, unknown>> = [];
   let buffer = "";
 
   while (true) {
@@ -361,7 +361,7 @@ describe("Vibe Chat API Route", () => {
       const events = await readSSEStream(response);
 
       expect(events[0]).toEqual({ type: "stage", stage: "initialize" });
-      expect(events.find((e) => e.type === "chunk")).toEqual({
+      expect(events.find((e) => e["type"] === "chunk")).toEqual({
         type: "chunk",
         content: "Hello world",
       });
@@ -391,9 +391,9 @@ describe("Vibe Chat API Route", () => {
 
       const events = await readSSEStream(response);
 
-      const toolStage = events.find((e) => e.stage === "executing_tool");
+      const toolStage = events.find((e) => e["stage"] === "executing_tool");
       expect(toolStage).toBeDefined();
-      expect(toolStage!.tool).toBe("mcp__codespace__read_code");
+      expect(toolStage!["tool"]).toBe("mcp__codespace__read_code");
     });
 
     it("should emit error when query result is not success", async () => {
@@ -414,9 +414,9 @@ describe("Vibe Chat API Route", () => {
 
       const events = await readSSEStream(response);
 
-      const errorEvent = events.find((e) => e.type === "error");
+      const errorEvent = events.find((e) => e["type"] === "error");
       expect(errorEvent).toBeDefined();
-      expect(errorEvent!.content).toBe("Something went wrong");
+      expect(errorEvent!["content"]).toBe("Something went wrong");
     });
 
     it("should handle assistant message with no content array", async () => {
@@ -438,7 +438,7 @@ describe("Vibe Chat API Route", () => {
       const events = await readSSEStream(response);
       expect(events[events.length - 1]).toEqual({ type: "complete" });
       // Should not emit any chunk since there's no text content
-      expect(events.find((e) => e.type === "chunk")).toBeUndefined();
+      expect(events.find((e) => e["type"] === "chunk")).toBeUndefined();
     });
 
     it("should emit 'Unknown error' when result errors array is undefined", async () => {
@@ -458,9 +458,9 @@ describe("Vibe Chat API Route", () => {
       );
 
       const events = await readSSEStream(response);
-      const errorEvent = events.find((e) => e.type === "error");
+      const errorEvent = events.find((e) => e["type"] === "error");
       expect(errorEvent).toBeDefined();
-      expect(errorEvent!.content).toBe("Unknown error");
+      expect(errorEvent!["content"]).toBe("Unknown error");
     });
 
     it("should handle non-Error exceptions in stream", async () => {
@@ -480,9 +480,9 @@ describe("Vibe Chat API Route", () => {
       );
 
       const events = await readSSEStream(response);
-      const errorEvent = events.find((e) => e.type === "error");
+      const errorEvent = events.find((e) => e["type"] === "error");
       expect(errorEvent).toBeDefined();
-      expect(errorEvent!.content).toBe("Unknown error");
+      expect(errorEvent!["content"]).toBe("Unknown error");
     });
 
     it("should emit error and complete on streaming exception", async () => {
@@ -503,9 +503,9 @@ describe("Vibe Chat API Route", () => {
 
       const events = await readSSEStream(response);
 
-      const errorEvent = events.find((e) => e.type === "error");
+      const errorEvent = events.find((e) => e["type"] === "error");
       expect(errorEvent).toBeDefined();
-      expect(errorEvent!.content).toBe("Stream crashed");
+      expect(errorEvent!["content"]).toBe("Stream crashed");
 
       // Should still emit complete
       expect(events[events.length - 1]).toEqual({ type: "complete" });
@@ -614,7 +614,7 @@ describe("Vibe Chat API Route", () => {
 
       const events = await readSSEStream(response);
 
-      const codeUpdatedEvent = events.find((e) => e.type === "code_updated");
+      const codeUpdatedEvent = events.find((e) => e["type"] === "code_updated");
       expect(codeUpdatedEvent).toBeDefined();
     });
 
@@ -631,7 +631,7 @@ describe("Vibe Chat API Route", () => {
 
       const events = await readSSEStream(response);
 
-      const codeUpdatedEvent = events.find((e) => e.type === "code_updated");
+      const codeUpdatedEvent = events.find((e) => e["type"] === "code_updated");
       expect(codeUpdatedEvent).toBeUndefined();
     });
 
@@ -643,7 +643,7 @@ describe("Vibe Chat API Route", () => {
 
       const events = await readSSEStream(response);
 
-      const codeUpdatedEvent = events.find((e) => e.type === "code_updated");
+      const codeUpdatedEvent = events.find((e) => e["type"] === "code_updated");
       expect(codeUpdatedEvent).toBeUndefined();
 
       // getOrCreateSession should be called only once (for initial code fetch)

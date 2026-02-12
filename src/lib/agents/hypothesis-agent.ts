@@ -259,7 +259,8 @@ export class HypothesisAgent {
     `;
 
     try {
-      const response = await this.ai.models.generateContent({
+      const ai = getGeminiClient();
+      const response = await ai.models.generateContent({
         model: this.model,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
