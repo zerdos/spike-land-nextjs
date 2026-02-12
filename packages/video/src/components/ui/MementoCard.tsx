@@ -37,7 +37,7 @@ export function MementoCard({
           textShadow: `0 0 10px ${COLORS.cyan}80`,
           border: `2px solid ${COLORS.cyan}40`,
           borderRadius: "4px",
-          backgroundColor: "rgba(0, 229, 255, 0.05)",
+          backgroundColor: "rgba(139, 92, 246, 0.05)",
           maxWidth: "400px",
           display: "flex",
           alignItems: "center",

@@ -32,11 +32,11 @@ export default function ColorsPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20 animate-pulse" />
               <div className="relative z-10 flex flex-col items-center gap-4">
                 <div className="flex gap-4">
-                  <div className="w-16 h-16 rounded-full bg-primary shadow-glow-cyan animate-bounce" />
+                  <div className="w-16 h-16 rounded-full bg-primary shadow-glow-purple animate-bounce" />
                   <div className="w-16 h-16 rounded-full bg-accent shadow-glow-fuchsia animate-bounce delay-150" />
                 </div>
                 <p className="text-xl font-black font-heading tracking-widest text-foreground/80 group-hover:text-primary transition-colors">
-                  SPIKE LAND CORE
+                  SPIKE LAND CORE (NEBULA)
                 </p>
               </div>
             </div>
@@ -78,15 +78,15 @@ export default function ColorsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <Label className="text-[10px] uppercase tracking-wider opacity-60">
-                  Cyan Glow
+                  Violet Glow
                 </Label>
-                <Button className="w-full shadow-glow-cyan">
+                <Button className="w-full shadow-glow-purple">
                   Action Ready
                 </Button>
               </div>
               <div className="space-y-3">
                 <Label className="text-[10px] uppercase tracking-wider opacity-60">
-                  Fuchsia Glow
+                  Pink Glow
                 </Label>
                 <Button className="w-full bg-accent hover:bg-accent/90 shadow-glow-fuchsia">
                   Priority Focus
@@ -96,7 +96,7 @@ export default function ColorsPage() {
                 <Label className="text-[10px] uppercase tracking-wider opacity-60">
                   Gradient Surface
                 </Label>
-                <div className="h-12 rounded-xl gradient-cyan-fuchsia shadow-glow-gradient flex items-center justify-center group cursor-pointer transition-all hover:scale-[1.02]">
+                <div className="h-12 rounded-xl gradient-purple-pink shadow-glow-gradient flex items-center justify-center group cursor-pointer transition-all hover:scale-[1.02]">
                   <span className="text-white font-black font-heading tracking-widest text-sm uppercase">
                     Ultimate
                   </span>
@@ -135,8 +135,8 @@ export default function ColorsPage() {
 
       <AccessibilityPanel
         notes={[
-          "Primary color (#00E5FF) is paired with dark backgrounds for 4.5:1 contrast.",
-          "Secondary color (#FF00FF) is used primarily for non-text accents.",
+          "Primary color (#8B5CF6) is paired with dark backgrounds for 4.5:1 contrast.",
+          "Secondary color (#EC4899) is used primarily for non-text accents.",
           "Light/Dark mode palettes are tested for WCAG AA compliance.",
           "Glow effects do not use motion that could trigger sensitivity.",
           "Elevation tiers maintain distinct contrast ratios even on busy backgrounds.",

@@ -154,7 +154,7 @@ export function CanvasClient({
   if (displayImages.length === 0) {
     return (
       <div
-        className="min-h-screen bg-[#0B0E14] flex items-center justify-center"
+        className="min-h-screen bg-[#0F172A] flex items-center justify-center"
         data-testid="canvas-empty"
       >
         <p className="text-white/50 text-lg">No images in this album</p>
@@ -165,14 +165,14 @@ export function CanvasClient({
   return (
     <div
       ref={containerRef}
-      className="min-h-screen bg-[#0B0E14] overflow-hidden"
+      className="min-h-screen bg-[#0F172A] overflow-hidden"
       data-testid="canvas-container"
       aria-label={`Canvas display: ${albumName}`}
     >
       {/* Header with Pixel Logo and CTA */}
       {viewMode === "grid" && (
         <header
-          className="sticky top-0 z-40 bg-[#0B0E14]/90 backdrop-blur-sm border-b border-white/10"
+          className="sticky top-0 z-40 bg-[#0F172A]/90 backdrop-blur-sm border-b border-white/10"
           data-testid="canvas-toolbar"
         >
           <div className="flex items-center justify-between px-4 py-3">
@@ -194,7 +194,7 @@ export function CanvasClient({
             <Button
               onClick={enterSlideshow}
               disabled={!selectedImageId}
-              className="bg-[#00E5FF] hover:bg-[#00E5FF]/80 text-[#0B0E14] font-semibold shadow-[0_0_20px_rgba(0,229,255,0.3)] disabled:opacity-50 disabled:shadow-none"
+              className="bg-[#8B5CF6] hover:bg-[#8B5CF6]/80 text-[#FFFFFF] font-semibold shadow-[0_0_20px_rgba(139,92,246,0.3)] disabled:opacity-50 disabled:shadow-none"
               data-testid="start-slideshow-button"
             >
               <Play className="w-4 h-4 mr-2" />

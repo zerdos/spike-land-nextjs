@@ -5,19 +5,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // spike.land brand colors
+        // spike.land brand colors (Nebula Theme)
         spike: {
-          cyan: "#00E5FF",
-          fuchsia: "#FF00FF",
-          purple: "#9945FF",
+          cyan: "#8B5CF6", // Re-mapped to Violet
+          fuchsia: "#EC4899", // Re-mapped to Pink
+          purple: "#A855F7",
           amber: "#F59E0B",
           gold: "#FBBF24",
         },
         // Dark theme colors
         dark: {
-          bg: "#0a0a0f",
-          card: "#1a1a2e",
-          border: "#2a2a3e",
+          bg: "#0F172A", // Deep Slate
+          card: "#1E293B", // Slate-800
+          border: "#334155", // Slate-700
         },
       },
       fontFamily: {

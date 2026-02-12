@@ -223,7 +223,7 @@ export function AppCard3D({ app }: AppCard3DProps) {
           className="pointer-events-none absolute inset-0 rounded-2xl"
           style={{
             boxShadow: isHovered
-              ? "inset 0 0 0 1px rgba(0, 229, 255, 0.3), 0 0 30px rgba(0, 229, 255, 0.1)"
+              ? "inset 0 0 0 1px rgba(139, 92, 246, 0.3), 0 0 30px rgba(139, 92, 246, 0.1)"
               : "none",
           }}
           animate={{ opacity: isHovered ? 1 : 0 }}

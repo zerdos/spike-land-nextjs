@@ -335,7 +335,7 @@ export default function CSPage() {
         className="fixed inset-0 pointer-events-none opacity-30"
         style={{
           background:
-            `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(0, 229, 255, 0.1), transparent 40%)`,
+            `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(139, 92, 246, 0.1), transparent 40%)`,
         }}
       />
 

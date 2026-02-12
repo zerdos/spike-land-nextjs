@@ -164,7 +164,7 @@ export class Code implements DurableObject {
       <div style={{
         position: "absolute",
         inset: 0,
-        background: "radial-gradient(ellipse at 50% 0%, rgba(0, 229, 255, 0.15) 0%, transparent 60%)",
+        background: "radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 60%)",
         animation: "pulse 4s ease-in-out infinite",
       }} />
       <div style={{

@@ -9,7 +9,7 @@ interface Firework {
   color: string;
 }
 
-const COLORS = ["#00E5FF", "#FFD700", "#FF00FF", "#00FF00", "#FFFFFF"];
+const COLORS = ["#8B5CF6", "#FFD700", "#FF00FF", "#00FF00", "#FFFFFF"];
 
 /**
  * Fireworks system that launches random explosions.

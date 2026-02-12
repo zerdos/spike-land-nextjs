@@ -96,7 +96,7 @@ const header = {
 };
 
 const logo = {
-  color: "#00E5FF", // Pixel Cyan
+  color: "#8B5CF6", // Nebula Violet
   fontSize: "32px",
   fontWeight: "bold",
   fontFamily: "'Montserrat', system-ui, sans-serif",
@@ -105,7 +105,7 @@ const logo = {
 };
 
 const tagline = {
-  color: "#A0A0C0", // Text Muted
+  color: "#94A3B8", // Text Muted (Slate-400)
   fontSize: "14px",
   margin: "8px 0 0",
   padding: "0",
@@ -139,7 +139,7 @@ const footerText = {
 };
 
 const link = {
-  color: "#00E5FF", // Pixel Cyan
+  color: "#8B5CF6", // Nebula Violet
   textDecoration: "underline",
 };
 
@@ -163,9 +163,9 @@ export const emailStyles = {
     margin: "16px 0",
   },
   button: {
-    backgroundColor: "#00E5FF", // Pixel Cyan
+    backgroundColor: "#8B5CF6", // Nebula Violet
     borderRadius: "8px",
-    color: "#08081C", // Deep Space for contrast
+    color: "#FFFFFF", // White text
     display: "inline-block",
     fontSize: "16px",
     fontWeight: "bold",
