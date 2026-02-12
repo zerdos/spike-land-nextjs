@@ -79,6 +79,8 @@ model User {
   workspaceInvitations     WorkspaceMember[]         @relation("WorkspaceInvitations")
   workspaceMembers         WorkspaceMember[]
   workspaceRecentAccess    WorkspaceRecentAccess[]
+  oauthAuthorizationCodes  OAuthAuthorizationCode[]
+  oauthAccessTokens        OAuthAccessToken[]
 
   @@map("users")
 }
@@ -4612,4 +4614,75 @@ enum SyncEventType {
   ITEM_DELETED
   SYNC_COMPLETED
   SYNC_FAILED
+}
+
+// ========================================
+// OAuth 2.1 for Remote MCP Server
+// ========================================
+
+model OAuthClient {
+  id                     String                  @id @default(cuid())
+  clientId               String                  @unique @default(uuid())
+  clientSecretHash       String?
+  clientName             String
+  redirectUris           String[]
+  grantTypes             String[]                @default(["authorization_code", "refresh_token"])
+  tokenEndpointAuthMethod String                 @default("none")
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  authorizationCodes     OAuthAuthorizationCode[]
+  accessTokens           OAuthAccessToken[]
+
+  @@index([clientId])
+  @@map("oauth_clients")
+}
+
+model OAuthAuthorizationCode {
+  id                  String      @id @default(cuid())
+  code                String      @unique
+  clientId            String
+  userId              String
+  redirectUri         String
+  codeChallenge       String
+  codeChallengeMethod String      @default("S256")
+  scope               String      @default("mcp")
+  state               String?
+  resource            String?
+  expiresAt           DateTime
+  usedAt              DateTime?
+  createdAt           DateTime    @default(now())
+  client              OAuthClient @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([code])
+  @@index([clientId])
+  @@index([userId])
+  @@map("oauth_authorization_codes")
+}
+
+enum OAuthTokenType {
+  ACCESS
+  REFRESH
+}
+
+model OAuthAccessToken {
+  id             String         @id @default(cuid())
+  tokenHash      String         @unique
+  tokenType      OAuthTokenType
+  clientId       String
+  userId         String
+  scope          String         @default("mcp")
+  resource       String?
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  refreshTokenId String?
+  createdAt      DateTime       @default(now())
+  client         OAuthClient    @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([clientId])
+  @@index([userId])
+  @@index([refreshTokenId])
+  @@map("oauth_access_tokens")
 }

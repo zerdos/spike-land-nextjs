@@ -147,8 +147,6 @@ export async function POST(
           },
         });
 
-        let agentResponse = "";
-
         for await (const message of result) {
           if (message.type === "assistant") {
             const assistantMessage = message as { message?: { content?: ContentPart[] } };
@@ -157,7 +155,6 @@ export async function POST(
             const textParts = contentArray.filter((c) => c.type === "text");
             const text = textParts.map((c) => c.text || "").join("");
             if (text) {
-              agentResponse += text;
               emitSSE(controller, { type: "chunk", content: text });
             }
 

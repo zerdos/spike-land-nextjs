@@ -2262,6 +2262,45 @@ erDiagram
   String A FK
   String B FK
 }
+"oauth_clients" {
+  String id PK
+  String clientId UK
+  String clientSecretHash "nullable"
+  String clientName
+  String redirectUris
+  String grantTypes
+  String tokenEndpointAuthMethod
+  DateTime createdAt
+  DateTime updatedAt
+}
+"oauth_authorization_codes" {
+  String id PK
+  String code UK
+  String clientId FK
+  String userId FK
+  String redirectUri
+  String codeChallenge
+  String codeChallengeMethod
+  String scope
+  String state "nullable"
+  String resource "nullable"
+  DateTime expiresAt
+  DateTime usedAt "nullable"
+  DateTime createdAt
+}
+"oauth_access_tokens" {
+  String id PK
+  String tokenHash UK
+  OAuthTokenType tokenType
+  String clientId FK
+  String userId FK
+  String scope
+  String resource "nullable"
+  DateTime expiresAt
+  DateTime revokedAt "nullable"
+  String refreshTokenId "nullable"
+  DateTime createdAt
+}
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
 "campaign_briefs" }o--o| "workspaces" : workspace
@@ -2485,6 +2524,10 @@ erDiagram
 "created_apps" }o--o| "users" : generatedBy
 "_ConnectionTags" }o--|| "connections" : connections
 "_ConnectionTags" }o--|| "connection_tags" : connection_tags
+"oauth_authorization_codes" }o--|| "oauth_clients" : client
+"oauth_authorization_codes" }o--|| "users" : user
+"oauth_access_tokens" }o--|| "oauth_clients" : client
+"oauth_access_tokens" }o--|| "users" : user
 ```
 
 ### `users`
@@ -5323,3 +5366,51 @@ Properties as follows:
 
 - `A`:
 - `B`:
+
+### `oauth_clients`
+
+Properties as follows:
+
+- `id`:
+- `clientId`:
+- `clientSecretHash`:
+- `clientName`:
+- `redirectUris`:
+- `grantTypes`:
+- `tokenEndpointAuthMethod`:
+- `createdAt`:
+- `updatedAt`:
+
+### `oauth_authorization_codes`
+
+Properties as follows:
+
+- `id`:
+- `code`:
+- `clientId`:
+- `userId`:
+- `redirectUri`:
+- `codeChallenge`:
+- `codeChallengeMethod`:
+- `scope`:
+- `state`:
+- `resource`:
+- `expiresAt`:
+- `usedAt`:
+- `createdAt`:
+
+### `oauth_access_tokens`
+
+Properties as follows:
+
+- `id`:
+- `tokenHash`:
+- `tokenType`:
+- `clientId`:
+- `userId`:
+- `scope`:
+- `resource`:
+- `expiresAt`:
+- `revokedAt`:
+- `refreshTokenId`:
+- `createdAt`:

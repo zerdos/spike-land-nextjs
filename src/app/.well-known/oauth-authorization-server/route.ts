@@ -1,0 +1,37 @@
+/**
+ * OAuth Authorization Server Metadata (RFC 8414)
+ *
+ * Returns metadata about the OAuth authorization server endpoints.
+ * MCP clients use this to discover authorization, token, and registration endpoints.
+ */
+
+import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
+function getBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return "https://spike.land";
+}
+
+export function GET() {
+  const baseUrl = getBaseUrl();
+
+  return NextResponse.json({
+    issuer: baseUrl,
+    authorization_endpoint: `${baseUrl}/api/mcp/oauth/authorize`,
+    token_endpoint: `${baseUrl}/api/mcp/oauth/token`,
+    registration_endpoint: `${baseUrl}/api/mcp/oauth/register`,
+    response_types_supported: ["code"],
+    grant_types_supported: ["authorization_code", "refresh_token"],
+    code_challenge_methods_supported: ["S256"],
+    token_endpoint_auth_methods_supported: ["none", "client_secret_post"],
+    scopes_supported: ["mcp"],
+    service_documentation: `${baseUrl}/docs`,
+  });
+}

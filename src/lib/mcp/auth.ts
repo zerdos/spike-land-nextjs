@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { verifyAccessToken } from "@/lib/mcp/oauth/token-service";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import type { ApiKeyValidationResult } from "./api-key-manager";
@@ -8,6 +9,7 @@ interface McpAuthResult {
   success: boolean;
   userId?: string;
   apiKeyId?: string;
+  oauthClientId?: string;
   error?: string;
 }
 
@@ -50,21 +52,48 @@ export async function authenticateMcpRequest(
     };
   }
 
-  // Extract the API key
-  const apiKey = authHeader.slice(7).trim();
+  // Extract the token
+  const token = authHeader.slice(7).trim();
 
-  if (!apiKey) {
+  if (!token) {
     return {
       success: false,
-      error: "Missing API key",
+      error: "Missing API key or token",
     };
   }
 
-  // Validate the API key
+  // Check if this is an MCP OAuth token (prefixed with "mcp_")
+  if (token.startsWith("mcp_")) {
+    const { data: payload, error: oauthError } = await tryCatch(
+      verifyAccessToken(token),
+    );
+
+    if (oauthError) {
+      return {
+        success: false,
+        error: "OAuth token verification failed",
+      };
+    }
+
+    if (!payload) {
+      return {
+        success: false,
+        error: "Invalid or expired OAuth token",
+      };
+    }
+
+    return {
+      success: true,
+      userId: payload.userId,
+      oauthClientId: payload.clientId,
+    };
+  }
+
+  // Fall back to API key validation
   const { data: validationResult, error: validationError } = await tryCatch<
     ApiKeyValidationResult,
     Error
-  >(validateApiKey(apiKey));
+  >(validateApiKey(token));
 
   if (validationError) {
     return {

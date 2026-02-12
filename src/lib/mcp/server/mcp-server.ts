@@ -1,0 +1,49 @@
+/**
+ * Server-Side MCP Server Factory
+ *
+ * Creates a configured McpServer instance with all tools registered
+ * for a specific authenticated user. Used by the Streamable HTTP endpoint.
+ */
+
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { ToolRegistry } from "./tool-registry";
+import { registerGatewayMetaTools } from "./tools/gateway-meta";
+import { registerImageTools } from "./tools/image";
+import { registerCodeSpaceTools } from "./tools/codespace";
+import { registerJulesTools, isJulesAvailable } from "./tools/jules";
+
+/**
+ * Create a fully configured MCP server for a specific user.
+ * All tools are registered with the user's identity for authorization.
+ */
+export function createMcpServer(userId: string): McpServer {
+  const mcpServer = new McpServer(
+    {
+      name: "spike-land",
+      version: "1.0.0",
+    },
+    {
+      capabilities: {
+        tools: { listChanged: true },
+      },
+    },
+  );
+
+  const registry = new ToolRegistry(mcpServer);
+
+  // Always-on gateway meta tools (5 tools)
+  registerGatewayMetaTools(registry, userId);
+
+  // Image tools (discoverable)
+  registerImageTools(registry, userId);
+
+  // CodeSpace tools (discoverable)
+  registerCodeSpaceTools(registry, userId);
+
+  // Jules tools (discoverable, if configured)
+  if (isJulesAvailable()) {
+    registerJulesTools(registry, userId);
+  }
+
+  return mcpServer;
+}

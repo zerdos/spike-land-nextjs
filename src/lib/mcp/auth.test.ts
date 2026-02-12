@@ -18,6 +18,15 @@ vi.mock("@/auth", () => ({
   auth: mockAuth,
 }));
 
+// Mock OAuth token service
+const { mockVerifyAccessToken } = vi.hoisted(() => ({
+  mockVerifyAccessToken: vi.fn(),
+}));
+
+vi.mock("@/lib/mcp/oauth/token-service", () => ({
+  verifyAccessToken: mockVerifyAccessToken,
+}));
+
 import type { NextRequest } from "next/server";
 import {
   authenticateMcpOrSession,
@@ -78,7 +87,7 @@ describe("auth", () => {
       const result = await authenticateMcpRequest(request);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Missing API key");
+      expect(result.error).toBe("Missing API key or token");
     });
 
     it("should return error when API key is just whitespace", async () => {
@@ -89,7 +98,7 @@ describe("auth", () => {
       const result = await authenticateMcpRequest(request);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Missing API key");
+      expect(result.error).toBe("Missing API key or token");
     });
 
     it("should return success when API key is valid", async () => {
@@ -141,6 +150,38 @@ describe("auth", () => {
       await authenticateMcpRequest(request);
 
       expect(mockValidateApiKey).toHaveBeenCalledWith("sk_test_validkey");
+    });
+
+    it("should authenticate OAuth tokens (mcp_ prefix)", async () => {
+      mockVerifyAccessToken.mockResolvedValue({
+        userId: testUserId,
+        clientId: "test-client-id",
+        scope: "mcp",
+      });
+
+      const request = createMockRequest({
+        Authorization: "Bearer mcp_test_oauth_token_abc123",
+      });
+
+      const result = await authenticateMcpRequest(request);
+
+      expect(result.success).toBe(true);
+      expect(result.userId).toBe(testUserId);
+      expect(result.oauthClientId).toBe("test-client-id");
+      expect(mockValidateApiKey).not.toHaveBeenCalled();
+    });
+
+    it("should return error for invalid OAuth tokens", async () => {
+      mockVerifyAccessToken.mockResolvedValue(null);
+
+      const request = createMockRequest({
+        Authorization: "Bearer mcp_invalid_token",
+      });
+
+      const result = await authenticateMcpRequest(request);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Invalid or expired OAuth token");
     });
 
     it("should return error when validateApiKey throws an exception", async () => {

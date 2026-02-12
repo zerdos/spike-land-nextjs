@@ -45,7 +45,7 @@ vi.mock("lucide-react", () => ({
 vi.mock("@/components/ui/toggle-group", () => ({
   ToggleGroup: ({
     children,
-    onValueChange,
+    onValueChange: _onValueChange,
     value,
     ...props
   }: {

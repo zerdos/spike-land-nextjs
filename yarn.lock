@@ -3631,7 +3631,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:1.26.0":
+"@modelcontextprotocol/sdk@npm:1.26.0, @modelcontextprotocol/sdk@npm:^1.26.0":
   version: 1.26.0
   resolution: "@modelcontextprotocol/sdk@npm:1.26.0"
   dependencies:
@@ -24688,6 +24688,7 @@ __metadata:
     "@dnd-kit/utilities": "npm:3.2.2"
     "@google/genai": "npm:1.41.0"
     "@hookform/resolvers": "npm:5.2.2"
+    "@modelcontextprotocol/sdk": "npm:^1.26.0"
     "@next/eslint-plugin-next": "npm:16.1.6"
     "@playwright/test": "npm:1.58.2"
     "@prisma/adapter-pg": "npm:7.4.0"
