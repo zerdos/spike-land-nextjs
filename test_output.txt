@@ -1,0 +1,28 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/app[39m
+
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould be a function component[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould accept children prop[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould render html element with lang="en"[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould have suppressHydrationWarning on html element[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould render body element inside html[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould apply font class variables to body[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould wrap children in ThemeProvider and SessionProvider[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould render ThemeProvider wrapping content[32m 103[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould render Analytics component[32m 21[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould render SpeedInsights component[32m 21[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould render Toaster component[32m 22[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould render ConditionalHeader component for navigation[32m 20[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mRootLayout[2m > [22mshould render FeedbackButton component[32m 15[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mmetadata[2m > [22mshould export correct metadata object[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mmetadata[2m > [22mshould have title property[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mmetadata[2m > [22mshould have description property[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mmetadata[2m > [22mshould have keywords for SEO[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mmetadata[2m > [22mshould have authors metadata[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mmetadata[2m > [22mshould have openGraph metadata for social sharing[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[42m root [49m[39m src/app/layout.test.tsx[2m > [22mmetadata[2m > [22mshould have twitter card metadata[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m   Start at [22m 08:00:40
+[2m   Duration [22m 4.97s[2m (transform 582ms, setup 779ms, import 986ms, tests 217ms, environment 2.67s)[22m

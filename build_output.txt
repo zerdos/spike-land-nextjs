@@ -1,0 +1,56 @@
+[34mCLI[39m Building entry: {"index":"src/index.ts","types/index":"src/types/index.ts","validations/index":"src/validations/index.ts","constants/index":"src/constants/index.ts","utils/index":"src/utils/index.ts"}
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.1
+[34mCLI[39m Using tsup config: /app/packages/shared/tsup.config.ts
+[34mCLI[39m Target: es2022
+[34mCLI[39m Cleaning output folder
+[34mCJS[39m Build start
+[34mESM[39m Build start
+[32mCJS[39m [1mdist/index.js             [22m[32m21.34 KB[39m
+[32mCJS[39m [1mdist/types/index.js       [22m[32m958.00 B[39m
+[32mCJS[39m [1mdist/validations/index.js [22m[32m14.14 KB[39m
+[32mCJS[39m [1mdist/utils/index.js       [22m[32m4.23 KB[39m
+[32mCJS[39m [1mdist/constants/index.js   [22m[32m2.79 KB[39m
+[32mCJS[39m ⚡️ Build success in 839ms
+[32mESM[39m [1mdist/index.mjs             [22m[32m18.39 KB[39m
+[32mESM[39m [1mdist/types/index.mjs       [22m[32m813.00 B[39m
+[32mESM[39m [1mdist/validations/index.mjs [22m[32m11.89 KB[39m
+[32mESM[39m [1mdist/constants/index.mjs   [22m[32m2.54 KB[39m
+[32mESM[39m [1mdist/utils/index.mjs       [22m[32m3.91 KB[39m
+[32mESM[39m ⚡️ Build success in 840ms
+[34mDTS[39m Build start
+[32mDTS[39m ⚡️ Build success in 14734ms
+[32mDTS[39m [1mdist/index.d.ts              [22m[32m3.78 KB[39m
+[32mDTS[39m [1mdist/utils/index.d.ts        [22m[32m1.85 KB[39m
+[32mDTS[39m [1mdist/constants/index.d.ts    [22m[32m3.44 KB[39m
+[32mDTS[39m [1mdist/validations/index.d.ts  [22m[32m21.46 KB[39m
+[32mDTS[39m [1mdist/types/index.d.ts        [22m[32m24.61 KB[39m
+[32mDTS[39m [1mdist/index.d.mts             [22m[32m3.78 KB[39m
+[32mDTS[39m [1mdist/utils/index.d.mts       [22m[32m1.86 KB[39m
+[32mDTS[39m [1mdist/constants/index.d.mts   [22m[32m3.44 KB[39m
+[32mDTS[39m [1mdist/validations/index.d.mts [22m[32m21.46 KB[39m
+[32mDTS[39m [1mdist/types/index.d.mts       [22m[32m24.61 KB[39m
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+
+✔ Generated Prisma Client (v7.4.0) to ./src/generated/prisma in 3.38s
+
+✔ Generated prisma-markdown (4.0.0) to ./docs/DATABASE_SCHEMA.md in 1.37s
+
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+▲ Next.js 16.1.6 (webpack)
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+  Creating an optimized production build ...
+[@sentry/nextjs - Node.js] Info: Sending telemetry data on issues and performance to Sentry. To disable telemetry, set `options.telemetry` to `false`.
+[@sentry/nextjs - Node.js] Warning: No auth token provided. Will not create release. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[@sentry/nextjs - Edge] Info: Sending telemetry data on issues and performance to Sentry. To disable telemetry, set `options.telemetry` to `false`.
+[@sentry/nextjs - Edge] Warning: No auth token provided. Will not create release. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[@sentry/nextjs - Client] Info: Sending telemetry data on issues and performance to Sentry. To disable telemetry, set `options.telemetry` to `false`.

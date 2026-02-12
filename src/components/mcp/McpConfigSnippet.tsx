@@ -1,51 +1,82 @@
-"use client";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, Clipboard, Terminal } from "lucide-react";
+import { useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { CopyButton } from "@/components/ui/copy-button";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface McpConfigSnippetProps {
-  code: string;
-  language?: "json" | "bash";
+  serverName: string;
+  config: Record<string, any>;
   className?: string;
 }
 
 export function McpConfigSnippet({
-  code,
-  language,
+  serverName,
+  config,
   className,
 }: McpConfigSnippetProps) {
-  return (
-    <div
-      className={cn(
-        "relative rounded-xl overflow-hidden border border-white/10 shadow-2xl bg-[#0d1117]",
-        className,
-      )}
-    >
-      {/* Window Controls */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-white/[0.03] border-b border-white/[0.05]">
-        <div className="flex gap-2">
-          <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm" />
-          <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm" />
-          <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm" />
-        </div>
-        <div className="flex-1 text-center text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium ml-[-3.5rem]">
-          {language === "bash" ? "Terminal" : language || "Config"}
-        </div>
-      </div>
+  const [copied, setCopied] = useState(false);
 
-      {/* Code Area */}
-      <div className="p-6 relative group">
-        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200">
-          <CopyButton text={code} />
+  const configString = JSON.stringify(config, null, 2);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(configString);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Card className={cn("overflow-hidden border-border/50 bg-black/40 backdrop-blur-sm", className)}>
+      <div className="flex items-center justify-between border-b border-border/50 bg-muted/30 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1.5">
+            <div className="h-3 w-3 rounded-full bg-red-500/20 ring-1 ring-red-500/50" />
+            <div className="h-3 w-3 rounded-full bg-yellow-500/20 ring-1 ring-yellow-500/50" />
+            <div className="h-3 w-3 rounded-full bg-green-500/20 ring-1 ring-green-500/50" />
+          </div>
+          <div className="ml-2 flex items-center gap-1.5 rounded-md bg-background/50 px-2 py-0.5 text-xs text-muted-foreground ring-1 ring-border/50">
+            <Terminal className="h-3 w-3" />
+            <span className="font-medium">claude_desktop_config.json</span>
+          </div>
         </div>
-        <pre className="overflow-x-auto custom-scrollbar">
-          <code className={cn(
-            "font-mono text-sm leading-relaxed",
-            language === "bash" ? "text-emerald-400" : "text-blue-300"
-          )}>{code}</code>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 hover:bg-background/50"
+          onClick={handleCopy}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {copied ? (
+              <motion.div
+                key="check"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+              >
+                <Check className="h-4 w-4 text-green-500" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="copy"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+              >
+                <Clipboard className="h-4 w-4 text-muted-foreground" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <span className="sr-only">Copy configuration</span>
+        </Button>
+      </div>
+      <div className="relative overflow-x-auto p-4 font-mono text-sm leading-relaxed">
+        <pre className="text-muted-foreground">
+          <span className="text-blue-400">"{serverName}"</span>:{" "}
+          <span className="text-orange-300">{configString}</span>
         </pre>
       </div>
-    </div>
+    </Card>
   );
 }
