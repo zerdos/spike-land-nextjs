@@ -154,6 +154,7 @@ function setupDefaultMocks() {
     outputTokens: 200,
     cacheReadTokens: 50,
     cacheCreationTokens: 10,
+    truncated: false,
   } as never);
   vi.mocked(parseGenerationResponse).mockReturnValue({
     code: DEFAULT_CODE,
@@ -318,7 +319,7 @@ describe("agentGenerateApp", () => {
         dynamicSuffix: undefined,
         userPrompt: "user prompt",
         model: "opus",
-        maxTokens: 24576,
+        maxTokens: 32768,
         temperature: 0.5,
       });
     });
@@ -466,7 +467,7 @@ describe("agentGenerateApp", () => {
           systemPrompt: "fix system prompt",
           userPrompt: "fix user prompt",
           model: "sonnet",
-          maxTokens: 16384,
+          maxTokens: 32768,
           temperature: 0.2,
         }),
       );
@@ -1693,7 +1694,7 @@ describe("agentGenerateApp", () => {
       expect(callClaude).toHaveBeenCalledWith(
         expect.objectContaining({
           model: "opus",
-          maxTokens: 16384,
+          maxTokens: 32768,
         }),
       );
 
@@ -1787,6 +1788,7 @@ describe("agentGenerateApp", () => {
         outputTokens: 60000,
         cacheReadTokens: 0,
         cacheCreationTokens: 0,
+        truncated: false,
       } as never);
 
       await expect(

@@ -35,19 +35,20 @@ const TOKEN_BUDGET_MAX = 150_000;
 /** Maximum fix iterations, clamped regardless of env var. */
 const MAX_ITERATIONS_CAP = 5;
 /** Max tokens for Sonnet fix calls — must be enough to output a full component. */
-const FIX_MAX_TOKENS = 16384;
+const FIX_MAX_TOKENS = 32768;
 
-/** Adaptive max_tokens based on topic complexity. */
-const GEN_TOKENS_SIMPLE = 16384;
-const GEN_TOKENS_MEDIUM = 24576;
-const GEN_TOKENS_COMPLEX = 32768;
+/**
+ * Flat max_tokens for all generations.
+ * JSON-escaped code roughly doubles token usage, so 32k is the minimum
+ * to avoid truncation of complex components.
+ */
+const GEN_MAX_TOKENS = 32768;
 
 /** Determine generation max_tokens based on matched skills for the topic. */
-function getAdaptiveMaxTokens(topic: string): number {
-  const skills = getMatchedSkills(topic);
-  if (skills.length === 0) return GEN_TOKENS_SIMPLE;
-  if (skills.length <= 2) return GEN_TOKENS_MEDIUM;
-  return GEN_TOKENS_COMPLEX;
+function getAdaptiveMaxTokens(_topic: string): number {
+  // Flat budget — JSON-encoding of code eats ~2x tokens, so even "simple"
+  // apps need a generous budget to avoid mid-response truncation.
+  return GEN_MAX_TOKENS;
 }
 
 /** Determine which model to use for generation based on topic complexity. */
@@ -180,6 +181,16 @@ export async function* agentGenerateApp(
     // Token budget check
     if (ctx.totalInputTokens + ctx.totalOutputTokens > TOKEN_BUDGET_MAX) {
       throw new Error(`Token budget exceeded (${ctx.totalInputTokens + ctx.totalOutputTokens}/${TOKEN_BUDGET_MAX})`);
+    }
+
+    // Truncation detection — if Claude hit max_tokens the JSON response is
+    // cut off and the extracted code will be incomplete.
+    if (genResponse.truncated) {
+      logger.warn("Generation response was truncated (hit max_tokens)", {
+        outputTokens: genResponse.outputTokens,
+        maxTokens: adaptiveMaxTokens,
+        slug,
+      });
     }
 
     // Parse structured response

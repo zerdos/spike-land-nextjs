@@ -275,9 +275,9 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
   if (status === "error") {
     return (
       <div className={cn("flex flex-col items-center justify-center min-h-[50vh] p-8", className)}>
-        <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-6 max-w-md w-full text-center">
+        <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-6 max-w-lg w-full text-center">
           <h3 className="text-xl font-bold text-destructive mb-2">Generation Failed</h3>
-          <p className="text-muted-foreground mb-6">{error}</p>
+          <p className="text-muted-foreground mb-4">{error}</p>
           <div className="flex flex-col items-center gap-3">
             <button
               onClick={startStreaming}
@@ -298,6 +298,41 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
             )}
           </div>
         </div>
+        {/* Build log on error — shows what happened during generation */}
+        {messages.length > 0 && (
+          <div className="bg-card border rounded-xl overflow-hidden shadow-sm mt-6 max-w-lg w-full">
+            <div className="bg-muted/50 px-4 py-3 border-b text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Build Log
+            </div>
+            <div className="p-4 space-y-2 max-h-[300px] overflow-y-auto font-mono text-xs">
+              {messages.map((msg, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <div
+                    className={cn(
+                      "mt-1 w-1.5 h-1.5 rounded-full shrink-0",
+                      msg.type === "error" && "bg-red-500",
+                      msg.type === "fix" && "bg-amber-500",
+                      msg.type === "learning" && "bg-blue-500",
+                      msg.type === "phase" && "bg-purple-500",
+                      msg.type === "agent" && "bg-indigo-500",
+                      msg.type === "status" && "bg-green-500",
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      "break-all",
+                      msg.type === "error" && "text-red-600 dark:text-red-400",
+                      msg.type === "fix" && "text-amber-600 dark:text-amber-400",
+                      msg.type === "learning" && "text-blue-600 dark:text-blue-400",
+                    )}
+                  >
+                    {msg.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

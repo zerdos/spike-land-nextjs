@@ -12,6 +12,8 @@ export interface ClaudeResponse {
   outputTokens: number;
   cacheReadTokens: number;
   cacheCreationTokens: number;
+  /** Whether the response was truncated due to hitting max_tokens. */
+  truncated: boolean;
 }
 
 export type ClaudeModel = "opus" | "sonnet" | "haiku";
@@ -110,6 +112,7 @@ export async function callClaude(params: {
         outputTokens: usage.output_tokens,
         cacheReadTokens: usageRecord["cache_read_input_tokens"] ?? 0,
         cacheCreationTokens: usageRecord["cache_creation_input_tokens"] ?? 0,
+        truncated: response.stop_reason === "max_tokens",
       };
     } catch (error) {
       lastError = error;
@@ -152,6 +155,7 @@ export async function callClaude(params: {
               outputTokens: 0,
               cacheReadTokens: 0,
               cacheCreationTokens: 0,
+              truncated: false,
             };
 
           } catch (geminiError) {

@@ -181,11 +181,18 @@ const CORE_PROMPT =
 11. Icons are decoration, not content. Prefer text labels and emoji over icons.
 12. For complexity, split code into internal sub-components (e.g., const Header = ...) within the same file.
 
+## CODE SIZE BUDGET
+- Keep the component under 150 lines of code. Prefer concise, elegant code.
+- Use Tailwind classes instead of verbose JSX nesting where possible.
+- Do NOT add comments in the code — they waste tokens.
+- Avoid large hardcoded data arrays. Use minimal seed data (3-5 items max).
+
 ## FINAL VERIFICATION CHECKLIST
 - [ ] Are all used icons imported from "lucide-react"? (Max 5)
 - [ ] Is there exactly one DEFAULT EXPORT?
 - [ ] Are semantic colors like "bg-background" used for the container?
 - [ ] Is the UI fully responsive and premium-feeling?
+- [ ] Is the code under 150 lines?
 
 Before writing code, mentally plan: key user interactions, state variables, visual hierarchy, and which shadcn/ui components to use.`;
 
