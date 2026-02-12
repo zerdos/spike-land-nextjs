@@ -4,9 +4,9 @@ import { resolveAIProviderConfig } from "./ai-config-resolver";
 /**
  * Shared Claude (Anthropic) client singleton.
  *
- * Auth resolution (OAuth-only):
- * 1. ANTHROPIC_AUTH_TOKEN — SDK-native OAuth token (Authorization: Bearer)
- * 2. CLAUDE_CODE_OAUTH_TOKEN — alias for OAuth token
+ * Auth resolution: CLAUDE_CODE_OAUTH_TOKEN only.
+ * Claude Max subscription provides cost-effective Opus 4.6 access
+ * (OAuth bearer auth, not API key).
  */
 
 let client: Anthropic | null = null;
@@ -14,7 +14,7 @@ let client: Anthropic | null = null;
 export async function getClaudeClient(): Promise<Anthropic> {
   if (!client) {
     const config = await resolveAIProviderConfig("anthropic");
-    const authToken = config?.token ?? (process.env["ANTHROPIC_AUTH_TOKEN"] ?? process.env["CLAUDE_CODE_OAUTH_TOKEN"]);
+    const authToken = config?.token ?? process.env["CLAUDE_CODE_OAUTH_TOKEN"];
 
     client = new Anthropic({
       apiKey: null,
@@ -39,7 +39,6 @@ export async function isClaudeConfigured(): Promise<boolean> {
   const config = await resolveAIProviderConfig("anthropic");
   return !!(
     config?.token ||
-    process.env["ANTHROPIC_AUTH_TOKEN"] ||
     process.env["CLAUDE_CODE_OAUTH_TOKEN"]
   );
 }

@@ -1,5 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
+// Mock esbuild-init (must be before esbuild-wasm mock)
+vi.mock("./esbuild-init", () => ({
+  ensureEsbuildReady: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Mock esbuild-wasm
 vi.mock("esbuild-wasm", () => ({
   build: vi.fn(),
@@ -10,9 +15,11 @@ const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
 import * as esbuild from "esbuild-wasm";
+import { ensureEsbuildReady } from "./esbuild-init";
 import { bundleCodespace } from "./bundler";
 
 const mockBuild = vi.mocked(esbuild.build);
+const mockEnsureReady = vi.mocked(ensureEsbuildReady);
 
 function makeBuildResult(
   files: { path: string; text: string }[],
@@ -284,5 +291,18 @@ describe("bundleCodespace", () => {
     const stdinContents = mockBuild.mock.calls[0]![0]!.stdin
       ?.contents as string;
     expect(stdinContents).toBe("");
+  });
+
+  it("calls ensureEsbuildReady before build", async () => {
+    mockBuild.mockResolvedValue(
+      makeBuildResult([{ path: "stdin.js", text: "ok" }]),
+    );
+
+    await bundleCodespace({
+      transpiled: "console.log('hi');",
+      codeSpace: "test-cs",
+    });
+
+    expect(mockEnsureReady).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,4 +1,6 @@
 import { auth } from "@/auth";
+import { isClaudeConfigured } from "@/lib/ai/claude-client";
+import { resolveAIProviderConfig } from "@/lib/ai/ai-config-resolver";
 import { getSystemPromptWithCode } from "@/lib/claude-agent/prompts/codespace-system";
 import {
   EDIT_MODE_PREAMBLE,
@@ -86,6 +88,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "App not found or not published" }, { status: 404 });
   }
 
+  // Check if AI agent is configured
+  const configured = await isClaudeConfigured();
+  if (!configured) {
+    return NextResponse.json(
+      { error: "AI agent not configured for this environment" },
+      { status: 503 },
+    );
+  }
+
+  // Resolve OAuth token to pass to Agent SDK subprocess.
+  // Only CLAUDE_CODE_OAUTH_TOKEN is used (Claude Max subscription provides
+  // cost-effective Opus 4.6 access vs raw API keys).
+  const aiConfig = await resolveAIProviderConfig("anthropic");
+  const oauthToken =
+    aiConfig?.token ??
+    process.env["CLAUDE_CODE_OAUTH_TOKEN"];
+
   // Fetch current code
   const { data: codespaceSession } = await tryCatch(getOrCreateSession(app.codespaceId));
   const currentCode = codespaceSession?.code || "";
@@ -150,6 +169,8 @@ export async function POST(request: NextRequest) {
             })()
           : content;
 
+        emitSSE(controller, { type: "stage", stage: "connecting" });
+
         const result = query({
           prompt: promptInput,
           options: {
@@ -159,6 +180,10 @@ export async function POST(request: NextRequest) {
             permissionMode: "dontAsk",
             persistSession: false,
             systemPrompt,
+            env: {
+              ...process.env,
+              ...(oauthToken ? { CLAUDE_CODE_OAUTH_TOKEN: oauthToken } : {}),
+            },
           },
         });
 

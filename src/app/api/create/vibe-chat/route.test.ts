@@ -5,6 +5,14 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
 
+vi.mock("@/lib/ai/claude-client", () => ({
+  isClaudeConfigured: vi.fn().mockResolvedValue(true),
+}));
+
+vi.mock("@/lib/ai/ai-config-resolver", () => ({
+  resolveAIProviderConfig: vi.fn().mockResolvedValue({ token: "test-token" }),
+}));
+
 vi.mock("@/lib/create/content-service", () => ({
   getCreatedApp: vi.fn(),
 }));
@@ -56,6 +64,7 @@ vi.mock("@anthropic-ai/claude-agent-sdk", () => ({
 }));
 
 const { auth } = await import("@/auth");
+const { isClaudeConfigured } = await import("@/lib/ai/claude-client");
 const { getCreatedApp } = await import("@/lib/create/content-service");
 const { getOrCreateSession } = await import("@/lib/codespace");
 const { query } = await import("@anthropic-ai/claude-agent-sdk");
@@ -262,6 +271,21 @@ describe("Vibe Chat API Route", () => {
   });
 
   describe("authentication", () => {
+    it("should return 503 when AI agent is not configured", async () => {
+      vi.mocked(isClaudeConfigured).mockResolvedValue(false);
+
+      const response = await POST(
+        createRequest({ content: "hello", mode: "plan" }, { "x-forwarded-for": `noai-${Date.now()}` }),
+      );
+      const data = await response.json();
+
+      expect(response.status).toBe(503);
+      expect(data.error).toBe("AI agent not configured for this environment");
+
+      // Restore for other tests
+      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
+    });
+
     it("should return 401 for edit mode without auth", async () => {
       vi.mocked(auth).mockResolvedValue(null as any);
 
@@ -353,7 +377,7 @@ describe("Vibe Chat API Route", () => {
       expect(response.headers.get("Connection")).toBe("keep-alive");
     });
 
-    it("should emit initialize stage, chunk, and complete events", async () => {
+    it("should emit initialize and connecting stages, chunk, and complete events", async () => {
       vi.mocked(query).mockReturnValue(
         createAsyncIterable([
           {
@@ -373,6 +397,7 @@ describe("Vibe Chat API Route", () => {
       const events = await readSSEStream(response);
 
       expect(events[0]).toEqual({ type: "stage", stage: "initialize" });
+      expect(events[1]).toEqual({ type: "stage", stage: "connecting" });
       expect(events.find((e) => e["type"] === "chunk")).toEqual({
         type: "chunk",
         content: "Hello world",
@@ -705,6 +730,24 @@ describe("Vibe Chat API Route", () => {
           options: expect.objectContaining({
             permissionMode: "dontAsk",
             persistSession: false,
+          }),
+        }),
+      );
+    });
+
+    it("should pass CLAUDE_CODE_OAUTH_TOKEN via env to query", async () => {
+      const response = await POST(
+        createRequest({ content: "hello", mode: "plan" }, { "x-forwarded-for": `oauthkey-${Date.now()}` }),
+      );
+
+      await readSSEStream(response);
+
+      expect(query).toHaveBeenCalledWith(
+        expect.objectContaining({
+          options: expect.objectContaining({
+            env: expect.objectContaining({
+              CLAUDE_CODE_OAUTH_TOKEN: "test-token",
+            }),
           }),
         }),
       );

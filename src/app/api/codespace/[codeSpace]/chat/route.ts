@@ -478,7 +478,7 @@ export async function POST(
     return Response.json(
       {
         error:
-          "Claude API not configured. Set ANTHROPIC_AUTH_TOKEN or CLAUDE_CODE_OAUTH_TOKEN.",
+          "Claude API not configured. Set CLAUDE_CODE_OAUTH_TOKEN.",
       },
       { status: 503, headers: CORS_HEADERS },
     );

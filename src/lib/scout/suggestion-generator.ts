@@ -232,7 +232,7 @@ async function callClaudeForSuggestions(
   maxSuggestions: number,
 ): Promise<RawAISuggestion[]> {
   if (!(await isClaudeConfigured())) {
-    throw new Error("Claude is not configured. Set ANTHROPIC_AUTH_TOKEN or CLAUDE_CODE_OAUTH_TOKEN.");
+    throw new Error("Claude is not configured. Set CLAUDE_CODE_OAUTH_TOKEN.");
   }
 
   const client = await getClaudeClient();

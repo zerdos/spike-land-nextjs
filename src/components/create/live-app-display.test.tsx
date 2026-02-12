@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -225,5 +225,104 @@ describe("LiveAppDisplay", () => {
     // The iframe should still be present (re-keyed).
     const iframeAfter = screen.getByTitle("My Test App");
     expect(iframeAfter).toBeInTheDocument();
+  });
+
+  it("shows error state after loading timeout", async () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<LiveAppDisplay {...defaultProps} />);
+
+      // Spinner visible initially
+      expect(container.querySelector(".animate-spin.w-8.h-8")).toBeInTheDocument();
+
+      // Advance past the 15s loading timeout
+      await act(async () => {
+        vi.advanceTimersByTime(15_000);
+      });
+
+      // Spinner should be gone, error state should show
+      expect(
+        container.querySelector(".animate-spin.w-8.h-8"),
+      ).not.toBeInTheDocument();
+      expect(screen.getByText("Failed to load app")).toBeInTheDocument();
+      expect(screen.getByText("Retry")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("retry button clears error and restarts loading", async () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<LiveAppDisplay {...defaultProps} />);
+
+      // Trigger error via timeout
+      await act(async () => {
+        vi.advanceTimersByTime(15_000);
+      });
+      expect(screen.getByText("Failed to load app")).toBeInTheDocument();
+
+      // Click retry using fireEvent (compatible with fake timers)
+      fireEvent.click(screen.getByText("Retry"));
+
+      // Error should be cleared, loading should restart
+      expect(screen.queryByText("Failed to load app")).not.toBeInTheDocument();
+      expect(container.querySelector(".animate-spin.w-8.h-8")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("successful load clears timeout error state", async () => {
+    vi.useFakeTimers();
+    try {
+      render(<LiveAppDisplay {...defaultProps} />);
+
+      // Trigger error via timeout
+      await act(async () => {
+        vi.advanceTimersByTime(15_000);
+      });
+      expect(screen.getByText("Failed to load app")).toBeInTheDocument();
+
+      // Simulate a refresh -> iframe loads successfully
+      fireEvent.click(screen.getByTitle("Reload App"));
+
+      // After clicking refresh, a new iframe is rendered; simulate load
+      const iframe = screen.getByTitle("My Test App");
+      act(() => {
+        iframe.dispatchEvent(new Event("load"));
+      });
+
+      expect(screen.queryByText("Failed to load app")).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("does not show error if iframe loads before timeout", async () => {
+    vi.useFakeTimers();
+    try {
+      render(<LiveAppDisplay {...defaultProps} />);
+
+      // Advance partially (not enough for timeout)
+      await act(async () => {
+        vi.advanceTimersByTime(5_000);
+      });
+
+      // Iframe loads
+      const iframe = screen.getByTitle("My Test App");
+      act(() => {
+        iframe.dispatchEvent(new Event("load"));
+      });
+
+      // Advance past the timeout — should NOT show error since load succeeded
+      await act(async () => {
+        vi.advanceTimersByTime(15_000);
+      });
+
+      expect(screen.queryByText("Failed to load app")).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

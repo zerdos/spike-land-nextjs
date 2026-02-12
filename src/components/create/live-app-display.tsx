@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Download, ExternalLink, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 
 // Import the context directly to safely check without throwing
 import { VibeCodeContext } from "./vibe-code-provider";
@@ -29,11 +29,34 @@ export function LiveAppDisplay({
 }: LiveAppDisplayProps) {
   const [iframeKey, setIframeKey] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const loadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearLoadTimer = useCallback(() => {
+    if (loadTimerRef.current) {
+      clearTimeout(loadTimerRef.current);
+      loadTimerRef.current = null;
+    }
+  }, []);
 
   const handleRefresh = useCallback(() => {
     setLoading(true);
+    setLoadError(false);
+    clearLoadTimer();
     setIframeKey((prev) => prev + 1);
-  }, []);
+  }, [clearLoadTimer]);
+
+  // Loading timeout: clear blur + show error after 15s
+  useEffect(() => {
+    if (loading) {
+      clearLoadTimer();
+      loadTimerRef.current = setTimeout(() => {
+        setLoading(false);
+        setLoadError(true);
+      }, 15_000);
+    }
+    return clearLoadTimer;
+  }, [loading, iframeKey, clearLoadTimer]);
 
   // Auto-refresh iframe when vibe-code edits update the code
   const refreshCounter = useVibeCodeRefreshCounter();
@@ -109,6 +132,17 @@ export function LiveAppDisplay({
             <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
           </div>
         )}
+        {loadError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 z-10 gap-3">
+            <p className="text-sm text-muted-foreground">Failed to load app</p>
+            <button
+              onClick={handleRefresh}
+              className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        )}
         <iframe
           key={iframeKey}
           src={iframeSrc}
@@ -116,7 +150,16 @@ export function LiveAppDisplay({
           title={title}
           sandbox="allow-scripts allow-popups allow-forms"
           allow="autoplay"
-          onLoad={() => setLoading(false)}
+          onLoad={() => {
+            setLoading(false);
+            setLoadError(false);
+            clearLoadTimer();
+          }}
+          onError={() => {
+            setLoading(false);
+            setLoadError(true);
+            clearLoadTimer();
+          }}
         />
       </div>
     </div>

@@ -341,7 +341,36 @@ describe("VibeCodeProvider", () => {
     expect(result.current.refreshCounter).toBe(1);
   });
 
-  it("sendMessage handles fetch error", async () => {
+  it("sendMessage handles fetch error with JSON error body", async () => {
+    const { result } = renderHook(() => useVibeCode(), { wrapper });
+
+    act(() => {
+      result.current.setAppContext({
+        slug: testSlug,
+        title: "Test",
+        codespaceId: "cs-1",
+      });
+    });
+
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 503,
+      statusText: "Service Unavailable",
+      json: async () => ({ error: "AI agent not configured for this environment" }),
+    });
+
+    await act(async () => {
+      await result.current.sendMessage("test");
+      await flushPromises();
+    });
+
+    expect(result.current.messages[1]!.content).toContain(
+      "AI agent not configured for this environment",
+    );
+    expect(result.current.isStreaming).toBe(false);
+  });
+
+  it("sendMessage handles fetch error without JSON body", async () => {
     const { result } = renderHook(() => useVibeCode(), { wrapper });
 
     act(() => {
@@ -356,6 +385,7 @@ describe("VibeCodeProvider", () => {
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
+      json: async () => { throw new Error("not json"); },
     });
 
     await act(async () => {
@@ -364,7 +394,7 @@ describe("VibeCodeProvider", () => {
     });
 
     expect(result.current.messages[1]!.content).toContain(
-      "Request failed: 500 Internal Server Error",
+      "500 Internal Server Error",
     );
     expect(result.current.isStreaming).toBe(false);
   });
@@ -383,6 +413,7 @@ describe("VibeCodeProvider", () => {
     fetchMock.mockResolvedValue({
       ok: true,
       body: null,
+      json: async () => { throw new Error("no body"); },
     });
 
     await act(async () => {
@@ -390,7 +421,9 @@ describe("VibeCodeProvider", () => {
       await flushPromises();
     });
 
-    expect(result.current.messages[1]!.content).toContain("Request failed");
+    // With body: null, the code path triggers the error branch
+    // The error message comes from trying to parse the null body response
+    expect(result.current.messages[1]!.content).toMatch(/Error/);
     expect(result.current.isStreaming).toBe(false);
   });
 

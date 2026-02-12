@@ -243,9 +243,14 @@ export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (!res.ok || !res.body) {
-          throw new Error(
-            `Request failed: ${res.status} ${res.statusText}`,
-          );
+          let errorDetail = `${res.status} ${res.statusText}`;
+          try {
+            const errJson = await res.json();
+            if (errJson.error) errorDetail = errJson.error;
+          } catch {
+            // Response is not JSON — use status text
+          }
+          throw new Error(errorDetail);
         }
 
         const reader = res.body.getReader();

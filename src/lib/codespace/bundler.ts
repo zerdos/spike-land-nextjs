@@ -259,6 +259,8 @@ export async function bundleCodespace(session: {
   const cache = new Map<string, string>();
 
   try {
+    const { ensureEsbuildReady } = await import("./esbuild-init");
+    await ensureEsbuildReady();
     const esbuild = await import("esbuild-wasm");
     const result = await esbuild.build({
       stdin: {

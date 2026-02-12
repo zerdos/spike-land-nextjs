@@ -157,8 +157,8 @@ describe("Agent Sandbox Service", () => {
       });
     });
 
-    it("should include ANTHROPIC_AUTH_TOKEN in agent environment", async () => {
-      process.env["ANTHROPIC_AUTH_TOKEN"] = "test-auth-token";
+    it("should include CLAUDE_CODE_OAUTH_TOKEN in agent environment", async () => {
+      process.env["CLAUDE_CODE_OAUTH_TOKEN"] = "test-oauth-token";
 
       await spawnAgentSandbox(
         "app123",
@@ -174,7 +174,7 @@ describe("Agent Sandbox Service", () => {
           cmd: "node",
           args: ["agent-executor.js"],
           env: expect.objectContaining({
-            ANTHROPIC_AUTH_TOKEN: "test-auth-token",
+            CLAUDE_CODE_OAUTH_TOKEN: "test-oauth-token",
           }),
           detached: true,
         }),
