@@ -1,5 +1,5 @@
-import * as esbuild from "esbuild";
-import type { Loader, Plugin } from "esbuild";
+import * as esbuild from "esbuild-wasm";
+import type { Loader, Plugin } from "esbuild-wasm";
 import { tryCatch } from "@/lib/try-catch";
 import { IMPORT_MAP } from "./html-template";
 import { ESM_CDN, ESM_DEPS_PARAM } from "./constants";
@@ -158,8 +158,21 @@ function serverFetchPlugin(cache: Map<string, string>): Plugin {
           };
         }
 
+        // Absolute paths from the old transpiler (e.g. "/lucide-react?bundle=true&...",
+        // "/@/components/ui/button.mjs") — resolve via CDN or testing.spike.land
+        if (args.path.startsWith("/")) {
+          if (args.path.startsWith("/@/")) {
+            // Local component paths served by the testing.spike.land worker
+            const workerUrl = `https://testing.spike.land${args.path}`;
+            return { path: workerUrl, namespace: "http-url" };
+          }
+          // CDN-relative paths (e.g. /lucide-react?bundle=true&...)
+          const cdnUrl = `${ESM_CDN}${args.path}`;
+          return { path: cdnUrl, namespace: "http-url" };
+        }
+
         // Unknown bare specifier — resolve via esm.sh CDN with bundle
-        if (!args.path.startsWith(".") && !args.path.startsWith("/")) {
+        if (!args.path.startsWith(".")) {
           const cdnUrl = `${ESM_CDN}/${args.path}?bundle=true&${ESM_DEPS_PARAM}`;
           return { path: cdnUrl, namespace: "http-url" };
         }

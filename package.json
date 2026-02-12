@@ -159,6 +159,7 @@
     "clsx": "2.1.1",
     "date-fns": "4.1.0",
     "diff": "8.0.3",
+    "esbuild-wasm": "0.27.3",
     "expr-eval-fork": "3.0.3",
     "fast-xml-parser": "5.3.5",
     "framer-motion": "12.34.0",
@@ -267,7 +268,7 @@
     "@tailwindcss/postcss": {
       "unplugged": true
     },
-    "esbuild": {
+    "esbuild-wasm": {
       "unplugged": true
     },
     "next": {

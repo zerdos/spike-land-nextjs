@@ -24708,6 +24708,7 @@ __metadata:
     date-fns: "npm:4.1.0"
     diff: "npm:8.0.3"
     dotenv: "npm:17.2.4"
+    esbuild-wasm: "npm:0.27.3"
     eslint: "npm:10.0.0"
     eslint-plugin-jsx-a11y: "npm:6.10.2"
     eslint-plugin-react: "npm:7.37.5"
@@ -24784,7 +24785,7 @@ __metadata:
       unplugged: true
     "@tailwindcss/postcss":
       unplugged: true
-    esbuild:
+    esbuild-wasm:
       unplugged: true
     next:
       unplugged: true

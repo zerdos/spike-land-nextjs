@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-// Mock esbuild
-vi.mock("esbuild", () => ({
+// Mock esbuild-wasm
+vi.mock("esbuild-wasm", () => ({
   build: vi.fn(),
 }));
 
@@ -9,7 +9,7 @@ vi.mock("esbuild", () => ({
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
-import * as esbuild from "esbuild";
+import * as esbuild from "esbuild-wasm";
 import { bundleCodespace } from "./bundler";
 
 const mockBuild = vi.mocked(esbuild.build);

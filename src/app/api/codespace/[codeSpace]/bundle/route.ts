@@ -136,7 +136,7 @@ function bundleResponse(
     "Content-Type": "text/html; charset=utf-8",
     "Cache-Control": "private, max-age=60",
     "Content-Security-Policy":
-      "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src * data: blob:; connect-src 'none';",
+      "default-src 'self'; script-src 'unsafe-inline' https://esm.sh; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src * data: blob:; connect-src 'none';",
   };
 
   if (download) {
