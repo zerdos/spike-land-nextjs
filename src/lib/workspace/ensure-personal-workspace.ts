@@ -48,6 +48,7 @@ export async function ensurePersonalWorkspace(
           create: {
             userId,
             role: "OWNER",
+            joinedAt: new Date(),
           },
         },
       },

@@ -104,7 +104,16 @@ export async function handleSignIn(user: {
       return true;
     }
 
-    // Handle referral tracking for new users
+    // Ensure personal workspace exists on every sign-in (idempotent).
+    // This self-heals users whose workspace creation failed on first sign-in.
+    const { error: workspaceError } = await tryCatch(
+      ensurePersonalWorkspace(upsertedUser.id, upsertedUser.name),
+    );
+    if (workspaceError) {
+      console.error("Failed to ensure personal workspace:", workspaceError);
+    }
+
+    // Handle referral tracking and one-time setup for new users
     if (isNewUser) {
       // Bootstrap admin role for first user
       const { error: bootstrapError } = await tryCatch(
@@ -138,14 +147,6 @@ export async function handleSignIn(user: {
       );
       if (albumsError) {
         console.error("Failed to create default albums:", albumsError);
-      }
-
-      // Create personal workspace with 100 AI credits
-      const { error: workspaceError } = await tryCatch(
-        ensurePersonalWorkspace(upsertedUser.id, upsertedUser.name),
-      );
-      if (workspaceError) {
-        console.error("Failed to create personal workspace:", workspaceError);
       }
 
       // Track signup conversion attribution for campaign analytics
@@ -335,10 +336,19 @@ const {
   },
   callbacks: {
     async signIn({ user, account }) {
-      // Skip handleSignIn for credentials provider
-      // For credentials signin, user already exists in DB (created via /api/auth/signup)
-      // and all post-signup tasks (referral, album, etc.) were already completed
+      // For credentials provider, ensure workspace exists but skip full handleSignIn.
+      // User already exists in DB (created via /api/auth/signup), but workspace
+      // creation may have failed during signup — this self-heals on every sign-in.
       if (account?.provider === "credentials") {
+        if (user.email) {
+          const stableId = createStableUserId(user.email);
+          const { error } = await tryCatch(
+            ensurePersonalWorkspace(stableId, user.name),
+          );
+          if (error) {
+            console.error("Failed to ensure workspace for credentials user:", error);
+          }
+        }
         return true;
       }
       // For OAuth providers (GitHub, Google), run normal handleSignIn flow

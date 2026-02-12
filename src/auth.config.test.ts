@@ -31,7 +31,13 @@ describe("authConfig", () => {
   });
 
   it("should have providers configured", () => {
-    expect(authConfig.providers).toHaveLength(4);
+    // Apple and Facebook are conditionally included only when env vars are set.
+    // Since authConfig is evaluated at module load time (before beforeEach),
+    // only GitHub and Google are present in tests by default.
+    expect(authConfig.providers.length).toBeGreaterThanOrEqual(2);
+    const providerIds = authConfig.providers.map((p: { id: string }) => p.id);
+    expect(providerIds).toContain("github");
+    expect(providerIds).toContain("google");
   });
 
   it("should have session callback", () => {

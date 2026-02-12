@@ -15,7 +15,6 @@ vi.mock("@/lib/prisma", () => ({
         workspace: {
             findFirst: vi.fn(),
             findUnique: vi.fn(),
-            create: vi.fn(),
             update: vi.fn(),
         },
         workspaceMember: {
@@ -23,6 +22,11 @@ vi.mock("@/lib/prisma", () => ({
         },
         $executeRaw: vi.fn(),
     },
+}));
+
+const mockEnsurePersonalWorkspace = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/workspace/ensure-personal-workspace", () => ({
+    ensurePersonalWorkspace: mockEnsurePersonalWorkspace,
 }));
 
 // Mock Subscription Service
@@ -42,7 +46,6 @@ const mockPrisma = prisma as unknown as {
     workspace: {
         findFirst: ReturnType<typeof vi.fn>;
         findUnique: ReturnType<typeof vi.fn>;
-        create: ReturnType<typeof vi.fn>;
         update: ReturnType<typeof vi.fn>;
     };
     workspaceMember: {
@@ -78,21 +81,44 @@ describe("WorkspaceCreditManager", () => {
         it("should create personal workspace if no workspaces found", async () => {
             mockPrisma.workspace.findFirst.mockResolvedValue(null);
             mockPrisma.workspaceMember.findFirst.mockResolvedValue(null);
-            mockPrisma.user.findUnique.mockResolvedValue({ name: "Test User", email: "test@example.com" });
-            mockPrisma.workspace.create.mockResolvedValue({ id: "ws-new" });
+            mockPrisma.user.findUnique.mockResolvedValue({ name: "Test User" });
+            mockEnsurePersonalWorkspace.mockResolvedValue("ws-new");
 
             const result = await WorkspaceCreditManager.resolveWorkspaceForUser("user-1");
             expect(result).toBe("ws-new");
-            expect(mockPrisma.workspace.create).toHaveBeenCalled();
+            expect(mockEnsurePersonalWorkspace).toHaveBeenCalledWith("user-1", "Test User");
         });
 
         it("should return null if user not found and cannot create", async () => {
             mockPrisma.workspace.findFirst.mockResolvedValue(null);
             mockPrisma.workspaceMember.findFirst.mockResolvedValue(null);
             mockPrisma.user.findUnique.mockResolvedValue(null);
+            const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
             const result = await WorkspaceCreditManager.resolveWorkspaceForUser("user-1");
             expect(result).toBeNull();
+            expect(consoleSpy).toHaveBeenCalledWith(
+                expect.stringContaining("Cannot auto-create workspace"),
+            );
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should return null if ensurePersonalWorkspace fails", async () => {
+            mockPrisma.workspace.findFirst.mockResolvedValue(null);
+            mockPrisma.workspaceMember.findFirst.mockResolvedValue(null);
+            mockPrisma.user.findUnique.mockResolvedValue({ name: "Test User" });
+            mockEnsurePersonalWorkspace.mockRejectedValue(new Error("DB error"));
+            const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+            const result = await WorkspaceCreditManager.resolveWorkspaceForUser("user-1");
+            expect(result).toBeNull();
+            expect(consoleSpy).toHaveBeenCalledWith(
+                "Failed to auto-create personal workspace",
+                expect.any(Error),
+            );
+
+            consoleSpy.mockRestore();
         });
     });
 

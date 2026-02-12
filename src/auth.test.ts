@@ -238,17 +238,21 @@ describe("handleSignIn", () => {
     );
   });
 
-  it("should not create workspace for existing users", async () => {
+  it("should ensure workspace for returning users (self-healing)", async () => {
     const { handleSignIn } = await import("./auth");
     mockFindUnique.mockResolvedValueOnce({
       id: "user_123",
       email: "existing@example.com",
     }); // Existing user
+    mockUpsert.mockResolvedValueOnce({ id: "user_123", name: "Existing User" });
     const user = { email: "existing@example.com", name: "Existing User" };
 
     await handleSignIn(user);
 
-    expect(mockEnsurePersonalWorkspace).not.toHaveBeenCalled();
+    expect(mockEnsurePersonalWorkspace).toHaveBeenCalledWith(
+      "user_123",
+      "Existing User",
+    );
   });
 
   it("should return true and log error on database failure", async () => {
@@ -424,13 +428,13 @@ describe("signIn callback behavior", () => {
   // - credentials provider skips handleSignIn (user already processed)
   // - OAuth providers call handleSignIn for user creation/update
 
-  it("should verify credentials provider behavior is documented to skip handleSignIn", async () => {
+  it("should verify credentials provider skips handleSignIn but ensures workspace", async () => {
     // Credentials provider returns a pre-authenticated user from the database,
     // so handleSignIn should NOT be called (would cause duplicate processing).
-    // This behavior is enforced by the signIn callback checking account.provider.
+    // However, ensurePersonalWorkspace IS called to self-heal missing workspaces.
     //
     // The actual callback logic is in auth.ts:
-    // if (account?.provider === "credentials") return true;
+    // if (account?.provider === "credentials") { ensurePersonalWorkspace(...); return true; }
     //
     // We can verify handleSignIn works correctly when called directly:
     const { handleSignIn } = await import("./auth");

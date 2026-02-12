@@ -8,6 +8,7 @@
 import prisma from "@/lib/prisma";
 import { WorkspaceSubscriptionService } from "@/lib/subscription/workspace-subscription";
 import { tryCatch } from "@/lib/try-catch";
+import { ensurePersonalWorkspace } from "@/lib/workspace/ensure-personal-workspace";
 import type { WorkspaceSubscriptionTier } from "@/generated/prisma";
 
 export interface CreditBalance {
@@ -63,34 +64,27 @@ export class WorkspaceCreditManager {
         // This is a safety net; normally users should have a workspace on signup.
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { name: true, email: true },
+            select: { name: true },
         });
 
-        if (!user) return null;
-
-        const { data: newWorkspace, error } = await tryCatch(
-            prisma.workspace.create({
-                data: {
-                    name: `${user.name || "User"}'s Workspace`,
-                    slug: `user-${userId}-${Date.now().toString(36)}`, // generate unique slug
-                    isPersonal: true,
-                    members: {
-                        create: {
-                            userId,
-                            role: "OWNER",
-                        },
-                    },
-                },
-                select: { id: true },
-            })
-        );
-
-        if (error || !newWorkspace) {
-            console.error("Failed to auto-create personal workspace for credit resolution", error);
+        if (!user) {
+            console.error(
+                `Cannot auto-create workspace: user record missing for userId=${userId}. ` +
+                "User needs to sign in again to trigger user record creation.",
+            );
             return null;
         }
 
-        return newWorkspace.id;
+        const { data: workspaceId, error } = await tryCatch(
+            ensurePersonalWorkspace(userId, user.name),
+        );
+
+        if (error || !workspaceId) {
+            console.error("Failed to auto-create personal workspace", error);
+            return null;
+        }
+
+        return workspaceId;
     }
 
     /**

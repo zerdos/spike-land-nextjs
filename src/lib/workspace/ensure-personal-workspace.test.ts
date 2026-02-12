@@ -59,6 +59,7 @@ describe("ensurePersonalWorkspace", () => {
           create: {
             userId: "user_123",
             role: "OWNER",
+            joinedAt: expect.any(Date),
           },
         },
       },

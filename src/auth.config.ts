@@ -102,14 +102,18 @@ export const authConfig = {
     },
   },
   providers: [
-    Apple({
-      clientId: process.env.AUTH_APPLE_ID?.trim() ?? "",
-      clientSecret: process.env.AUTH_APPLE_SECRET?.trim() ?? "",
-    }),
-    Facebook({
-      clientId: process.env.AUTH_FACEBOOK_ID?.trim() ?? "",
-      clientSecret: process.env.AUTH_FACEBOOK_SECRET?.trim() ?? "",
-    }),
+    ...(process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET
+      ? [Apple({
+          clientId: process.env.AUTH_APPLE_ID.trim(),
+          clientSecret: process.env.AUTH_APPLE_SECRET.trim(),
+        })]
+      : []),
+    ...(process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET
+      ? [Facebook({
+          clientId: process.env.AUTH_FACEBOOK_ID.trim(),
+          clientSecret: process.env.AUTH_FACEBOOK_SECRET.trim(),
+        })]
+      : []),
     GitHub({
       clientId: process.env.GITHUB_ID ?? "",
       clientSecret: process.env.GITHUB_SECRET ?? "",
