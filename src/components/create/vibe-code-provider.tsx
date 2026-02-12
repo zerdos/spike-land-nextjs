@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { signIn, useSession } from "next-auth/react";
 
 export interface VibeMessage {
   id: string;
@@ -59,6 +60,7 @@ function generateId(): string {
 }
 
 export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<"plan" | "edit">("plan");
   const [messages, setMessages] = useState<VibeMessage[]>([]);
@@ -82,6 +84,12 @@ export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
       images?: File[],
       autoScreenshot?: boolean,
     ) => {
+      // Check auth first
+      if (!session) {
+        signIn();
+        return;
+      }
+
       const ctx = appContextRef.current;
       if (!ctx) return;
 
@@ -155,6 +163,11 @@ export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
             screenshotBase64,
           }),
         });
+
+        if (res.status === 401) {
+          signIn();
+          throw new Error("Unauthorized");
+        }
 
         if (!res.ok || !res.body) {
           throw new Error(
@@ -234,7 +247,7 @@ export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
         setAgentStage(null);
       }
     },
-    [mode],
+    [mode, session],
   );
 
   const value = useMemo<VibeCodeContextValue>(

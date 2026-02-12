@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
+import { signIn, useSession } from "next-auth/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useVibeCode, VibeCodeProvider } from "./vibe-code-provider";
 
@@ -7,12 +8,23 @@ vi.mock("@/components/my-apps/AgentProgressIndicator", () => ({
   AgentProgressIndicator: () => null,
 }));
 
+vi.mock("next-auth/react", () => ({
+  useSession: vi.fn(),
+  signIn: vi.fn(),
+}));
+
 const fetchMock = vi.fn();
 
 describe("VibeCodeProvider", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", fetchMock);
     fetchMock.mockReset();
+    vi.mocked(signIn).mockClear();
+    vi.mocked(useSession).mockReturnValue({
+      data: { user: { name: "Test User", id: "test-id", role: "USER" }, expires: "1" },
+      status: "authenticated",
+      update: vi.fn(),
+    });
   });
 
   afterEach(() => {
@@ -595,5 +607,47 @@ describe("VibeCodeProvider", () => {
     // After complete, stage should be null
     expect(result.current.agentStage).toBeNull();
     expect(result.current.isStreaming).toBe(false);
+  });
+
+  it("sendMessage triggers signIn if not authenticated", async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+      update: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useVibeCode(), { wrapper });
+
+    await act(async () => {
+      await result.current.sendMessage("test");
+    });
+
+    expect(signIn).toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("sendMessage triggers signIn on 401 response", async () => {
+    const { result } = renderHook(() => useVibeCode(), { wrapper });
+
+    act(() => {
+      result.current.setAppContext({
+        slug: "test-app",
+        title: "Test",
+        codespaceId: "cs-1",
+      });
+    });
+
+    fetchMock.mockResolvedValue({
+      status: 401,
+      ok: false,
+      statusText: "Unauthorized",
+    });
+
+    await act(async () => {
+      await result.current.sendMessage("test");
+    });
+
+    expect(signIn).toHaveBeenCalled();
+    expect(result.current.messages[1]!.content).toContain("Unauthorized");
   });
 });
