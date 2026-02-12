@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 import { Bot, Loader2, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 
 interface StreamingContentProps {
@@ -191,8 +193,8 @@ export function StreamingContent({ path, className }: StreamingContentProps) {
       <div className="prose prose-slate dark:prose-invert max-w-none">
         {content
           ? (
-            <div className="whitespace-pre-wrap font-mono text-sm bg-muted/30 p-4 rounded-lg overflow-auto max-h-[70vh]">
-              {content}
+            <div className="overflow-auto max-h-[70vh]">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
               {status === "streaming" && (
                 <span className="inline-block w-2 h-4 bg-primary ml-1 animate-pulse" />
               )}

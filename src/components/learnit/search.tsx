@@ -3,12 +3,17 @@
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@/hooks/use-debounce";
 import { slugify } from "@/lib/learnit/utils";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export function LearnItSearch() {
+interface LearnItSearchProps {
+  compact?: boolean;
+}
+
+export function LearnItSearch({ compact }: LearnItSearchProps = {}) {
   const [query, setQuery] = useState("");
   const router = useRouter();
   const [results, setResults] = useState<{ slug: string; title: string; description: string }[]>(
@@ -57,11 +62,17 @@ export function LearnItSearch() {
         className="rounded-2xl"
       >
         <form onSubmit={handleSubmit} className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500 pointer-events-none" />
+          <Search className={cn(
+            "absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none",
+            compact ? "h-4 w-4" : "h-5 w-5",
+          )} />
           <input
             data-testid="learnit-search-input"
-            className="w-full rounded-2xl bg-zinc-900/50 backdrop-blur-xl text-white placeholder:text-zinc-500 border-2 border-transparent focus:border-emerald-400/50 pl-12 pr-24 py-5 text-lg focus:outline-none transition-colors"
-            placeholder="What do you want to learn today?"
+            className={cn(
+              "w-full rounded-2xl bg-zinc-900/50 backdrop-blur-xl text-white placeholder:text-zinc-500 border-2 border-transparent focus:border-emerald-400/50 focus:outline-none transition-colors",
+              compact ? "pl-10 pr-16 py-2.5 text-sm" : "pl-12 pr-24 py-5 text-lg",
+            )}
+            placeholder={compact ? "Search topics..." : "What do you want to learn today?"}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setIsFocused(true)}
@@ -77,7 +88,7 @@ export function LearnItSearch() {
       </motion.div>
 
       {/* Autocomplete Dropdown */}
-      {results.length > 0 && (
+      {results.length > 0 && isFocused && (
         <div className="absolute top-full left-0 right-0 mt-2 glass-2 border border-white/10 rounded-xl shadow-magic z-50 overflow-hidden">
           <div className="p-1">
             {results.map((result) => (
@@ -85,7 +96,13 @@ export function LearnItSearch() {
                 key={result.slug}
                 variant="ghost"
                 className="w-full justify-start text-left h-auto py-2 px-3"
-                onClick={() => router.push(`/learnit/${result.slug}`)}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  router.push(`/learnit/${result.slug}`);
+                  setQuery("");
+                  setResults([]);
+                  setIsFocused(false);
+                }}
               >
                 <div>
                   <div className="font-medium">{result.title}</div>

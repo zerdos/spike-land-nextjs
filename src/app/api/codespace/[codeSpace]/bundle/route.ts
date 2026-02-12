@@ -12,6 +12,21 @@ import type { NextRequest } from "next/server";
 
 const BUILD_TIMEOUT_MS = 10_000;
 
+const TRANSIENT_PATTERNS = [
+  "ECONNREFUSED",
+  "ECONNRESET",
+  "ETIMEDOUT",
+  "timeout",
+  "redis",
+  "ENOTFOUND",
+  "socket hang up",
+];
+
+function isTransientError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return TRANSIENT_PATTERNS.some((p) => message.toLowerCase().includes(p.toLowerCase()));
+}
+
 /**
  * GET /api/codespace/[codeSpace]/bundle
  *
@@ -45,10 +60,18 @@ export async function GET(
       `[Codespace Bundle] Failed to get session for "${codeSpace}":`,
       sessionError,
     );
-    return new Response("Failed to retrieve session", {
-      status: 500,
-      headers: { ...CORS_HEADERS, "Content-Type": "text/plain" },
-    });
+    const isTransient = isTransientError(sessionError);
+    return new Response(
+      isTransient ? "Service temporarily unavailable" : "Failed to retrieve session",
+      {
+        status: isTransient ? 503 : 500,
+        headers: {
+          ...CORS_HEADERS,
+          "Content-Type": "text/plain",
+          ...(isTransient && { "Retry-After": "5" }),
+        },
+      },
+    );
   }
 
   // Auto-transpile if session has code but no transpiled output

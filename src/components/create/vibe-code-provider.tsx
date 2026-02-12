@@ -257,50 +257,52 @@ export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
+          const events = buffer.split("\n\n");
+          buffer = events.pop() || "";
 
-          for (const line of lines) {
-            if (!line.startsWith("data: ")) continue;
-            const data = line.slice(6).trim();
-            if (!data) continue;
+          for (const eventBlock of events) {
+            for (const line of eventBlock.split("\n")) {
+              if (!line.startsWith("data: ")) continue;
+              const data = line.slice(6).trim();
+              if (!data) continue;
 
-            try {
-              const event = JSON.parse(data);
-              switch (event.type) {
-                case "stage":
-                  setAgentStage(event.stage);
-                  break;
-                case "chunk":
-                  agentContent += event.content;
-                  setMessages((prev) =>
-                    prev.map((m) =>
-                      m.id === agentMessageId
-                        ? { ...m, content: agentContent }
-                        : m
-                    )
-                  );
-                  break;
-                case "code_updated":
-                  setRefreshCounter((c) => c + 1);
-                  break;
-                case "error":
-                  agentContent += `\n\nError: ${event.content || event.message || "Unknown error"}`;
-                  setMessages((prev) =>
-                    prev.map((m) =>
-                      m.id === agentMessageId
-                        ? { ...m, content: agentContent }
-                        : m
-                    )
-                  );
-                  break;
-                case "complete":
-                  setIsStreaming(false);
-                  setAgentStage(null);
-                  break;
+              try {
+                const event = JSON.parse(data);
+                switch (event.type) {
+                  case "stage":
+                    setAgentStage(event.stage);
+                    break;
+                  case "chunk":
+                    agentContent += event.content;
+                    setMessages((prev) =>
+                      prev.map((m) =>
+                        m.id === agentMessageId
+                          ? { ...m, content: agentContent }
+                          : m
+                      )
+                    );
+                    break;
+                  case "code_updated":
+                    setRefreshCounter((c) => c + 1);
+                    break;
+                  case "error":
+                    agentContent += `\n\nError: ${event.content || event.message || "Unknown error"}`;
+                    setMessages((prev) =>
+                      prev.map((m) =>
+                        m.id === agentMessageId
+                          ? { ...m, content: agentContent }
+                          : m
+                      )
+                    );
+                    break;
+                  case "complete":
+                    setIsStreaming(false);
+                    setAgentStage(null);
+                    break;
+                }
+              } catch {
+                // skip unparseable lines
               }
-            } catch {
-              // skip unparseable lines
             }
           }
         }

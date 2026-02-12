@@ -138,10 +138,32 @@ describe("GET /api/codespace/[codeSpace]/bundle", () => {
     expect(response.status).toBe(404);
   });
 
-  it("returns 500 on session error", async () => {
+  it("returns 500 on persistent session error", async () => {
     mockGetOrCreateSession.mockRejectedValue(new Error("DB error"));
     const response = await GET(makeRequest(), makeContext());
     expect(response.status).toBe(500);
+    expect(response.headers.get("Retry-After")).toBeNull();
+  });
+
+  it("returns 503 with Retry-After on transient session error (ECONNREFUSED)", async () => {
+    mockGetOrCreateSession.mockRejectedValue(new Error("connect ECONNREFUSED 127.0.0.1:6379"));
+    const response = await GET(makeRequest(), makeContext());
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Retry-After")).toBe("5");
+  });
+
+  it("returns 503 with Retry-After on transient session error (timeout)", async () => {
+    mockGetOrCreateSession.mockRejectedValue(new Error("Request timeout"));
+    const response = await GET(makeRequest(), makeContext());
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Retry-After")).toBe("5");
+  });
+
+  it("returns 503 with Retry-After on transient session error (redis)", async () => {
+    mockGetOrCreateSession.mockRejectedValue(new Error("Redis connection lost"));
+    const response = await GET(makeRequest(), makeContext());
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Retry-After")).toBe("5");
   });
 
   it("returns 504 on build timeout", async () => {
