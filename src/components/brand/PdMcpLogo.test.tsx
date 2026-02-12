@@ -88,8 +88,10 @@ describe("PdMcpLogo", () => {
   it("should render progressive disclosure bars in SVG", () => {
     render(<PdMcpLogo variant="icon" />);
     const svg = screen.getByRole("img").querySelector("svg");
+    if (!svg) throw new Error("SVG not found");
+    expect(svg).toBeInTheDocument();
     // Three bars with increasing widths
-    const rects = svg!.querySelectorAll("g[filter] rect");
+    const rects = svg.querySelectorAll("g[filter] rect");
     expect(rects).toHaveLength(3);
     expect(rects[0]).toHaveAttribute("width", "12");
     expect(rects[1]).toHaveAttribute("width", "20");
@@ -99,7 +101,9 @@ describe("PdMcpLogo", () => {
   it("should render MCP text in SVG", () => {
     render(<PdMcpLogo variant="icon" />);
     const svg = screen.getByRole("img").querySelector("svg");
-    const textEl = svg!.querySelector("text");
+    if (!svg) throw new Error("SVG not found");
+    expect(svg).toBeInTheDocument();
+    const textEl = svg.querySelector("text");
     expect(textEl).toBeInTheDocument();
     expect(textEl!.textContent).toBe("MCP");
   });

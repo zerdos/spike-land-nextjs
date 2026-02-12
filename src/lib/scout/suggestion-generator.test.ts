@@ -230,6 +230,7 @@ describe("Suggestion Generator", () => {
 
   describe("generateSuggestions", () => {
     it("should generate suggestions with valid input", async () => {
+      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
         brandVoice: {
@@ -262,6 +263,7 @@ describe("Suggestion Generator", () => {
     });
 
     it("should filter low-scoring suggestions", async () => {
+      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
       // Mock returns low score
       mockCreate.mockResolvedValueOnce({
         content: [
@@ -297,7 +299,7 @@ describe("Suggestion Generator", () => {
     });
 
     it("should throw error when Claude is not configured", async () => {
-      vi.mocked(isClaudeConfigured).mockReturnValue(false);
+      vi.mocked(isClaudeConfigured).mockResolvedValue(false);
 
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
@@ -309,6 +311,7 @@ describe("Suggestion Generator", () => {
     });
 
     it("should use custom config", async () => {
+      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
         maxSuggestions: 5,
@@ -331,6 +334,7 @@ describe("Suggestion Generator", () => {
     });
 
     it("should track processing time", async () => {
+      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
       };
@@ -341,6 +345,7 @@ describe("Suggestion Generator", () => {
     });
 
     it("should count analyzed topics and competitors", async () => {
+      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
         topics: [

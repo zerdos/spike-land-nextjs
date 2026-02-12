@@ -160,7 +160,8 @@ describe("LiveAppPreview", () => {
 
     // Should show error state
     expect(screen.getByText("Preview unavailable")).toBeInTheDocument();
-    expect(screen.queryByTagName?.("IFRAME")).toBeUndefined();
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(document.querySelector("iframe")).not.toBeInTheDocument();
   });
 
   it("calls onHealthStatus callback with health result", async () => {

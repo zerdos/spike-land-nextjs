@@ -28,7 +28,7 @@ function getGradient(slug: string) {
 }
 
 export function TopicCard({ title, description, slug, viewCount }: TopicCardProps) {
-  const gradientClass = getGradient(slug);
+  const gradientClass = getGradient(slug) || "from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/20";
 
   return (
     <Link href={`/learnit/${slug}`} className="group block h-full">
