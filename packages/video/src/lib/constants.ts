@@ -44,7 +44,7 @@ export const VCP_TIMING = {
  */
 export const COLORS = {
   // Primary brand colors
-  cyan: "#00E5FF",
+  cyan: "#8B5CF6",
   fuchsia: "#FF00FF",
   purple: "#9945FF",
   amber: "#F59E0B",
@@ -66,7 +66,7 @@ export const COLORS = {
   error: "#ef4444",
 
   // Chart colors for A/B testing
-  variantA: "#00E5FF", // Cyan
+  variantA: "#8B5CF6", // Cyan
   variantB: "#FF00FF", // Fuchsia
 } as const;
 
@@ -136,5 +136,5 @@ export const VERITASIUM_COLORS = {
   bayesian: "#A78BFA",
 
   // Flywheel
-  flywheel: "#00E5FF",
+  flywheel: "#8B5CF6",
 } as const;

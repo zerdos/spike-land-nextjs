@@ -25,7 +25,7 @@ export const DEFAULT_TEMPLATE: Omit<ICodeSession, "codeSpace"> = {
       <div style={{
         position: "absolute",
         inset: 0,
-        background: "radial-gradient(ellipse at 50% 0%, rgba(0, 229, 255, 0.15) 0%, transparent 60%)",
+        background: "radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 60%)",
         animation: "pulse 4s ease-in-out infinite",
       }} />
       <div style={{
@@ -54,8 +54,8 @@ export const DEFAULT_TEMPLATE: Omit<ICodeSession, "codeSpace"> = {
         width: "60px",
         height: "60px",
         borderRadius: "12px",
-        background: "rgba(0,229,255,0.1)",
-        border: "1px solid rgba(0,229,255,0.2)",
+        background: "rgba(139,92,246,0.1)",
+        border: "1px solid rgba(139,92,246,0.2)",
         animation: "float 8s ease-in-out infinite reverse",
       }} />
       <div style={{
@@ -126,8 +126,8 @@ export const DEFAULT_TEMPLATE: Omit<ICodeSession, "codeSpace"> = {
           {features.map((item, i) => (
             <div key={i} style={{
               padding: "0.5rem 1rem",
-              background: "rgba(0,229,255,0.1)",
-              border: "1px solid rgba(0,229,255,0.3)",
+              background: "rgba(139,92,246,0.1)",
+              border: "1px solid rgba(139,92,246,0.3)",
               borderRadius: "9999px",
               fontSize: "0.85rem",
               color: "#00e5ff",

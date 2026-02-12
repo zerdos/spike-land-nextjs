@@ -53,7 +53,7 @@ export default async function Image() {
                   r="50%"
                 >
                   <stop offset="0%" stopColor="#FFFFFF" />
-                  <stop offset="30%" stopColor="#00E5FF" />
+                  <stop offset="30%" stopColor="#8B5CF6" />
                   <stop offset="70%" stopColor="#FF00FF" stopOpacity="0.9" />
                   <stop offset="100%" stopColor="#FF00FF" stopOpacity="0.7" />
                 </radialGradient>

@@ -35,7 +35,7 @@ const TRACK_COLORS = [
 
 // Get RGB values from track color class
 const COLOR_MAP: Record<string, string> = {
-  "bg-blue-600": "0, 229, 255", // Pixel Cyan
+  "bg-blue-600": "139, 92, 246", // Pixel Cyan
   "bg-green-600": "16, 185, 129",
   "bg-purple-600": "168, 85, 247",
   "bg-orange-600": "249, 115, 22",
@@ -77,7 +77,7 @@ function drawStaticWaveform(
 
   const step = visibleDataLength / barCount;
   const barWidth = Math.max(1, (width / barCount) - 1);
-  const rgb = COLOR_MAP[trackColor] || "0, 229, 255";
+  const rgb = COLOR_MAP[trackColor] || "139, 92, 246";
 
   for (let i = 0; i < barCount; i++) {
     const dataIndex = dataOffset + Math.floor(i * step);
@@ -114,7 +114,7 @@ function drawProgressOverlay(
   if (!ctx) return;
 
   const { width, height } = canvas;
-  const rgb = COLOR_MAP[trackColor] || "0, 229, 255";
+  const rgb = COLOR_MAP[trackColor] || "139, 92, 246";
 
   // Restore the cached static waveform
   ctx.putImageData(cachedImage, 0, 0);

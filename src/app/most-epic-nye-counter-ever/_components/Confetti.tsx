@@ -14,7 +14,7 @@ interface Piece {
 }
 
 const COLORS = [
-  "#00E5FF", // Cyan
+  "#8B5CF6", // Cyan
   "#FFD700", // Gold
   "#FF00FF", // Pink
   "#FFFFFF", // White

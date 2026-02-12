@@ -194,7 +194,7 @@ export function CanvasClient({
             <Button
               onClick={enterSlideshow}
               disabled={!selectedImageId}
-              className="bg-[#00E5FF] hover:bg-[#00E5FF]/80 text-[#0B0E14] font-semibold shadow-[0_0_20px_rgba(0,229,255,0.3)] disabled:opacity-50 disabled:shadow-none"
+              className="bg-[#8B5CF6] hover:bg-[#8B5CF6]/80 text-[#0B0E14] font-semibold shadow-[0_0_20px_rgba(139,92,246,0.3)] disabled:opacity-50 disabled:shadow-none"
               data-testid="start-slideshow-button"
             >
               <Play className="w-4 h-4 mr-2" />

@@ -78,7 +78,7 @@ export default function ColorsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <Label className="text-[10px] uppercase tracking-wider opacity-60">
-                  Cyan Glow
+                  Violet Glow
                 </Label>
                 <Button className="w-full shadow-glow-cyan">
                   Action Ready
@@ -135,7 +135,7 @@ export default function ColorsPage() {
 
       <AccessibilityPanel
         notes={[
-          "Primary color (#00E5FF) is paired with dark backgrounds for 4.5:1 contrast.",
+          "Primary color (#8B5CF6) is paired with dark backgrounds for 4.5:1 contrast.",
           "Secondary color (#FF00FF) is used primarily for non-text accents.",
           "Light/Dark mode palettes are tested for WCAG AA compliance.",
           "Glow effects do not use motion that could trigger sensitivity.",

@@ -96,7 +96,7 @@ const header = {
 };
 
 const logo = {
-  color: "#00E5FF", // Pixel Cyan
+  color: "#8B5CF6", // Pixel Cyan
   fontSize: "32px",
   fontWeight: "bold",
   fontFamily: "'Montserrat', system-ui, sans-serif",
@@ -139,7 +139,7 @@ const footerText = {
 };
 
 const link = {
-  color: "#00E5FF", // Pixel Cyan
+  color: "#8B5CF6", // Pixel Cyan
   textDecoration: "underline",
 };
 
@@ -163,7 +163,7 @@ export const emailStyles = {
     margin: "16px 0",
   },
   button: {
-    backgroundColor: "#00E5FF", // Pixel Cyan
+    backgroundColor: "#8B5CF6", // Pixel Cyan
     borderRadius: "8px",
     color: "#08081C", // Deep Space for contrast
     display: "inline-block",

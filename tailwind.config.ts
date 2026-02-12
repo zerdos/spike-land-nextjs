@@ -49,8 +49,8 @@ export default {
           },
         },
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 20px rgba(34, 197, 94, 0.4)" },
-          "50%": { boxShadow: "0 0 30px rgba(34, 197, 94, 0.6)" },
+          "0%, 100%": { boxShadow: "0 0 20px hsl(var(--primary) / 0.4)" },
+          "50%": { boxShadow: "0 0 30px hsl(var(--primary) / 0.6)" },
         },
         "float-up": {
           "0%": { transform: "translateY(100%)", opacity: "0" },

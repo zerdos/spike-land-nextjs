@@ -34,10 +34,10 @@
 /**
  * spike.land design system
  *
- * Brand Philosophy: Dark Futuristic - "The AI Spark"
- * Primary Color: spike.land Cyan #00E5FF
+ * Brand Philosophy: Nebula Intelligence - "The Cosmic Spark"
+ * Primary Color: spike.land Violet #8B5CF6
  *
- * Theme: Dark Mode Only - Deep Space with Surface Blue cards
+ * Theme: Dark Mode Only - Cosmic Void with Deep Slate cards
  */
 
 @layer base {
@@ -65,47 +65,43 @@
     --shadow-opacity-light: 0.05;
     --shadow-opacity-dark: 0.4;
 
-    /* Dark Mode - Aurora / Project Sonic (Default & Only Theme) */
-    --background: 0 0% 9.5%;
-    /* rgb(24, 24, 24) matches approx hsl(0, 0%, 9.4%) */
-    --foreground: 0 0% 98%;
+    /* Dark Mode - Nebula Intelligence (Default & Only Theme) */
+    --background: 222 47% 11%; /* Slate-900 #0F172A */
+    --foreground: 210 40% 98%; /* Slate-50 #F8FAFC */
 
-    --card: 0 0% 12%;
-    /* Slightly lighter than background */
-    --card-foreground: 0 0% 98%;
+    --card: 215 28% 17%; /* Slate-800 #1E293B */
+    --card-foreground: 210 40% 98%;
 
-    --popover: 240 4% 8%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 160 84% 39%;
-    /* Emerald */
-    --primary-foreground: 240 5% 4%;
-    --primary-text: 160 84% 39%;
+    --primary: 263 70% 50%; /* Violet-500 #8B5CF6 */
+    --primary-foreground: 210 40% 98%;
+    --primary-text: 263 70% 50%;
 
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 330 81% 60%; /* Pink-500 #EC4899 */
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 217 33% 17%; /* Slate-800/900 mix */
+    --muted-foreground: 215 20% 65%; /* Slate-400 */
 
-    --accent: 173 80% 40%;
-    /* Teal */
-    --accent-foreground: 240 5% 4%;
+    --accent: 38 92% 50%; /* Amber-500 #F59E0B */
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 160 84% 39%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 263 70% 50%;
     --radius: 9999px;
     /* Pill shape default */
 
-    /* Aurora Palette - Defined for usage */
-    --aurora-green: 160 84% 39%;
-    --aurora-teal: 173 80% 40%;
-    --aurora-lime: 84 81% 44%;
-    --aurora-yellow: 48 89% 47%;
+    /* Aurora Palette - Redefined for Nebula Theme */
+    --aurora-green: 263 70% 50%; /* Violet */
+    --aurora-teal: 330 81% 60%; /* Pink */
+    --aurora-lime: 38 92% 50%; /* Amber */
+    --aurora-yellow: 190 90% 50%; /* Light Blue */
 
     /* Semantic Colors */
     --success: 150 90% 35%;
@@ -114,16 +110,17 @@
     --warning-foreground: 0 0% 0%;
 
     /* Brand-specific variables */
-    --pixel-cyan: 187 100% 50%;
+    --pixel-purple: 263 70% 50%; /* Violet-500 */
+    --pixel-cyan: 263 70% 50%; /* Alias to purple for backward compat until replaced */
     --pixel-fuchsia: 320 90% 60%;
-    --grid-inactive: 220 15% 25%;
+    --grid-inactive: 217 33% 20%;
     /* Lighter than background for visibility */
 
     /* Chart Colors */
-    --chart-1: 160 84% 39%;
-    --chart-2: 173 80% 40%;
-    --chart-3: 84 81% 44%;
-    --chart-4: 48 89% 47%;
+    --chart-1: 263 70% 50%; /* Violet */
+    --chart-2: 330 81% 60%; /* Pink */
+    --chart-3: 38 92% 50%; /* Amber */
+    --chart-4: 190 90% 50%; /* Light Blue */
     --chart-5: 220 14% 96%;
 
     /* Animation Duration Tokens */
@@ -245,30 +242,55 @@
   /* These are now mobile-first with simplified blurs */
   .glass-aura-blue {
     background: linear-gradient(135deg,
-        rgba(7, 89, 133, 0.6),
-        rgba(7, 89, 133, 0.3));
+        rgba(139, 92, 246, 0.6), /* Violet */
+        rgba(139, 92, 246, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
-      inset 0 1px 1px 0 rgba(14, 165, 233, 0.5),
-      0 10px 40px -10px rgba(14, 165, 233, 0.3);
-    border: 1px solid rgba(14, 165, 233, 0.2);
+      inset 0 1px 1px 0 rgba(167, 139, 250, 0.5),
+      0 10px 40px -10px rgba(139, 92, 246, 0.3);
+    border: 1px solid rgba(139, 92, 246, 0.2);
   }
 
   .glass-aura-green {
+    /* Mapped to Pink/Magenta in new theme */
     background: linear-gradient(135deg,
-        rgba(20, 83, 45, 0.6),
-        rgba(20, 83, 45, 0.3));
+        rgba(236, 72, 153, 0.6),
+        rgba(236, 72, 153, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
-    box-shadow: inset 0 1px 1px 0 rgba(34, 197, 94, 0.5), 0 10px 40px -10px rgba(34, 197, 94, 0.3);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    box-shadow: inset 0 1px 1px 0 rgba(244, 114, 182, 0.5), 0 10px 40px -10px rgba(236, 72, 153, 0.3);
+    border: 1px solid rgba(236, 72, 153, 0.2);
   }
 
   .glass-aura-orange {
     background: linear-gradient(135deg,
-        rgba(124, 45, 18, 0.6),
-        rgba(124, 45, 18, 0.3));
+        rgba(245, 158, 11, 0.6),
+        rgba(245, 158, 11, 0.3));
+    backdrop-filter: blur(var(--glass-blur-sm));
+    -webkit-backdrop-filter: blur(var(--glass-blur-sm));
+    box-shadow:
+      inset 0 1px 1px 0 rgba(251, 191, 36, 0.5),
+      0 10px 40px -10px rgba(245, 158, 11, 0.3);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  .glass-aura-fuchsia {
+    background: linear-gradient(135deg,
+        rgba(192, 38, 211, 0.6),
+        rgba(192, 38, 211, 0.3));
+    backdrop-filter: blur(var(--glass-blur-sm));
+    -webkit-backdrop-filter: blur(var(--glass-blur-sm));
+    box-shadow:
+      inset 0 1px 1px 0 rgba(232, 121, 249, 0.5),
+      0 10px 40px -10px rgba(192, 38, 211, 0.3);
+    border: 1px solid rgba(192, 38, 211, 0.2);
+  }
+
+  .glass-aura-pink {
+    background: linear-gradient(135deg,
+        rgba(219, 39, 119, 0.6),
+        rgba(219, 39, 119, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -277,46 +299,22 @@
     border: 1px solid rgba(249, 115, 22, 0.2);
   }
 
-  .glass-aura-fuchsia {
-    background: linear-gradient(135deg,
-        rgba(112, 26, 117, 0.6),
-        rgba(112, 26, 117, 0.3));
-    backdrop-filter: blur(var(--glass-blur-sm));
-    -webkit-backdrop-filter: blur(var(--glass-blur-sm));
-    box-shadow:
-      inset 0 1px 1px 0 rgba(217, 70, 239, 0.5),
-      0 10px 40px -10px rgba(217, 70, 239, 0.3);
-    border: 1px solid rgba(217, 70, 239, 0.2);
-  }
-
-  .glass-aura-pink {
-    background: linear-gradient(135deg,
-        rgba(157, 23, 77, 0.6),
-        rgba(157, 23, 77, 0.3));
-    backdrop-filter: blur(var(--glass-blur-sm));
-    -webkit-backdrop-filter: blur(var(--glass-blur-sm));
-    box-shadow:
-      inset 0 1px 1px 0 rgba(244, 114, 182, 0.5),
-      0 10px 40px -10px rgba(244, 114, 182, 0.3);
-    border: 1px solid rgba(244, 114, 182, 0.2);
-  }
-
   .glass-aura-purple {
     background: linear-gradient(135deg,
-        rgba(88, 28, 135, 0.6),
-        rgba(88, 28, 135, 0.3));
+        rgba(124, 58, 237, 0.6),
+        rgba(124, 58, 237, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
-      inset 0 1px 1px 0 rgba(168, 85, 247, 0.5),
-      0 10px 40px -10px rgba(168, 85, 247, 0.3);
-    border: 1px solid rgba(168, 85, 247, 0.2);
+      inset 0 1px 1px 0 rgba(167, 139, 250, 0.5),
+      0 10px 40px -10px rgba(124, 58, 237, 0.3);
+    border: 1px solid rgba(124, 58, 237, 0.2);
   }
 
   .glass-layers {
     background: linear-gradient(135deg,
-        rgba(24, 24, 27, 0.8),
-        rgba(24, 24, 27, 0.6));
+        rgba(15, 23, 42, 0.8),
+        rgba(15, 23, 42, 0.6));
     backdrop-filter: blur(var(--glass-blur-mobile));
     -webkit-backdrop-filter: blur(var(--glass-blur-mobile));
     box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.1), 0 20px 50px -10px rgba(0, 0, 0, 0.5);
@@ -423,8 +421,8 @@
   /* Gradient backgrounds for package cards - using HSL for consistency */
   .gradient-blue {
     background: linear-gradient(135deg,
-        hsl(217 91% 60%) 0%,
-        hsl(221 83% 53%) 100%);
+        hsl(263 70% 50%) 0%,
+        hsl(330 81% 60%) 100%);
   }
 
   .gradient-purple {
@@ -441,8 +439,8 @@
 
   .gradient-orange {
     background: linear-gradient(135deg,
-        hsl(25 95% 53%) 0%,
-        hsl(21 90% 48%) 100%);
+        hsl(38 92% 50%) 0%,
+        hsl(330 81% 60%) 100%);
   }
 
   /* Theme-aware gradient text utility for hero headings */
@@ -479,9 +477,9 @@
   /* Dark gradient page background */
   .bg-gradient-page {
     background: linear-gradient(135deg,
-        hsl(224 71% 4%) 0%,
-        hsl(250 60% 8%) 50%,
-        hsl(224 71% 4%) 100%);
+        hsl(222 47% 5%) 0%,
+        hsl(263 70% 10%) 50%,
+        hsl(222 47% 5%) 100%);
     background-attachment: fixed;
   }
 
@@ -494,16 +492,24 @@
     box-shadow: 0 0 20px hsl(var(--secondary) / 0.3), 0 4px 12px hsl(var(--secondary) / 0.2);
   }
 
-  /* Pixel Cyan glow effects */
+  /* Pixel Purple glow effects */
+  .shadow-glow-purple {
+    box-shadow:
+      0 0 20px hsl(var(--pixel-purple) / 0.4),
+      0 0 40px hsl(var(--pixel-purple) / 0.2),
+      0 4px 12px hsl(var(--pixel-purple) / 0.3);
+  }
+
+  /* Legacy alias */
   .shadow-glow-cyan {
     box-shadow:
-      0 0 20px hsl(var(--pixel-cyan) / 0.4),
-      0 0 40px hsl(var(--pixel-cyan) / 0.2),
-      0 4px 12px hsl(var(--pixel-cyan) / 0.3);
+      0 0 20px hsl(var(--pixel-purple) / 0.4),
+      0 0 40px hsl(var(--pixel-purple) / 0.2),
+      0 4px 12px hsl(var(--pixel-purple) / 0.3);
   }
 
   .shadow-glow-cyan-sm {
-    box-shadow: 0 0 10px hsl(var(--pixel-cyan) / 0.3), 0 2px 8px hsl(var(--pixel-cyan) / 0.2);
+    box-shadow: 0 0 10px hsl(var(--pixel-purple) / 0.3), 0 2px 8px hsl(var(--pixel-purple) / 0.2);
   }
 
   .shadow-negative {
@@ -521,7 +527,7 @@
     box-shadow:
       0 50px 100px -20px rgba(0, 0, 0, 0.6),
       0 30px 60px -30px rgba(0, 0, 0, 0.7),
-      inset 0 1px 1px 0 rgba(0, 229, 255, 0.1);
+      inset 0 1px 1px 0 rgba(139, 92, 246, 0.1);
   }
 
   /* Grid background pattern - REMOVED per user request for clean look */
@@ -529,19 +535,37 @@
     background-image: none;
   }
 
-  /* Cyan pulse animation for loading and active states */
-  @keyframes pulse-cyan {
+  /* Purple pulse animation for loading and active states */
+  @keyframes pulse-purple {
 
     0%,
     100% {
-      box-shadow: 0 0 20px hsl(var(--pixel-cyan) / 0.3), 0 0 40px hsl(var(--pixel-cyan) / 0.1);
-      background-color: hsl(var(--pixel-cyan) / 0.4);
+      box-shadow: 0 0 20px hsl(var(--pixel-purple) / 0.3), 0 0 40px hsl(var(--pixel-purple) / 0.1);
+      background-color: hsl(var(--pixel-purple) / 0.4);
     }
 
     50% {
-      box-shadow: 0 0 30px hsl(var(--pixel-cyan) / 0.5), 0 0 60px hsl(var(--pixel-cyan) / 0.2);
-      background-color: hsl(var(--pixel-cyan) / 0.7);
+      box-shadow: 0 0 30px hsl(var(--pixel-purple) / 0.5), 0 0 60px hsl(var(--pixel-purple) / 0.2);
+      background-color: hsl(var(--pixel-purple) / 0.7);
     }
+  }
+
+  /* Alias to pulse-purple */
+  @keyframes pulse-cyan {
+    0%,
+    100% {
+      box-shadow: 0 0 20px hsl(var(--pixel-purple) / 0.3), 0 0 40px hsl(var(--pixel-purple) / 0.1);
+      background-color: hsl(var(--pixel-purple) / 0.4);
+    }
+
+    50% {
+      box-shadow: 0 0 30px hsl(var(--pixel-purple) / 0.5), 0 0 60px hsl(var(--pixel-purple) / 0.2);
+      background-color: hsl(var(--pixel-purple) / 0.7);
+    }
+  }
+
+  .animate-pulse-purple {
+    animation: pulse-purple 3s ease-in-out infinite;
   }
 
   .animate-pulse-cyan {
@@ -633,37 +657,51 @@
   }
 
   /* Border glow effect for active/drag states */
+  .border-glow-purple {
+    box-shadow: inset 0 0 0 1px hsl(var(--primary)), 0 0 15px hsl(var(--primary) / 0.3);
+  }
+
   .border-glow-cyan {
     box-shadow: inset 0 0 0 1px hsl(var(--primary)), 0 0 15px hsl(var(--primary) / 0.3);
   }
 
-  /* Cyan-to-Fuchsia gradient */
+  /* Purple-to-Pink gradient */
+  .gradient-purple-pink {
+    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  }
+
+  /* Legacy alias */
   .gradient-cyan-fuchsia {
-    background: linear-gradient(135deg, #00e5ff 0%, #ff00ff 100%);
+    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
   }
 
   /* Card gradient background */
   .gradient-card-dark {
-    background: linear-gradient(180deg, #112244 0%, #221144 100%);
+    background: linear-gradient(180deg, #1E293B 0%, #0F172A 100%);
   }
 
   /* Fuchsia glow effect */
   .shadow-glow-fuchsia {
     box-shadow:
-      0 0 20px hsl(300 100% 50% / 0.4),
-      0 0 40px hsl(300 100% 50% / 0.2),
-      0 4px 12px hsl(300 100% 50% / 0.3);
+      0 0 20px hsl(320 90% 60% / 0.4),
+      0 0 40px hsl(320 90% 60% / 0.2),
+      0 4px 12px hsl(320 90% 60% / 0.3);
   }
 
-  /* Combined cyan-fuchsia glow */
+  /* Combined glow */
   .shadow-glow-gradient {
-    box-shadow: 0 0 20px rgba(0, 229, 255, 0.3), 0 0 30px rgba(255, 0, 255, 0.2);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 30px rgba(236, 72, 153, 0.2);
   }
 
   /* Input focus glow (for glow effects demo) */
+  .input-glow-purple {
+    box-shadow: 0 0 0 1px hsl(var(--pixel-purple)), 0 0 15px hsl(var(--pixel-purple) / 0.4);
+    border-color: hsl(var(--pixel-purple));
+  }
+
   .input-glow-cyan {
-    box-shadow: 0 0 0 1px hsl(var(--pixel-cyan)), 0 0 15px hsl(var(--pixel-cyan) / 0.4);
-    border-color: hsl(var(--pixel-cyan));
+    box-shadow: 0 0 0 1px hsl(var(--pixel-purple)), 0 0 15px hsl(var(--pixel-purple) / 0.4);
+    border-color: hsl(var(--pixel-purple));
   }
 
   /**
@@ -979,11 +1017,11 @@
 
     0%,
     100% {
-      text-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+      text-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
     }
 
     50% {
-      text-shadow: 0 0 40px rgba(34, 211, 238, 0.8), 0 0 60px rgba(34, 211, 238, 0.2);
+      text-shadow: 0 0 40px rgba(139, 92, 246, 0.8), 0 0 60px rgba(139, 92, 246, 0.2);
     }
   }
 
@@ -1240,9 +1278,14 @@
     animation: countdown-ring 12s linear infinite reverse;
   }
 
-  /* Cyan text glow */
+  /* Purple text glow */
+  .text-glow-purple {
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+
+  /* Legacy alias */
   .text-glow-cyan {
-    text-shadow: 0 0 10px rgba(34, 211, 238, 0.5), 0 0 20px rgba(34, 211, 238, 0.3);
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3);
   }
 
   /* Beat flash - synced to seconds during countdown */
@@ -1501,22 +1544,22 @@
     0%,
     100% {
       transform: translate(0);
-      text-shadow: -2px 0 red, 2px 0 cyan;
+      text-shadow: -2px 0 red, 2px 0 #8B5CF6;
     }
 
     25% {
       transform: translate(-2px, 1px);
-      text-shadow: 2px 0 red, -2px 0 cyan;
+      text-shadow: 2px 0 red, -2px 0 #8B5CF6;
     }
 
     50% {
       transform: translate(2px, -1px);
-      text-shadow: -2px 0 cyan, 2px 0 red;
+      text-shadow: -2px 0 #8B5CF6, 2px 0 red;
     }
 
     75% {
       transform: translate(-1px, 2px);
-      text-shadow: 2px 0 cyan, -2px 0 red;
+      text-shadow: 2px 0 #8B5CF6, -2px 0 red;
     }
   }
 

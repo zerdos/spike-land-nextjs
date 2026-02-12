@@ -116,7 +116,7 @@ const TabsList = React.forwardRef<
       {/* Animated Background Indicator */}
       <div
         aria-hidden="true"
-        className="absolute z-0 rounded-lg bg-primary/15 border border-primary/20 shadow-[0_0_20px_rgba(0,229,255,0.25)] transition-all duration-300 ease-out pointer-events-none glass-edge"
+        className="absolute z-0 rounded-lg bg-primary/15 border border-primary/20 shadow-[0_0_20px_rgba(139,92,246,0.25)] transition-all duration-300 ease-out pointer-events-none glass-edge"
         style={indicatorStyle}
       />
       {props.children}
@@ -147,7 +147,7 @@ const TabsTrigger = React.forwardRef<
       // Hover state for inactive tabs
       "hover:text-muted-foreground hover:bg-white/10",
       // Active state - enhanced visibility
-      "data-[state=active]:text-primary data-[state=active]:font-semibold data-[state=active]:drop-shadow-[0_0_10px_rgba(0,229,255,0.4)]",
+      "data-[state=active]:text-primary data-[state=active]:font-semibold data-[state=active]:drop-shadow-[0_0_10px_rgba(139,92,246,0.4)]",
       className,
     )}
     {...props}
