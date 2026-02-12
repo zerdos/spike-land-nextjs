@@ -62,7 +62,14 @@ const nextConfig: NextConfig = {
     },
   },
   // Transpile ESM packages to avoid runtime resolution issues with PnP
-  transpilePackages: ["next-mdx-remote", "@spike-npm-land/video", "@spike-npm-land/code", "@spike-npm-land/shared"],
+  transpilePackages: [
+    "next-mdx-remote",
+    "@spike-npm-land/video",
+    "@spike-npm-land/code",
+    "@spike-npm-land/shared",
+    "@spike-npm-land/transpile",
+    "@spike-npm-land/spike-land-backend",
+  ],
   typescript: {
     // TypeScript checking is handled by CI's `tsc --noEmit` step
     // Skip during build to reduce memory usage when SKIP_TS_BUILD_CHECK=true

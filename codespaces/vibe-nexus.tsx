@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import VibePulse from "/live/vibe-pulse";
 import VibeTimeline from "/live/vibe-timeline";
