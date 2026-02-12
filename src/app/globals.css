@@ -101,10 +101,14 @@
     /* More standard tech radius */
 
     /* Nebula Palette - New Brand Colors */
-    --aurora-green: 262 83% 58%; /* Nebula Violet */
-    --aurora-teal: 187 100% 42%;  /* Nebula Cyan */
-    --aurora-lime: 322 81% 55%;  /* Nebula Pink */
-    --aurora-yellow: 230 100% 67%; /* Nebula Indigo */
+    --aurora-green: 262 83% 58%;
+    /* Nebula Violet */
+    --aurora-teal: 187 100% 42%;
+    /* Nebula Cyan */
+    --aurora-lime: 322 81% 55%;
+    /* Nebula Pink */
+    --aurora-yellow: 230 100% 67%;
+    /* Nebula Indigo */
 
     /* Semantic Colors */
     --success: 150 90% 35%;
@@ -132,6 +136,72 @@
     /* Standard transitions (buttons, cards) */
     --animation-slow: 300ms;
     /* Longer transitions (modals, accordions) */
+  }
+
+  .theme-retro {
+    --background: 35 30% 15%;
+    --foreground: 45 100% 85%;
+    --card: 35 30% 12%;
+    --card-foreground: 45 100% 80%;
+    --popover: 35 30% 15%;
+    --popover-foreground: 45 100% 85%;
+    --primary: 25 80% 50%;
+    --primary-foreground: 45 100% 90%;
+    --secondary: 40 40% 25%;
+    --secondary-foreground: 45 100% 85%;
+    --muted: 35 20% 20%;
+    --muted-foreground: 40 30% 60%;
+    --accent: 15 90% 55%;
+    --accent-foreground: 45 100% 90%;
+    --border: 35 40% 25%;
+    --input: 35 40% 25%;
+    --ring: 25 80% 50%;
+    --radius: 0rem;
+    --pixel-cyan: 25 80% 50%;
+  }
+
+  .theme-cyberpunk {
+    --background: 280 100% 2%;
+    --foreground: 180 100% 50%;
+    --card: 280 100% 4%;
+    --card-foreground: 180 100% 60%;
+    --popover: 280 100% 2%;
+    --popover-foreground: 180 100% 50%;
+    --primary: 320 100% 50%;
+    --primary-foreground: 280 100% 2%;
+    --secondary: 250 100% 10%;
+    --secondary-foreground: 180 100% 50%;
+    --muted: 280 50% 10%;
+    --muted-foreground: 180 50% 60%;
+    --accent: 60 100% 50%;
+    --accent-foreground: 280 100% 2%;
+    --border: 320 100% 50%;
+    --input: 320 100% 50%;
+    --ring: 320 100% 50%;
+    --radius: 0rem;
+    --pixel-cyan: 180 100% 50%;
+  }
+
+  .theme-minimalist {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 10%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 90%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 80%;
+    --accent-foreground: 0 0% 0%;
+    --border: 0 0% 85%;
+    --input: 0 0% 85%;
+    --ring: 0 0% 10%;
+    --radius: 0.25rem;
+    --pixel-cyan: 0 0% 50%;
   }
 
   /* Global Styles */
