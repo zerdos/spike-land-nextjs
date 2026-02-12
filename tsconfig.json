@@ -71,6 +71,7 @@
     ".next",
     "packages",
     "scripts",
-    "live"
+    "live",
+    "codespaces"
   ]
 }

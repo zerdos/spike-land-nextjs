@@ -103,7 +103,7 @@ describe("GET /api/codespace/[codeSpace]/bundle", () => {
     const response = await GET(makeRequest(), makeContext());
     const csp = response.headers.get("Content-Security-Policy");
     expect(csp).toContain("script-src 'unsafe-inline'");
-    expect(csp).toContain("connect-src 'none'");
+    expect(csp).toContain("connect-src https://esm.sh");
   });
 
   it("adds Content-Disposition for download=true", async () => {
