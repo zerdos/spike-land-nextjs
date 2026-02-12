@@ -13,15 +13,15 @@ const bmMocks = vi.hoisted(() => ({
 
 vi.mock("../../clients/bridgemind-client.js", () => ({
   isBridgeMindAvailable: vi.fn(),
-  getBridgeMindClient: vi.fn().mockReturnValue({
+  getBridgeMindClient: vi.fn(() => ({
     listTasks: bmMocks.mockListTasks,
     createTask: bmMocks.mockCreateTask,
     updateTask: bmMocks.mockUpdateTask,
     getKnowledge: bmMocks.mockGetKnowledge,
     addKnowledge: bmMocks.mockAddKnowledge,
     listSprints: bmMocks.mockListSprints,
-    getCircuitBreakerState: bmMocks.mockGetCircuitBreakerState,
-  }),
+    getCircuitBreakerState: vi.fn(() => ({ status: "closed", failures: 0 })),
+  })),
 }));
 
 const {
