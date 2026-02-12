@@ -1,10 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
-// Mock codespace barrel to avoid esbuild-wasm import in jsdom
+// Mock codespace barrel to avoid deep module resolution in jsdom
 vi.mock("@/lib/codespace", () => ({
   getOrCreateSession: vi.fn(),
-  transpileCode: vi.fn(),
   upsertSession: vi.fn(),
+}));
+
+// Mock transpile separately (esbuild-wasm crashes in jsdom)
+vi.mock("@/lib/codespace/transpile", () => ({
+  transpileCode: vi.fn(),
 }));
 
 // Mock claude-agent-sdk

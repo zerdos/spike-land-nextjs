@@ -1,4 +1,5 @@
-import { getOrCreateSession, transpileCode, upsertSession } from "@/lib/codespace";
+import { getOrCreateSession, upsertSession } from "@/lib/codespace";
+import { transpileCode } from "@/lib/codespace/transpile";
 import logger from "@/lib/logger";
 import { createSdkMcpServer, tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
