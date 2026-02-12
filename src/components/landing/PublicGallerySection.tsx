@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
+import { MasonryGrid } from "@/components/ui/masonry-grid";
 import type { PublicPhoto } from "@/lib/gallery/public-photos";
 import { ArrowRight, ImageIcon } from "lucide-react";
 import Image from "next/image";
@@ -56,22 +57,23 @@ export function PublicGallerySection({ photos }: PublicGallerySectionProps) {
           See the invisible.
         </motion.p>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {photos.slice(0, 10).map((photo, index) => (
+        <MasonryGrid zoomLevel={3}>
+          {photos.slice(0, 12).map((photo, index) => (
             <motion.div
               key={photo.id}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.05 }}
-              whileHover={{ scale: 1.05, zIndex: 10 }}
-              className="relative aspect-square rounded-2xl overflow-hidden group shadow-2xl shadow-black/50"
+              whileHover={{ scale: 1.02, zIndex: 10 }}
+              className="relative w-full rounded-2xl overflow-hidden group shadow-2xl shadow-black/50 mb-4 break-inside-avoid"
+              style={{ aspectRatio: `${photo.width} / ${photo.height}` }}
             >
               <Image
                 src={photo.enhancedUrl ?? photo.originalUrl}
                 alt={photo.name}
                 fill
-                className="object-cover"
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
                 sizes="(max-width: 768px) 50vw, 20vw"
                 loading="lazy"
               />
@@ -83,7 +85,7 @@ export function PublicGallerySection({ photos }: PublicGallerySectionProps) {
               </div>
             </motion.div>
           ))}
-        </div>
+        </MasonryGrid>
 
         <motion.div 
           initial={{ opacity: 0 }}
