@@ -41,7 +41,7 @@ vi.mock("@/lib/ai/claude-client", () => ({
   getClaudeClient: vi.fn(() => ({
     messages: { create: mockCreate },
   })),
-  isClaudeConfigured: vi.fn(() => true),
+  isClaudeConfigured: vi.fn().mockResolvedValue(true),
 }));
 
 // Import the mocked module so we can control it per-test
@@ -50,12 +50,11 @@ import { isClaudeConfigured } from "@/lib/ai/claude-client";
 describe("Suggestion Generator", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(isClaudeConfigured).mockReturnValue(true);
+    vi.mocked(isClaudeConfigured).mockResolvedValue(true);
   });
 
   describe("buildAIContext", () => {
     beforeEach(() => {
-      // @ts-expect-error - mockResolvedValue expectation mismatch
       vi.mocked(isClaudeConfigured).mockResolvedValue(true);
     });
 
@@ -235,7 +234,6 @@ describe("Suggestion Generator", () => {
 
   describe("generateSuggestions", () => {
     beforeEach(() => {
-       // @ts-expect-error - mockResolvedValue expectation mismatch
       vi.mocked(isClaudeConfigured).mockResolvedValue(true);
     });
 
@@ -307,7 +305,6 @@ describe("Suggestion Generator", () => {
     });
 
     it("should throw error when Claude is not configured", async () => {
-      // @ts-expect-error - mockResolvedValue expectation mismatch
       vi.mocked(isClaudeConfigured).mockResolvedValue(false);
 
       const input: SuggestionGenerationInput = {

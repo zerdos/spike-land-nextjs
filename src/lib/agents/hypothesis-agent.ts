@@ -61,8 +61,12 @@ interface ParsedVariant {
 }
 
 export class HypothesisAgent {
-  private ai = getGeminiClient();
+  private aiPromise = getGeminiClient();
   private model = "gemini-3-flash-preview"; // Using a fast/capable model (adjust if needed)
+
+  private async getAI() {
+    return await this.aiPromise;
+  }
 
   private getBrandVoice(brandProfile: unknown): string {
     if (!brandProfile || typeof brandProfile !== "object") {
@@ -145,7 +149,7 @@ export class HypothesisAgent {
 
     // 3. Generate with AI
     try {
-      const ai = await this.ai;
+      const ai = await this.getAI();
       const response = await ai.models.generateContent({
         model: this.model,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -259,7 +263,8 @@ export class HypothesisAgent {
     `;
 
     try {
-      const response = await this.ai.models.generateContent({
+      const ai = await this.getAI();
+      const response = await ai.models.generateContent({
         model: this.model,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
@@ -392,7 +397,7 @@ export class HypothesisAgent {
 
     let insightText = "Analysis pending.";
     try {
-      const ai = await this.ai;
+      const ai = await this.getAI();
       const response = await ai.models.generateContent({
         model: this.model,
         contents: [{ role: "user", parts: [{ text: insightsPrompt }] }],

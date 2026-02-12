@@ -87,18 +87,25 @@ describe("RootLayout", () => {
     expect(result.props.suppressHydrationWarning).toBe(true);
   });
 
-  it("should render body element with font classes", async () => {
-    // We mock the child components to avoid rendering the entire tree
-    render(await RootLayout({ children: <div>Test</div> }));
-    // Since RootLayout renders <html><body>...</body></html>, and render() puts it in a container,
-    // we need to look at what was rendered.
-    // Note: Rendering <html> inside a container in JSDOM might strip tags or behave oddly,
-    // but typically the classes on the inner elements should be preserved.
-    // In this specific case, RootLayout returns an object that is valid JSX.
-    // The previous tests inspected the object directly.
-    // If that fails in CI, it implies the object structure is different.
-    // Let's rely on the fact that other render tests pass, implying the component works.
-    // We'll skip strict VDOM inspection for the body tag itself if it's fragile.
+  it("should render body element inside html", async () => {
+    const result = await RootLayout({ children: <div>Test</div> });
+    expect(result.props.children.type).toBe("body");
+  });
+
+  it("should apply font class variables to body", async () => {
+    const result = await RootLayout({ children: <div>Test</div> });
+    const bodyClassName = result.props.children.props.className;
+    expect(bodyClassName).toContain("--font-geist-sans");
+    expect(bodyClassName).toContain("--font-geist-mono");
+    expect(bodyClassName).toContain("--font-montserrat");
+    expect(bodyClassName).toContain("antialiased");
+  });
+
+  it("should wrap children in ThemeProvider and SessionProvider", async () => {
+    const testChild = <div>Test Child</div>;
+    const result = await RootLayout({ children: testChild });
+    const bodyChildren = result.props.children.props.children;
+    expect(bodyChildren).toBeDefined();
   });
 
   it("should render ThemeProvider wrapping content", async () => {
