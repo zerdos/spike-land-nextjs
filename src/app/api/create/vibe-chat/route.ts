@@ -14,6 +14,7 @@ import { getCreatedApp } from "@/lib/create/content-service";
 import logger from "@/lib/logger";
 import { tryCatch } from "@/lib/try-catch";
 import { query } from "@anthropic-ai/claude-agent-sdk";
+import type { MessageParam } from "@anthropic-ai/sdk/resources";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -133,8 +134,24 @@ export async function POST(request: NextRequest) {
       try {
         emitSSE(controller, { type: "stage", stage: "initialize" });
 
+        // Build the prompt: use multi-modal SDKUserMessage when images are present
+        const hasImages = userContent.length > 1;
+        const promptInput = hasImages
+          ? (async function* () {
+              yield {
+                type: "user" as const,
+                message: {
+                  role: "user" as const,
+                  content: userContent as MessageParam["content"],
+                },
+                parent_tool_use_id: null,
+                session_id: "",
+              };
+            })()
+          : content;
+
         const result = query({
-          prompt: content,
+          prompt: promptInput,
           options: {
             mcpServers: { codespace: codespaceServer },
             allowedTools,

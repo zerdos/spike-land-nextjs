@@ -5,6 +5,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -42,9 +43,10 @@ interface VibeCodeContextValue {
     autoScreenshot?: boolean,
   ) => Promise<void>;
   setAppContext: (ctx: AppContext) => void;
+  clearMessages: () => void;
 }
 
-const VibeCodeContext = createContext<VibeCodeContextValue | null>(null);
+export const VibeCodeContext = createContext<VibeCodeContextValue | null>(null);
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -57,6 +59,58 @@ function fileToBase64(file: File): Promise<string> {
 
 function generateId(): string {
   return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+const MAX_PERSISTED_MESSAGES = 50;
+const BASE64_DATA_PATTERN = /^data:[^;]+;base64,.+/;
+
+function getSessionStorageKey(slug: string): string {
+  return `vibe-messages-${slug}`;
+}
+
+function stripBase64Images(messages: VibeMessage[]): VibeMessage[] {
+  return messages.map((msg) => {
+    if (!msg.images || msg.images.length === 0) return msg;
+    return {
+      ...msg,
+      images: msg.images.map((img) =>
+        BASE64_DATA_PATTERN.test(img) ? "[image]" : img
+      ),
+    };
+  });
+}
+
+function loadMessagesFromStorage(slug: string): VibeMessage[] | null {
+  try {
+    const raw = sessionStorage.getItem(getSessionStorageKey(slug));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed as VibeMessage[];
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function saveMessagesToStorage(slug: string, messages: VibeMessage[]): void {
+  try {
+    const capped = messages.slice(-MAX_PERSISTED_MESSAGES);
+    const stripped = stripBase64Images(capped);
+    sessionStorage.setItem(
+      getSessionStorageKey(slug),
+      JSON.stringify(stripped),
+    );
+  } catch {
+    // sessionStorage may be full or unavailable — silently ignore
+  }
+}
+
+function clearMessagesFromStorage(slug: string): void {
+  try {
+    sessionStorage.removeItem(getSessionStorageKey(slug));
+  } catch {
+    // silently ignore
+  }
 }
 
 export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
@@ -76,6 +130,25 @@ export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
 
   const setAppContextStable = useCallback((ctx: AppContext) => {
     setAppContext(ctx);
+    const saved = loadMessagesFromStorage(ctx.slug);
+    if (saved && saved.length > 0) {
+      setMessages(saved);
+    }
+  }, []);
+
+  // Persist messages to sessionStorage whenever they change
+  useEffect(() => {
+    if (!appContext) return;
+    if (messages.length === 0) return;
+    saveMessagesToStorage(appContext.slug, messages);
+  }, [messages, appContext]);
+
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+    const ctx = appContextRef.current;
+    if (ctx) {
+      clearMessagesFromStorage(ctx.slug);
+    }
   }, []);
 
   const sendMessage = useCallback(
@@ -264,6 +337,7 @@ export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
       setMode,
       sendMessage,
       setAppContext: setAppContextStable,
+      clearMessages,
     }),
     [
       isOpen,
@@ -277,6 +351,7 @@ export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
       closePanel,
       sendMessage,
       setAppContextStable,
+      clearMessages,
     ],
   );
 

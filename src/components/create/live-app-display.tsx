@@ -1,9 +1,17 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Download, ExternalLink, RefreshCw } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
+
+// Import the context directly to safely check without throwing
+import { VibeCodeContext } from "./vibe-code-provider";
+
+function useVibeCodeRefreshCounter(): number {
+  const ctx = useContext(VibeCodeContext);
+  return ctx?.refreshCounter ?? 0;
+}
 
 interface LiveAppDisplayProps {
   codespaceId: string;
@@ -26,6 +34,14 @@ export function LiveAppDisplay({
     setLoading(true);
     setIframeKey((prev) => prev + 1);
   }, []);
+
+  // Auto-refresh iframe when vibe-code edits update the code
+  const refreshCounter = useVibeCodeRefreshCounter();
+  useEffect(() => {
+    if (refreshCounter > 0) {
+      handleRefresh();
+    }
+  }, [refreshCounter, handleRefresh]);
 
   const iframeSrc = `/api/codespace/${codespaceId}/bundle`;
 
@@ -52,6 +68,14 @@ export function LiveAppDisplay({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/create"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-xs font-semibold hover:from-cyan-400 hover:to-purple-400 transition-all shadow-sm"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Create Your Own
+          </Link>
+          <div className="h-5 w-px bg-border" />
           <button
             onClick={handleRefresh}
             className="p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors"
@@ -79,7 +103,7 @@ export function LiveAppDisplay({
         </div>
       </div>
 
-      <div className="flex-1 relative bg-white">
+      <div className="flex-1 relative bg-muted/20">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10">
             <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
