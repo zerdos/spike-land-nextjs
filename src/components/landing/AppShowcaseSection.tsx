@@ -3,6 +3,7 @@
 import { LiveAppCard } from "@/components/create/live-app-card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
+import { Marquee } from "@/components/ui/marquee";
 import type { ShowcaseApp } from "@/lib/landing/showcase-feed";
 import { ArrowRight, Blocks } from "lucide-react";
 import { motion } from "framer-motion";
@@ -55,22 +56,18 @@ export function AppShowcaseSection({ apps }: AppShowcaseSectionProps) {
 
         <div className="relative">
           {/* Gradient fade edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-zinc-950 to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-zinc-950 to-transparent z-10 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-zinc-950 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-zinc-950 to-transparent z-10 pointer-events-none" />
 
-          <div className="flex gap-6 overflow-x-auto scroll-snap-x-mandatory pb-4 px-4 scrollbar-none">
+          <Marquee pauseOnHover className="[--duration:60s] py-8">
             {apps.map((app, index) => (
               <motion.div
                 key={app.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.05 * (index % 4) }}
                 whileHover={{ y: -8 }}
-                className="relative shrink-0 w-[280px] sm:w-[320px] scroll-snap-align-start"
+                className="relative shrink-0 w-[280px] sm:w-[320px] mx-4"
               >
                 {index < 3 && (
-                  <div className="absolute -top-2 -right-2 z-10 bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  <div className="absolute -top-2 -right-2 z-10 bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.5)]">
                     Featured
                   </div>
                 )}
@@ -83,7 +80,7 @@ export function AppShowcaseSection({ apps }: AppShowcaseSectionProps) {
                 />
               </motion.div>
             ))}
-          </div>
+          </Marquee>
         </div>
 
         <motion.div 
