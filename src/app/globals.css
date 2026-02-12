@@ -2211,6 +2211,27 @@
   }
 }
 
+/* Rotating gradient border for composer */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-rotate {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.animate-border-rotate {
+  animation: border-rotate 4s linear infinite;
+}
+
+.animate-border-rotate-fast {
+  animation: border-rotate 2s linear infinite;
+}
+
 /* Sync Visual Effects */
 @keyframes borderFlow {
   0% {

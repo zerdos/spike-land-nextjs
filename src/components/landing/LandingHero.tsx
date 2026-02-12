@@ -43,10 +43,12 @@ export function LandingHero({ stats }: LandingHeroProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-cyan-400 mb-8 backdrop-blur-md"
+          className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-cyan-400 mb-8 backdrop-blur-md overflow-hidden"
         >
-          <Sparkles className="w-4 h-4 animate-pulse" />
-          <span className="font-medium tracking-wide uppercase text-[10px]">The Future of Creation</span>
+          {/* Shimmer sweep */}
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/0 via-cyan-400/10 to-cyan-400/0 animate-shimmer pointer-events-none" />
+          <Sparkles className="w-4 h-4 animate-pulse relative" />
+          <span className="font-medium tracking-wide uppercase text-[10px] relative">The Future of Creation</span>
         </motion.div>
 
         {/* Headline */}
@@ -59,7 +61,7 @@ export function LandingHero({ stats }: LandingHeroProps) {
             className="relative text-5xl sm:text-7xl md:text-9xl font-bold text-white max-w-5xl mx-auto leading-none mb-8 tracking-tighter py-2"
           >
             Build the <br />
-            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient-x font-black shadow-[0_0_30px_rgba(232,121,249,0.3)]">
+            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient-x font-black drop-shadow-[0_0_30px_rgba(168,85,247,0.25)]">
               Impossible.
             </span>
           </motion.h1>
@@ -80,7 +82,7 @@ export function LandingHero({ stats }: LandingHeroProps) {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
           className="max-w-2xl mx-auto"
         >
           <ComposerBox initialPrompt={templatePrompt} />
@@ -90,7 +92,7 @@ export function LandingHero({ stats }: LandingHeroProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.45 }}
         >
           <TemplateCards onSelect={handleTemplateSelect} />
         </motion.div>
@@ -100,7 +102,7 @@ export function LandingHero({ stats }: LandingHeroProps) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
+            transition={{ duration: 0.5, delay: 0.55 }}
           >
             <CreationStats appsCreated={stats.appsCreated} creatorCount={stats.creatorCount} />
           </motion.div>
@@ -110,7 +112,7 @@ export function LandingHero({ stats }: LandingHeroProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
+          transition={{ duration: 0.5, delay: 0.65 }}
           className="mt-12 flex flex-wrap justify-center gap-6"
         >
           <Button
@@ -126,9 +128,10 @@ export function LandingHero({ stats }: LandingHeroProps) {
         </motion.div>
       </motion.div>
 
-      {/* Decorative elements */}
+      {/* Decorative elements - Overlapping color orbs */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.05)_0%,transparent_70%)]" />
+        <div className="absolute w-[600px] h-[600px] rounded-full bg-cyan-500/[0.04] blur-[120px] animate-float-slow" style={{ top: "20%", left: "30%" }} />
+        <div className="absolute w-[500px] h-[500px] rounded-full bg-purple-500/[0.04] blur-[120px] animate-float-slow-reverse" style={{ top: "60%", left: "60%" }} />
       </div>
     </section>
   );

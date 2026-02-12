@@ -17,23 +17,34 @@ export function CreationStats({ appsCreated, creatorCount }: CreationStatsProps)
   ];
 
   return (
-    <div className="flex flex-wrap justify-center gap-6 mt-12">
+    <div className="flex flex-wrap justify-center items-center gap-6 mt-12">
       {stats.map((stat, index) => (
-        <motion.div
-          key={stat.label}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 * index }}
-          className="glass-0 rounded-xl px-6 py-4 flex items-center gap-3 min-w-[180px]"
-        >
-          <stat.icon className="w-5 h-5 text-cyan-400 shrink-0" />
-          <div>
-            <div className="text-lg font-bold text-white">
-              <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+        <div key={stat.label} className="flex items-center gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 * index }}
+            whileHover={{
+              y: -4,
+              transition: { type: "spring", stiffness: 400, damping: 25 },
+            }}
+            className="glass-1 rounded-2xl px-6 py-4 flex items-center gap-4 min-w-[180px] border border-white/[0.06]"
+          >
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-400/20 flex items-center justify-center shrink-0">
+              <stat.icon className="w-5 h-5 text-cyan-400" />
             </div>
-            <div className="text-xs text-zinc-500">{stat.label}</div>
-          </div>
-        </motion.div>
+            <div>
+              <div className="text-2xl font-black tracking-tight text-white">
+                <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+              </div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-medium">{stat.label}</div>
+            </div>
+          </motion.div>
+          {/* Vertical divider between stats (desktop only, not after last) */}
+          {index < stats.length - 1 && (
+            <div className="hidden md:block w-px h-8 bg-white/[0.06]" />
+          )}
+        </div>
       ))}
     </div>
   );

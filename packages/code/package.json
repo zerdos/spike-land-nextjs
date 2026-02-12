@@ -62,7 +62,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "3.0.41",
+    "@ai-sdk/anthropic": "3.0.42",
     "@dmsnell/diff-match-patch": "1.1.0",
     "@emotion/cache": "11.14.0",
     "@emotion/react": "11.14.0",
@@ -105,7 +105,7 @@
     "@types/aria-query": "5.0.4",
     "@types/node": "25.2.3",
     "@typescript/ata": "0.9.8",
-    "ai": "6.0.79",
+    "ai": "6.0.81",
     "assert": "2.1.0",
     "async-mutex": "0.5.0",
     "autoprefixer": "10.4.24",
@@ -172,7 +172,7 @@
     "@testing-library/user-event": "14.6.1",
     "@types/events": "3.0.3",
     "@types/mime-types": "3.0.1",
-    "@types/react": "19.2.13",
+    "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@types/react-is": "19.2.0",
     "@types/react-syntax-highlighter": "15.5.13",

@@ -5,7 +5,7 @@ import { useAutoResizeTextarea } from "@/hooks/useAutoResizeTextarea";
 import { useComposerImages } from "@/hooks/useComposerImages";
 import { useDebounce } from "@/hooks/use-debounce";
 import { motion } from "framer-motion";
-import { Loader2, Paperclip } from "lucide-react";
+import { Paperclip } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ComposerGlow } from "./composer-glow";
@@ -225,7 +225,7 @@ export function ComposerBox({ initialPrompt }: ComposerBoxProps) {
               ref={textareaRef}
               data-testid="composer-textarea"
               aria-label="Describe the app you want to create"
-              className="w-full rounded-xl glass-input px-4 py-3 text-base text-white placeholder:text-zinc-500 focus:outline-none resize-none min-h-[84px] max-h-[224px] bg-transparent"
+              className="w-full rounded-xl glass-input px-5 py-4 text-base text-white/90 placeholder:text-zinc-500 focus:outline-none resize-none min-h-[96px] max-h-[224px] bg-transparent tracking-wide leading-relaxed"
               rows={3}
               value={query}
               onChange={(e) => {
@@ -243,12 +243,12 @@ export function ComposerBox({ initialPrompt }: ComposerBoxProps) {
           </div>
 
           {/* Toolbar */}
-          <div className="flex items-center justify-between px-3 py-2 border-t border-white/5">
+          <div className="flex items-center justify-between px-4 py-2.5 border-t border-white/[0.07]">
             {/* Left: Attach image */}
             <button
               type="button"
               onClick={handleAttachClick}
-              className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-2 rounded-lg text-zinc-400 hover:text-cyan-400 hover:bg-white/10 hover:shadow-[0_0_8px_rgba(34,211,238,0.2)] transition-all"
               aria-label="Attach image"
             >
               <Paperclip className="h-4 w-4" />
@@ -259,16 +259,17 @@ export function ComposerBox({ initialPrompt }: ComposerBoxProps) {
 
             {/* Right: Keyboard hint + Create button */}
             <div className="flex items-center gap-2">
-              <kbd className="hidden sm:inline-block text-xs text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded">
+              <kbd className="hidden sm:inline-block text-xs text-zinc-500 bg-white/5 border border-white/[0.06] px-2 py-1 rounded font-mono">
                 {"\u2318"}Enter
               </kbd>
               <Button
                 type="submit"
                 data-testid="composer-submit"
-                className="bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-lg px-4 py-2"
-                disabled={isClassifying || !query.trim()}
+                size="sm"
+                loading={isClassifying}
+                disabled={!query.trim()}
               >
-                {isClassifying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
+                Create
               </Button>
             </div>
           </div>
@@ -294,7 +295,7 @@ export function ComposerBox({ initialPrompt }: ComposerBoxProps) {
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
-          className="absolute top-full left-0 right-0 mt-2 bg-popover border rounded-md shadow-lg z-50 overflow-hidden"
+          className="absolute top-full left-0 right-0 mt-2 glass-2 border border-white/10 rounded-xl shadow-magic z-50 overflow-hidden"
         >
           <div className="p-1">
             {results.map((result) => (
