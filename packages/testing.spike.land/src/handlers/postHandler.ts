@@ -343,8 +343,12 @@ export class PostHandler {
       }
 
       // Validate parts structure if present
-      const messageParts = typedMsg["parts"];
-      if (hasParts && Array.isArray(messageParts)) {
+      if (hasParts) {
+        const messageParts = typedMsg["parts"];
+        if (!Array.isArray(messageParts)) {
+          return `Message at index ${i} parts must be an array`;
+        }
+
         const parts = messageParts as Record<string, unknown>[];
         for (let j = 0; j < parts.length; j++) {
           const part = parts[j];

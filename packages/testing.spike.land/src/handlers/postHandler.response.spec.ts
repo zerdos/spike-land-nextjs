@@ -1,4 +1,4 @@
-import { type AnthropicProvider, createAnthropic } from "@ai-sdk/anthropic";
+import { createGoogleGenerativeAI, type GoogleGenerativeAIProvider } from "@ai-sdk/google";
 import type { CoreMessage, StreamTextResult } from "ai";
 import { jsonSchema, streamText, tool } from "ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -21,7 +21,7 @@ import {
 type StreamResult = StreamTextResult<any, unknown>;
 
 // Mock all external dependencies
-vi.mock("@ai-sdk/anthropic");
+vi.mock("@ai-sdk/google");
 vi.mock("ai");
 vi.mock("../services/storageService");
 
@@ -170,18 +170,18 @@ describe("PostHandler - Response", () => {
 
       vi.mocked(streamText).mockResolvedValue(mockStreamResponse as any);
 
-      const anthropicProvider = vi.fn().mockReturnValue(
-        "claude-4-sonnet-20250514",
-      ) as unknown as AnthropicProvider;
-      anthropicProvider.languageModel = vi.fn().mockReturnValue(
-        "claude-4-sonnet-20250514",
-      );
-      anthropicProvider.chat = vi.fn();
-      anthropicProvider.messages = vi.fn();
-      anthropicProvider.tools = createMockTools();
-      anthropicProvider.textEmbeddingModel = vi.fn();
-      vi.mocked(createAnthropic).mockReturnValue(
-        anthropicProvider as AnthropicProvider,
+      const mockGoogleModel = vi.fn().mockReturnValue("gemini-3-flash-preview");
+
+      const googleProvider = vi.fn().mockReturnValue(
+        mockGoogleModel,
+      ) as unknown as GoogleGenerativeAIProvider;
+
+      googleProvider.chat = vi.fn();
+      googleProvider.languageModel = vi.fn();
+      googleProvider.textEmbeddingModel = vi.fn();
+
+      vi.mocked(createGoogleGenerativeAI).mockReturnValue(
+        googleProvider as any,
       );
 
       await (postHandler as unknown as {
@@ -200,13 +200,12 @@ describe("PostHandler - Response", () => {
         "req-123",
       );
 
-      expect(createAnthropic).toHaveBeenCalledWith({
-        baseURL: "https://test.spike.land/anthropic",
+      expect(createGoogleGenerativeAI).toHaveBeenCalledWith({
         apiKey: "will be added later",
       });
 
       expect(streamText).toHaveBeenCalledWith({
-        model: "claude-4-sonnet-20250514",
+        model: mockGoogleModel,
         system: expect.stringContaining("CodeSpace: test-space"),
         messages,
         tools: tools.reduce((acc, t) => {
@@ -278,19 +277,14 @@ describe("PostHandler - Response", () => {
 
       vi.mocked(streamText).mockResolvedValue(mockStreamResponse as any);
 
-      // Mock createAnthropic properly
-      const anthropicProvider = vi.fn().mockReturnValue(
-        "claude-4-sonnet-20250514",
-      ) as unknown as AnthropicProvider;
-      anthropicProvider.languageModel = vi.fn().mockReturnValue(
-        "claude-4-sonnet-20250514",
-      );
-      anthropicProvider.chat = vi.fn();
-      anthropicProvider.messages = vi.fn();
-      anthropicProvider.tools = createMockTools();
-      anthropicProvider.textEmbeddingModel = vi.fn();
-      vi.mocked(createAnthropic).mockReturnValue(
-        anthropicProvider as AnthropicProvider,
+      // Mock createGoogleGenerativeAI properly
+      const mockGoogleModel = vi.fn().mockReturnValue("gemini-3-flash-preview");
+      const googleProvider = vi.fn().mockReturnValue(
+        mockGoogleModel,
+      ) as unknown as GoogleGenerativeAIProvider;
+
+      vi.mocked(createGoogleGenerativeAI).mockReturnValue(
+        googleProvider as any,
       );
 
       await (postHandler as unknown as {

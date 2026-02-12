@@ -141,6 +141,7 @@ export const createMockCode = (mcpServer = createMockMcpServer()): Code =>
 export const createMockEnv = (): Env =>
   ({
     ANTHROPIC_AUTH_TOKEN: "test-api-key",
+    GEMINI_API_KEY: "will be added later",
     R2: {} as unknown as R2Bucket,
   }) as unknown as Env;
 

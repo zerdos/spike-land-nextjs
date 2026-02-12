@@ -12,6 +12,7 @@ interface McpConfigSnippetProps {
 
 export function McpConfigSnippet({
   code,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   language,
   className,
 }: McpConfigSnippetProps) {

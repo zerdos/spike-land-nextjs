@@ -169,7 +169,11 @@ function checkRateLimitMemory(
 
     // Schedule cleanup for exactly when the window expires
     const timeoutId = setTimeout(() => {
-      rateLimitStore.delete(identifier);
+      // Verify the entry is still the same one we created (race condition protection)
+      const current = rateLimitStore.get(identifier);
+      if (current && current.firstRequest === now) {
+        rateLimitStore.delete(identifier);
+      }
     }, config.windowMs);
 
     // In Node.js, unref the timeout so it doesn't block process exit

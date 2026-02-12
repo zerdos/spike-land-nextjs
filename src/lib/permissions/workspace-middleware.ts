@@ -31,6 +31,18 @@ export async function getWorkspaceMembership(
   userId: string,
   workspaceId: string,
 ): Promise<WorkspaceMemberInfo | null> {
+  // Allow E2E tests to bypass membership checks if configured (DEV only)
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.E2E_BYPASS_AUTH
+  ) {
+    return {
+      workspaceId,
+      userId,
+      role: "OWNER",
+    };
+  }
+
   const { data: membership, error } = await tryCatch(
     prisma.workspaceMember.findUnique({
       where: {
