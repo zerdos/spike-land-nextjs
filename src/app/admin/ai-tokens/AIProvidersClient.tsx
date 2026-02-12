@@ -32,6 +32,7 @@ interface AIProvider {
   name: string;
   token: string;
   isDefault: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config: any; // Using any for JsonValue compatibility
   createdAt: Date;
   updatedAt: Date;

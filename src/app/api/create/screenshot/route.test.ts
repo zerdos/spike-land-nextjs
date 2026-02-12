@@ -197,7 +197,7 @@ describe("Screenshot API Route", () => {
     globalThis.fetch = vi.fn().mockResolvedValue(mockResponse);
 
     const response = await GET(createRequest("games/tetris"));
-    const data = await response.json();
+
 
     expect(response.status).toBe(200);
     expect(getCreatedApp).toHaveBeenCalledWith("games/tetris");
