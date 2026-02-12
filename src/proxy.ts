@@ -152,7 +152,7 @@ export async function proxy(request: NextRequest) {
 
   // Embed routes serve self-contained HTML with inline scripts and esm.sh
   // imports. They set their own CSP — don't override it from middleware.
-  const isEmbedRoute = /^\/api\/codespace\/[^/]+\/(embed|version\/\d+\/embed)$/.test(pathname);
+  const isEmbedRoute = /^\/api\/codespace\/[^/]+\/(embed|bundle|version\/\d+\/(embed|bundle))$/.test(pathname);
 
   // Generate CSP Nonce and Header
   const nonce = generateNonce();

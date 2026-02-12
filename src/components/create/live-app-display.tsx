@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 
@@ -15,7 +15,6 @@ interface LiveAppDisplayProps {
 
 export function LiveAppDisplay({
   codespaceId,
-  codespaceUrl,
   title,
   slug,
   className,
@@ -28,7 +27,7 @@ export function LiveAppDisplay({
     setIframeKey((prev) => prev + 1);
   }, []);
 
-  const iframeSrc = `https://testing.spike.land/live/${codespaceId}/`;
+  const iframeSrc = `/api/codespace/${codespaceId}/bundle`;
 
   return (
     <div className={cn("flex flex-col h-[calc(100vh-4rem)] w-full", className)}>
@@ -61,13 +60,21 @@ export function LiveAppDisplay({
             <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
           </button>
           <a
-            href={codespaceUrl}
+            href={`/api/codespace/${codespaceId}/bundle`}
             target="_blank"
             rel="noopener noreferrer"
             className="p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors"
             title="Open in new tab"
           >
             <ExternalLink className="w-4 h-4" />
+          </a>
+          <a
+            href={`/api/codespace/${codespaceId}/bundle?download=true`}
+            download={`${codespaceId}.html`}
+            className="p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors"
+            title="Download as HTML"
+          >
+            <Download className="w-4 h-4" />
           </a>
         </div>
       </div>
