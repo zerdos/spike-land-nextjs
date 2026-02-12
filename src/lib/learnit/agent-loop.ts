@@ -49,7 +49,7 @@ export async function* agentGenerateLearnIt(
 
   yield { type: "agent", name: "Claude Opus", model: "claude-opus-4-6" };
 
-  const anthropic = getClaudeClient();
+  const anthropic = await getClaudeClient();
   const prompt = buildLearnItPrompt(topic);
 
   const messageStream = anthropic.messages.stream({

@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { memo, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ThemeSelectorModal } from "./ThemeSelectorModal";
 
 type FeedbackType = "BUG" | "IDEA" | "OTHER";
 
@@ -34,6 +35,7 @@ export const FeedbackButton = memo(
     const [message, setMessage] = useState("");
     const [email, setEmail] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [themeModalOpen, setThemeModalOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const { data: session, status } = useSession();
@@ -93,6 +95,14 @@ export const FeedbackButton = memo(
     const handleSubmit = async () => {
       if (!message.trim()) {
         toast.error("Please enter a message");
+        return;
+      }
+
+      // Secret theme selector trigger
+      if (pathname === "/" && message.trim().toLowerCase() === "themes") {
+        setOpen(false);
+        setThemeModalOpen(true);
+        resetForm();
         return;
       }
 
@@ -319,6 +329,11 @@ export const FeedbackButton = memo(
             ? <X className="h-5 w-5" />
             : <MessageSquare className="h-5 w-5" />}
         </Button>
+
+        <ThemeSelectorModal
+          open={themeModalOpen}
+          onOpenChange={setThemeModalOpen}
+        />
       </div>
     );
   },

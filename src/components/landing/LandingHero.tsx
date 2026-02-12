@@ -5,7 +5,7 @@ import { TemplateCards } from "@/components/landing/TemplateCards";
 import { CreationStats } from "@/components/landing/CreationStats";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef, useState, useCallback } from "react";
 
@@ -61,7 +61,7 @@ export function LandingHero({ stats }: LandingHeroProps) {
             className="relative text-5xl sm:text-7xl md:text-9xl font-bold text-white max-w-5xl mx-auto leading-none mb-8 tracking-tighter py-2"
           >
             Build the <br />
-            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient-x font-black drop-shadow-[0_0_30px_rgba(168,85,247,0.25)]">
+            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient-x font-black drop-shadow-[0_0_50px_rgba(168,85,247,0.4)]">
               Impossible.
             </span>
           </motion.h1>
@@ -83,7 +83,7 @@ export function LandingHero({ stats }: LandingHeroProps) {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.35 }}
-          className="max-w-2xl mx-auto"
+          className="max-w-2xl mx-auto relative z-20"
         >
           <ComposerBox initialPrompt={templatePrompt} />
         </motion.div>
@@ -93,6 +93,7 @@ export function LandingHero({ stats }: LandingHeroProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.45 }}
+          className="relative z-10"
         >
           <TemplateCards onSelect={handleTemplateSelect} />
         </motion.div>
@@ -128,10 +129,22 @@ export function LandingHero({ stats }: LandingHeroProps) {
         </motion.div>
       </motion.div>
 
+      {/* Scroll Indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5, duration: 1 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-zinc-500 animate-bounce z-20 cursor-pointer"
+        onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}
+      >
+        <ChevronDown className="w-8 h-8 opacity-50 hover:opacity-100 transition-opacity" />
+      </motion.div>
+
       {/* Decorative elements - Overlapping color orbs */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute w-[600px] h-[600px] rounded-full bg-cyan-500/[0.04] blur-[120px] animate-float-slow" style={{ top: "20%", left: "30%" }} />
         <div className="absolute w-[500px] h-[500px] rounded-full bg-purple-500/[0.04] blur-[120px] animate-float-slow-reverse" style={{ top: "60%", left: "60%" }} />
+        <div className="absolute w-[400px] h-[400px] rounded-full bg-pink-500/[0.03] blur-[100px] animate-pulse" style={{ top: "40%", left: "50%" }} />
       </div>
     </section>
   );

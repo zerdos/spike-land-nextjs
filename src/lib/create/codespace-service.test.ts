@@ -58,6 +58,8 @@ describe("codespace-service", () => {
     it("should call API and return success", async () => {
       mockTranspileCode.mockResolvedValueOnce("transpiled-code");
       mockUpsertSession.mockResolvedValueOnce(undefined);
+      const fetchSpy = vi.fn().mockResolvedValue({ ok: true });
+      vi.stubGlobal("fetch", fetchSpy);
 
       const result = await updateCodespace("test-id", "console.log('hi')");
 
@@ -71,6 +73,17 @@ describe("codespace-service", () => {
         css: "",
         messages: [],
       });
+      
+      // Wait for background sync
+      await new Promise(resolve => setTimeout(resolve, 0));
+      expect(fetchSpy).toHaveBeenCalledWith(
+        "https://testing.spike.land/api-v1/test-id/code",
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify({ code: "console.log('hi')", run: true }),
+        })
+      );
+      vi.unstubAllGlobals();
     });
 
     it("should handle API failure", async () => {

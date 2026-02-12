@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
   }
 
   const resolvedModel = MODEL_MAP[(model as ClaudeModel) ?? "sonnet"] ?? MODEL_MAP.sonnet;
-  const anthropic = getClaudeClient();
+  const anthropic = await getClaudeClient();
 
   const stream = new ReadableStream({
     async start(controller) {

@@ -281,7 +281,7 @@ async function* generateStream(
   slug: string,
   userId: string | undefined,
 ): AsyncGenerator<StreamEvent> {
-  if (isClaudeConfigured()) {
+  if (await isClaudeConfigured()) {
     const circuitState = await getCircuitState();
 
     if (circuitState === "OPEN") {
@@ -323,7 +323,7 @@ async function* generateWithGemini(
   const prompt = buildLearnItPrompt(topic);
 
   try {
-    const ai = getGeminiClient();
+    const ai = await getGeminiClient();
 
     const response = await ai.models.generateContentStream({
       model: "gemini-3-flash-preview",

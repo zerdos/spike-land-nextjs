@@ -34,6 +34,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/merch", label: "Merch", icon: "🛍️" },
   { href: "/admin/bolt", label: "Bolt", icon: "⚡" },
   { href: "/admin/mcp-health", label: "MCP Health", icon: "🔌" },
+  { href: "/admin/ai-tokens", label: "AI Tokens", icon: "🔑" },
 ];
 
 interface AdminSidebarProps {

@@ -52,7 +52,7 @@ export async function generateLearnItTopic(
   const topic = path.join(" > ");
 
   // Try Claude Opus 4.6 first
-  if (isClaudeConfigured()) {
+  if (await isClaudeConfigured()) {
     try {
       const result = await generateWithClaude(topic);
       if (result) return { ...result, aiModel: "claude-opus-4-6" };
@@ -81,7 +81,7 @@ export async function generateLearnItTopic(
 async function generateWithClaude(
   topic: string,
 ): Promise<GeneratedLearnItContent | null> {
-  const anthropic = getClaudeClient();
+  const anthropic = await getClaudeClient();
 
   const prompt = `${LEARNIT_STRUCTURED_PROMPT}
 

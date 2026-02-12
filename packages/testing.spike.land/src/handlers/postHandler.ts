@@ -1,4 +1,4 @@
-import { createAnthropic } from "@ai-sdk/anthropic";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { jsonSchema as aiJsonSchema, streamText, tool } from "ai";
 import type { ModelMessage } from "ai";
 import type { Code } from "../chatRoom";
@@ -93,11 +93,11 @@ function isToolDefinition(value: unknown): value is ToolDefinition {
   const obj = value as Record<string, unknown>;
 
   // A tool definition should have at least input_schema or custom with input_schema
-  const hasInputSchema = "input_schema" in obj && obj.input_schema !== null;
+  const hasInputSchema = "input_schema" in obj && obj["input_schema"] !== null;
   const hasCustomInputSchema = "custom" in obj &&
-    typeof obj.custom === "object" &&
-    obj.custom !== null &&
-    "input_schema" in (obj.custom as Record<string, unknown>);
+    typeof obj["custom"] === "object" &&
+    obj["custom"] !== null &&
+    "input_schema" in (obj["custom"] as Record<string, unknown>);
 
   return hasInputSchema || hasCustomInputSchema;
 }
@@ -301,15 +301,15 @@ export class PostHandler {
       const typedMsg = msg as Record<string, unknown>;
 
       if (
-        !typedMsg.role || typeof typedMsg.role !== "string" ||
-        !VALID_ROLES.includes(typedMsg.role as ValidRole)
+        !typedMsg["role"] || typeof typedMsg["role"] !== "string" ||
+        !VALID_ROLES.includes(typedMsg["role"] as ValidRole)
       ) {
         return `Message at index ${i} must have a valid role (${VALID_ROLES.join(", ")})`;
       }
 
       // Support both 'content' and 'parts' fields
-      const hasContent = typedMsg.content !== undefined;
-      const hasParts = typedMsg.parts !== undefined;
+      const hasContent = typedMsg["content"] !== undefined;
+      const hasParts = typedMsg["parts"] !== undefined;
 
       if (!hasContent && !hasParts) {
         return `Message at index ${i} must have either 'content' or 'parts'`;
@@ -324,15 +324,17 @@ export class PostHandler {
       // Validate content structure if present
       if (hasContent) {
         if (
-          typeof typedMsg.content !== "string" &&
-          !Array.isArray(typedMsg.content)
+          typeof typedMsg["content"] !== "string" &&
+          !Array.isArray(typedMsg["content"])
         ) {
           return `Message at index ${i} content must be a string or array`;
         }
 
-        if (Array.isArray(typedMsg.content)) {
-          for (let j = 0; j < typedMsg.content.length; j++) {
-            const part = typedMsg.content[j];
+        const content = typedMsg["content"];
+        if (Array.isArray(content)) {
+          const contentParts = content as Record<string, unknown>[];
+          for (let j = 0; j < contentParts.length; j++) {
+            const part = contentParts[j];
             if (!part || typeof part !== "object" || !("type" in part)) {
               return `Message at index ${i}, content part ${j} must have a type`;
             }
@@ -341,13 +343,11 @@ export class PostHandler {
       }
 
       // Validate parts structure if present
-      if (hasParts) {
-        if (!Array.isArray(typedMsg.parts)) {
-          return `Message at index ${i} parts must be an array`;
-        }
-
-        for (let j = 0; j < typedMsg.parts.length; j++) {
-          const part = typedMsg.parts[j];
+      const messageParts = typedMsg["parts"];
+      if (hasParts && Array.isArray(messageParts)) {
+        const parts = messageParts as Record<string, unknown>[];
+        for (let j = 0; j < parts.length; j++) {
+          const part = parts[j];
           if (!part || typeof part !== "object" || !("type" in part)) {
             return `Message at index ${i}, part ${j} must have a type`;
           }
@@ -435,19 +435,15 @@ export class PostHandler {
     codeSpace: string,
     requestId: string,
   ): Promise<Response> {
-    const origin = this.code.getOrigin();
     const systemPrompt = this.createSystemPrompt(codeSpace);
-    const anthropic = createAnthropic({
-      baseURL: `${origin}/anthropic`,
-      apiKey: `will be added later`,
+    const google = createGoogleGenerativeAI({
+      apiKey: this.env.GEMINI_API_KEY,
     });
 
     // Log message count and types instead of full content for privacy
     const messageSummary = messages.map((m) => ({
       role: m.role,
-      contentLength: typeof m.content === "string"
-        ? m.content.length
-        : m.content.length,
+      contentLength: Array.isArray(m.content) ? m.content.length : String(m.content).length,
     }));
     console.log(
       `[AI Routes][${requestId}] Creating stream with ${messages.length} messages, summary:`,
@@ -497,7 +493,7 @@ export class PostHandler {
       }
 
       const result = await streamText({
-        model: anthropic("claude-4-sonnet-20250514"),
+        model: google("gemini-3-flash-preview"),
         system: systemPrompt,
         messages,
         tools: disableTools ? undefined : processedTools,
@@ -510,8 +506,8 @@ export class PostHandler {
               // The AI SDK returns toolResults with various structures depending on the tool
               const toolMessages = stepResult.toolResults.map(
                 (result: unknown) => ({
-                  role: "assistant" as const,
-                  content: JSON.stringify(result),
+                  ["role"]: "assistant" as const,
+                  ["content"]: JSON.stringify(result),
                 }),
               );
 
@@ -613,9 +609,9 @@ export class PostHandler {
       );
 
       // Validate that the inputSchema has type: 'object'
-      if (mcpTool.inputSchema.type !== "object") {
+      if (mcpTool["inputSchema"].type !== "object") {
         console.error(
-          `[AI Routes][${requestId}] Tool '${mcpTool.name}' has invalid inputSchema.type: '${mcpTool.inputSchema.type}', expected 'object'`,
+          `[AI Routes][${requestId}] Tool '${mcpTool.name}' has invalid inputSchema.type: '${mcpTool["inputSchema"].type}', expected 'object'`,
         );
         return acc;
       }
@@ -625,8 +621,8 @@ export class PostHandler {
       // We've already validated that type === "object" above
       const schemaDefinition = aiJsonSchema<Record<string, unknown>>({
         type: "object" as const,
-        properties: mcpTool.inputSchema.properties,
-        required: mcpTool.inputSchema.required,
+        properties: mcpTool["inputSchema"].properties,
+        required: mcpTool["inputSchema"].required,
       });
 
       // Create the tool - using AI SDK's tool() with JSON Schema

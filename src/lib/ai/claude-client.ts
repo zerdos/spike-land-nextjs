@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { resolveAIProviderConfig } from "./ai-config-resolver";
 
 /**
  * Shared Claude (Anthropic) client singleton.
@@ -10,17 +11,10 @@ import Anthropic from "@anthropic-ai/sdk";
 
 let client: Anthropic | null = null;
 
-function resolveAuth(): { authToken?: string } {
-  const authToken =
-    process.env["ANTHROPIC_AUTH_TOKEN"] ?? process.env["CLAUDE_CODE_OAUTH_TOKEN"];
-  if (authToken) return { authToken };
-
-  return {};
-}
-
-export function getClaudeClient(): Anthropic {
+export async function getClaudeClient(): Promise<Anthropic> {
   if (!client) {
-    const { authToken } = resolveAuth();
+    const config = await resolveAIProviderConfig("anthropic");
+    const authToken = config?.token ?? (process.env["ANTHROPIC_AUTH_TOKEN"] ?? process.env["CLAUDE_CODE_OAUTH_TOKEN"]);
 
     client = new Anthropic({
       apiKey: null,
@@ -41,8 +35,10 @@ export function getClaudeClient(): Anthropic {
   return client;
 }
 
-export function isClaudeConfigured(): boolean {
+export async function isClaudeConfigured(): Promise<boolean> {
+  const config = await resolveAIProviderConfig("anthropic");
   return !!(
+    config?.token ||
     process.env["ANTHROPIC_AUTH_TOKEN"] ||
     process.env["CLAUDE_CODE_OAUTH_TOKEN"]
   );

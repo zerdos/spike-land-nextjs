@@ -78,7 +78,7 @@ export async function callClaude(params: {
     temperature = 0.5,
   } = params;
 
-  const anthropic = getClaudeClient();
+  const anthropic = await getClaudeClient();
 
   // Build system content blocks with split caching
   const systemBlocks = buildSystemBlocks(systemPrompt, stablePrefix, dynamicSuffix);
