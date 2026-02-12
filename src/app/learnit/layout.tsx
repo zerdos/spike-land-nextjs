@@ -8,20 +8,22 @@ export default function LearnItLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-zinc-950">
-      <header className="border-b border-white/[0.06] sticky top-0 z-40 bg-zinc-950/80 backdrop-blur-md">
+    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30 selection:text-emerald-100">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.05] bg-zinc-950/0 backdrop-blur-xl transition-all duration-300">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link
             href="/learnit"
-            className="flex items-center gap-2 font-bold text-xl text-white hover:opacity-80 transition-opacity"
+            className="flex items-center gap-2 font-bold text-xl tracking-tight hover:opacity-80 transition-opacity"
           >
-            <BookMarked className="w-6 h-6 text-emerald-400" />
+            <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+               <BookMarked className="w-5 h-5 text-emerald-400" />
+            </div>
             <span>LearnIt</span>
           </Link>
-          <nav>
+          <nav className="flex items-center gap-4">
             <Link
               href="/learnit"
-              className="p-2 rounded-lg text-zinc-400 hover:text-emerald-400 hover:bg-white/10 transition-all"
+              className="p-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 transition-all"
               aria-label="Search topics"
             >
               <Search className="w-5 h-5" />
@@ -29,7 +31,7 @@ export default function LearnItLayout({
           </nav>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-8">
+      <main className="pt-20 min-h-screen">
         {children}
       </main>
     </div>
