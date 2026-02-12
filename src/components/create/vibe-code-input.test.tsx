@@ -3,11 +3,13 @@ import { describe, expect, it, vi } from "vitest";
 
 const mockSendMessage = vi.fn();
 let mockIsStreaming = false;
+let mockMode: "plan" | "edit" = "edit";
 
 vi.mock("./vibe-code-provider", () => ({
   useVibeCode: () => ({
     sendMessage: mockSendMessage,
     isStreaming: mockIsStreaming,
+    mode: mockMode,
   }),
 }));
 
@@ -55,6 +57,7 @@ describe("VibeCodeInput", () => {
   beforeEach(() => {
     mockSendMessage.mockClear();
     mockIsStreaming = false;
+    mockMode = "edit";
   });
 
   it("renders textarea and buttons", () => {
@@ -263,5 +266,23 @@ describe("VibeCodeInput", () => {
     fireEvent.keyDown(textarea, { key: "Enter", shiftKey: false });
 
     expect(mockSendMessage).not.toHaveBeenCalled();
+  });
+
+  it("shows plan mode placeholder when mode is plan", () => {
+    mockMode = "plan";
+    render(<VibeCodeInput />);
+
+    expect(
+      screen.getByPlaceholderText("Ask about the code..."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows edit mode placeholder when mode is edit", () => {
+    mockMode = "edit";
+    render(<VibeCodeInput />);
+
+    expect(
+      screen.getByPlaceholderText("Describe changes..."),
+    ).toBeInTheDocument();
   });
 });

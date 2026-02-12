@@ -34,6 +34,12 @@ vi.mock("lucide-react", () => ({
   Brain: ({ className }: { className?: string }) => (
     <span data-testid="brain-icon" className={className} />
   ),
+  Eye: ({ className }: { className?: string }) => (
+    <span data-testid="eye-icon" className={className} />
+  ),
+  Pencil: ({ className }: { className?: string }) => (
+    <span data-testid="pencil-icon" className={className} />
+  ),
   Wrench: ({ className }: { className?: string }) => (
     <span data-testid="wrench-icon" className={className} />
   ),
@@ -114,5 +120,23 @@ describe("VibeCodePanel", () => {
     render(<VibeCodePanel />);
     expect(screen.getByTestId("brain-icon")).toBeInTheDocument();
     expect(screen.getByTestId("wrench-icon")).toBeInTheDocument();
+  });
+
+  it("shows plan mode indicator banner when in plan mode", () => {
+    mockMode = "plan";
+    render(<VibeCodePanel />);
+    expect(
+      screen.getByText("Read-only — analyzing code, no changes"),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("eye-icon")).toBeInTheDocument();
+  });
+
+  it("shows edit mode indicator banner when in edit mode", () => {
+    mockMode = "edit";
+    render(<VibeCodePanel />);
+    expect(
+      screen.getByText("Edit mode — AI can modify your code"),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("pencil-icon")).toBeInTheDocument();
   });
 });

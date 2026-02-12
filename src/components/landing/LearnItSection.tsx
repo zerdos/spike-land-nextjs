@@ -16,7 +16,7 @@ const features = [
   },
   {
     icon: Brain,
-    title: "Powered by Claude 4.7 Opus",
+    title: "Powered by Claude 4.6 Opus",
     description: "State-of-the-art AI generates accurate, in-depth educational content",
     gradient: "from-teal-500/20 to-cyan-500/20",
     hoverGlow: "rgba(20,184,166,0.2)",
@@ -68,7 +68,7 @@ export function LearnItSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-xl text-zinc-500 mb-16 max-w-2xl mx-auto font-light"
           >
-            A wiki about absolutely anything — you choose the topic. Powered by Claude 4.7 Opus,
+            A wiki about absolutely anything — you choose the topic. Powered by Claude 4.6 Opus,
             the must-have tool in education.
           </motion.p>
 

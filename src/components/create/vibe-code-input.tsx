@@ -12,7 +12,7 @@ interface ImagePreview {
 }
 
 export function VibeCodeInput() {
-  const { sendMessage, isStreaming } = useVibeCode();
+  const { sendMessage, isStreaming, mode } = useVibeCode();
   const [text, setText] = useState("");
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [includeScreenshot, setIncludeScreenshot] = useState(false);
@@ -147,7 +147,7 @@ export function VibeCodeInput() {
             adjustHeight();
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Describe changes..."
+          placeholder={mode === "plan" ? "Ask about the code..." : "Describe changes..."}
           rows={1}
           className="flex-1 resize-none bg-muted rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           style={{ minHeight: "36px" }}

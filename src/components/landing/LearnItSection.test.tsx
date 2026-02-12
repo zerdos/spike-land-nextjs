@@ -36,7 +36,7 @@ describe("LearnItSection", () => {
   it("renders all three feature cards", () => {
     render(<LearnItSection />);
     expect(screen.getByText("Works from URL")).toBeInTheDocument();
-    expect(screen.getByText("Powered by Claude 4.7 Opus")).toBeInTheDocument();
+    expect(screen.getByText("Powered by Claude 4.6 Opus")).toBeInTheDocument();
     expect(screen.getByText("Listen to any article")).toBeInTheDocument();
   });
 
