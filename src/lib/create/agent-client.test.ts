@@ -17,6 +17,7 @@ import {
   callClaude,
   type ClaudeResponse,
   extractCodeFromResponse,
+  isAuthError,
   parseGenerationResponse,
   parseMarkdownResponse,
 } from "./agent-client";
@@ -208,6 +209,33 @@ describe("agent-client", () => {
       await expect(
         callClaude({ systemPrompt: "sys", userPrompt: "usr" }),
       ).rejects.toThrow("API rate limit exceeded");
+    });
+  });
+
+  // ---------------------------------------------------------------
+  // isAuthError
+  // ---------------------------------------------------------------
+  describe("isAuthError", () => {
+    it("should return true for 401 status", () => {
+      expect(isAuthError({ status: 401, message: "Unauthorized" })).toBe(true);
+    });
+
+    it("should return false for other status codes", () => {
+      expect(isAuthError({ status: 429, message: "Rate limited" })).toBe(false);
+      expect(isAuthError({ status: 500, message: "Server error" })).toBe(false);
+      expect(isAuthError({ status: 403, message: "Forbidden" })).toBe(false);
+    });
+
+    it("should return false for non-objects", () => {
+      expect(isAuthError(null)).toBe(false);
+      expect(isAuthError(undefined)).toBe(false);
+      expect(isAuthError("error")).toBe(false);
+      expect(isAuthError(401)).toBe(false);
+    });
+
+    it("should return false for objects without status property", () => {
+      expect(isAuthError({ message: "no status" })).toBe(false);
+      expect(isAuthError(new Error("plain error"))).toBe(false);
     });
   });
 

@@ -129,7 +129,10 @@ function addMissingIconImports(code: string): string {
 }
 
 export function cleanCode(code: string): string {
-  const cleaned = code.replace(/^```tsx?/, "").replace(/^```/, "").replace(/```$/, "").trim();
+  const cleaned = code
+    .replace(/^\s*```(?:tsx|typescript|jsx|javascript|ts|js)?\s*\n?/, "")
+    .replace(/\n?\s*```\s*$/, "")
+    .trim();
   // First add missing imports, then prune unused — order matters
   return pruneUnusedIcons(addMissingIconImports(cleaned));
 }

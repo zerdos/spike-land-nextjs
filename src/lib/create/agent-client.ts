@@ -3,7 +3,7 @@ import type {
   ContentBlockParam,
   TextBlock,
 } from "@anthropic-ai/sdk/resources/messages.js";
-import { getClaudeClient } from "@/lib/ai/claude-client";
+import { getClaudeClient, resetClaudeClient } from "@/lib/ai/claude-client";
 import { generateAgentResponse } from "@/lib/ai/gemini-client";
 
 export interface ClaudeResponse {
@@ -35,6 +35,13 @@ function isRetryableError(error: unknown): boolean {
   if (error && typeof error === "object" && "status" in error) {
     const status = (error as APIError).status;
     return typeof status === "number" && RETRYABLE_STATUS_CODES.has(status);
+  }
+  return false;
+}
+
+export function isAuthError(error: unknown): boolean {
+  if (error && typeof error === "object" && "status" in error) {
+    return (error as APIError).status === 401;
   }
   return false;
 }
@@ -116,6 +123,10 @@ export async function callClaude(params: {
       };
     } catch (error) {
       lastError = error;
+
+      if (isAuthError(error)) {
+        resetClaudeClient();
+      }
 
       if (!isRetryableError(error) || attempt >= CLAUDE_MAX_RETRIES) {
         // If we've exhausted retries (or error is not retryable) and the model was Opus, fall back to Gemini Flash

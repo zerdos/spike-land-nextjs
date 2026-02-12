@@ -2,6 +2,7 @@ import { CreatedAppStatus } from "@prisma/client";
 import {
   callClaude,
   extractCodeFromResponse,
+  isAuthError,
   parseGenerationResponse,
 } from "./agent-client";
 import {
@@ -388,6 +389,9 @@ export async function* agentGenerateApp(
           error: fixError,
           iteration: ctx.iteration,
         });
+        if (isAuthError(fixError)) {
+          throw fixError;
+        }
       }
 
       // === LEARNING: Collect error/fix pair for batch extraction later ===

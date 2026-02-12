@@ -4,6 +4,7 @@ import {
   attemptCodeCorrection,
   buildSystemPrompt,
   buildUserPrompt,
+  cleanCode,
   extractCodeFromRawText,
   extractKeywords,
   generateAppContent,
@@ -53,6 +54,44 @@ describe("content-generator", () => {
       expect(extractKeywords("to-do-list")).toEqual(["list"]);
       expect(extractKeywords("tools/my_calculator")).toEqual(["tools", "calculator"]);
       expect(extractKeywords("a-note-for-the-day")).toEqual(["note", "day"]);
+    });
+  });
+
+  describe("cleanCode", () => {
+    it("should strip ```tsx fences", () => {
+      expect(cleanCode("```tsx\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip ```typescript fences (the bug case)", () => {
+      expect(cleanCode("```typescript\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip ```javascript fences", () => {
+      expect(cleanCode("```javascript\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip ```jsx fences", () => {
+      expect(cleanCode("```jsx\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip ```ts fences", () => {
+      expect(cleanCode("```ts\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip ```js fences", () => {
+      expect(cleanCode("```js\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip bare ``` fences", () => {
+      expect(cleanCode("```\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should return code unchanged when no fences are present", () => {
+      expect(cleanCode("const x = 1;")).toBe("const x = 1;");
+    });
+
+    it("should handle leading whitespace before fences", () => {
+      expect(cleanCode("  ```tsx\nconst x = 1;\n```")).toBe("const x = 1;");
     });
   });
 
