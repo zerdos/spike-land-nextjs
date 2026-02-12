@@ -20,7 +20,6 @@ export function McpConfigSnippet({
   label = "Config",
   code,
   config,
-  language = "json",
   className,
 }: McpConfigSnippetProps) {
   const [copied, setCopied] = useState(false);
