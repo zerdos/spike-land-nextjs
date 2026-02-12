@@ -1,8 +1,14 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
+// Mock the esbuild init singleton (must come before esbuild-wasm import)
+vi.mock("./esbuild-init", () => ({
+  ensureEsbuildInitialized: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Mock esbuild-wasm
 vi.mock("esbuild-wasm", () => ({
   build: vi.fn(),
+  initialize: vi.fn(),
 }));
 
 // Mock fetch for the plugin

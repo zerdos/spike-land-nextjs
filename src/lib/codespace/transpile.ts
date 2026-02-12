@@ -9,6 +9,9 @@ export async function transpileCode(
   code: string,
   _origin?: string,
 ): Promise<string> {
+  const { ensureEsbuildInitialized } = await import("./esbuild-init");
+  await ensureEsbuildInitialized();
+
   const { transform } = await import("esbuild-wasm");
   const result = await transform(code, {
     loader: "tsx",
