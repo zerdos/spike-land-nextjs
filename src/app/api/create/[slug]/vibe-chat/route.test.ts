@@ -84,7 +84,9 @@ function createAsyncIterable<T>(items: T[]): AsyncIterable<T> {
       return {
         async next(): Promise<IteratorResult<T>> {
           if (index < items.length) {
-            return { value: items[index++], done: false };
+            const value = items[index] as T;
+            index += 1;
+            return { value, done: false };
           }
           return { value: undefined as any, done: true };
         },

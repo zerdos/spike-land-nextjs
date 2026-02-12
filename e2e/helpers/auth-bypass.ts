@@ -8,6 +8,13 @@
 
 import type { Page } from "@playwright/test";
 
+function getSessionEndpoint(page: Page): string {
+  const pageUrl = page.url();
+  const fallbackBaseUrl = process.env.BASE_URL || "http://localhost:3000";
+  const baseUrl = pageUrl.startsWith("http") ? pageUrl : fallbackBaseUrl;
+  return new URL("/api/auth/session", baseUrl).toString();
+}
+
 /**
  * Verify that E2E auth bypass is working correctly
  *
@@ -21,6 +28,7 @@ import type { Page } from "@playwright/test";
 export async function verifyAuthBypass(page: Page): Promise<boolean> {
   try {
     console.log("[Auth Bypass] Verifying E2E auth bypass...");
+    const sessionEndpoint = getSessionEndpoint(page);
 
     // Check if E2E cookies are set
     const cookies = await page.context().cookies();
@@ -40,9 +48,9 @@ export async function verifyAuthBypass(page: Page): Promise<boolean> {
 
     // Check if session API is being intercepted
     // We'll make a request and verify it returns mock data
-    const sessionResponse = await page.evaluate(async () => {
+    const sessionResponse = await page.evaluate(async (endpoint) => {
       try {
-        const response = await fetch("/api/auth/session");
+        const response = await fetch(endpoint);
         const data = await response.json();
         return {
           ok: response.ok,
@@ -56,7 +64,7 @@ export async function verifyAuthBypass(page: Page): Promise<boolean> {
           error: error instanceof Error ? error.message : String(error),
         };
       }
-    });
+    }, sessionEndpoint);
 
     console.log("[Auth Bypass] Session API check:", sessionResponse);
 
@@ -102,10 +110,11 @@ export async function waitForAuthReady(
   );
 
   try {
+    const sessionEndpoint = getSessionEndpoint(page);
     await page.waitForFunction(
-      async (expected) => {
+      async ({ expected, endpoint }) => {
         try {
-          const response = await fetch("/api/auth/session");
+          const response = await fetch(endpoint);
           if (!response.ok) return false;
 
           const data = await response.json();
@@ -118,7 +127,7 @@ export async function waitForAuthReady(
           return false;
         }
       },
-      expectAuthenticated,
+      { expected: expectAuthenticated, endpoint: sessionEndpoint },
       { timeout },
     );
 
@@ -148,6 +157,7 @@ export async function debugAuthState(page: Page): Promise<Record<string, unknown
   console.log("[Auth Bypass] Capturing auth state for debugging...");
 
   try {
+    const sessionEndpoint = getSessionEndpoint(page);
     // Get all cookies
     const allCookies = await page.context().cookies();
     const e2eCookies = allCookies.filter((c) => c.name.startsWith("e2e-"));
@@ -156,9 +166,9 @@ export async function debugAuthState(page: Page): Promise<Record<string, unknown
     );
 
     // Get session API response
-    const sessionData = await page.evaluate(async () => {
+    const sessionData = await page.evaluate(async (endpoint) => {
       try {
-        const response = await fetch("/api/auth/session");
+        const response = await fetch(endpoint);
         return {
           status: response.status,
           ok: response.ok,
@@ -169,7 +179,7 @@ export async function debugAuthState(page: Page): Promise<Record<string, unknown
           error: error instanceof Error ? error.message : String(error),
         };
       }
-    });
+    }, sessionEndpoint);
 
     // Get client-side session state (if useSession hook is available)
     const clientSessionState = await page.evaluate(() => {

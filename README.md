@@ -2,7 +2,7 @@
 
 **Orbit** is your comprehensive social media management platform powered by AI. Manage multiple accounts, automate workflows, and optimize your social presence—all from one unified command center.
 
-Built on Next.js 16 with TypeScript, Tailwind CSS 4, shadcn/ui components, comprehensive testing (100% coverage), and automated CI/CD pipeline.
+Built on Next.js 16 with TypeScript, Tailwind CSS 4, shadcn/ui components, comprehensive testing with enforced CI coverage thresholds, and automated CI/CD pipeline.
 
 [![CI/CD Pipeline](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml)
 
@@ -46,7 +46,7 @@ Built on Next.js 16 with TypeScript, Tailwind CSS 4, shadcn/ui components, compr
 - 🔐 **NextAuth.js v5** - Authentication with GitHub, Google, Facebook, and Apple OAuth
 - 🎨 **Tailwind CSS 4** - Modern styling with CSS variables
 - 🧩 **shadcn/ui** - Beautiful, accessible UI components
-- ✅ **100% Test Coverage** - Vitest + React Testing Library
+- ✅ **Enforced Coverage Thresholds** - Vitest + React Testing Library (see `vitest.config.ts`)
 - 🎭 **E2E Testing** - Playwright + Cucumber (BDD)
 - 🚀 **Automated CI/CD** - GitHub Actions + Vercel
 - 🔒 **Branch Protection** - Enforced code quality standards
@@ -353,7 +353,7 @@ The project uses GitHub Actions for automated testing and deployment:
 #### 1. Test Job (Runs on all PRs and pushes)
 
 - ✅ Linting
-- ✅ Unit tests with 100% coverage
+- ✅ Unit tests with enforced coverage thresholds
 - ✅ Upload coverage to Codecov
 
 #### 2. Build Job (Only if tests pass)
@@ -407,11 +407,11 @@ To enforce code quality, you **must** set up branch protection for `main`:
 # 1. Create feature branch
 git checkout -b feature/my-feature
 
-# 2. Make changes and write tests (100% coverage required)
+# 2. Make changes and write tests (CI coverage thresholds required)
 # ... edit files ...
 
 # 3. Run tests locally
-yarn test:coverage  # Must pass with 100% coverage
+yarn test:coverage  # Must pass configured CI coverage thresholds
 yarn build          # Must build successfully
 
 # 4. Commit and push
@@ -432,7 +432,7 @@ git push origin feature/my-feature
 ### Rules
 
 - ❌ **No direct commits to main** - All changes via Pull Requests
-- ✅ **All tests must pass** - 100% coverage required
+- ✅ **All tests must pass** - CI coverage thresholds enforced
 - ✅ **Build must succeed** - No broken builds
 - ✅ **Preview deployment required** - Every PR gets tested preview
 - ✅ **E2E tests required** - Must pass against preview before merge
@@ -474,7 +474,7 @@ git push origin feature/my-feature
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Write code and tests (100% coverage required)
+3. Write code and tests (CI coverage thresholds required)
 4. Ensure all tests pass (`yarn test:coverage`)
 5. Commit your changes (`git commit -m 'Add amazing feature'`)
 6. Push to the branch (`git push origin feature/amazing-feature`)

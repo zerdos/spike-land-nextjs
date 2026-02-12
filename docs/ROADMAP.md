@@ -4,6 +4,8 @@
 > **Current Phase**: Pivot Phase 9 (Documentation)
 > **Business Structure**: UK Limited Company (SPIKE LAND LTD - Company #16906682) - Fully Established
 
+> **Operational Note (February 12, 2026)**: CI/CD and daily smoke tests are under active stabilization. Treat reliability work as release-blocking until green status is sustained.
+
 ---
 
 ## 🔄 Strategic Pivot: January 2026
@@ -566,7 +568,7 @@ See [TECH_STABILIZATION_SPRINT_2.md](./TECH_STABILIZATION_SPRINT_2.md) for full 
 
 1. Pick a task from the "In Progress" or "Upcoming" sections
 2. Create a feature branch: `git checkout -b feature/task-name`
-3. Implement with tests (100% coverage required)
+3. Implement with tests (must satisfy current CI coverage thresholds)
 4. Submit PR with detailed description
 5. Wait for CI checks and code review
 

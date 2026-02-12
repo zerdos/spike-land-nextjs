@@ -93,15 +93,16 @@ interface SmokeTestReport {
  */
 async function verifyRouteInterceptor(
   page: Page,
+  baseUrl: string,
   expectedRole: "USER" | "ADMIN",
   maxRetries = 3,
 ): Promise<boolean> {
   for (let i = 0; i < maxRetries; i++) {
     try {
-      const response = await page.evaluate(async () => {
-        const res = await fetch("/api/auth/session");
+      const response = await page.evaluate(async (endpoint) => {
+        const res = await fetch(endpoint);
         return res.json();
-      });
+      }, new URL("/api/auth/session", baseUrl).toString());
 
       if (response?.user?.role === expectedRole) {
         return true;
@@ -204,7 +205,7 @@ async function mockAuthSession(
 
   // PHASE 1: Pre-warm the interceptor by making a test request
   // This forces the route interceptor to activate before any navigation
-  await verifyRouteInterceptor(page, role);
+  await verifyRouteInterceptor(page, config.baseUrl, role);
 
   // PHASE 2: Inject session into NextAuth's client-side cache
   // This ensures client components have the session immediately available
@@ -230,9 +231,9 @@ async function mockAuthSession(
   const currentUrl = page.url();
   if (currentUrl && !currentUrl.includes("about:blank")) {
     console.log("[Smoke Test] Triggering session refresh on current page");
-    await page.evaluate(async () => {
-      await fetch("/api/auth/session").catch(() => {});
-    });
+    await page.evaluate(async (endpoint) => {
+      await fetch(endpoint).catch(() => {});
+    }, new URL("/api/auth/session", config.baseUrl).toString());
     // Give client components time to react to the session update
     await new Promise((resolve) => setTimeout(resolve, 500));
   }

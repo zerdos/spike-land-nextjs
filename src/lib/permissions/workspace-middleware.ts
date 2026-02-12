@@ -9,6 +9,7 @@ import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import type { WorkspaceRole } from "@prisma/client";
 import type { Session } from "next-auth";
+import { headers } from "next/headers";
 import { hasPermission, type WorkspaceAction } from "./permissions";
 
 /**
@@ -18,6 +19,64 @@ export interface WorkspaceMemberInfo {
   workspaceId: string;
   userId: string;
   role: WorkspaceRole;
+}
+
+function constantTimeCompare(a: string, b: string): boolean {
+  const encoder = new TextEncoder();
+  const aBytes = encoder.encode(a);
+  const bBytes = encoder.encode(b);
+  const maxLen = Math.max(aBytes.length, bBytes.length);
+  let result = aBytes.length ^ bBytes.length;
+
+  for (let i = 0; i < maxLen; i++) {
+    result |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
+  }
+
+  return result === 0;
+}
+
+function getBypassMembershipRole(session: Session): WorkspaceRole {
+  const role = session.user.role as string | undefined;
+  if (role === "OWNER" || role === "ADMIN" || role === "MEMBER" || role === "VIEWER") {
+    return role;
+  }
+
+  // Default for E2E bypass sessions that don't include workspace role.
+  return "MEMBER";
+}
+
+async function getE2EBypassMembership(
+  session: Session,
+  workspaceId: string,
+): Promise<WorkspaceMemberInfo | null> {
+  const headersList = await headers();
+  const bypassHeader = headersList.get("x-e2e-auth-bypass");
+  const bypassSecret = process.env.E2E_BYPASS_SECRET;
+
+  // Mirror auth.ts behavior: allow bypass outside strict production.
+  const host = headersList.get("host") || "";
+  const isStagingDomain = host === "next.spike.land" || host.includes("localhost");
+  const isStrictProduction = process.env.NODE_ENV === "production" &&
+    process.env.VERCEL_ENV === "production" &&
+    !isStagingDomain;
+
+  const headerBypassEnabled = !isStrictProduction &&
+    !!bypassSecret &&
+    !!bypassHeader &&
+    constantTimeCompare(bypassHeader, bypassSecret);
+
+  const envBypassEnabled = process.env.NODE_ENV !== "production" &&
+    process.env.E2E_BYPASS_AUTH === "true";
+
+  if (!headerBypassEnabled && !envBypassEnabled) {
+    return null;
+  }
+
+  return {
+    workspaceId,
+    userId: session.user.id!,
+    role: getBypassMembershipRole(session),
+  };
 }
 
 /**
@@ -137,6 +196,15 @@ export async function requireWorkspacePermission(
     throw new Error("Unauthorized: Authentication required");
   }
 
+  const bypassMembership = await getE2EBypassMembership(session, workspaceId);
+  if (bypassMembership) {
+    if (!hasPermission(bypassMembership.role, action)) {
+      throw new Error(`Forbidden: Requires ${action} permission`);
+    }
+
+    return bypassMembership;
+  }
+
   const membership = await getWorkspaceMembership(session.user.id, workspaceId);
 
   if (!membership) {
@@ -170,6 +238,11 @@ export async function requireWorkspaceMembership(
 ): Promise<WorkspaceMemberInfo> {
   if (!session?.user?.id) {
     throw new Error("Unauthorized: Authentication required");
+  }
+
+  const bypassMembership = await getE2EBypassMembership(session, workspaceId);
+  if (bypassMembership) {
+    return bypassMembership;
   }
 
   const membership = await getWorkspaceMembership(session.user.id, workspaceId);

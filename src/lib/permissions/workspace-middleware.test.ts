@@ -4,6 +4,7 @@
 
 import prisma from "@/lib/prisma";
 import type { Session } from "next-auth";
+import { headers } from "next/headers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getWorkspaceMembership,
@@ -27,6 +28,10 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+vi.mock("next/headers", () => ({
+  headers: vi.fn(),
+}));
+
 const mockMembership = (role: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER") =>
   ({
     workspaceId: "ws_123",
@@ -46,6 +51,9 @@ describe("workspace-middleware", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(headers).mockResolvedValue({
+      get: vi.fn(() => null),
+    } as unknown as Awaited<ReturnType<typeof headers>>);
   });
 
   describe("getWorkspaceMembership", () => {
@@ -269,6 +277,31 @@ describe("workspace-middleware", () => {
       );
 
       expect(result.role).toBe("VIEWER");
+    });
+
+    it("allows E2E bypass header requests without db membership lookup", async () => {
+      vi.mocked(headers).mockResolvedValue({
+        get: vi.fn((name: string) => {
+          if (name === "x-e2e-auth-bypass") return "test-bypass-secret";
+          if (name === "host") return "localhost:3000";
+          return null;
+        }),
+      } as unknown as Awaited<ReturnType<typeof headers>>);
+      vi.stubEnv("E2E_BYPASS_SECRET", "test-bypass-secret");
+
+      const result = await requireWorkspacePermission(
+        mockSession("user_123"),
+        "ws_123",
+        "inbox:view",
+      );
+
+      expect(result).toEqual({
+        workspaceId: "ws_123",
+        userId: "user_123",
+        role: "MEMBER",
+      });
+      expect(prisma.workspaceMember.findUnique).not.toHaveBeenCalled();
+      vi.unstubAllEnvs();
     });
   });
 

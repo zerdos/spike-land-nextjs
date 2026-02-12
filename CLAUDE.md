@@ -125,7 +125,7 @@ change:
 3. **Wait for CI checks to start** - Don't assume success
 4. **Monitor the CI pipeline** - Use `gh pr checks` or `gh run view`
 5. **Verify ALL checks pass**:
-   - ✅ Run Tests (unit tests with 100% coverage)
+   - ✅ Run Tests (unit tests with enforced CI coverage thresholds)
    - ✅ Build Application (Next.js build)
    - ✅ Deploy to Vercel Preview
    - ✅ E2E Tests (Playwright/Cucumber)
@@ -283,7 +283,7 @@ cd ../main && git worktree remove ../feature-name
 yarn dev              # Start dev server (http://localhost:3000)
 yarn build            # Build for production
 yarn lint             # Run ESLint
-yarn test:coverage    # Unit tests with 100% coverage
+yarn test:coverage    # Unit tests with enforced CI coverage thresholds
 yarn test:e2e:local   # E2E tests (requires dev server)
 ```
 

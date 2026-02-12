@@ -27,7 +27,7 @@ practices for the Spike Land platform.
 | ---------------- | -------------------------------- |
 | Unit Testing     | Vitest + React Testing Library   |
 | E2E Testing      | Playwright + Cucumber (BDD)      |
-| Coverage         | V8 provider, 80%+ enforced in CI |
+| Coverage         | V8 provider, thresholds enforced in CI |
 | CI Pipeline      | GitHub Actions with sharding     |
 | Test Environment | jsdom for unit, Chromium for E2E |
 
@@ -99,10 +99,10 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       thresholds: {
-        lines: 80,
-        functions: 84,
-        branches: 78,
-        statements: 80,
+        lines: 30,
+        functions: 20,
+        branches: 25,
+        statements: 30,
       },
     },
   },
@@ -389,10 +389,12 @@ Coverage thresholds are enforced in CI and configured in `vitest.config.ts`:
 
 | Metric     | Threshold |
 | ---------- | --------- |
-| Lines      | 80%       |
-| Functions  | 84%       |
-| Branches   | 78%       |
-| Statements | 80%       |
+| Lines      | 30%       |
+| Functions  | 20%       |
+| Branches   | 25%       |
+| Statements | 30%       |
+
+**Note:** These are current enforced baselines. The target remains to increase these thresholds over time.
 
 ### Excluded from Coverage
 

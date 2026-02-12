@@ -50,12 +50,12 @@ import { isClaudeConfigured } from "@/lib/ai/claude-client";
 describe("Suggestion Generator", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(isClaudeConfigured).mockReturnValue(true);
+    vi.mocked(isClaudeConfigured).mockResolvedValue(true);
   });
 
   describe("buildAIContext", () => {
     beforeEach(() => {
-      vi.mocked(isClaudeConfigured).mockReturnValue(true);
+      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
     });
 
     it("should build context with brand voice", () => {
@@ -234,7 +234,7 @@ describe("Suggestion Generator", () => {
 
   describe("generateSuggestions", () => {
     beforeEach(() => {
-      vi.mocked(isClaudeConfigured).mockReturnValue(true);
+      vi.mocked(isClaudeConfigured).mockResolvedValue(true);
     });
 
     it("should generate suggestions with valid input", async () => {
@@ -305,7 +305,7 @@ describe("Suggestion Generator", () => {
     });
 
     it("should throw error when Claude is not configured", async () => {
-      vi.mocked(isClaudeConfigured).mockReturnValue(false);
+      vi.mocked(isClaudeConfigured).mockResolvedValue(false);
 
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
