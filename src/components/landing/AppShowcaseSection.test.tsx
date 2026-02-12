@@ -53,7 +53,8 @@ describe("AppShowcaseSection", () => {
 
   it("renders LiveAppCard for each app", () => {
     render(<AppShowcaseSection apps={mockApps} />);
-    expect(screen.getAllByTestId("live-app-card")).toHaveLength(2);
+    // The section duplicates items for the infinite scroll effect
+    expect(screen.getAllByTestId("live-app-card")).toHaveLength(8);
   });
 
   it("renders the see all apps link", () => {

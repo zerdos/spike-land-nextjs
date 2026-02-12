@@ -94,10 +94,10 @@ function createAsyncIterable<T>(items: T[]): AsyncIterable<T> {
 }
 
 // Helper to read SSE stream into parsed events
-async function readSSEStream(response: Response): Promise<Array<Record<string, unknown>>> {
+async function readSSEStream(response: Response): Promise<any[]> {
   const reader = response.body!.getReader();
   const decoder = new TextDecoder();
-  const events: Array<Record<string, unknown>> = [];
+  const events: any[] = [];
   let buffer = "";
 
   while (true) {
