@@ -3,6 +3,9 @@ import type { NarrationWord } from "../../../src/lib/tts/elevenlabs-client";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
 
 // Load env vars from root .env.local or .env
 const envPath = fs.existsSync(path.join(__dirname, "../../../.env.local"))

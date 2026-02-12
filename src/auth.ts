@@ -478,6 +478,7 @@ export const auth = async () => {
         return getMockE2ESession();
       }
     }
+
     // In E2E mode without mock session, return null (unauthenticated)
     // This prevents hanging on database connections during E2E tests
     console.log("[Auth] E2E bypass: No mock session token, returning null");

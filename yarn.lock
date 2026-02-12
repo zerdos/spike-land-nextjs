@@ -8594,7 +8594,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@spike-npm-land/video@workspace:packages/video":
+"@spike-npm-land/video@workspace:*, @spike-npm-land/video@workspace:packages/video":
   version: 0.0.0-use.local
   resolution: "@spike-npm-land/video@workspace:packages/video"
   dependencies:
@@ -24845,6 +24845,7 @@ __metadata:
     "@remotion/transitions": "npm:4.0.421"
     "@sentry/nextjs": "npm:^10.38.0"
     "@spike-npm-land/shared": "workspace:*"
+    "@spike-npm-land/video": "workspace:*"
     "@stripe/react-stripe-js": "npm:5.6.0"
     "@stripe/stripe-js": "npm:8.7.0"
     "@tailwindcss/postcss": "npm:4.1.18"

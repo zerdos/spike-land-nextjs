@@ -69,6 +69,7 @@ describe("codespace-service", () => {
         transpiled: "transpiled-code",
         html: "",
         css: "",
+        messages: [],
       });
     });
 

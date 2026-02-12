@@ -217,4 +217,21 @@ describe("/api/images/fetch-base64", () => {
     expect(response.status).toBe(500);
     expect(data.error).toBe("Failed to fetch image");
   });
+
+  it("should return 400 for domain that ends with allowed domain but is different (SSRF prevention)", async () => {
+    // This domain ends with "spike.land" but is not a subdomain of "spike.land"
+    const evilUrl = "https://evilspike.land/malicious.jpg";
+
+    const request = new NextRequest("http://localhost/api/images/fetch-base64", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: evilUrl }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("URL domain not allowed");
+  });
 });
