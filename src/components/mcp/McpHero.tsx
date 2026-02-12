@@ -1,7 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowDown, Sparkles, Wrench, LayoutGrid, Zap } from "lucide-react";
+import { PdMcpLogo } from "@/components/brand";
+import { ArrowDown, Wrench, LayoutGrid, Zap } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 
@@ -51,9 +52,9 @@ export function McpHero({ onExploreClick }: McpHeroProps) {
           className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-cyan-400 mb-8 backdrop-blur-md overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/0 via-cyan-400/10 to-cyan-400/0 animate-shimmer pointer-events-none" />
-          <Sparkles className="w-4 h-4 animate-pulse relative" />
+          <PdMcpLogo size="sm" variant="icon" className="relative" />
           <span className="font-medium tracking-wide uppercase text-[10px] relative">
-            Model Context Protocol
+            Progressive Disclosure MCP
           </span>
         </motion.div>
 

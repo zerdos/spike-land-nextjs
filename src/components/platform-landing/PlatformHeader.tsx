@@ -1,7 +1,7 @@
 "use client";
 
 import { UserAvatar } from "@/components/auth/user-avatar";
-import { SpikeLandLogo } from "@/components/brand";
+import { PdMcpLogo, SpikeLandLogo } from "@/components/brand";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -67,9 +67,9 @@ const featureItems = [
 
 // Main navigation links
 const navLinks = [
-  { href: "/orbit-landing", label: "Orbit" },
-  { href: "/services", label: "Services" },
-  { href: "/pricing", label: "Pricing" },
+  { href: "/orbit-landing", label: "Orbit", hasLogo: false },
+  { href: "/mcp", label: "PD-MCP", hasLogo: true },
+  { href: "/pricing", label: "Pricing", hasLogo: false },
 ];
 
 export function PlatformHeader() {
@@ -127,8 +127,9 @@ export function PlatformHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
               >
+                {link.hasLogo && <PdMcpLogo size="sm" variant="icon" />}
                 {link.label}
               </Link>
             ))}
@@ -211,9 +212,10 @@ export function PlatformHeader() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary flex items-center py-2"
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary flex items-center gap-2 py-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
+                    {link.hasLogo && <PdMcpLogo size="sm" variant="icon" />}
                     {link.label}
                   </Link>
                 ))}

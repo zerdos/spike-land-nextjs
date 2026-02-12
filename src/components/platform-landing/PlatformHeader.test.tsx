@@ -4,12 +4,15 @@ import type { Session } from "next-auth";
 import { describe, expect, it, vi } from "vitest";
 import { PlatformHeader } from "./PlatformHeader";
 
-// Mock the SpikeLandLogo component
+// Mock the brand components
 vi.mock("@/components/brand", () => ({
-  SpikeLandLogo: ({ size, variant }: { size: string; variant: string; }) => (
+  SpikeLandLogo: ({ size, variant }: { size: string; variant: string }) => (
     <div data-testid="spike-land-logo" data-size={size} data-variant={variant}>
       SpikeLandLogo
     </div>
+  ),
+  PdMcpLogo: ({ size, variant }: { size: string; variant: string }) => (
+    <span data-testid="pd-mcp-logo" data-size={size} data-variant={variant} aria-hidden="true" />
   ),
 }));
 
@@ -72,7 +75,7 @@ describe("PlatformHeader Component", () => {
     it("should render desktop navigation links", () => {
       render(<PlatformHeader />);
       expect(screen.getByRole("link", { name: "Orbit" })).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "Services" })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "PD-MCP" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Pricing" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Sign In" })).toBeInTheDocument();
     });
@@ -88,9 +91,9 @@ describe("PlatformHeader Component", () => {
         "href",
         "/orbit-landing",
       );
-      expect(screen.getByRole("link", { name: "Services" })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: "PD-MCP" })).toHaveAttribute(
         "href",
-        "/services",
+        "/mcp",
       );
       expect(screen.getByRole("link", { name: "Pricing" })).toHaveAttribute(
         "href",

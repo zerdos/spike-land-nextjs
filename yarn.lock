@@ -3631,7 +3631,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:1.26.0, @modelcontextprotocol/sdk@npm:^1.26.0":
+"@modelcontextprotocol/sdk@npm:^1.26.0":
   version: 1.26.0
   resolution: "@modelcontextprotocol/sdk@npm:1.26.0"
   dependencies:
@@ -8520,21 +8520,6 @@ __metadata:
     workbox-window: "npm:7.4.0"
     worker-rpc: "npm:0.2.0"
     zod: "npm:4.3.6"
-  languageName: unknown
-  linkType: soft
-
-"@spike-npm-land/mcp-server@workspace:packages/mcp-server":
-  version: 0.0.0-use.local
-  resolution: "@spike-npm-land/mcp-server@workspace:packages/mcp-server"
-  dependencies:
-    "@modelcontextprotocol/sdk": "npm:1.26.0"
-    "@types/node": "npm:25.2.3"
-    eslint: "npm:10.0.0"
-    typescript: "npm:5.9.3"
-    vitest: "npm:4.0.18"
-    zod: "npm:4.3.6"
-  bin:
-    spike-mcp: ./bin/spike-mcp.js
   languageName: unknown
   linkType: soft
 
