@@ -233,7 +233,7 @@ describe("VibeCodeProvider", () => {
 
     // First fetch should be screenshot
     expect(fetchMock.mock.calls[0]![0]).toBe(
-      "/api/create/test-app/screenshot",
+      "/api/create/screenshot?slug=test-app",
     );
     // User message should have screenshot image
     expect(result.current.messages[0]!.images).toEqual([
@@ -560,6 +560,7 @@ describe("VibeCodeProvider", () => {
     );
     const body = JSON.parse(postCall![1].body);
     expect(body.mode).toBe("edit");
+    expect(body.slug).toBe("test-app");
   });
 
   it("sendMessage processes stage events", async () => {

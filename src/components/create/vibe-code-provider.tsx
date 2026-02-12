@@ -99,7 +99,7 @@ export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
       if (autoScreenshot) {
         try {
           const res = await fetch(
-            `/api/create/${ctx.slug}/screenshot`,
+            `/api/create/screenshot?slug=${encodeURIComponent(ctx.slug)}`,
           );
           if (res.ok) {
             const data = await res.json();
@@ -144,10 +144,11 @@ export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
       ]);
 
       try {
-        const res = await fetch(`/api/create/${ctx.slug}/vibe-chat`, {
+        const res = await fetch(`/api/create/vibe-chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            slug: ctx.slug,
             content,
             mode,
             images: base64Images.length > 0 ? base64Images : undefined,
