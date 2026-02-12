@@ -2310,6 +2310,41 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
+"vault_secrets" {
+  String id PK
+  String userId FK
+  String name
+  String encryptedValue
+  String iv
+  String tag
+  VaultSecretStatus status
+  String allowedUrls
+  Json metadata "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"registered_tools" {
+  String id PK
+  String userId FK
+  String name
+  String description
+  String category
+  Json inputSchema
+  Json handlerSpec
+  RegisteredToolStatus status
+  Int installCount
+  DateTime createdAt
+  DateTime updatedAt
+}
+"workspace_configs" {
+  String id PK
+  String userId FK,UK
+  String name
+  Json settings
+  Json integrations
+  DateTime createdAt
+  DateTime updatedAt
+}
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
 "campaign_briefs" }o--o| "workspaces" : workspace
@@ -2537,6 +2572,9 @@ erDiagram
 "oauth_authorization_codes" }o--|| "users" : user
 "oauth_access_tokens" }o--|| "oauth_clients" : client
 "oauth_access_tokens" }o--|| "users" : user
+"vault_secrets" }o--|| "users" : user
+"registered_tools" }o--|| "users" : user
+"workspace_configs" |o--|| "users" : user
 ```
 
 ### `users`
@@ -5433,5 +5471,49 @@ Properties as follows:
 - `token`:
 - `config`:
 - `isDefault`:
+- `createdAt`:
+- `updatedAt`:
+
+### `vault_secrets`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `name`:
+- `encryptedValue`:
+- `iv`:
+- `tag`:
+- `status`:
+- `allowedUrls`:
+- `metadata`:
+- `createdAt`:
+- `updatedAt`:
+
+### `registered_tools`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `name`:
+- `description`:
+- `category`:
+- `inputSchema`:
+- `handlerSpec`:
+- `status`:
+- `installCount`:
+- `createdAt`:
+- `updatedAt`:
+
+### `workspace_configs`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `name`:
+- `settings`:
+- `integrations`:
 - `createdAt`:
 - `updatedAt`:

@@ -12,6 +12,9 @@ import { registerImageTools } from "./tools/image";
 import { registerCodeSpaceTools } from "./tools/codespace";
 import { registerJulesTools, isJulesAvailable } from "./tools/jules";
 import { registerGatewayTools, isGatewayAvailable } from "./tools/gateway";
+import { registerVaultTools } from "./tools/vault";
+import { registerToolFactoryTools } from "./tools/tool-factory";
+import { registerBootstrapTools } from "./tools/bootstrap";
 
 /**
  * Create a fully configured MCP server for a specific user.
@@ -50,6 +53,15 @@ export function createMcpServer(userId: string): McpServer {
   if (isGatewayAvailable()) {
     registerGatewayTools(registry, userId);
   }
+
+  // Vault tools (discoverable)
+  registerVaultTools(registry, userId);
+
+  // Tool factory tools (discoverable)
+  registerToolFactoryTools(registry, userId);
+
+  // Bootstrap tools (discoverable)
+  registerBootstrapTools(registry, userId);
 
   return mcpServer;
 }

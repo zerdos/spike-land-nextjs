@@ -62,7 +62,11 @@ interface ParsedVariant {
 
 export class HypothesisAgent {
   private aiPromise = getGeminiClient();
-  private model = "gemini-3-flash-preview"; // Using a fast/capable model (adjust if needed)
+  private model = "gemini-3-flash-preview"; 
+
+  private async getAI() {
+    return await this.aiPromise;
+  }
 
   private async getAI() {
     return await this.aiPromise;

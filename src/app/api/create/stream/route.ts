@@ -243,7 +243,7 @@ async function* generateStream(
   imageUrls?: string[],
 ): AsyncGenerator<StreamEvent> {
   // Use Claude agent loop when any Anthropic credential is available
-  if (isClaudeConfigured()) {
+  if (await isClaudeConfigured()) {
     const circuitState = await getCircuitState();
 
     if (circuitState === "OPEN") {

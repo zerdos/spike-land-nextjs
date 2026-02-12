@@ -18,7 +18,7 @@ export async function analyzeMessage(
   input: AnalysisInput,
   _apiKey?: string, // Optional override (reserved for future use)
 ): Promise<AnalysisResult> {
-  const genAI = getGeminiClient();
+  const genAI = await getGeminiClient();
 
   const prompt = `
 You are an expert customer service AI agent. Analyze the following inbox message and provide structured routing data.

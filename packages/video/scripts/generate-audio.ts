@@ -126,7 +126,7 @@ async function main() {
   let allTimestamps: SceneTimestampData[] = [];
   if (targetScene && fs.existsSync(TIMESTAMPS_OUTPUT)) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const existing = require(TIMESTAMPS_OUTPUT);
       allTimestamps = Object.values(
         existing.NARRATION_TIMESTAMPS,

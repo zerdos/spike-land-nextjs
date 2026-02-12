@@ -81,6 +81,9 @@ model User {
   workspaceRecentAccess    WorkspaceRecentAccess[]
   oauthAuthorizationCodes  OAuthAuthorizationCode[]
   oauthAccessTokens        OAuthAccessToken[]
+  vaultSecrets             VaultSecret[]
+  registeredTools          RegisteredTool[]
+  workspaceConfig          WorkspaceConfig?
 
   @@map("users")
 }
@@ -4697,4 +4700,73 @@ model AIProvider {
   updatedAt DateTime @updatedAt
 
   @@map("ai_providers")
+}
+
+// ========================================
+// Agent Workspace Contracts (AWC)
+// ========================================
+
+enum VaultSecretStatus {
+  PENDING
+  APPROVED
+  REVOKED
+}
+
+model VaultSecret {
+  id             String            @id @default(cuid())
+  userId         String
+  name           String
+  encryptedValue String            @db.Text
+  iv             String
+  tag            String
+  status         VaultSecretStatus @default(PENDING)
+  allowedUrls    String[]
+  metadata       Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("vault_secrets")
+}
+
+enum RegisteredToolStatus {
+  DRAFT
+  PUBLISHED
+  DISABLED
+}
+
+model RegisteredTool {
+  id           String               @id @default(cuid())
+  userId       String
+  name         String
+  description  String
+  category     String               @default("custom")
+  inputSchema  Json
+  handlerSpec  Json
+  status       RegisteredToolStatus @default(DRAFT)
+  installCount Int                  @default(0)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([status])
+  @@map("registered_tools")
+}
+
+model WorkspaceConfig {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  name         String
+  settings     Json     @default("{}")
+  integrations Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("workspace_configs")
 }

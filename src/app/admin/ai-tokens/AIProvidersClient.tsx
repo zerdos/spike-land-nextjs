@@ -32,7 +32,10 @@ interface AIProvider {
   name: string;
   token: string;
   isDefault: boolean;
-  config: Record<string, unknown> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  config: any; // Using any for JsonValue compatibility
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export function AIProvidersClient({ initialProviders }: { initialProviders: AIProvider[] }) {

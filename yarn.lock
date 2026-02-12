@@ -31,16 +31,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ai-sdk/gateway@npm:3.0.41":
-  version: 3.0.41
-  resolution: "@ai-sdk/gateway@npm:3.0.41"
+"@ai-sdk/gateway@npm:3.0.42":
+  version: 3.0.42
+  resolution: "@ai-sdk/gateway@npm:3.0.42"
   dependencies:
     "@ai-sdk/provider": "npm:3.0.8"
     "@ai-sdk/provider-utils": "npm:4.0.14"
     "@vercel/oidc": "npm:3.1.0"
   peerDependencies:
     zod: ^3.25.76 || ^4.1.8
-  checksum: 10c9/778e7bc306d53d14f8ae27170b6a00ae40d34fecc40e5cf87bf41185729f288230041eea89af3f876f81efd730b04d5ffcdab10f4cc2f2cade87d0abc549dddd
+  checksum: 10c9/9f5c4bd69902763cae24ecd8e80008f7c1509fc1ae0c9437022d5db2e19205e24bca93def98e1ce131f9b17531e7ce962c415a2a8fefea9b46a5ad1407373bb0
   languageName: node
   linkType: hard
 
@@ -85,9 +85,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@anthropic-ai/claude-agent-sdk@npm:0.2.39":
-  version: 0.2.39
-  resolution: "@anthropic-ai/claude-agent-sdk@npm:0.2.39"
+"@anthropic-ai/claude-agent-sdk@npm:0.2.40":
+  version: 0.2.40
+  resolution: "@anthropic-ai/claude-agent-sdk@npm:0.2.40"
   dependencies:
     "@img/sharp-darwin-arm64": "npm:^0.33.5"
     "@img/sharp-darwin-x64": "npm:^0.33.5"
@@ -116,7 +116,7 @@ __metadata:
       optional: true
     "@img/sharp-win32-x64":
       optional: true
-  checksum: 10c9/d3598e5fc91259af0979d14866f71718bbe254834359b3e6d8fb08438b6d69f997e61b147d254cdad2784cdd47478db3d41bb3ff73d4d02f5ad629f7bf87bc82
+  checksum: 10c9/377e952489060b798fd05626857cc757bde3947d7ca4a03b36e48f999ab2ef7ed7d6bff73d2da6f4c32ab23e28e6be80fc3df6f59edb27aaa73cd471d5a9381d
   languageName: node
   linkType: hard
 
@@ -1251,10 +1251,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cloudflare/workers-types@npm:4.20260210.0":
-  version: 4.20260210.0
-  resolution: "@cloudflare/workers-types@npm:4.20260210.0"
-  checksum: 10c9/3c559d50743ac6411ecbe043d85cbe0cef315a477f0cfd24c7d52b10da978ff7892135972e31f679d83d02ac158e79e9a20b04a400a3eb1c6dc8b7541a88e09d
+"@cloudflare/workers-types@npm:4.20260212.0":
+  version: 4.20260212.0
+  resolution: "@cloudflare/workers-types@npm:4.20260212.0"
+  checksum: 10c9/e7a319d6509db82b0610470b2171f3093354703113e6f8d852bc8c44b539e51cf0d892feec18f5b0cc378536d202479253f48f557517f83edfe168820c035d50
   languageName: node
   linkType: hard
 
@@ -2911,14 +2911,14 @@ __metadata:
   linkType: hard
 
 "@exodus/bytes@npm:^1.11.0, @exodus/bytes@npm:^1.6.0":
-  version: 1.12.0
-  resolution: "@exodus/bytes@npm:1.12.0"
+  version: 1.14.0
+  resolution: "@exodus/bytes@npm:1.14.0"
   peerDependencies:
     "@noble/hashes": ^1.8.0 || ^2.0.0
   peerDependenciesMeta:
     "@noble/hashes":
       optional: true
-  checksum: 10c9/2d27eee8ba9bc582c792898860f39172339381bb2de5985470690ce4a3d8a7e9123a2214a24fb3b9d63f3d000b0c0500b20e92de53060e9debfb5d9a2c647e9c
+  checksum: 10c9/6005c962763c7f1ed2a3bc4058af6048629dab8e27eade17c764b4e5ef57eb0d6547fde1de29a026aafe430e3a4f7faeddf7f02ab93a4ec22db56b70caee1369
   languageName: node
   linkType: hard
 
@@ -4640,13 +4640,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/debug@npm:7.3.0":
-  version: 7.3.0
-  resolution: "@prisma/debug@npm:7.3.0"
-  checksum: 10c9/071dbd3b7cec5bdae4b83f75b9a70673bf49b22524c0f8389684ce2e6af17a4349ac6d1fa7793de5c41a9e129904d0cf864d0dcd31fb650c8cac3c3e0aea3235
-  languageName: node
-  linkType: hard
-
 "@prisma/debug@npm:7.4.0":
   version: 7.4.0
   resolution: "@prisma/debug@npm:7.4.0"
@@ -4679,10 +4672,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/dmmf@npm:7.3.0":
-  version: 7.3.0
-  resolution: "@prisma/dmmf@npm:7.3.0"
-  checksum: 10c9/93764966a9c46930e7c2bf70fd8b2267d05c64c42c6c29554a043f1d20bd16afb8d9ad05b8fd8af8bfa1796094e26b4e9610a6b6b2aa799ee596118fb365a609
+"@prisma/dmmf@npm:7.4.0":
+  version: 7.4.0
+  resolution: "@prisma/dmmf@npm:7.4.0"
+  checksum: 10c9/e3ce27cce33d29afa0825bf041e88c2eb69e373d6b542d7b0148ac3921d008dfa611310a9d692955e6d8c16775d1a4a7dd637596ccb53d83d3f2bacffd06a534
   languageName: node
   linkType: hard
 
@@ -4695,13 +4688,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/engines-version@npm:7.3.0-16.9d6ad21cbbceab97458517b147a6a09ff43aa735":
-  version: 7.3.0-16.9d6ad21cbbceab97458517b147a6a09ff43aa735
-  resolution: "@prisma/engines-version@npm:7.3.0-16.9d6ad21cbbceab97458517b147a6a09ff43aa735"
-  checksum: 10c9/b4d4c29ef40ab0b3d458c6cc8587fb483013d1dcc8c3bdebafec60b6bad94ef47c2d037b11d161aa803c24a4f880dc58e0408ac0c64592059c0bffa08b4b3de4
-  languageName: node
-  linkType: hard
-
 "@prisma/engines-version@npm:7.4.0-20.ab56fe763f921d033a6c195e7ddeb3e255bdbb57":
   version: 7.4.0-20.ab56fe763f921d033a6c195e7ddeb3e255bdbb57
   resolution: "@prisma/engines-version@npm:7.4.0-20.ab56fe763f921d033a6c195e7ddeb3e255bdbb57"
@@ -4709,19 +4695,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/engines@npm:*":
-  version: 7.3.0
-  resolution: "@prisma/engines@npm:7.3.0"
-  dependencies:
-    "@prisma/debug": "npm:7.3.0"
-    "@prisma/engines-version": "npm:7.3.0-16.9d6ad21cbbceab97458517b147a6a09ff43aa735"
-    "@prisma/fetch-engine": "npm:7.3.0"
-    "@prisma/get-platform": "npm:7.3.0"
-  checksum: 10c9/99e50fa08d29cc7d3e27d635cfb531ecfc17fbb4a85d3942cf28800a5836828944e8093bfd3aa3d9f4bc24787537670c0215436259f3174ebfbe2897e3ac04cd
-  languageName: node
-  linkType: hard
-
-"@prisma/engines@npm:7.4.0":
+"@prisma/engines@npm:*, @prisma/engines@npm:7.4.0":
   version: 7.4.0
   resolution: "@prisma/engines@npm:7.4.0"
   dependencies:
@@ -4730,17 +4704,6 @@ __metadata:
     "@prisma/fetch-engine": "npm:7.4.0"
     "@prisma/get-platform": "npm:7.4.0"
   checksum: 10c9/e995b9b2687bb35d35c518a1c7d6b201befb4c163639b4caca87fa0dd66c35babc2460866b0a5ed1386f83dbc93068e4cf2c22663be42ea4b3d672466032f3ba
-  languageName: node
-  linkType: hard
-
-"@prisma/fetch-engine@npm:7.3.0":
-  version: 7.3.0
-  resolution: "@prisma/fetch-engine@npm:7.3.0"
-  dependencies:
-    "@prisma/debug": "npm:7.3.0"
-    "@prisma/engines-version": "npm:7.3.0-16.9d6ad21cbbceab97458517b147a6a09ff43aa735"
-    "@prisma/get-platform": "npm:7.3.0"
-  checksum: 10c9/b8c5e51c6f7c7acf24e1eaa2ce26113b4f445e6505b28cc78dda1d382f30d8bc49b0bad5c16e987bbabab2d9e6f54eab014f92063c9e7fb9ed4afddfdbd30303
   languageName: node
   linkType: hard
 
@@ -4756,20 +4719,20 @@ __metadata:
   linkType: hard
 
 "@prisma/generator-helper@npm:^7.0.0":
-  version: 7.3.0
-  resolution: "@prisma/generator-helper@npm:7.3.0"
+  version: 7.4.0
+  resolution: "@prisma/generator-helper@npm:7.4.0"
   dependencies:
-    "@prisma/debug": "npm:7.3.0"
-    "@prisma/dmmf": "npm:7.3.0"
-    "@prisma/generator": "npm:7.3.0"
-  checksum: 10c9/2411944ad305c957efb6a837108bf2083d83e00c9de4738974eb1b5f718af32ebf1873cd30702370e30ab0f52b402ee18c3b3eec6a923c412cf7dea27af9b7b6
+    "@prisma/debug": "npm:7.4.0"
+    "@prisma/dmmf": "npm:7.4.0"
+    "@prisma/generator": "npm:7.4.0"
+  checksum: 10c9/3aefe7e4fc2915cc2e4f1fdf7b07d2e728fdb312ae4ebe2a0b1b1c3e2135c6711755e325701e6f8b221888cf3213cbf88f2b7ffa9628602d7c91137713adc3c4
   languageName: node
   linkType: hard
 
-"@prisma/generator@npm:7.3.0":
-  version: 7.3.0
-  resolution: "@prisma/generator@npm:7.3.0"
-  checksum: 10c9/1985aeda94370f2855d0ed4f5316466040e2d5abee19dc824d105efb361d7453569f7bca092a6928687c01a448189d0b07b28486fbc00659148d377a7094e2c1
+"@prisma/generator@npm:7.4.0":
+  version: 7.4.0
+  resolution: "@prisma/generator@npm:7.4.0"
+  checksum: 10c9/53f1ac442ca2b1a8927c39bf6a23f83d650069fcc4979774f8e5f4aa9ff21c68c8a356752d1fc53b352c90c52762ad2b2779e19c51cdf4110b6b564edea058e3
   languageName: node
   linkType: hard
 
@@ -4779,15 +4742,6 @@ __metadata:
   dependencies:
     "@prisma/debug": "npm:7.2.0"
   checksum: 10c9/38d614c229cd17bc32930e98f8f81e17c3726701281fc2123c94a3d09f11b98ff762e981e8ba8979c5240589a9fc6f8aabd6561eafda654989005ea7792f8046
-  languageName: node
-  linkType: hard
-
-"@prisma/get-platform@npm:7.3.0":
-  version: 7.3.0
-  resolution: "@prisma/get-platform@npm:7.3.0"
-  dependencies:
-    "@prisma/debug": "npm:7.3.0"
-  checksum: 10c9/9b83fe2966a34739f7971c80439ec5489d6b04b60f12d886d9c4dbbca3d4ba333a0a0843fce2f2b74a3ca971a9d7e3d0fbb9ced00ebf9726f4a2eb7af0cff2f6
   languageName: node
   linkType: hard
 
@@ -8456,7 +8410,7 @@ __metadata:
     "@types/recordrtc": "npm:5.6.15"
     "@typescript/ata": "npm:0.9.8"
     "@vitejs/plugin-react-swc": "npm:4.2.3"
-    ai: "npm:6.0.81"
+    ai: "npm:6.0.82"
     assert: "npm:2.1.0"
     async-mutex: "npm:0.5.0"
     autoprefixer: "npm:10.4.24"
@@ -8563,7 +8517,7 @@ __metadata:
   dependencies:
     "@ai-sdk/anthropic": "npm:3.0.42"
     "@ai-sdk/google": "npm:^3.0.26"
-    "@cloudflare/workers-types": "npm:4.20260210.0"
+    "@cloudflare/workers-types": "npm:4.20260212.0"
     "@eslint/js": "npm:10.0.1"
     "@google/genai": "npm:^1.41.0"
     "@spike-npm-land/code": "npm:0.9.57"
@@ -8573,7 +8527,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:8.55.0"
     "@vitest/runner": "npm:4.0.18"
     "@vitest/snapshot": "npm:4.0.18"
-    ai: "npm:6.0.81"
+    ai: "npm:6.0.82"
     esbuild: "npm:0.27.3"
     esbuild-wasm: "npm:0.27.3"
     eslint: "npm:10.0.0"
@@ -9897,9 +9851,9 @@ __metadata:
   linkType: hard
 
 "@types/prismjs@npm:^1.0.0":
-  version: 1.26.5
-  resolution: "@types/prismjs@npm:1.26.5"
-  checksum: 10c9/617099479db9550119d0f84272dc79d64b2cf3e0d7a17167fe740d55fdf0f155697d935409464392d164e62080c2c88d649cf4bc4fdd30a87127337536657277
+  version: 1.26.6
+  resolution: "@types/prismjs@npm:1.26.6"
+  checksum: 10c9/37c056eb7a9130ef6548d7655af78ea575c8eaa9167ea2dd64d8719384b1af4a385ffe928aa4939da607ce276703a6787bdac8ecc79a373e2a73ddf6d75bc161
   languageName: node
   linkType: hard
 
@@ -9948,16 +9902,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*":
-  version: 19.2.13
-  resolution: "@types/react@npm:19.2.13"
-  dependencies:
-    csstype: "npm:^3.2.2"
-  checksum: 10c9/a3bb8d09c79f5f29dfbc7e47c5b39c687f4329b76041713993c025781f32c26e4881fbeead65ff44d728945f222b781c6053263bc1819ef90596b4fbfd83f718
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:19.2.14":
+"@types/react@npm:*, @types/react@npm:19.2.14":
   version: 19.2.14
   resolution: "@types/react@npm:19.2.14"
   dependencies:
@@ -11140,17 +11085,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ai@npm:6.0.81":
-  version: 6.0.81
-  resolution: "ai@npm:6.0.81"
+"ai@npm:6.0.82":
+  version: 6.0.82
+  resolution: "ai@npm:6.0.82"
   dependencies:
-    "@ai-sdk/gateway": "npm:3.0.41"
+    "@ai-sdk/gateway": "npm:3.0.42"
     "@ai-sdk/provider": "npm:3.0.8"
     "@ai-sdk/provider-utils": "npm:4.0.14"
     "@opentelemetry/api": "npm:1.9.0"
   peerDependencies:
     zod: ^3.25.76 || ^4.1.8
-  checksum: 10c9/11877acb6e178c3000d92f3e9268f6d8f7c04ba8977cae1e36eadcc80d51dd62af41e52e4e3c7efca6a21fe525c66e68870181952b5242a4a0d23e458554f91e
+  checksum: 10c9/45ea5b85416e37893a77b76148bc0c1eb37426834f9444d0d760ca2c99f37c9df5b52af7c5c62cf5d8e9b5f28fab30f53adc3ce42210f27d27d9db0e1dafd9a5
   languageName: node
   linkType: hard
 
@@ -16731,9 +16676,9 @@ __metadata:
   linkType: hard
 
 "isbot@npm:^5.1.22":
-  version: 5.1.34
-  resolution: "isbot@npm:5.1.34"
-  checksum: 10c9/9319d3904f36df44f5cbcfa7d628978600b26a713d3f09b1396c301bc7548f1cee529ce686cd2047cbd071aaddb8806e989608196607135fcda70ffc619b3390
+  version: 5.1.35
+  resolution: "isbot@npm:5.1.35"
+  checksum: 10c9/ef409e09793a414d26acb692622d8b71cd77fbda06599a82315948f592652233d77d16510898f43c41c534ad41feb5baeb4146825dd41833d4ce02e84cbafbaa
   languageName: node
   linkType: hard
 
@@ -21030,11 +20975,11 @@ __metadata:
   linkType: hard
 
 "qs@npm:^6.12.3, qs@npm:^6.14.0, qs@npm:^6.14.1":
-  version: 6.14.1
-  resolution: "qs@npm:6.14.1"
+  version: 6.14.2
+  resolution: "qs@npm:6.14.2"
   dependencies:
     side-channel: "npm:^1.1.0"
-  checksum: 10c9/34b5ab00a910df432d55180ef39c1d1375e550f098b5ec153b41787f1a6a6d7e5f9495593c3b112b77dbc6709d0ae18e55b82847a4c2bbbb0de1e8ccbb1794c5
+  checksum: 10c9/682933a85bb4b7bd0d66e13c0a40d9e612b5e4bcc2cb9238f711a9368cd22d91654097a74fff93551e58146db282c56ac094957dfdc60ce64ea72c3c9d7779ac
   languageName: node
   linkType: hard
 
@@ -24677,7 +24622,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "vercel-app@workspace:."
   dependencies:
-    "@anthropic-ai/claude-agent-sdk": "npm:0.2.39"
+    "@anthropic-ai/claude-agent-sdk": "npm:0.2.40"
     "@anthropic-ai/sdk": "npm:^0.74.0"
     "@aws-sdk/client-s3": "npm:3.988.0"
     "@aws-sdk/lib-storage": "npm:3.988.0"
