@@ -245,11 +245,17 @@ export async function checkRateLimit(
   resetAt: number;
 }> {
   // Bypass rate limiting in E2E tests or if explicitly enabled
-  // SECURITY: Only allow bypass in non-production environments
-  if (
-    process.env.NODE_ENV !== "production" &&
-    (process.env["E2E_BYPASS_AUTH"] || process.env["SKIP_RATE_LIMIT"])
-  ) {
+  // SECURITY: Only allow explicit bypass variables
+  // E2E_BYPASS_AUTH is allowed in production (if explicitly set) to support CI against prod builds.
+  // SKIP_RATE_LIMIT is restricted to non-production environments.
+  const isE2EBypass = process.env["E2E_BYPASS_AUTH"] === "true";
+  const isSkipRateLimit = !!process.env["SKIP_RATE_LIMIT"];
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (isE2EBypass || (!isProduction && isSkipRateLimit)) {
+    if (isE2EBypass && isProduction) {
+      console.warn("Rate limit bypass enabled in PRODUCTION via E2E_BYPASS_AUTH");
+    }
     return {
       isLimited: false,
       remaining: config.maxRequests,

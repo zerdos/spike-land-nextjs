@@ -12,3 +12,8 @@
 **Vulnerability:** Found `src/lib/rate-limiter.ts` allowed bypassing rate limits in production if `E2E_BYPASS_AUTH` or `SKIP_RATE_LIMIT` environment variables were accidentally set.
 **Learning:** Security controls (like rate limiting) should never rely solely on environment flags that might be misconfigured. Production environments must strictly enforce security logic.
 **Prevention:** Always wrap development/testing bypass logic in `process.env.NODE_ENV !== 'production'` checks.
+
+## 2026-02-12 - [CI/CD Production Environment Rate Limiting]
+**Vulnerability:** E2E tests in CI failed because strict rate limit bypass checks (`NODE_ENV !== 'production'`) blocked valid test traffic when the CI environment ran against a production build artifact.
+**Learning:** CI/CD pipelines often run tests against production builds to ensure artifact integrity. Security controls must distinguish between unauthorized production bypass attempts and authorized testing automation (e.g., via specific secrets or bypass keys), rather than relying solely on `NODE_ENV`.
+**Prevention:** Allow rate limit bypass in production ONLY if a strong, specific signal (like `E2E_BYPASS_AUTH`) is present and explicitly authorized, while keeping general bypasses (`SKIP_RATE_LIMIT`) restricted to non-production environments. Log warnings when production bypasses occur.
