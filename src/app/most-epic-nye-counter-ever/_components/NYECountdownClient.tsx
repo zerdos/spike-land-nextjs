@@ -283,11 +283,11 @@ export default function NYECountdownClient() {
       return {
         level: 75,
         label: "EXTREME",
-        color: "from-purple-500 to-cyan-500",
+        color: "from-purple-500 to-violet-500",
       };
     }
     if (hours === 0) {
-      return { level: 60, label: "HIGH", color: "from-cyan-500 to-blue-500" };
+      return { level: 60, label: "HIGH", color: "from-violet-500 to-blue-500" };
     }
     if (hours < 3) {
       return {
@@ -421,10 +421,10 @@ export default function NYECountdownClient() {
       {isThirtyMinutesLeft && (
         <div className="fixed inset-0 pointer-events-none z-90 flex items-center justify-center">
           <div className="animate-one-hour-burst">
-            <div className="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-500 animate-pulse tracking-wider">
+            <div className="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-300 via-purple-400 to-pink-500 animate-pulse tracking-wider">
               30 MINUTES!
             </div>
-            <div className="absolute inset-0 bg-gradient-radial from-purple-400/30 via-cyan-500/10 to-transparent blur-3xl scale-150" />
+            <div className="absolute inset-0 bg-gradient-radial from-purple-400/30 via-violet-500/10 to-transparent blur-3xl scale-150" />
           </div>
         </div>
       )}
@@ -512,7 +512,7 @@ export default function NYECountdownClient() {
             className="fixed bottom-1/3 left-1/3 w-28 h-28 pointer-events-none z-20 animate-celebration-burst"
             style={{ animationDelay: "0.6s" }}
           >
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-cyan-400/40 to-blue-500/40 blur-xl" />
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-violet-400/40 to-blue-500/40 blur-xl" />
           </div>
           <div
             className="fixed bottom-1/4 right-1/3 w-20 h-20 pointer-events-none z-20 animate-celebration-burst"
@@ -592,7 +592,7 @@ export default function NYECountdownClient() {
                   background: [
                     "#FFD700",
                     "#FFFFFF",
-                    "#00E5FF",
+                    "#8B5CF6",
                     "#FF69B4",
                     "#9D4EDD",
                   ][i % 5],
@@ -600,7 +600,7 @@ export default function NYECountdownClient() {
                     [
                       "#FFD700",
                       "#FFFFFF",
-                      "#00E5FF",
+                      "#8B5CF6",
                       "#FF69B4",
                       "#9D4EDD",
                     ][i % 5]
@@ -620,7 +620,7 @@ export default function NYECountdownClient() {
             {/* Rotating portal rings */}
             <div className="absolute inset-0 w-[500px] h-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-purple-500/30 animate-portal-spin" />
             <div
-              className="absolute inset-0 w-[400px] h-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-cyan-500/40 animate-portal-spin"
+              className="absolute inset-0 w-[400px] h-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-violet-500/40 animate-portal-spin"
               style={{ animationDirection: "reverse", animationDuration: "4s" }}
             />
             <div
@@ -717,7 +717,7 @@ export default function NYECountdownClient() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-radial from-white via-yellow-200/50 to-transparent blur-md animate-lens-flare" />
           {/* Secondary flares */}
           <div
-            className="absolute top-[40%] left-[60%] w-8 h-8 rounded-full bg-cyan-400/40 blur-sm animate-lens-flare"
+            className="absolute top-[40%] left-[60%] w-8 h-8 rounded-full bg-violet-400/40 blur-sm animate-lens-flare"
             style={{ animationDelay: "0.2s" }}
           />
           <div
@@ -729,7 +729,7 @@ export default function NYECountdownClient() {
             style={{ animationDelay: "0.4s" }}
           />
           {/* Anamorphic streak */}
-          <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent -translate-y-1/2 animate-lens-streak" />
+          <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-violet-400/60 to-transparent -translate-y-1/2 animate-lens-streak" />
         </div>
       )}
 
@@ -774,7 +774,7 @@ export default function NYECountdownClient() {
                 style={{
                   background: [
                     "#FFD700",
-                    "#00E5FF",
+                    "#8B5CF6",
                     "#FF00FF",
                     "#00FF00",
                     "#FF4500",
@@ -806,7 +806,7 @@ export default function NYECountdownClient() {
                 key={`arc-${i}`}
                 className="animate-electric-arc"
                 d={`M ${10 + i * 15}% 0 Q ${20 + i * 10}% 50% ${50}% 50% T ${90 - i * 10}% 100%`}
-                stroke={i % 2 === 0 ? "#00E5FF" : "#A855F7"}
+                stroke={i % 2 === 0 ? "#8B5CF6" : "#A855F7"}
                 strokeWidth="2"
                 fill="none"
                 filter="url(#electric-glow)"
@@ -821,12 +821,12 @@ export default function NYECountdownClient() {
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={`spark-${i}`}
-              className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-spark"
+              className="absolute w-1 h-1 bg-violet-400 rounded-full animate-spark"
               style={{
                 top: `${20 + (i * 10) % 60}%`,
                 left: `${10 + (i * 12) % 80}%`,
                 animationDelay: `${i * 0.15}s`,
-                boxShadow: "0 0 10px #00E5FF, 0 0 20px #00E5FF",
+                boxShadow: "0 0 10px #8B5CF6, 0 0 20px #8B5CF6",
               }}
             />
           ))}
@@ -887,7 +887,7 @@ export default function NYECountdownClient() {
             style={{ transformOrigin: "top center" }}
           />
           <div
-            className="absolute w-[150px] h-[350px] bg-gradient-to-b from-cyan-400/15 via-cyan-400/5 to-transparent blur-xl animate-spotlight-sweep"
+            className="absolute w-[150px] h-[350px] bg-gradient-to-b from-violet-400/15 via-violet-400/5 to-transparent blur-xl animate-spotlight-sweep"
             style={{ transformOrigin: "top center", animationDelay: "-3s" }}
           />
         </div>
@@ -963,7 +963,7 @@ export default function NYECountdownClient() {
         <div className="fixed inset-0 pointer-events-none z-15 overflow-hidden">
           {/* Energy orbs converging toward center */}
           <div
-            className="absolute w-3 h-3 rounded-full bg-cyan-400/60 blur-sm animate-energy-converge"
+            className="absolute w-3 h-3 rounded-full bg-violet-400/60 blur-sm animate-energy-converge"
             style={{ top: "10%", left: "5%" }}
           />
           <div
@@ -1010,14 +1010,14 @@ export default function NYECountdownClient() {
           className={`absolute inset-x-0 -top-20 h-48 blur-3xl animate-aurora transition-opacity duration-1000 ${
             isFinalHour
               ? "bg-gradient-to-b from-orange-500/30 via-red-500/15 to-transparent opacity-100"
-              : "bg-gradient-to-b from-cyan-500/20 via-purple-500/10 to-transparent opacity-100"
+              : "bg-gradient-to-b from-violet-500/20 via-purple-500/10 to-transparent opacity-100"
           }`}
         />
         <div
           className={`absolute inset-x-0 -top-10 h-32 blur-2xl animate-aurora transition-opacity duration-1000 ${
             isFinalHour
               ? "bg-gradient-to-b from-yellow-500/20 via-orange-500/10 to-transparent"
-              : "bg-gradient-to-b from-pink-500/15 via-cyan-500/10 to-transparent"
+              : "bg-gradient-to-b from-pink-500/15 via-violet-500/10 to-transparent"
           }`}
           style={{ animationDelay: "-7s" }}
         />
@@ -1030,7 +1030,7 @@ export default function NYECountdownClient() {
 
       {/* Ambient glow orbs - GPU accelerated, very subtle */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] animate-float-slow" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-[120px] animate-float-slow" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] animate-float-slow-reverse" />
       </div>
 
@@ -1058,8 +1058,8 @@ export default function NYECountdownClient() {
       <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
         {/* Top left corner */}
         <div className="absolute top-8 left-8 opacity-30">
-          <div className="w-32 h-32 border-l-2 border-t-2 border-cyan-400/50 rounded-tl-3xl" />
-          <div className="absolute top-0 left-0 w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+          <div className="w-32 h-32 border-l-2 border-t-2 border-violet-400/50 rounded-tl-3xl" />
+          <div className="absolute top-0 left-0 w-2 h-2 bg-violet-400 rounded-full animate-pulse" />
         </div>
         {/* Top right corner */}
         <div className="absolute top-8 right-8 opacity-30">
@@ -1090,11 +1090,11 @@ export default function NYECountdownClient() {
       {/* Viewer count badge with mood - hidden on mobile, shown on sm+ */}
       <div className="absolute top-[168px] left-4 z-50 hidden sm:flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-3 py-2">
         <span className="text-lg">{moodEmoji}</span>
-        <Eye className="h-4 w-4 text-cyan-400" />
-        <span className="text-cyan-400 text-sm font-mono">
+        <Eye className="h-4 w-4 text-violet-400" />
+        <span className="text-violet-400 text-sm font-mono">
           {viewerCount.toLocaleString()}
         </span>
-        <span className="text-cyan-300/50 text-xs hidden sm:inline">
+        <span className="text-violet-300/50 text-xs hidden sm:inline">
           watching
         </span>
         <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -1108,8 +1108,8 @@ export default function NYECountdownClient() {
           title={isMuted ? "Unmute" : "Mute"}
         >
           {isMuted
-            ? <VolumeX className="h-5 w-5 text-cyan-400" />
-            : <Volume2 className="h-5 w-5 text-cyan-400" />}
+            ? <VolumeX className="h-5 w-5 text-violet-400" />
+            : <Volume2 className="h-5 w-5 text-violet-400" />}
         </button>
         <button
           onClick={handleShare}
@@ -1118,7 +1118,7 @@ export default function NYECountdownClient() {
         >
           {isCopied
             ? <Check className="h-5 w-5 text-green-400" />
-            : <Share2 className="h-5 w-5 text-cyan-400" />}
+            : <Share2 className="h-5 w-5 text-violet-400" />}
         </button>
       </div>
 
@@ -1140,7 +1140,7 @@ export default function NYECountdownClient() {
                       ? "bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"
                       : isLastThirtySeconds
                       ? "bg-gradient-to-r from-orange-400 via-red-400 to-pink-400"
-                      : "bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400"
+                      : "bg-gradient-to-r from-violet-400 via-purple-400 to-pink-400"
                   }`}
                 >
                   {isLastTenSeconds ? `${seconds}...` : "2026 COUNTDOWN"}
@@ -1156,8 +1156,8 @@ export default function NYECountdownClient() {
               <div className="flex sm:hidden items-center justify-center gap-3 w-full">
                 <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-2 py-1">
                   <span className="text-sm">{moodEmoji}</span>
-                  <Eye className="h-3 w-3 text-cyan-400" />
-                  <span className="text-cyan-400 text-xs font-mono">
+                  <Eye className="h-3 w-3 text-violet-400" />
+                  <span className="text-violet-400 text-xs font-mono">
                     {viewerCount.toLocaleString()}
                   </span>
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
@@ -1168,8 +1168,8 @@ export default function NYECountdownClient() {
                   title={isMuted ? "Unmute" : "Mute"}
                 >
                   {isMuted
-                    ? <VolumeX className="h-4 w-4 text-cyan-400" />
-                    : <Volume2 className="h-4 w-4 text-cyan-400" />}
+                    ? <VolumeX className="h-4 w-4 text-violet-400" />
+                    : <Volume2 className="h-4 w-4 text-violet-400" />}
                 </button>
                 <button
                   onClick={handleShare}
@@ -1178,16 +1178,16 @@ export default function NYECountdownClient() {
                 >
                   {isCopied
                     ? <Check className="h-4 w-4 text-green-400" />
-                    : <Share2 className="h-4 w-4 text-cyan-400" />}
+                    : <Share2 className="h-4 w-4 text-violet-400" />}
                 </button>
               </div>
 
               {/* Current local time display */}
               <div className="flex flex-col items-center">
-                <div className="text-cyan-400 font-mono text-base sm:text-lg md:text-xl tracking-widest text-glow-cyan">
+                <div className="text-violet-400 font-mono text-base sm:text-lg md:text-xl tracking-widest text-glow-purple">
                   {currentTime}
                 </div>
-                <div className="text-cyan-300/40 text-[10px] sm:text-xs mt-0.5 sm:mt-1">
+                <div className="text-violet-300/40 text-[10px] sm:text-xs mt-0.5 sm:mt-1">
                   {timezone}
                 </div>
               </div>
@@ -1209,10 +1209,10 @@ export default function NYECountdownClient() {
                       ? "bg-red-500 animate-ping"
                       : hours < 3
                       ? "bg-yellow-500 animate-pulse"
-                      : "bg-cyan-500 animate-pulse"
+                      : "bg-violet-500 animate-pulse"
                   }`}
                 />
-                <p className="text-cyan-300/60 tracking-[0.1em] sm:tracking-[0.2em] text-[10px] sm:text-xs uppercase">
+                <p className="text-violet-300/60 tracking-[0.1em] sm:tracking-[0.2em] text-[10px] sm:text-xs uppercase">
                   The Most Epic New Year&apos;s Eve Ever
                 </p>
                 <span
@@ -1221,7 +1221,7 @@ export default function NYECountdownClient() {
                       ? "bg-red-500 animate-ping"
                       : hours < 3
                       ? "bg-yellow-500 animate-pulse"
-                      : "bg-cyan-500 animate-pulse"
+                      : "bg-violet-500 animate-pulse"
                   }`}
                 />
               </div>
@@ -1236,7 +1236,7 @@ export default function NYECountdownClient() {
               >
                 {/* Animated countdown rings - very subtle, GPU accelerated */}
                 <div className="absolute inset-[-20px] pointer-events-none">
-                  <div className="absolute inset-0 rounded-full border border-cyan-500/10 animate-countdown-ring" />
+                  <div className="absolute inset-0 rounded-full border border-violet-500/10 animate-countdown-ring" />
                   <div className="absolute inset-[10px] rounded-full border border-purple-500/10 animate-countdown-ring-reverse" />
                   <div
                     className="absolute inset-[20px] rounded-full border border-pink-500/10 animate-countdown-ring"
@@ -1245,10 +1245,10 @@ export default function NYECountdownClient() {
                 </div>
 
                 {/* Pulse ring effect */}
-                <div className="absolute inset-0 rounded-3xl border border-cyan-500/20 animate-pulse-ring" />
+                <div className="absolute inset-0 rounded-3xl border border-violet-500/20 animate-pulse-ring" />
 
                 {/* Glow effect behind digits */}
-                <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-purple-500/5 rounded-3xl blur-xl" />
+                <div className="absolute inset-0 bg-gradient-to-b from-violet-500/5 to-purple-500/5 rounded-3xl blur-xl" />
 
                 {/* Mobile: 2x2 grid layout */}
                 <div className="relative grid grid-cols-2 gap-3 sm:hidden">
@@ -1264,15 +1264,15 @@ export default function NYECountdownClient() {
                 {/* Desktop: horizontal layout with colons */}
                 <div className="relative hidden sm:flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-10">
                   <CountdownDigit value={days} label="DAYS" />
-                  <div className="flex items-center text-cyan-400/40 text-4xl font-thin self-start mt-8">
+                  <div className="flex items-center text-violet-400/40 text-4xl font-thin self-start mt-8">
                     :
                   </div>
                   <CountdownDigit value={hours} label="HOURS" />
-                  <div className="flex items-center text-cyan-400/40 text-4xl font-thin self-start mt-8">
+                  <div className="flex items-center text-violet-400/40 text-4xl font-thin self-start mt-8">
                     :
                   </div>
                   <CountdownDigit value={minutes} label="MINUTES" />
-                  <div className="flex items-center text-cyan-400/40 text-4xl font-thin self-start mt-8">
+                  <div className="flex items-center text-violet-400/40 text-4xl font-thin self-start mt-8">
                     :
                   </div>
                   <CountdownDigit
@@ -1285,13 +1285,13 @@ export default function NYECountdownClient() {
 
               {/* Year Progress Bar */}
               <div className="w-full max-w-md mt-2 sm:mt-4 px-2">
-                <div className="flex justify-between text-[10px] sm:text-xs text-cyan-300/50 mb-1 sm:mb-2">
+                <div className="flex justify-between text-[10px] sm:text-xs text-violet-300/50 mb-1 sm:mb-2">
                   <span>2025</span>
                   <span
                     className={`font-bold ${
                       yearProgress > 99.9
                         ? "text-yellow-400 animate-pulse"
-                        : "text-cyan-400"
+                        : "text-violet-400"
                     }`}
                   >
                     {yearProgress.toFixed(4)}% complete
@@ -1309,7 +1309,7 @@ export default function NYECountdownClient() {
                     className={`h-full rounded-full transition-all duration-1000 ${
                       yearProgress > 99.9
                         ? "bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 animate-pulse"
-                        : "bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"
+                        : "bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500"
                     }`}
                     style={{ width: `${yearProgress}%` }}
                   />
@@ -1348,13 +1348,13 @@ export default function NYECountdownClient() {
               {/* Total seconds remaining - dramatic counter */}
               {totalSecondsRemaining > 0 && totalSecondsRemaining < 86400 && (
                 <div className="text-center">
-                  <span className="text-cyan-300/40 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
+                  <span className="text-violet-300/40 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
                     Only
                   </span>
-                  <span className="mx-1 sm:mx-2 font-mono text-xl sm:text-2xl md:text-3xl font-bold text-cyan-400 text-glow-cyan">
+                  <span className="mx-1 sm:mx-2 font-mono text-xl sm:text-2xl md:text-3xl font-bold text-violet-400 text-glow-purple">
                     {totalSecondsRemaining.toLocaleString()}
                   </span>
-                  <span className="text-cyan-300/40 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
+                  <span className="text-violet-300/40 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
                     seconds to 2026
                   </span>
                 </div>
@@ -1428,7 +1428,7 @@ export default function NYECountdownClient() {
 
               {/* Dynamic message based on time */}
               {!isFinalCountdown && (
-                <p className="mt-4 max-w-md text-sm leading-relaxed text-cyan-300/50 sm:text-base">
+                <p className="mt-4 max-w-md text-sm leading-relaxed text-violet-300/50 sm:text-base">
                   {hours < 1
                     ? "Less than an hour! The excitement is building!"
                     : hours < 3
@@ -1472,7 +1472,7 @@ export default function NYECountdownClient() {
               {/* World Celebration Tracker */}
               <div className="mt-3 sm:mt-6 w-full max-w-lg">
                 <div className="flex items-center justify-center gap-1 sm:gap-2 mb-2 sm:mb-3">
-                  <span className="text-cyan-300/60 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
+                  <span className="text-violet-300/60 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
                     World Celebration Wave
                   </span>
                   {celebratedCount > 0 && (
@@ -1513,11 +1513,11 @@ export default function NYECountdownClient() {
                 {/* Multiple glow layers for epic effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 blur-3xl opacity-50 animate-pulse scale-150" />
                 <div
-                  className="absolute inset-0 bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 blur-2xl opacity-40 animate-pulse scale-125"
+                  className="absolute inset-0 bg-gradient-to-r from-pink-500 via-yellow-400 to-violet-400 blur-2xl opacity-40 animate-pulse scale-125"
                   style={{ animationDelay: "-0.5s" }}
                 />
                 <div
-                  className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 blur-xl opacity-30 animate-pulse scale-110"
+                  className="absolute inset-0 bg-gradient-to-r from-violet-400 via-purple-500 to-pink-500 blur-xl opacity-30 animate-pulse scale-110"
                   style={{ animationDelay: "-1s" }}
                 />
 
@@ -1532,7 +1532,7 @@ export default function NYECountdownClient() {
                     <h1 className="text-5xl font-black tracking-tight text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)] sm:text-7xl md:text-9xl animate-text-shimmer bg-clip-text relative">
                       2026
                       {/* Prismatic overlay */}
-                      <span className="absolute inset-0 bg-gradient-to-r from-red-400 via-yellow-300 via-green-400 via-cyan-400 via-blue-400 to-purple-400 opacity-30 mix-blend-overlay animate-rainbow-pulse" />
+                      <span className="absolute inset-0 bg-gradient-to-r from-red-400 via-yellow-300 via-green-400 via-violet-400 via-blue-400 to-purple-400 opacity-30 mix-blend-overlay animate-rainbow-pulse" />
                     </h1>
                     <Sparkles
                       className="h-10 w-10 text-white animate-spin"
@@ -1659,7 +1659,7 @@ export default function NYECountdownClient() {
 
               {/* Rotating New Year wishes */}
               <div className="px-6 py-3 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
-                <p className="text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 font-medium transition-opacity duration-500">
+                <p className="text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-violet-300 via-purple-300 to-pink-300 font-medium transition-opacity duration-500">
                   {NEW_YEAR_WISHES[wishIndex]}
                 </p>
               </div>
@@ -1688,7 +1688,7 @@ export default function NYECountdownClient() {
 
       {/* Cosmic dust at bottom - GPU accelerated */}
       <div className="fixed inset-x-0 bottom-0 h-32 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-purple-900/20 via-cyan-900/10 to-transparent blur-2xl animate-float-slow" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-purple-900/20 via-violet-900/10 to-transparent blur-2xl animate-float-slow" />
       </div>
 
       {/* Footer */}

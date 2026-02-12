@@ -56,7 +56,7 @@ export function PdMcpLogo({
           <stop offset="100%" stopColor="#0f172a" />
         </linearGradient>
         <linearGradient id={bar2GradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#00E5FF" />
+          <stop offset="0%" stopColor="#8B5CF6" />
           <stop offset="100%" stopColor="#A855F7" />
         </linearGradient>
         <linearGradient id={bar3GradientId} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -87,7 +87,7 @@ export function PdMcpLogo({
 
       {/* Progressive disclosure bars */}
       <g filter={`url(#${glowId})`}>
-        <rect x="10" y="15" width="12" height="6" rx="3" fill="#00E5FF" />
+        <rect x="10" y="15" width="12" height="6" rx="3" fill="#8B5CF6" />
         <rect x="10" y="27" width="20" height="6" rx="3" fill={`url(#${bar2GradientId})`} />
         <rect x="10" y="39" width="28" height="6" rx="3" fill={`url(#${bar3GradientId})`} />
       </g>

@@ -113,7 +113,7 @@ packages/video/
 
 ```typescript
 const COLORS = {
-  cyan: "#00E5FF", // Variant A
+  cyan: "#8B5CF6", // Variant A
   fuchsia: "#FF00FF", // Variant B / Accent
   purple: "#9945FF", // Secondary
   amber: "#F59E0B", // Logo primary
