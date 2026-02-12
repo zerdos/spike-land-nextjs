@@ -479,17 +479,6 @@ export const auth = async () => {
       }
     }
 
-    // Fallback: Check for bypass header in E2E mode
-    // This handles cases where the test sets the header but the cookie isn't present yet
-    const { data: headersList } = await tryCatch(headers());
-    // Extra safety: Explicitly check NODE_ENV to ensure this never runs in production
-    if (process.env.NODE_ENV !== "production" && headersList?.get("x-e2e-auth-bypass")) {
-      console.log(
-        "[Auth] E2E bypass: Header found in E2E mode, returning mock session",
-      );
-      return getMockE2ESession();
-    }
-
     // In E2E mode without mock session, return null (unauthenticated)
     // This prevents hanging on database connections during E2E tests
     console.log("[Auth] E2E bypass: No mock session token, returning null");
