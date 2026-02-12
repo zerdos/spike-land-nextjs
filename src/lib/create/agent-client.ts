@@ -4,6 +4,7 @@ import type {
   TextBlock,
 } from "@anthropic-ai/sdk/resources/messages.js";
 import { getClaudeClient } from "@/lib/ai/claude-client";
+import { generateAgentResponse } from "@/lib/ai/gemini-client";
 
 export interface ClaudeResponse {
   text: string;
@@ -114,6 +115,55 @@ export async function callClaude(params: {
       lastError = error;
 
       if (!isRetryableError(error) || attempt >= CLAUDE_MAX_RETRIES) {
+        // If we've exhausted retries (or error is not retryable) and the model was Opus, fall back to Gemini Flash
+        if (model === "opus") {
+          logger.warn("Claude Opus failed, falling back to Gemini Flash", {
+            error: error instanceof Error ? error.message : String(error),
+            attempt: attempt + 1,
+            isRetryable: isRetryableError(error),
+          });
+
+          try {
+            // Construct the prompt for Gemini
+            const userText = Array.isArray(userPrompt)
+              ? userPrompt
+                  .filter((block): block is { type: "text"; text: string } =>
+                    "type" in block && block.type === "text"
+                  )
+                  .map((b) => b.text)
+                  .join("\n")
+              : (userPrompt as string); // Cast as string since ContentBlockParam usually means text or image/tool_use blocks which we simplify here
+
+            // Construct system prompt from parts
+            const systemText = [
+              stablePrefix,
+              systemPrompt,
+              dynamicSuffix
+            ].filter(Boolean).join("\n\n");
+
+            const geminiText = await generateAgentResponse({
+              messages: [{ role: "user", content: userText }],
+              systemPrompt: systemText,
+            });
+
+            return {
+              text: geminiText,
+              inputTokens: 0, // Gemini client doesn't return usage yet
+              outputTokens: 0,
+              cacheReadTokens: 0,
+              cacheCreationTokens: 0,
+            };
+
+          } catch (geminiError) {
+            logger.error("Gemini fallback also failed", {
+              error: geminiError instanceof Error ? geminiError.message : String(geminiError),
+              originalError: error,
+            });
+            // Throw the original error to preserve the primary failure context
+            throw error;
+          }
+        }
+
         throw error;
       }
 
