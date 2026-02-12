@@ -13,6 +13,7 @@
  */
 
 import { authenticateMcpRequest } from "@/lib/mcp/auth";
+import { getMcpBaseUrl as getBaseUrl } from "@/lib/mcp/get-base-url";
 import { createMcpServer } from "@/lib/mcp/server/mcp-server";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { NextResponse } from "next/server";
@@ -20,12 +21,6 @@ import type { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
-
-function getBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "https://spike.land";
-}
 
 function unauthorizedResponse(): NextResponse {
   const baseUrl = getBaseUrl();

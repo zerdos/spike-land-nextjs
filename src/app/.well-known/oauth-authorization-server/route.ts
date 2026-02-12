@@ -5,22 +5,13 @@
  * MCP clients use this to discover authorization, token, and registration endpoints.
  */
 
+import { getMcpBaseUrl } from "@/lib/mcp/get-base-url";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-function getBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL;
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return "https://spike.land";
-}
-
 export function GET() {
-  const baseUrl = getBaseUrl();
+  const baseUrl = getMcpBaseUrl();
 
   return NextResponse.json({
     issuer: baseUrl,
