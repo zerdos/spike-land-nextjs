@@ -34,13 +34,13 @@ import logger from "@/lib/logger";
 const TOKEN_BUDGET_MAX = 150_000;
 /** Maximum fix iterations, clamped regardless of env var. */
 const MAX_ITERATIONS_CAP = 5;
-/** Max tokens for Sonnet fix calls — fixes rarely produce >4k tokens. */
-const FIX_MAX_TOKENS = 8192;
+/** Max tokens for Sonnet fix calls — must be enough to output a full component. */
+const FIX_MAX_TOKENS = 16384;
 
 /** Adaptive max_tokens based on topic complexity. */
-const GEN_TOKENS_SIMPLE = 8192;
-const GEN_TOKENS_MEDIUM = 16384;
-const GEN_TOKENS_COMPLEX = 24576;
+const GEN_TOKENS_SIMPLE = 16384;
+const GEN_TOKENS_MEDIUM = 24576;
+const GEN_TOKENS_COMPLEX = 32768;
 
 /** Determine generation max_tokens based on matched skills for the topic. */
 function getAdaptiveMaxTokens(topic: string): number {

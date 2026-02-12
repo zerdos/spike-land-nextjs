@@ -318,7 +318,7 @@ describe("agentGenerateApp", () => {
         dynamicSuffix: undefined,
         userPrompt: "user prompt",
         model: "opus",
-        maxTokens: 16384,
+        maxTokens: 24576,
         temperature: 0.5,
       });
     });
@@ -466,7 +466,7 @@ describe("agentGenerateApp", () => {
           systemPrompt: "fix system prompt",
           userPrompt: "fix user prompt",
           model: "sonnet",
-          maxTokens: 8192,
+          maxTokens: 16384,
           temperature: 0.2,
         }),
       );
@@ -1693,7 +1693,7 @@ describe("agentGenerateApp", () => {
       expect(callClaude).toHaveBeenCalledWith(
         expect.objectContaining({
           model: "opus",
-          maxTokens: 8192,
+          maxTokens: 16384,
         }),
       );
 
@@ -1720,7 +1720,7 @@ describe("agentGenerateApp", () => {
       expect(callClaude).toHaveBeenCalledWith(
         expect.objectContaining({
           model: "opus",
-          maxTokens: 24576,
+          maxTokens: 32768,
         }),
       );
     });
