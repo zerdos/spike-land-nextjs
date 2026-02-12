@@ -15,7 +15,7 @@ export function LearnItSearch() {
     [],
   );
   const [isFocused, setIsFocused] = useState(false);
-  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const handleBlur = useCallback(() => {
     blurTimeoutRef.current = setTimeout(() => setIsFocused(false), 200);
