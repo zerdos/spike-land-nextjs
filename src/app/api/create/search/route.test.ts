@@ -140,7 +140,7 @@ describe("GET /api/create/search", () => {
     );
     await GET(request);
 
-    const callArgs = mockFindMany.mock.calls[0][0];
+    const callArgs = mockFindMany.mock.calls[0]![0];
     const orConditions = callArgs.where.OR;
 
     expect(orConditions).toHaveLength(3);
@@ -154,7 +154,7 @@ describe("GET /api/create/search", () => {
 
     // Each should use case-insensitive contains
     for (const condition of orConditions) {
-      const field = Object.keys(condition)[0];
+      const field = Object.keys(condition)[0]!;
       expect(condition[field]).toEqual({
         contains: "widget",
         mode: "insensitive",

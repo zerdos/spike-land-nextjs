@@ -157,7 +157,7 @@ describe("VibeCodePanel", () => {
     it("renders close button and calls closePanel on click", () => {
       render(<VibeCodePanel />);
       const closeBtns = screen.getAllByLabelText("Close panel");
-      fireEvent.click(closeBtns[0]);
+      fireEvent.click(closeBtns[0]!);
       expect(mockClosePanel).toHaveBeenCalledTimes(1);
     });
 

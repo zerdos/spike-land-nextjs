@@ -4,9 +4,8 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Use vi.hoisted so the mock value is available when vi.mock factories run
-const { mockContextValue, hoistedCreateContext } = vi.hoisted(async () => {
-  const { createContext } = await import("react");
-  return { mockContextValue: { refreshCounter: 0 }, hoistedCreateContext: createContext };
+const { mockContextValue, hoistedCreateContext } = vi.hoisted(() => {
+  return { mockContextValue: { refreshCounter: 0 }, hoistedCreateContext: React.createContext };
 });
 
 // Mock next/link as a simple <a> tag
@@ -29,22 +28,22 @@ vi.mock("next/link", () => ({
 // Mock lucide-react icons as simple spans with data-testid
 vi.mock("lucide-react", () => ({
   ArrowLeft: (props: Record<string, unknown>) => (
-    <span data-testid="icon-arrow-left" className={props.className as string} />
+    <span data-testid="icon-arrow-left" className={props["className"] as string} />
   ),
   Download: (props: Record<string, unknown>) => (
-    <span data-testid="icon-download" className={props.className as string} />
+    <span data-testid="icon-download" className={props["className"] as string} />
   ),
   ExternalLink: (props: Record<string, unknown>) => (
     <span
       data-testid="icon-external-link"
-      className={props.className as string}
+      className={props["className"] as string}
     />
   ),
   RefreshCw: (props: Record<string, unknown>) => (
-    <span data-testid="icon-refresh" className={props.className as string} />
+    <span data-testid="icon-refresh" className={props["className"] as string} />
   ),
   Sparkles: (props: Record<string, unknown>) => (
-    <span data-testid="icon-sparkles" className={props.className as string} />
+    <span data-testid="icon-sparkles" className={props["className"] as string} />
   ),
 }));
 

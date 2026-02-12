@@ -26,10 +26,10 @@ vi.mock("@/hooks/use-debounce", () => ({
 
 vi.mock("lucide-react", () => ({
   Loader2: (props: Record<string, unknown>) => (
-    <span data-testid="icon-loader" className={props.className as string} />
+    <span data-testid="icon-loader" className={props["className"] as string} />
   ),
   Search: (props: Record<string, unknown>) => (
-    <span data-testid="icon-search" className={props.className as string} />
+    <span data-testid="icon-search" className={props["className"] as string} />
   ),
 }));
 
