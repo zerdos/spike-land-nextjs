@@ -118,8 +118,8 @@ describe("PdMcpLogo", () => {
     const svgs = container.querySelectorAll("svg");
     expect(svgs).toHaveLength(2);
     // Both start with "ssr" IDs on initial render (SSR-safe)
-    const filters0 = svgs[0].querySelectorAll("filter");
-    const filters1 = svgs[1].querySelectorAll("filter");
+    const filters0 = svgs[0]!.querySelectorAll("filter");
+    const filters1 = svgs[1]!.querySelectorAll("filter");
     expect(filters0).toHaveLength(1);
     expect(filters1).toHaveLength(1);
   });
