@@ -100,8 +100,6 @@ function GradientMesh() {
 }
 
 export function OrbitHero() {
-  const orbitHref = "/orbit";
-
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-zinc-950">
       <GradientMesh />
@@ -172,8 +170,8 @@ export function OrbitHero() {
               size="lg"
               className="text-lg font-semibold px-8 py-6 bg-gradient-to-r from-cyan-500 to-fuchsia-500 hover:from-cyan-400 hover:to-fuchsia-400 border-0"
             >
-              <Link href={orbitHref}>
-                Get Started Free
+              <Link href="/create">
+                Try It Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -189,13 +187,6 @@ export function OrbitHero() {
             </Button>
           </motion.div>
 
-          {/* Trust indicator */}
-          <motion.p
-            variants={itemVariants}
-            className="mt-8 text-sm text-white/40"
-          >
-            Free to start — no credit card required
-          </motion.p>
         </motion.div>
       </div>
     </section>

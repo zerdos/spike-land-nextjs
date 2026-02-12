@@ -74,10 +74,8 @@ describe("PlatformHeader Component", () => {
 
     it("should render desktop navigation links", () => {
       render(<PlatformHeader />);
-      expect(screen.getByRole("link", { name: "Orbit" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "PD-MCP" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Pricing" })).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "Sign In" })).toBeInTheDocument();
     });
 
     it("should NOT render My Apps in header navigation", () => {
@@ -87,10 +85,6 @@ describe("PlatformHeader Component", () => {
 
     it("should have correct href for navigation links", () => {
       render(<PlatformHeader />);
-      expect(screen.getByRole("link", { name: "Orbit" })).toHaveAttribute(
-        "href",
-        "/orbit-landing",
-      );
       expect(screen.getByRole("link", { name: "PD-MCP" })).toHaveAttribute(
         "href",
         "/mcp",
@@ -99,15 +93,11 @@ describe("PlatformHeader Component", () => {
         "href",
         "/pricing",
       );
-      expect(screen.getByRole("link", { name: "Sign In" })).toHaveAttribute(
-        "href",
-        "/auth/signin",
-      );
     });
 
-    it("should render Get Started CTA button", () => {
+    it("should render Sign In CTA button", () => {
       render(<PlatformHeader />);
-      const ctaButtons = screen.getAllByRole("link", { name: /get started/i });
+      const ctaButtons = screen.getAllByRole("link", { name: /sign in/i });
       expect(ctaButtons.length).toBeGreaterThanOrEqual(1);
       expect(ctaButtons[0]).toHaveAttribute("href", "/auth/signin");
     });
@@ -206,7 +196,7 @@ describe("PlatformHeader Component", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
-    it("should close mobile menu when clicking Get Started button", async () => {
+    it("should close mobile menu when clicking Sign In button", async () => {
       render(<PlatformHeader />);
       const menuButton = screen.getByRole("button", { name: /open menu/i });
 
@@ -240,24 +230,17 @@ describe("PlatformHeader Component", () => {
       });
     });
 
-    it("should render UserAvatar instead of Get Started button", () => {
+    it("should render UserAvatar instead of Sign In button", () => {
       render(<PlatformHeader />);
       expect(screen.getByTestId("user-avatar")).toBeInTheDocument();
       expect(
-        screen.queryByRole("link", { name: /get started/i }),
-      ).not.toBeInTheDocument();
-    });
-
-    it("should hide Sign In link when authenticated", () => {
-      render(<PlatformHeader />);
-      expect(
-        screen.queryByRole("link", { name: "Sign In" }),
+        screen.queryByRole("link", { name: /sign in/i }),
       ).not.toBeInTheDocument();
     });
 
     it("should still render navigation links", () => {
       render(<PlatformHeader />);
-      expect(screen.getByRole("link", { name: "Orbit" })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "PD-MCP" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Pricing" })).toBeInTheDocument();
     });
 
@@ -267,20 +250,6 @@ describe("PlatformHeader Component", () => {
       expect(createLinks.length).toBeGreaterThanOrEqual(1);
     });
 
-    it("should not show Sign In in mobile menu when authenticated", () => {
-      render(<PlatformHeader />);
-      const menuButton = screen.getByRole("button", { name: /open menu/i });
-      fireEvent.click(menuButton);
-
-      const dialog = screen.getByRole("dialog");
-      // Sign In link in nav section (not the one in user section)
-      const signInLinks = dialog.querySelectorAll('a[href="/auth/signin"]');
-      // Should not have Sign In link (only the user section links)
-      const navSignIn = Array.from(signInLinks).filter(
-        (link) => link.textContent === "Sign In",
-      );
-      expect(navSignIn.length).toBe(0);
-    });
   });
 
   describe("when session is loading", () => {
@@ -293,11 +262,10 @@ describe("PlatformHeader Component", () => {
       expect(screen.queryByTestId("user-avatar")).not.toBeInTheDocument();
     });
 
-    it("should show Sign In and Get Started while loading", () => {
+    it("should show Sign In button while loading", () => {
       render(<PlatformHeader />);
-      expect(screen.getByRole("link", { name: "Sign In" })).toBeInTheDocument();
       expect(
-        screen.getAllByRole("link", { name: /get started/i }).length,
+        screen.getAllByRole("link", { name: /sign in/i }).length,
       ).toBeGreaterThanOrEqual(1);
     });
   });
@@ -375,12 +343,12 @@ describe("PlatformHeader Component", () => {
 
       // Get all focusable elements in the header
       const createLinks = screen.getAllByRole("link", { name: /create/i });
-      const orbitLink = screen.getByRole("link", { name: "Orbit" });
+      const pdMcpLink = screen.getByRole("link", { name: "PD-MCP" });
       const pricingLink = screen.getByRole("link", { name: "Pricing" });
 
       // Verify these elements exist and are tabbable (no tabindex=-1)
       expect(createLinks[0]).not.toHaveAttribute("tabindex", "-1");
-      expect(orbitLink).not.toHaveAttribute("tabindex", "-1");
+      expect(pdMcpLink).not.toHaveAttribute("tabindex", "-1");
       expect(pricingLink).not.toHaveAttribute("tabindex", "-1");
     });
 

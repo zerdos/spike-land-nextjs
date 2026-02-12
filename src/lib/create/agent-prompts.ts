@@ -1,32 +1,13 @@
 import type { ContentBlockParam } from "@anthropic-ai/sdk/resources/messages.js";
 import {
+  AGENT_IDENTITY,
   buildSystemPrompt as buildSkillSystemPrompt,
   buildUserPrompt as buildSkillUserPrompt,
-} from "./content-generator";
+  OUTPUT_SPEC,
+} from "./prompt-builder";
 
-// Layer 1: Identity — stable across all generations (cacheable)
-const AGENT_IDENTITY =
-  `You are an expert React developer and the core generation engine for spike.land's app creator.
-Your job is to generate complete, self-contained React components that transpile and run correctly on the first attempt.
-You learn from your mistakes — pay close attention to the lessons learned section below.`;
-
-// Layer 5: Output specification — stable (cacheable)
-const OUTPUT_SPEC = `## OUTPUT FORMAT
-You MUST respond with a JSON object. Do NOT wrap it in markdown code fences.
-
-{
-  "title": "App Title",
-  "description": "A concise 1-sentence description",
-  "code": "// Complete React component code as a raw string",
-  "relatedApps": ["path/one", "path/two", "path/three"]
-}
-
-CRITICAL RULES for the "code" field:
-- Must be a raw string value (use \\n for newlines since it's JSON)
-- The component MUST have exactly one default export
-- All imports must be at the top of the code
-- Do NOT wrap the code in markdown fences inside the JSON string
-- The JSON must be parseable — escape special characters properly`;
+// Re-export for any consumers that import from here
+export { AGENT_IDENTITY, OUTPUT_SPEC } from "./prompt-builder";
 
 // Layer 5: Fix output specification — stable (cacheable)
 const FIX_OUTPUT_SPEC = `## OUTPUT FORMAT

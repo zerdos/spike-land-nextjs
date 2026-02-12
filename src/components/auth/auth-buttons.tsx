@@ -83,9 +83,9 @@ export function AuthButtons({ className }: AuthButtonsProps) {
   const [error, setError] = useState<string | null>(null);
 
   const getCallbackUrl = (): string => {
-    if (typeof window === "undefined") return "/orbit";
+    if (typeof window === "undefined") return "/";
     const params = new URLSearchParams(window.location.search);
-    const callbackUrl = params.get("callbackUrl") || "/orbit";
+    const callbackUrl = params.get("callbackUrl") || "/";
     // Validate URL to prevent open redirect attacks
     try {
       const url = new URL(callbackUrl, window.location.origin);
@@ -95,7 +95,7 @@ export function AuthButtons({ className }: AuthButtonsProps) {
     } catch {
       // Malformed URL; use default
     }
-    return "/orbit";
+    return "/";
   };
 
   const checkEmail = async (): Promise<EmailCheckResponse | null> => {
@@ -165,10 +165,10 @@ export function AuthButtons({ className }: AuthButtonsProps) {
       } else if (result?.ok) {
         // Redirect to callback URL or Orbit on success
         const params = new URLSearchParams(window.location.search);
-        const callbackUrl = params.get("callbackUrl") || "/orbit";
+        const callbackUrl = params.get("callbackUrl") || "/";
 
         // Validate URL to prevent open redirect attacks
-        let safeUrl = "/orbit";
+        let safeUrl = "/";
         try {
           // Only allow same-origin absolute URLs or relative paths
           const url = new URL(callbackUrl, window.location.origin);
@@ -228,9 +228,9 @@ export function AuthButtons({ className }: AuthButtonsProps) {
         );
       } else if (result?.ok) {
         const params = new URLSearchParams(window.location.search);
-        const callbackUrl = params.get("callbackUrl") || "/orbit";
+        const callbackUrl = params.get("callbackUrl") || "/";
 
-        let safeUrl = "/orbit";
+        let safeUrl = "/";
         try {
           const url = new URL(callbackUrl, window.location.origin);
           if (url.origin === window.location.origin) {

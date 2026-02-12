@@ -12,7 +12,6 @@ const navLinks = [
   { href: "#features", label: "Features" },
   { href: "/blog/pixel-launch-announcement", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/auth/signin", label: "Sign In" },
 ];
 
 export function PixelHeader() {
@@ -40,7 +39,7 @@ export function PixelHeader() {
             ))}
             <Button asChild className="shadow-glow-cyan-sm">
               <Link href="/auth/signin">
-                Sign Up
+                Sign In
               </Link>
             </Button>
           </nav>
@@ -76,7 +75,7 @@ export function PixelHeader() {
                     href="/auth/signin"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Sign Up
+                    Sign In
                   </Link>
                 </Button>
               </nav>

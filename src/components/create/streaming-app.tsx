@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { cn } from "@/lib/utils";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -44,6 +45,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
   const lastEventTime = useRef(Date.now());
   const [connectionWarning, setConnectionWarning] = useState(false);
   const router = useRouter();
+  const { redirectToSignIn } = useAuthRedirect();
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasAttemptedGeneration = useRef(false);
 
@@ -73,8 +75,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
 
       if (!response.ok) {
         if (response.status === 401) {
-          setStatus("error");
-          setError("Please log in to generate an app.");
+          redirectToSignIn();
           return;
         }
         if (response.status === 429) {
@@ -206,7 +207,7 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
     } finally {
       clearTimeout(timeoutId);
     }
-  }, [path, router, addMessage]);
+  }, [path, router, addMessage, redirectToSignIn]);
 
   useEffect(() => {
     startStreaming();

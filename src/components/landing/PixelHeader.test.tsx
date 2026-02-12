@@ -30,7 +30,6 @@ describe("PixelHeader Component", () => {
     render(<PixelHeader />);
     expect(screen.getByRole("link", { name: "Features" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Pricing" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Sign In" })).toBeInTheDocument();
   });
 
   it("should have correct href for navigation links", () => {
@@ -43,15 +42,11 @@ describe("PixelHeader Component", () => {
       "href",
       "/pricing",
     );
-    expect(screen.getByRole("link", { name: "Sign In" })).toHaveAttribute(
-      "href",
-      "/auth/signin",
-    );
   });
 
-  it("should render Sign Up CTA button", () => {
+  it("should render Sign In CTA button", () => {
     render(<PixelHeader />);
-    const ctaButtons = screen.getAllByRole("link", { name: /sign up/i });
+    const ctaButtons = screen.getAllByRole("link", { name: /sign in/i });
     expect(ctaButtons.length).toBeGreaterThanOrEqual(1);
     expect(ctaButtons[0]).toHaveAttribute(
       "href",
@@ -117,7 +112,7 @@ describe("PixelHeader Component", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("should close mobile menu when clicking Sign Up button in mobile menu", () => {
+  it("should close mobile menu when clicking Sign In button in mobile menu", () => {
     render(<PixelHeader />);
 
     // Open the mobile menu
@@ -128,13 +123,13 @@ describe("PixelHeader Component", () => {
     const dialog = screen.getByRole("dialog");
     expect(dialog).toBeInTheDocument();
 
-    // Find the Sign Up button inside the dialog
-    const signUpLinks = screen.getAllByRole("link", {
-      name: /sign up/i,
+    // Find the Sign In button inside the dialog
+    const signInLinks = screen.getAllByRole("link", {
+      name: /sign in/i,
     });
-    const mobileMenuSignUp = signUpLinks.find((link) => dialog.contains(link));
-    expect(mobileMenuSignUp).toBeDefined();
-    fireEvent.click(mobileMenuSignUp!);
+    const mobileMenuSignIn = signInLinks.find((link) => dialog.contains(link));
+    expect(mobileMenuSignIn).toBeDefined();
+    fireEvent.click(mobileMenuSignIn!);
 
     // The dialog should no longer be in the document (menu closed)
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

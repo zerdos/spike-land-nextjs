@@ -67,7 +67,6 @@ const featureItems = [
 
 // Main navigation links
 const navLinks = [
-  { href: "/orbit-landing", label: "Orbit", hasLogo: false },
   { href: "/mcp", label: "PD-MCP", hasLogo: true },
   { href: "/pricing", label: "Pricing", hasLogo: false },
 ];
@@ -134,18 +133,10 @@ export function PlatformHeader() {
               </Link>
             ))}
 
-            {!isAuthenticated && (
-              <Link
-                href="/auth/signin"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Sign In
-              </Link>
-            )}
             {isAuthenticated ? <UserAvatar /> : (
               <Button asChild variant="outline" size="sm">
                 <Link href="/auth/signin">
-                  Get Started
+                  Sign In
                 </Link>
               </Button>
             )}
@@ -220,15 +211,6 @@ export function PlatformHeader() {
                   </Link>
                 ))}
 
-                {!isAuthenticated && (
-                  <Link
-                    href="/auth/signin"
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Sign In
-                  </Link>
-                )}
                 {isAuthenticated && session?.user
                   ? (
                     <div className="flex flex-col gap-2 mt-2">
@@ -301,7 +283,7 @@ export function PlatformHeader() {
                         href="/auth/signin"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        Get Started
+                        Sign In
                       </Link>
                     </Button>
                   )}

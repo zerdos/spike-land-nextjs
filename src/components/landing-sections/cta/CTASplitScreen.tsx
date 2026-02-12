@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { EditorMockup } from "../mockups/EditorMockup";
 import { SectionWrapper } from "../shared/SectionWrapper";
 import { ThemeButton } from "../shared/ThemeButton";
@@ -16,7 +17,9 @@ export function CTASplitScreen() {
               projects.
             </p>
             <div className="flex gap-4">
-              <ThemeButton size="lg">Get Started</ThemeButton>
+              <Link href="/create">
+                <ThemeButton size="lg">Get Started</ThemeButton>
+              </Link>
             </div>
           </div>
           <div className="bg-[var(--landing-muted)]/10 relative">

@@ -25,7 +25,7 @@ describe("SignInPage", () => {
   });
 
   describe("Authentication Redirect", () => {
-    it("should redirect to orbit when user is already authenticated", async () => {
+    it("should redirect to home when user is already authenticated", async () => {
       vi.mocked(auth).mockResolvedValue({
         user: {
           id: "test-user-id",
@@ -38,7 +38,7 @@ describe("SignInPage", () => {
 
       await SignInPage();
 
-      expect(redirect).toHaveBeenCalledWith("/orbit");
+      expect(redirect).toHaveBeenCalledWith("/");
     });
 
     it("should render sign in content when user is not authenticated", async () => {

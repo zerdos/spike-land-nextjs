@@ -5,9 +5,9 @@ import { SignInContent } from "./signin-content";
 export default async function SignInPage() {
   const session = await auth();
 
-  // If user is already authenticated, redirect to Orbit
+  // If user is already authenticated, redirect to home
   if (session) {
-    redirect("/orbit");
+    redirect("/");
   }
 
   return <SignInContent />;

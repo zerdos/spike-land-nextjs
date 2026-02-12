@@ -72,8 +72,8 @@ export function OrbitCTA() {
               size="lg"
               className="text-lg font-semibold px-8 py-6 bg-gradient-to-r from-cyan-500 to-fuchsia-500 hover:from-cyan-400 hover:to-fuchsia-400 border-0"
             >
-              <Link href="/orbit">
-                Start Free Trial
+              <Link href="/create">
+                Start Building
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -92,7 +92,7 @@ export function OrbitCTA() {
 
         <ScrollReveal delay={0.4}>
           <p className="mt-8 text-sm text-white/40">
-            No credit card required • Free forever up to 3 accounts
+            Build and deploy React apps in seconds
           </p>
         </ScrollReveal>
       </div>

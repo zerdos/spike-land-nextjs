@@ -199,7 +199,7 @@ export function VibeCodeProvider({ children }: { children: React.ReactNode }) {
                   setRefreshCounter((c) => c + 1);
                   break;
                 case "error":
-                  agentContent += `\n\nError: ${event.message}`;
+                  agentContent += `\n\nError: ${event.content || event.message || "Unknown error"}`;
                   setMessages((prev) =>
                     prev.map((m) =>
                       m.id === agentMessageId

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SectionWrapper } from "../shared/SectionWrapper";
 import { ThemeButton } from "../shared/ThemeButton";
 
@@ -14,12 +15,14 @@ export function CTAGradientBanner() {
             Join the future of development today. No credit card required.
           </p>
           <div className="flex justify-center gap-4">
-            <ThemeButton
-              size="xl"
-              className="bg-white text-black hover:bg-gray-100 shadow-xl"
-            >
-              Get Started Free
-            </ThemeButton>
+            <Link href="/create">
+              <ThemeButton
+                size="xl"
+                className="bg-white text-black hover:bg-gray-100 shadow-xl"
+              >
+                Get Started Free
+              </ThemeButton>
+            </Link>
             <ThemeButton
               size="xl"
               variant="outline"

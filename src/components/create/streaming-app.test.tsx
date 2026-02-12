@@ -22,12 +22,18 @@ vi.mock("lucide-react", () => ({
   Loader2: () => null,
 }));
 
+const mockRedirectToSignIn = vi.fn();
+vi.mock("@/hooks/useAuthRedirect", () => ({
+  useAuthRedirect: () => ({ redirectToSignIn: mockRedirectToSignIn }),
+}));
+
 const fetchMock = vi.fn();
 
 describe("StreamingApp", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", fetchMock);
     fetchMock.mockReset();
+    mockRedirectToSignIn.mockReset();
   });
 
   afterEach(() => {
@@ -73,7 +79,7 @@ describe("StreamingApp", () => {
     expect(screen.getByText("Network error")).toBeInTheDocument();
   });
 
-  it("shows error when unauthorized", async () => {
+  it("redirects to sign-in when unauthorized", async () => {
     const { StreamingApp } = await import("./streaming-app");
     fetchMock.mockResolvedValue({
       ok: false,
@@ -84,7 +90,7 @@ describe("StreamingApp", () => {
     render(<StreamingApp path={["test", "app"]} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Please log in to generate an app.")).toBeInTheDocument();
+      expect(mockRedirectToSignIn).toHaveBeenCalled();
     });
   });
 });

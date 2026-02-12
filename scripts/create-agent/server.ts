@@ -7,6 +7,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { buildFullSystemPrompt, buildUserPrompt } from "../../src/lib/create/prompt-builder";
 
 const PORT = parseInt(process.env["CREATE_AGENT_PORT"] ?? "4892", 10);
 const AGENT_NAME = "Spike";
@@ -34,47 +35,6 @@ const anthropic = new Anthropic({
     "x-app": "cli",
   },
 });
-
-const SYSTEM_PROMPT = `You are an expert React developer building polished, production-quality micro-apps.
-
-## RUNTIME ENVIRONMENT
-- React 19 with JSX runtime
-- Tailwind CSS 4 (all utility classes available)
-- Component receives optional \`width\` and \`height\` props (number, pixels)
-- npm packages load from CDN automatically
-- Component must be DEFAULT EXPORT
-- Light theme by default
-
-## SHADCN/UI DESIGN SYSTEM (import from "@/components/ui/...")
-Available: Button, Card, Input, Label, Badge, Dialog, Tabs, Select, Tooltip, Alert, Separator, ScrollArea, Skeleton, DropdownMenu, Sheet, Progress
-
-## PRE-LOADED LIBRARIES
-- react (useState, useEffect, useCallback, useMemo, useRef, useReducer)
-- framer-motion (motion, AnimatePresence)
-- lucide-react (icons)
-- clsx, tailwind-merge (via @/lib/utils cn())
-
-## CDN LIBRARIES
-- date-fns, zustand, sonner, recharts, react-hook-form, zod, three, @dnd-kit/core, @dnd-kit/sortable, roughjs, howler, react-markdown, canvas-confetti
-
-## CODE RULES
-1. Use shadcn/ui components over raw HTML
-2. Never call hooks conditionally
-3. Handle edge cases: empty, loading, error states
-4. Use semantic colors: text-foreground, bg-background, bg-card
-5. Responsive design with sm:, md:, lg: classes
-6. Single default export
-7. No inline styles — Tailwind only`;
-
-function buildUserPrompt(topic: string): string {
-  return `Build an interactive app for: "/create/${topic}"
-
-Interpret this path as user intent. Create a polished, fully functional micro-app.
-
-Respond with JSON: { "title": "...", "description": "...", "code": "...", "relatedApps": ["path1", "path2", ...] }
-- code: raw string (no markdown fences), single default-exported React component
-- relatedApps: 3-5 related paths without "/create/" prefix`;
-}
 
 async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promise<void> {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -124,7 +84,7 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
     const stream = anthropic.messages.stream({
       model: CLAUDE_MODEL,
       max_tokens: 16384,
-      system: SYSTEM_PROMPT,
+      system: buildFullSystemPrompt(topic),
       messages: [{ role: "user", content: buildUserPrompt(topic) }],
     });
 

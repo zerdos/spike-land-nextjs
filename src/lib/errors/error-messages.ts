@@ -60,7 +60,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, ErrorMessage> = {
   UNAUTHORIZED: {
     title: "Authentication Required",
     message: "You need to be signed in to perform this action.",
-    suggestion: "Please sign in to your account and try again.",
+    suggestion: "Click the Sign In button to continue.",
     retryable: false,
   },
   FORBIDDEN: {
