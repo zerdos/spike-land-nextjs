@@ -1,4 +1,3 @@
-import * as esbuild from "esbuild-wasm";
 import type { Loader, Plugin } from "esbuild-wasm";
 import { tryCatch } from "@/lib/try-catch";
 import { IMPORT_MAP } from "./html-template";
@@ -260,6 +259,7 @@ export async function bundleCodespace(session: {
   const cache = new Map<string, string>();
 
   try {
+    const esbuild = await import("esbuild-wasm");
     const result = await esbuild.build({
       stdin: {
         contents: code,

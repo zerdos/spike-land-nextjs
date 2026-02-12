@@ -5,12 +5,11 @@
  * Transform options match packages/code/src/@/lib/transpile.ts:65-81 (same as js.spike.land).
  */
 
-import { transform } from "esbuild-wasm";
-
 export async function transpileCode(
   code: string,
   _origin?: string,
 ): Promise<string> {
+  const { transform } = await import("esbuild-wasm");
   const result = await transform(code, {
     loader: "tsx",
     format: "esm",
