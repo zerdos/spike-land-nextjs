@@ -10,6 +10,12 @@ export const metadata: Metadata = {
     description:
       "34 AI tools with Progressive Context Disclosure. Connect your AI agent to spike.land's MCP server.",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "MCP Server - Spike Land",
+    description:
+      "34 AI tools with Progressive Context Disclosure. Connect your AI agent to spike.land's MCP server.",
+  },
 };
 
 export default function McpPage() {

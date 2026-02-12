@@ -23,8 +23,11 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function SettingsPage() {
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "profile";
   const { data: session, status } = useSession();
   const { tier: currentTier, isLoading: isTierLoading } = useWorkspaceCredits();
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -116,7 +119,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="api-keys">API Keys</TabsTrigger>

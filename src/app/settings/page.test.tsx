@@ -8,6 +8,7 @@ import SettingsPage from "./page";
 vi.mock("next-auth/react");
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock useTier hook

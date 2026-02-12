@@ -20,7 +20,10 @@ const stats = [
 const configSnippet = `{
   "mcpServers": {
     "spike-land": {
-      "url": "https://spike.land/api/mcp"
+      "url": "https://spike.land/api/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
     }
   }
 }`;

@@ -13,6 +13,7 @@
  */
 
 import { authenticateMcpRequest } from "@/lib/mcp/auth";
+import { getMcpBaseUrl } from "@/lib/mcp/get-base-url";
 import { createMcpServer } from "@/lib/mcp/server/mcp-server";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { NextResponse } from "next/server";
@@ -21,18 +22,17 @@ import type { NextRequest } from "next/server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-function getBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "https://spike.land";
-}
-
 function unauthorizedResponse(): NextResponse {
-  const baseUrl = getBaseUrl();
+  const baseUrl = getMcpBaseUrl();
   return NextResponse.json(
     {
       error: "Unauthorized",
-      message: "Bearer token required. Use OAuth 2.1 or API key.",
+      message: "Bearer token required. Use an API key or OAuth 2.1.",
+      help: {
+        api_key: `${baseUrl}/settings?tab=api-keys`,
+        oauth_discovery: `${baseUrl}/.well-known/oauth-authorization-server`,
+        documentation: `${baseUrl}/mcp`,
+      },
     },
     {
       status: 401,

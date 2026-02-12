@@ -95,11 +95,7 @@ function CategoryCard({
             {category.description}
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex-grow flex items-end">
-          <Badge variant="outline" className="text-xs font-mono opacity-80 border-white/20">
-            {category.tier === "free" ? "Free Tier" : "Workspace"}
-          </Badge>
-        </CardContent>
+        <CardContent className="flex-grow" />
       </Card>
     </motion.div>
   );

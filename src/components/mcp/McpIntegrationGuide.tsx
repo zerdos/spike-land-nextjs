@@ -8,17 +8,25 @@ import { ExternalLink, Terminal, Code, Settings, Globe } from "lucide-react";
 const claudeDesktopConfig = `{
   "mcpServers": {
     "spike-land": {
-      "url": "https://spike.land/api/mcp"
+      "url": "https://spike.land/api/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
     }
   }
 }`;
 
-const claudeCodeConfig = `claude mcp add --transport http spike-land https://spike.land/api/mcp`;
+const claudeCodeConfig = `claude mcp add --transport http \\
+  --header "Authorization: Bearer YOUR_API_KEY" \\
+  spike-land https://spike.land/api/mcp`;
 
 const cursorConfig = `{
   "mcpServers": {
     "spike-land": {
-      "url": "https://spike.land/api/mcp"
+      "url": "https://spike.land/api/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
     }
   }
 }`;
@@ -100,7 +108,7 @@ export function McpIntegrationGuide() {
 
       <div className="text-center mt-12 relative z-10">
         <Link
-          href="/settings"
+          href="/settings?tab=api-keys"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors group px-4 py-2 rounded-full hover:bg-white/5 border border-transparent hover:border-white/10"
         >
           <span>Need an API key?</span>
