@@ -18,19 +18,34 @@ export function McpConfigSnippet({
   return (
     <div
       className={cn(
-        "relative rounded-xl bg-black/40 backdrop-blur p-4",
+        "relative rounded-xl overflow-hidden border border-white/10 shadow-2xl bg-[#0d1117]",
         className,
       )}
     >
-      {language && (
-        <Badge variant="outline" className="absolute top-2 left-2 text-xs">
-          {language}
-        </Badge>
-      )}
-      <CopyButton text={code} className="absolute top-2 right-2" />
-      <pre className="overflow-x-auto pt-6">
-        <code className="font-mono text-sm text-green-400/80">{code}</code>
-      </pre>
+      {/* Window Controls */}
+      <div className="flex items-center gap-2 px-4 py-3 bg-white/[0.03] border-b border-white/[0.05]">
+        <div className="flex gap-2">
+          <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm" />
+          <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm" />
+          <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm" />
+        </div>
+        <div className="flex-1 text-center text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium ml-[-3.5rem]">
+          {language === "bash" ? "Terminal" : language || "Config"}
+        </div>
+      </div>
+
+      {/* Code Area */}
+      <div className="p-6 relative group">
+        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200">
+          <CopyButton text={code} />
+        </div>
+        <pre className="overflow-x-auto custom-scrollbar">
+          <code className={cn(
+            "font-mono text-sm leading-relaxed",
+            language === "bash" ? "text-emerald-400" : "text-blue-300"
+          )}>{code}</code>
+        </pre>
+      </div>
     </div>
   );
 }
