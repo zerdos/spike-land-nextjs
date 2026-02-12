@@ -170,14 +170,17 @@ export function MasonryGridUniform({
   const config = COLUMN_CONFIG[safeZoomLevel];
 
   // Build responsive grid classes using explicit mappings
-  const gridClasses = cn(
-    "grid gap-4",
-    "grid-cols-1",
-    SM_GRID_COLS[config.sm],
-    MD_GRID_COLS[config.md],
-    LG_GRID_COLS[config.lg],
-    XL_GRID_COLS[config.xl],
-  );
+  // Memoize to avoid recalculating classes on every render
+  const gridClasses = useMemo(() => {
+    return cn(
+      "grid gap-4",
+      "grid-cols-1",
+      SM_GRID_COLS[config.sm],
+      MD_GRID_COLS[config.md],
+      LG_GRID_COLS[config.lg],
+      XL_GRID_COLS[config.xl],
+    );
+  }, [config]);
 
   return (
     <div className={cn(gridClasses, className)}>
