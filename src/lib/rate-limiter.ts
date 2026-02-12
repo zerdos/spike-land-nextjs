@@ -245,7 +245,11 @@ export async function checkRateLimit(
   resetAt: number;
 }> {
   // Bypass rate limiting in E2E tests or if explicitly enabled
-  if (process.env['E2E_BYPASS_AUTH'] || process.env['SKIP_RATE_LIMIT']) {
+  // SECURITY: Only allow bypass in non-production environments
+  if (
+    process.env.NODE_ENV !== "production" &&
+    (process.env["E2E_BYPASS_AUTH"] || process.env["SKIP_RATE_LIMIT"])
+  ) {
     return {
       isLimited: false,
       remaining: config.maxRequests,

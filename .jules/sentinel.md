@@ -7,3 +7,8 @@
 **Vulnerability:** `getPostBySlug` in `src/lib/blog/get-posts.ts` accepted unvalidated `slug` input, allowing traversal to parent directories (e.g., `../../../etc/passwd`).
 **Learning:** File system access functions must explicitly validate or sanitize input paths, even when using "safe" path joiners like `path.join`, if the input can contain traversal sequences.
 **Prevention:** Use strict regex validation (e.g., `/^[a-zA-Z0-9_-]+$/`) for filenames or identifiers derived from user input before passing them to file system APIs.
+
+## 2025-06-03 - [Rate Limit Bypass in Production]
+**Vulnerability:** Found `src/lib/rate-limiter.ts` allowed bypassing rate limits in production if `E2E_BYPASS_AUTH` or `SKIP_RATE_LIMIT` environment variables were accidentally set.
+**Learning:** Security controls (like rate limiting) should never rely solely on environment flags that might be misconfigured. Production environments must strictly enforce security logic.
+**Prevention:** Always wrap development/testing bypass logic in `process.env.NODE_ENV !== 'production'` checks.
