@@ -97,6 +97,16 @@ export async function POST(
     );
   }
 
+  // 4. Sync with testing.spike.land worker
+  try {
+    const { syncCodespaceWithWorker } = await import("@/lib/create/codespace-service");
+    syncCodespaceWithWorker(codeSpace, code).catch((err) => {
+      console.error(`[Sync Route] Background sync failed for ${codeSpace}:`, err);
+    });
+  } catch (err) {
+    console.error(`[Sync Route] Failed to import syncCodespaceWithWorker:`, err);
+  }
+
   return NextResponse.json({
     success: true,
     codeSpace,

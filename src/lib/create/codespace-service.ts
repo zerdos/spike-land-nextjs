@@ -11,6 +11,35 @@ export interface CodespaceResponse {
 }
 
 /**
+ * Syncs a codespace with the testing.spike.land backend worker.
+ */
+export async function syncCodespaceWithWorker(
+  codespaceId: string,
+  code: string,
+): Promise<boolean> {
+  try {
+    const response = await fetch(`https://testing.spike.land/api-v1/${codespaceId}/code`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ code, run: true }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      logger.warn(`Failed to sync codespace ${codespaceId} with worker: ${text}`);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    logger.error(`Error syncing codespace ${codespaceId} with worker:`, { error });
+    return false;
+  }
+}
+
+/**
  * Creates or updates a codespace with the given code.
  * Now calls the session service directly instead of the CF Worker.
  */
@@ -39,6 +68,11 @@ export async function updateCodespace(
       html: "",
       css: "",
       messages: [],
+    });
+
+    // PUSH to testing.spike.land as well!
+    syncCodespaceWithWorker(codespaceId, code).catch((err) => {
+      logger.error(`Background sync failed for ${codespaceId}:`, { err });
     });
 
     return {
