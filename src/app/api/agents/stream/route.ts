@@ -27,24 +27,26 @@ export async function GET(req: NextRequest) {
   const lastEventId = searchParams.get("lastEventId");
   let lastTimestamp = lastEventId ? parseInt(lastEventId, 10) : Date.now();
 
-  // Create a TransformStream for SSE
+  // Create an SSE stream backed by ReadableStream to avoid TransformStream
+  // runtime compatibility issues in CI.
   const encoder = new TextEncoder();
-  const stream = new TransformStream();
-  const writer = stream.writable.getWriter();
 
   // Function to send SSE event
   const sendEvent = async (
+    controller: ReadableStreamDefaultController<Uint8Array>,
     event: string,
     data: unknown,
     id?: string,
   ) => {
     const eventStr = `event: ${event}\ndata: ${JSON.stringify(data)}\n${id ? `id: ${id}\n` : ""}\n`;
-    await writer.write(encoder.encode(eventStr));
+    controller.enqueue(encoder.encode(eventStr));
   };
 
   // Function to send heartbeat
-  const sendHeartbeat = async () => {
-    await sendEvent("heartbeat", { timestamp: Date.now() });
+  const sendHeartbeat = async (
+    controller: ReadableStreamDefaultController<Uint8Array>,
+  ) => {
+    await sendEvent(controller, "heartbeat", { timestamp: Date.now() });
   };
 
   // Polling interval (check for new events every 2 seconds)
@@ -56,7 +58,9 @@ export async function GET(req: NextRequest) {
   const connectionStart = Date.now();
 
   // Start polling for events
-  const pollForEvents = async () => {
+  const pollForEvents = async (
+    controller: ReadableStreamDefaultController<Uint8Array>,
+  ) => {
     while (isActive) {
       // Check if connection has exceeded maximum duration
       if (Date.now() - connectionStart > MAX_CONNECTION_DURATION) {
@@ -73,6 +77,7 @@ export async function GET(req: NextRequest) {
         } else if (events && events.length > 0) {
           for (const event of events) {
             await sendEvent(
+              controller,
               event.type,
               event,
               event.timestamp.toString(),
@@ -82,16 +87,17 @@ export async function GET(req: NextRequest) {
         }
 
         // Send heartbeat every poll
-        await sendHeartbeat();
+        await sendHeartbeat(controller);
 
         // Wait before next poll
         await new Promise((resolve) => setTimeout(resolve, pollInterval));
       } catch (err) {
         console.error("SSE poll error:", err);
-        // If write fails, connection is closed
+        // If stream writes fail, connection is closed
         if (
           err instanceof Error &&
-          err.message.includes("WritableStream")
+          (err.message.includes("ReadableStream") ||
+            err.message.includes("Controller is already closed"))
         ) {
           isActive = false;
           break;
@@ -101,9 +107,9 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Close writer when done
+    // Close stream when done
     try {
-      await writer.close();
+      controller.close();
     } catch {
       // Ignore close errors
     }
@@ -114,14 +120,20 @@ export async function GET(req: NextRequest) {
     isActive = false;
   });
 
-  // Start polling in background
-  pollForEvents().catch((err) => {
-    console.error("SSE polling failed:", err);
-    isActive = false;
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      void pollForEvents(controller).catch((err) => {
+        console.error("SSE polling failed:", err);
+        isActive = false;
+      });
+    },
+    cancel() {
+      isActive = false;
+    },
   });
 
   // Return SSE response
-  return new Response(stream.readable, {
+  return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache, no-transform",
