@@ -68,6 +68,10 @@ export class HypothesisAgent {
     return await this.aiPromise;
   }
 
+  private async getAI() {
+    return await this.aiPromise;
+  }
+
   private getBrandVoice(brandProfile: unknown): string {
     if (!brandProfile || typeof brandProfile !== "object") {
       return "Professional";

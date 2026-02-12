@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useId } from "react";
 
 interface PdMcpLogoProps {
   size?: "sm" | "md" | "lg" | "xl";
@@ -17,21 +17,13 @@ const sizeMap = {
   xl: { width: 84, height: 60, text: "text-xl", gap: "gap-3" },
 };
 
-// Module-level counter for generating unique IDs after hydration
-let instanceCounter = 0;
-
 export function PdMcpLogo({
   size = "md",
   variant = "horizontal",
   className,
   showText = true,
 }: PdMcpLogoProps) {
-  // Start with a stable ID for SSR, then update to unique ID after mount
-  const [uniqueId, setUniqueId] = useState("ssr");
-
-  useEffect(() => {
-    setUniqueId(`client-${++instanceCounter}`);
-  }, []);
+  const uniqueId = useId();
 
   const glowId = `pdmcp-glow-${uniqueId}`;
   const bgGradientId = `pdmcp-bg-${uniqueId}`;

@@ -54,6 +54,10 @@ describe("Suggestion Generator", () => {
   });
 
   describe("buildAIContext", () => {
+    beforeEach(() => {
+      vi.mocked(isClaudeConfigured).mockReturnValue(true);
+    });
+
     it("should build context with brand voice", () => {
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
@@ -229,6 +233,10 @@ describe("Suggestion Generator", () => {
   });
 
   describe("generateSuggestions", () => {
+    beforeEach(() => {
+      vi.mocked(isClaudeConfigured).mockReturnValue(true);
+    });
+
     it("should generate suggestions with valid input", async () => {
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",

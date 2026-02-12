@@ -21,7 +21,9 @@ import {
 type StreamResult = StreamTextResult<any, unknown>;
 
 // Mock all external dependencies
-vi.mock("@ai-sdk/anthropic");
+vi.mock("@ai-sdk/anthropic", () => ({
+  createAnthropic: vi.fn(),
+}));
 vi.mock("ai");
 vi.mock("../services/storageService");
 
