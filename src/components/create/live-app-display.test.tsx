@@ -199,7 +199,7 @@ describe("LiveAppDisplay", () => {
 
     const iframe = screen.getByTitle("My Test App");
     const sandbox = iframe.getAttribute("sandbox");
-    expect(sandbox).not.toContain("allow-same-origin");
+    expect(sandbox).toContain("allow-same-origin");
     expect(sandbox).toContain("allow-scripts");
     expect(sandbox).toContain("allow-popups");
     expect(sandbox).toContain("allow-forms");

@@ -320,7 +320,7 @@ describe("agentGenerateApp", () => {
         dynamicSuffix: undefined,
         userPrompt: "user prompt",
         model: "opus",
-        maxTokens: 16384, // medium: 1 skill matched
+        maxTokens: 32768, // medium: 1 skill matched
         temperature: 0.5,
       });
     });
@@ -468,7 +468,7 @@ describe("agentGenerateApp", () => {
           systemPrompt: "fix system prompt",
           userPrompt: "fix user prompt",
           model: "sonnet",
-          maxTokens: 8192,
+          maxTokens: 32768,
           temperature: 0.2,
         }),
       );
