@@ -20,6 +20,42 @@ interface RateLimitConfig {
   windowMs: number;
 }
 
+// Lua script for atomic rate limiting
+// Returns [isLimited (0/1), remaining, resetAt]
+const RATE_LIMIT_SCRIPT = `
+  local key = KEYS[1]
+  local now = tonumber(ARGV[1])
+  local windowMs = tonumber(ARGV[2])
+  local maxRequests = tonumber(ARGV[3])
+  local ttlSeconds = tonumber(ARGV[4])
+
+  local value = redis.call("GET", key)
+  local entry = nil
+
+  if value then
+    entry = cjson.decode(value)
+  end
+
+  if not entry or (now - entry.firstRequest > windowMs) then
+    entry = {
+      count = 1,
+      firstRequest = now,
+      expiry = now + windowMs
+    }
+    redis.call("SET", key, cjson.encode(entry), "EX", ttlSeconds)
+    return {0, maxRequests - 1, entry.expiry}
+  elseif entry.count >= maxRequests then
+    return {1, 0, entry.firstRequest + windowMs}
+  else
+    entry.count = entry.count + 1
+    if not entry.expiry then
+      entry.expiry = entry.firstRequest + windowMs
+    end
+    redis.call("SET", key, cjson.encode(entry), "EX", ttlSeconds)
+    return {0, maxRequests - entry.count, entry.expiry}
+  end
+`;
+
 // In-memory store for fallback (when Redis is unavailable)
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
@@ -107,7 +143,7 @@ function ensureCleanupInterval(): void {
 
 /**
  * Checks rate limit using Upstash Redis.
- * Uses atomic operations with TTL for automatic cleanup.
+ * Uses atomic Lua script for consistency and performance (1 round trip vs 2).
  */
 async function checkRateLimitKV(
   identifier: string,
@@ -120,53 +156,27 @@ async function checkRateLimitKV(
   const now = Date.now();
   const key = `ratelimit:${identifier}`;
 
-  // Try to get existing entry
-  const entry = await redis.get<RateLimitEntry>(key);
-
-  // No previous requests or window has expired
-  if (!entry || now - entry.firstRequest > config.windowMs) {
-    const newEntry: RateLimitEntry = {
-      count: 1,
-      firstRequest: now,
-      expiry: now + config.windowMs,
-    };
-
-    // Store with TTL (window + 1 minute for cleanup margin)
-    const ttlSeconds = Math.ceil((config.windowMs + 60000) / 1000);
-    await redis.set(key, newEntry, { ex: ttlSeconds });
-
-    return {
-      isLimited: false,
-      remaining: config.maxRequests - 1,
-      resetAt: now + config.windowMs,
-    };
-  }
-
-  // Within the window
-  if (entry.count >= config.maxRequests) {
-    return {
-      isLimited: true,
-      remaining: 0,
-      resetAt: entry.firstRequest + config.windowMs,
-    };
-  }
-
-  // Increment the count using atomic operation
-  const updatedEntry: RateLimitEntry = {
-    ...entry,
-    count: entry.count + 1,
-    // Ensure expiry is preserved/set
-    expiry: entry.expiry || entry.firstRequest + config.windowMs,
-  };
-
-  // Update with same TTL
+  // Calculate TTL: window + 1 minute for cleanup margin
   const ttlSeconds = Math.ceil((config.windowMs + 60000) / 1000);
-  await redis.set(key, updatedEntry, { ex: ttlSeconds });
+
+  // Execute Lua script atomically
+  // Returns [isLimited (0/1), remaining, resetAt]
+  const result = await redis.eval<[number, number, number]>(
+    RATE_LIMIT_SCRIPT,
+    [key],
+    [now, config.windowMs, config.maxRequests, ttlSeconds]
+  );
+
+  // Handle result
+  // If result is null/undefined (should not happen with script), fall back to memory logic or throw
+  if (!Array.isArray(result) || result.length < 3) {
+    throw new Error("Invalid response from rate limit script");
+  }
 
   return {
-    isLimited: false,
-    remaining: config.maxRequests - updatedEntry.count,
-    resetAt: entry.firstRequest + config.windowMs,
+    isLimited: result[0] === 1,
+    remaining: result[1],
+    resetAt: result[2],
   };
 }
 

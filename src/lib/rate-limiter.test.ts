@@ -18,6 +18,7 @@ vi.mock("@/lib/upstash/client", () => ({
     get: vi.fn(),
     set: vi.fn(),
     del: vi.fn(),
+    eval: vi.fn(),
   },
 }));
 
@@ -171,89 +172,45 @@ describe("rate-limiter", () => {
     });
 
     it("should use KV storage when available", async () => {
-      mockedRedis.get.mockResolvedValue(null);
-      mockedRedis.set.mockResolvedValue("OK");
+      // Return [isLimited, remaining, resetAt]
+      const now = Date.now();
+      mockedRedis.eval.mockResolvedValue([0, 2, now + config.windowMs]);
 
       const result = await checkRateLimit("user1", config);
 
       expect(result.isLimited).toBe(false);
       expect(result.remaining).toBe(2);
-      expect(mockedRedis.get).toHaveBeenCalledWith("ratelimit:user1");
-      expect(mockedRedis.set).toHaveBeenCalled();
+      expect(mockedRedis.eval).toHaveBeenCalledWith(
+        expect.any(String),
+        ["ratelimit:user1"],
+        [expect.any(Number), config.windowMs, config.maxRequests, expect.any(Number)]
+      );
     });
 
-    it("should create new entry when no previous request exists in KV", async () => {
-      mockedRedis.get.mockResolvedValue(null);
-      mockedRedis.set.mockResolvedValue("OK");
-
+    it("should handle new entry correctly", async () => {
       const now = Date.now();
+      mockedRedis.eval.mockResolvedValue([0, 2, now + config.windowMs]);
+
       const result = await checkRateLimit("user1", config);
 
       expect(result.isLimited).toBe(false);
       expect(result.remaining).toBe(2);
       expect(result.resetAt).toBe(now + config.windowMs);
-
-      // Verify set was called with correct TTL
-      expect(mockedRedis.set).toHaveBeenCalledWith(
-        "ratelimit:user1",
-        expect.objectContaining({ count: 1 }),
-        expect.objectContaining({ ex: expect.any(Number) }),
-      );
-    });
-
-    it("should increment count for existing entry within window", async () => {
-      const now = Date.now();
-      mockedRedis.get.mockResolvedValue({ count: 1, firstRequest: now });
-      mockedRedis.set.mockResolvedValue("OK");
-
-      const result = await checkRateLimit("user1", config);
-
-      expect(result.isLimited).toBe(false);
-      expect(result.remaining).toBe(1); // 3 - 2 = 1
-
-      expect(mockedRedis.set).toHaveBeenCalledWith(
-        "ratelimit:user1",
-        expect.objectContaining({ count: 2 }),
-        expect.objectContaining({ ex: expect.any(Number) }),
-      );
     });
 
     it("should return limited when max requests reached in KV", async () => {
       const now = Date.now();
-      mockedRedis.get.mockResolvedValue({ count: 3, firstRequest: now });
+      mockedRedis.eval.mockResolvedValue([1, 0, now + config.windowMs]);
 
       const result = await checkRateLimit("user1", config);
 
       expect(result.isLimited).toBe(true);
       expect(result.remaining).toBe(0);
       expect(result.resetAt).toBe(now + config.windowMs);
-
-      // Should not call set when already limited
-      expect(mockedRedis.set).not.toHaveBeenCalled();
-    });
-
-    it("should reset window when entry has expired in KV", async () => {
-      const oldTime = Date.now() - 2000; // 2 seconds ago (past 1 second window)
-      mockedRedis.get.mockResolvedValue({ count: 3, firstRequest: oldTime });
-      mockedRedis.set.mockResolvedValue("OK");
-
-      const now = Date.now();
-      const result = await checkRateLimit("user1", config);
-
-      expect(result.isLimited).toBe(false);
-      expect(result.remaining).toBe(2);
-      expect(result.resetAt).toBe(now + config.windowMs);
-
-      // Should create new entry
-      expect(mockedRedis.set).toHaveBeenCalledWith(
-        "ratelimit:user1",
-        expect.objectContaining({ count: 1 }),
-        expect.objectContaining({ ex: expect.any(Number) }),
-      );
     });
 
     it("should fall back to memory storage when KV operations fail", async () => {
-      mockedRedis.get.mockRejectedValue(new Error("KV connection failed"));
+      mockedRedis.eval.mockRejectedValue(new Error("KV connection failed"));
 
       // Should fall back to memory and work
       const result = await checkRateLimit("user1", config);
@@ -265,7 +222,7 @@ describe("rate-limiter", () => {
 
     it("should use memory storage for subsequent requests after KV failure", async () => {
       // First request fails on KV
-      mockedRedis.get.mockRejectedValueOnce(new Error("KV connection failed"));
+      mockedRedis.eval.mockRejectedValueOnce(new Error("KV connection failed"));
 
       await checkRateLimit("user1", config);
 
@@ -276,21 +233,22 @@ describe("rate-limiter", () => {
       const result = await checkRateLimit("user1", config);
 
       expect(result.remaining).toBe(1);
-      expect(mockedRedis.get).not.toHaveBeenCalled();
+      expect(mockedRedis.eval).not.toHaveBeenCalled();
     });
 
     it("should calculate correct TTL for KV entries", async () => {
-      mockedRedis.get.mockResolvedValue(null);
-      mockedRedis.set.mockResolvedValue("OK");
+      const now = Date.now();
+      mockedRedis.eval.mockResolvedValue([0, 9, now + 60000]);
 
       const windowMs = 60000; // 1 minute
       await checkRateLimit("user1", { maxRequests: 10, windowMs });
 
       // TTL should be (windowMs + 60000) / 1000 = 120 seconds
-      expect(mockedRedis.set).toHaveBeenCalledWith(
-        "ratelimit:user1",
-        expect.any(Object),
-        { ex: 120 },
+      // Redis EVAL args: [key], [now, windowMs, maxRequests, ttlSeconds]
+      expect(mockedRedis.eval).toHaveBeenCalledWith(
+        expect.any(String),
+        ["ratelimit:user1"],
+        [expect.any(Number), 60000, 10, 120]
       );
     });
   });
@@ -307,8 +265,7 @@ describe("rate-limiter", () => {
       process.env.UPSTASH_REDIS_REST_TOKEN = "test-token";
 
       mockedRedis.ping.mockResolvedValue("PONG");
-      mockedRedis.get.mockResolvedValue(null);
-      mockedRedis.set.mockResolvedValue("OK");
+      mockedRedis.eval.mockResolvedValue([0, 4, Date.now() + 1000]);
 
       // Reset to trigger ping check
       resetKVAvailability();
@@ -316,7 +273,7 @@ describe("rate-limiter", () => {
       await checkRateLimit("user1", { maxRequests: 5, windowMs: 1000 });
 
       expect(mockedRedis.ping).toHaveBeenCalled();
-      expect(mockedRedis.get).toHaveBeenCalled();
+      expect(mockedRedis.eval).toHaveBeenCalled();
 
       // Clean up
       delete process.env.UPSTASH_REDIS_REST_URL;
@@ -338,7 +295,7 @@ describe("rate-limiter", () => {
       });
 
       expect(mockedRedis.ping).toHaveBeenCalled();
-      expect(mockedRedis.get).not.toHaveBeenCalled(); // Should not try to use KV
+      expect(mockedRedis.eval).not.toHaveBeenCalled(); // Should not try to use KV
       expect(result.isLimited).toBe(false);
 
       // Clean up
@@ -352,8 +309,7 @@ describe("rate-limiter", () => {
       process.env.UPSTASH_REDIS_REST_TOKEN = "test-token";
 
       mockedRedis.ping.mockResolvedValue("PONG");
-      mockedRedis.get.mockResolvedValue(null);
-      mockedRedis.set.mockResolvedValue("OK");
+      mockedRedis.eval.mockResolvedValue([0, 4, Date.now() + 1000]);
 
       resetKVAvailability();
 
@@ -375,8 +331,7 @@ describe("rate-limiter", () => {
       process.env.UPSTASH_REDIS_REST_TOKEN = "test-token";
 
       mockedRedis.ping.mockResolvedValue("PONG");
-      mockedRedis.get.mockResolvedValue(null);
-      mockedRedis.set.mockResolvedValue("OK");
+      mockedRedis.eval.mockResolvedValue([0, 4, Date.now() + 1000]);
 
       resetKVAvailability();
       await checkRateLimit("user1", { maxRequests: 5, windowMs: 1000 });
@@ -660,13 +615,12 @@ describe("rate-limiter", () => {
       await checkRateLimit("user1", { maxRequests: 5, windowMs: 1000 });
 
       expect(mockedRedis.ping).not.toHaveBeenCalled();
-      expect(mockedRedis.get).not.toHaveBeenCalled();
+      expect(mockedRedis.eval).not.toHaveBeenCalled();
       expect(getRateLimitStoreSize()).toBe(1);
     });
 
     it("forceKVStorage should use KV", async () => {
-      mockedRedis.get.mockResolvedValue(null);
-      mockedRedis.set.mockResolvedValue("OK");
+      mockedRedis.eval.mockResolvedValue([0, 4, Date.now() + 1000]);
 
       resetKVAvailability();
       forceKVStorage();
@@ -674,31 +628,31 @@ describe("rate-limiter", () => {
       await checkRateLimit("user1", { maxRequests: 5, windowMs: 1000 });
 
       // Should skip ping and go directly to KV operations
-      expect(mockedRedis.get).toHaveBeenCalled();
+      expect(mockedRedis.eval).toHaveBeenCalled();
     });
 
     it("should toggle between storage modes", async () => {
-      mockedRedis.get.mockResolvedValue(null);
-      mockedRedis.set.mockResolvedValue("OK");
+      mockedRedis.eval.mockResolvedValue([0, 4, Date.now() + 1000]);
 
       // Start with memory
       forceMemoryStorage();
       await checkRateLimit("user1", { maxRequests: 5, windowMs: 1000 });
-      expect(mockedRedis.get).not.toHaveBeenCalled();
+      expect(mockedRedis.eval).not.toHaveBeenCalled();
 
       // Switch to KV
       forceKVStorage();
       await checkRateLimit("user2", { maxRequests: 5, windowMs: 1000 });
-      expect(mockedRedis.get).toHaveBeenCalled();
+      expect(mockedRedis.eval).toHaveBeenCalled();
 
       // Switch back to memory
       forceMemoryStorage();
       vi.clearAllMocks();
       await checkRateLimit("user3", { maxRequests: 5, windowMs: 1000 });
-      expect(mockedRedis.get).not.toHaveBeenCalled();
+      expect(mockedRedis.eval).not.toHaveBeenCalled();
     });
   });
 
+  // ... rest of the file
   describe("rateLimitConfigs", () => {
     it("should have imageEnhancement config", () => {
       expect(rateLimitConfigs.imageEnhancement).toEqual({
