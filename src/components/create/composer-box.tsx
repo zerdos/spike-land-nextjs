@@ -295,7 +295,7 @@ export function ComposerBox({ initialPrompt }: ComposerBoxProps) {
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
-          className="absolute top-full left-0 right-0 mt-2 glass-2 border border-white/10 rounded-xl shadow-magic z-50 overflow-hidden"
+          className="absolute top-full left-0 right-0 mt-2 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-magic z-50 overflow-hidden"
         >
           <div className="p-1">
             {results.map((result) => (
