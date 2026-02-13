@@ -33,6 +33,20 @@ export enum McpErrorCode {
   R2_UPLOAD_ERROR = "R2_UPLOAD_ERROR",
   /** General generation/processing failure */
   GENERATION_ERROR = "GENERATION_ERROR",
+  /** Workspace not found or user lacks membership */
+  WORKSPACE_NOT_FOUND = "WORKSPACE_NOT_FOUND",
+  /** App not found or not owned by user */
+  APP_NOT_FOUND = "APP_NOT_FOUND",
+  /** User lacks permission for this operation */
+  PERMISSION_DENIED = "PERMISSION_DENIED",
+  /** Not enough tokens/credits for this operation */
+  INSUFFICIENT_CREDITS = "INSUFFICIENT_CREDITS",
+  /** Input validation failed */
+  VALIDATION_ERROR = "VALIDATION_ERROR",
+  /** Resource conflict (e.g. duplicate name) */
+  CONFLICT = "CONFLICT",
+  /** Upstream service (API route, external API) returned an error */
+  UPSTREAM_SERVICE_ERROR = "UPSTREAM_SERVICE_ERROR",
   /** Unknown or unclassified error */
   UNKNOWN = "UNKNOWN",
 }
@@ -50,6 +64,13 @@ export const MCP_ERROR_MESSAGES: Record<McpErrorCode, string> = {
   [McpErrorCode.GEMINI_API_ERROR]: "AI service error. Please try again in a moment.",
   [McpErrorCode.R2_UPLOAD_ERROR]: "Failed to save image. Please try again.",
   [McpErrorCode.GENERATION_ERROR]: "Generation failed. Please try again.",
+  [McpErrorCode.WORKSPACE_NOT_FOUND]: "Workspace not found. Use `workspace_list` to see available workspaces.",
+  [McpErrorCode.APP_NOT_FOUND]: "App not found. Use `apps_list` to see your apps.",
+  [McpErrorCode.PERMISSION_DENIED]: "You don't have permission for this operation.",
+  [McpErrorCode.INSUFFICIENT_CREDITS]: "Not enough credits. Check your balance with the token tools.",
+  [McpErrorCode.VALIDATION_ERROR]: "Invalid input. Check parameter formats and try again.",
+  [McpErrorCode.CONFLICT]: "Resource conflict. The name or identifier is already in use.",
+  [McpErrorCode.UPSTREAM_SERVICE_ERROR]: "An upstream service returned an error. Try again shortly.",
   [McpErrorCode.UNKNOWN]: "An unexpected error occurred",
 };
 
@@ -67,6 +88,13 @@ export const MCP_ERROR_RETRYABLE: Record<McpErrorCode, boolean> = {
   [McpErrorCode.GEMINI_API_ERROR]: true, // Transient API issues
   [McpErrorCode.R2_UPLOAD_ERROR]: true, // Transient storage issues
   [McpErrorCode.GENERATION_ERROR]: true, // May succeed on retry
+  [McpErrorCode.WORKSPACE_NOT_FOUND]: false, // Wrong ID won't fix itself
+  [McpErrorCode.APP_NOT_FOUND]: false, // Wrong ID won't fix itself
+  [McpErrorCode.PERMISSION_DENIED]: false, // Permissions won't change
+  [McpErrorCode.INSUFFICIENT_CREDITS]: false, // Need to top up
+  [McpErrorCode.VALIDATION_ERROR]: false, // Same input will fail again
+  [McpErrorCode.CONFLICT]: false, // Same name will conflict again
+  [McpErrorCode.UPSTREAM_SERVICE_ERROR]: true, // Transient service issues
   [McpErrorCode.UNKNOWN]: true, // Unknown errors may be transient
 };
 

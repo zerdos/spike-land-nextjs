@@ -75,6 +75,22 @@ export function LiveAppPreview({
     return () => observer.disconnect();
   }, [lazy, isVisible]);
 
+  // Listen for error messages from the sandboxed bundle iframe
+  useEffect(() => {
+    function handleMessage(event: MessageEvent): void {
+      if (
+        event.data?.type === "iframe-error"
+        && event.data?.source === "spike-land-bundle"
+        && event.data?.codeSpace === codespaceId
+      ) {
+        setState("error");
+        onHealthStatus?.(false);
+      }
+    }
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [codespaceId, onHealthStatus]);
+
   // Start loading when visible
   useEffect(() => {
     if (!isVisible || loadStartedRef.current) return;
@@ -134,7 +150,7 @@ export function LiveAppPreview({
             className="w-full h-full border-none"
             title={fallbackTitle || `App ${codespaceId}`}
             loading={lazy ? "lazy" : "eager"}
-            sandbox="allow-scripts allow-same-origin allow-popups"
+            sandbox="allow-scripts allow-popups allow-forms"
             allow="autoplay"
             onLoad={handleLoad}
             onError={handleError}

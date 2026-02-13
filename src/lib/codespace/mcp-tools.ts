@@ -57,6 +57,33 @@ export interface LineMatch {
 }
 
 // ---------------------------------------------------------------------------
+// Regex Safety
+// ---------------------------------------------------------------------------
+
+const MAX_REGEX_LENGTH = 500;
+
+/**
+ * Create a RegExp from user input with basic ReDoS protection.
+ * Rejects patterns that are excessively long or contain known catastrophic
+ * backtracking patterns like nested quantifiers: (a+)+, (a*)*
+ */
+function safeRegExp(pattern: string, flags?: string): RegExp {
+  if (pattern.length > MAX_REGEX_LENGTH) {
+    throw new Error(
+      `Regex pattern too long (${pattern.length} chars, max ${MAX_REGEX_LENGTH})`,
+    );
+  }
+  // Reject nested quantifiers that cause catastrophic backtracking
+  // Matches patterns like (x+)+, (x*)+, (x+)*, (x{n,})+, etc.
+  if (/([+*]|\{\d+,?\})\s*\)[\s]*[+*{]/.test(pattern)) {
+    throw new Error(
+      "Regex pattern contains nested quantifiers that may cause excessive backtracking",
+    );
+  }
+  return new RegExp(pattern, flags);
+}
+
+// ---------------------------------------------------------------------------
 // Result Types
 // ---------------------------------------------------------------------------
 
@@ -281,6 +308,13 @@ const findLinesTool: McpTool = {
     required: ["codeSpace", "pattern"],
   },
 };
+
+/** Tool names that mutate codespace state and require authentication */
+export const WRITE_TOOL_NAMES = new Set([
+  "update_code",
+  "edit_code",
+  "search_and_replace",
+]);
 
 /** All 7 MCP tool definitions */
 export const allTools: McpTool[] = [
@@ -525,10 +559,15 @@ async function executeSearchAndReplace(
   try {
     if (isRegex) {
       const flags = global ? "g" : "";
-      const regex = new RegExp(search, flags);
-      const matches = originalCode.match(new RegExp(search, "g"));
-      replacements = matches ? matches.length : 0;
+      const regex = safeRegExp(search, flags);
       newCode = originalCode.replace(regex, replace);
+      // Count actual replacements (not potential matches)
+      if (global) {
+        const matches = originalCode.match(safeRegExp(search, "g"));
+        replacements = matches ? matches.length : 0;
+      } else {
+        replacements = newCode !== originalCode ? 1 : 0;
+      }
     } else {
       if (global) {
         const regex = new RegExp(
@@ -558,6 +597,7 @@ async function executeSearchAndReplace(
     );
   }
 
+  let transpilationPending = false;
   if (replacements > 0) {
     let transpiled = "";
     try {
@@ -568,6 +608,7 @@ async function executeSearchAndReplace(
         error,
       );
     }
+    transpilationPending = !transpiled;
 
     const updatedSession: ICodeSession = {
       ...session,
@@ -585,7 +626,9 @@ async function executeSearchAndReplace(
     success: true,
     message:
       replacements > 0
-        ? `Made ${replacements} replacement(s). Code transpiled and updated.`
+        ? transpilationPending
+          ? `Made ${replacements} replacement(s). Code updated. Transpilation pending.`
+          : `Made ${replacements} replacement(s). Code transpiled and updated.`
         : "No matches found",
     replacements,
     search,
@@ -593,7 +636,7 @@ async function executeSearchAndReplace(
     isRegex,
     global,
     codeSpace,
-    requiresTranspilation: replacements > 0 && !origin,
+    requiresTranspilation: transpilationPending,
   };
 }
 
@@ -608,7 +651,7 @@ function executeFindLines(
   const matches: LineMatch[] = [];
 
   try {
-    const searchPattern = isRegex ? new RegExp(pattern, "gi") : pattern;
+    const searchPattern = isRegex ? safeRegExp(pattern, "gi") : pattern;
 
     lines.forEach((line: string, index: number) => {
       const lineNumber = index + 1;
@@ -717,8 +760,21 @@ export async function handleMcpRequest(
         };
       }
 
+      case "notifications/initialized":
+        // JSON-RPC notifications should not receive a response,
+        // but return an empty success to avoid breaking clients
+        return { jsonrpc: "2.0", id, result: {} };
+
       default:
-        throw new Error(`Method ${method} not found`);
+        return {
+          jsonrpc: "2.0",
+          id,
+          error: {
+            code: -32601,
+            message: "Method not found",
+            data: `Unknown method: ${method}`,
+          },
+        };
     }
   } catch (error) {
     return {
@@ -743,10 +799,9 @@ async function executeTool(
   codeSpace: string,
   origin: string,
 ): Promise<Record<string, unknown>> {
-  // Use the codeSpace from the URL route; args.codeSpace is accepted for
-  // compatibility but the route param takes precedence.
-  const effectiveCodeSpace =
-    (args["codeSpace"] as string) || codeSpace;
+  // Always use the codeSpace from the URL route parameter.
+  // Do NOT allow args.codeSpace to override it — this prevents cross-codespace access.
+  const effectiveCodeSpace = codeSpace;
 
   const session = await getOrCreateSession(effectiveCodeSpace);
 

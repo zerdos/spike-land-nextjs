@@ -211,6 +211,83 @@ describe("LiveAppPreview", () => {
     expect(onHealthStatus).toHaveBeenCalledWith(false);
   });
 
+  it("does not include allow-same-origin in iframe sandbox", () => {
+    render(
+      <LiveAppPreview
+        codespaceId="test-cs"
+        lazy={false}
+        fallbackTitle="Test App"
+      />,
+    );
+
+    const iframe = screen.getByTitle("Test App");
+    const sandbox = iframe.getAttribute("sandbox");
+    expect(sandbox).not.toContain("allow-same-origin");
+    expect(sandbox).toContain("allow-scripts");
+    expect(sandbox).toContain("allow-popups");
+    expect(sandbox).toContain("allow-forms");
+  });
+
+  it("switches to error state on bundle error postMessage", async () => {
+    const onHealthStatus = vi.fn();
+    render(
+      <LiveAppPreview
+        codespaceId="test-cs"
+        lazy={false}
+        fallbackTitle="Test App"
+        onHealthStatus={onHealthStatus}
+      />,
+    );
+
+    // Should render iframe initially
+    expect(screen.getByTitle("Test App")).toBeInTheDocument();
+
+    // Simulate error message from bundle iframe
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: {
+            type: "iframe-error",
+            source: "spike-land-bundle",
+            codeSpace: "test-cs",
+            message: "React error #130",
+          },
+        }),
+      );
+    });
+
+    // Should show error state
+    expect(screen.getByText("Preview unavailable")).toBeInTheDocument();
+    expect(onHealthStatus).toHaveBeenCalledWith(false);
+  });
+
+  it("ignores error messages from other codespaces", () => {
+    render(
+      <LiveAppPreview
+        codespaceId="test-cs"
+        lazy={false}
+        fallbackTitle="Test App"
+      />,
+    );
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: {
+            type: "iframe-error",
+            source: "spike-land-bundle",
+            codeSpace: "different-cs",
+            message: "Not my error",
+          },
+        }),
+      );
+    });
+
+    // Should still show iframe, not error state
+    expect(screen.getByTitle("Test App")).toBeInTheDocument();
+    expect(screen.queryByText("Preview unavailable")).not.toBeInTheDocument();
+  });
+
   it("does not fail when health check fetch throws", async () => {
     mockFetch.mockRejectedValue(new Error("Network error"));
 

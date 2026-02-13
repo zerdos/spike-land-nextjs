@@ -140,6 +140,41 @@ export function buildBundleHtml(opts: {
   </head>
   <body>
     <div id="embed">${opts.html}</div>
+    <script>
+    (function() {
+      var reported = false;
+      var cs = ${JSON.stringify(opts.codeSpace)};
+      function report(msg, stack) {
+        if (reported) return;
+        reported = true;
+        try {
+          parent.postMessage({
+            type: "iframe-error",
+            source: "spike-land-bundle",
+            codeSpace: cs,
+            message: String(msg),
+            stack: stack || ""
+          }, "*");
+        } catch (e) {}
+      }
+      window.onerror = function(msg, url, line, col, err) {
+        report(msg, err && err.stack ? err.stack : url + ":" + line + ":" + col);
+      };
+      window.addEventListener("unhandledrejection", function(ev) {
+        var r = ev.reason;
+        report(
+          r && r.message ? r.message : String(r),
+          r && r.stack ? r.stack : ""
+        );
+      });
+      setTimeout(function() {
+        var el = document.getElementById("embed");
+        if (el && el.children.length === 0) {
+          report("Render timeout: #embed is still empty after 5s");
+        }
+      }, 5000);
+    })();
+    </script>
     <script>${opts.js}</script>
   </body>
 </html>`;

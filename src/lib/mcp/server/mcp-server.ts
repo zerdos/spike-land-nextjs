@@ -15,6 +15,10 @@ import { registerGatewayTools, isGatewayAvailable } from "./tools/gateway";
 import { registerVaultTools } from "./tools/vault";
 import { registerToolFactoryTools } from "./tools/tool-factory";
 import { registerBootstrapTools } from "./tools/bootstrap";
+import { registerAppsTools } from "./tools/apps";
+import { registerOrbitWorkspaceTools } from "./tools/orbit-workspace";
+import { registerOrbitInboxTools } from "./tools/orbit-inbox";
+import { registerOrbitRelayTools } from "./tools/orbit-relay";
 
 /**
  * Create a fully configured MCP server for a specific user.
@@ -62,6 +66,18 @@ export function createMcpServer(userId: string): McpServer {
 
   // Bootstrap tools (discoverable)
   registerBootstrapTools(registry, userId);
+
+  // My-Apps tools (discoverable)
+  registerAppsTools(registry, userId);
+
+  // Orbit workspace tools (discoverable)
+  registerOrbitWorkspaceTools(registry, userId);
+
+  // Orbit inbox tools (discoverable)
+  registerOrbitInboxTools(registry, userId);
+
+  // Orbit relay tools (discoverable)
+  registerOrbitRelayTools(registry, userId);
 
   return mcpServer;
 }

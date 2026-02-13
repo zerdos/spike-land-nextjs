@@ -1,0 +1,402 @@
+import { describe, expect, it, vi, beforeEach } from "vitest";
+
+// Mock prisma
+const mockPrisma = {
+  workspace: {
+    findFirst: vi.fn(),
+  },
+};
+
+vi.mock("@/lib/prisma", () => ({
+  default: mockPrisma,
+}));
+
+import { safeToolCall, resolveWorkspace, apiRequest, textResult } from "./tool-helpers";
+import { McpError, McpErrorCode } from "../../errors";
+
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+describe("tool-helpers", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("textResult", () => {
+    it("should format a simple text result", () => {
+      const result = textResult("Hello world");
+      expect(result).toEqual({
+        content: [{ type: "text", text: "Hello world" }],
+      });
+    });
+  });
+
+  describe("safeToolCall", () => {
+    it("should return handler result on success", async () => {
+      const result = await safeToolCall("test_tool", async () => ({
+        content: [{ type: "text" as const, text: "success" }],
+      }));
+
+      expect(result.content[0]).toEqual(
+        expect.objectContaining({ text: "success" }),
+      );
+      expect(result.isError).toBeUndefined();
+    });
+
+    it("should classify McpError with proper code", async () => {
+      const result = await safeToolCall("test_tool", async () => {
+        throw new McpError("Not found", McpErrorCode.APP_NOT_FOUND, false);
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("APP_NOT_FOUND");
+      expect(text).toContain("Suggestion:");
+      expect(text).toContain("Retryable:** false");
+    });
+
+    it("should classify generic not-found errors for apps_ tools", async () => {
+      const result = await safeToolCall("apps_get", async () => {
+        throw new Error("Resource not found");
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("APP_NOT_FOUND");
+    });
+
+    it("should classify generic not-found errors for non-apps tools", async () => {
+      const result = await safeToolCall("workspace_list", async () => {
+        throw new Error("not found");
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("WORKSPACE_NOT_FOUND");
+    });
+
+    it("should classify unauthorized errors", async () => {
+      const result = await safeToolCall("test_tool", async () => {
+        throw new Error("Unauthorized access");
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("PERMISSION_DENIED");
+    });
+
+    it("should classify forbidden errors", async () => {
+      const result = await safeToolCall("test_tool", async () => {
+        throw new Error("403 Forbidden");
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("PERMISSION_DENIED");
+    });
+
+    it("should classify conflict errors", async () => {
+      const result = await safeToolCall("test_tool", async () => {
+        throw new Error("Name already exists");
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("CONFLICT");
+    });
+
+    it("should classify validation errors", async () => {
+      const result = await safeToolCall("test_tool", async () => {
+        throw new Error("Validation failed: invalid input");
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("VALIDATION_ERROR");
+    });
+
+    it("should classify rate limit errors", async () => {
+      const result = await safeToolCall("test_tool", async () => {
+        throw new Error("Rate limit exceeded, too many requests");
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("RATE_LIMITED");
+      expect(text).toContain("Retryable:** true");
+    });
+
+    it("should classify insufficient credits errors", async () => {
+      const result = await safeToolCall("test_tool", async () => {
+        throw new Error("Insufficient credits");
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("INSUFFICIENT_CREDITS");
+    });
+
+    it("should classify unknown errors", async () => {
+      const result = await safeToolCall("test_tool", async () => {
+        throw new Error("something weird happened");
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("UNKNOWN");
+      expect(text).toContain("Retryable:** true");
+    });
+
+    it("should handle non-Error thrown values", async () => {
+      const result = await safeToolCall("test_tool", async () => {
+        throw "string error";
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("Unknown error");
+    });
+  });
+
+  describe("resolveWorkspace", () => {
+    it("should return workspace when found", async () => {
+      mockPrisma.workspace.findFirst.mockResolvedValue({
+        id: "ws-1",
+        slug: "my-workspace",
+        name: "My Workspace",
+      });
+
+      const result = await resolveWorkspace("user-1", "my-workspace");
+
+      expect(result).toEqual({
+        id: "ws-1",
+        slug: "my-workspace",
+        name: "My Workspace",
+      });
+      expect(mockPrisma.workspace.findFirst).toHaveBeenCalledWith({
+        where: {
+          slug: "my-workspace",
+          members: { some: { userId: "user-1" } },
+        },
+        select: { id: true, slug: true, name: true },
+      });
+    });
+
+    it("should throw McpError when workspace not found", async () => {
+      mockPrisma.workspace.findFirst.mockResolvedValue(null);
+
+      await expect(
+        resolveWorkspace("user-1", "nonexistent"),
+      ).rejects.toThrow(McpError);
+
+      try {
+        await resolveWorkspace("user-1", "nonexistent");
+      } catch (error) {
+        expect(error).toBeInstanceOf(McpError);
+        expect((error as McpError).code).toBe(McpErrorCode.WORKSPACE_NOT_FOUND);
+      }
+    });
+  });
+
+  describe("apiRequest", () => {
+    it("should make successful request", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ id: "123", name: "Test" }),
+      });
+
+      const result = await apiRequest<{ id: string; name: string }>("/api/test");
+
+      expect(result).toEqual({ id: "123", name: "Test" });
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining("/api/test"),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+          }),
+        }),
+      );
+    });
+
+    it("should throw McpError on 404", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        text: () => Promise.resolve(JSON.stringify({ error: "Not found" })),
+      });
+
+      await expect(apiRequest("/api/test")).rejects.toThrow(McpError);
+
+      try {
+        await apiRequest("/api/test");
+      } catch (error) {
+        expect((error as McpError).code).toBe(McpErrorCode.APP_NOT_FOUND);
+      }
+    });
+
+    it("should throw McpError on 403", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 403,
+        text: () => Promise.resolve("Forbidden"),
+      });
+
+      await expect(apiRequest("/api/test")).rejects.toThrow(McpError);
+
+      try {
+        await apiRequest("/api/test");
+      } catch (error) {
+        expect((error as McpError).code).toBe(McpErrorCode.PERMISSION_DENIED);
+      }
+    });
+
+    it("should throw McpError on 401", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 401,
+        text: () => Promise.resolve("Unauthorized"),
+      });
+
+      await expect(apiRequest("/api/test")).rejects.toThrow(McpError);
+
+      try {
+        await apiRequest("/api/test");
+      } catch (error) {
+        expect((error as McpError).code).toBe(McpErrorCode.PERMISSION_DENIED);
+      }
+    });
+
+    it("should throw McpError on 409", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 409,
+        text: () => Promise.resolve(JSON.stringify({ error: "Conflict" })),
+      });
+
+      await expect(apiRequest("/api/test")).rejects.toThrow(McpError);
+
+      try {
+        await apiRequest("/api/test");
+      } catch (error) {
+        expect((error as McpError).code).toBe(McpErrorCode.CONFLICT);
+      }
+    });
+
+    it("should throw McpError on 429", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 429,
+        text: () => Promise.resolve("Rate limited"),
+      });
+
+      await expect(apiRequest("/api/test")).rejects.toThrow(McpError);
+
+      try {
+        await apiRequest("/api/test");
+      } catch (error) {
+        expect((error as McpError).code).toBe(McpErrorCode.RATE_LIMITED);
+        expect((error as McpError).retryable).toBe(true);
+      }
+    });
+
+    it("should throw McpError on 400", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        text: () => Promise.resolve(JSON.stringify({ error: "Bad request" })),
+      });
+
+      await expect(apiRequest("/api/test")).rejects.toThrow(McpError);
+
+      try {
+        await apiRequest("/api/test");
+      } catch (error) {
+        expect((error as McpError).code).toBe(McpErrorCode.VALIDATION_ERROR);
+      }
+    });
+
+    it("should throw McpError on 500 as UPSTREAM_SERVICE_ERROR", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: () => Promise.resolve("Internal server error"),
+      });
+
+      await expect(apiRequest("/api/test")).rejects.toThrow(McpError);
+
+      try {
+        await apiRequest("/api/test");
+      } catch (error) {
+        expect((error as McpError).code).toBe(McpErrorCode.UPSTREAM_SERVICE_ERROR);
+        expect((error as McpError).retryable).toBe(true);
+      }
+    });
+
+    it("should handle text() failure gracefully", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: () => Promise.reject(new Error("read error")),
+      });
+
+      await expect(apiRequest("/api/test")).rejects.toThrow(McpError);
+
+      try {
+        await apiRequest("/api/test");
+      } catch (error) {
+        expect((error as McpError).message).toBe("Unknown error");
+      }
+    });
+
+    it("should include Authorization header when service token exists", async () => {
+      const original = process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      process.env["SPIKE_LAND_SERVICE_TOKEN"] = "test-token";
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+
+      await apiRequest("/api/test");
+
+      const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+      expect((options.headers as Record<string, string>)["Authorization"]).toBe(
+        "Bearer test-token",
+      );
+
+      if (original === undefined) {
+        delete process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      } else {
+        process.env["SPIKE_LAND_SERVICE_TOKEN"] = original;
+      }
+    });
+
+    it("should parse JSON error bodies", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        text: () => Promise.resolve(JSON.stringify({ error: "App xyz not found" })),
+      });
+
+      try {
+        await apiRequest("/api/test");
+      } catch (error) {
+        expect((error as McpError).message).toBe("App xyz not found");
+      }
+    });
+
+    it("should handle non-JSON error bodies", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        text: () => Promise.resolve("plain text error"),
+      });
+
+      try {
+        await apiRequest("/api/test");
+      } catch (error) {
+        expect((error as McpError).message).toBe("plain text error");
+      }
+    });
+  });
+});

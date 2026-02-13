@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock all dependencies
 vi.mock("@/lib/codespace/bundle-cache", () => ({
+  deleteBundleCache: vi.fn(),
   getBundleCache: vi.fn(),
   setBundleCache: vi.fn(),
 }));
@@ -23,7 +24,7 @@ vi.mock("@/lib/codespace/transpile", () => ({
   transpileCode: vi.fn(),
 }));
 
-import { getBundleCache, setBundleCache } from "@/lib/codespace/bundle-cache";
+import { deleteBundleCache, getBundleCache, setBundleCache } from "@/lib/codespace/bundle-cache";
 import { buildBundleHtml } from "@/lib/codespace/bundle-template";
 import { bundleCodespace } from "@/lib/codespace/bundler";
 import {
@@ -35,6 +36,7 @@ import { GET, OPTIONS } from "./route";
 
 const mockGetOrCreateSession = vi.mocked(getOrCreateSession);
 const mockTranspileCode = vi.mocked(transpileCode);
+const mockDeleteBundleCache = vi.mocked(deleteBundleCache);
 const mockGetBundleCache = vi.mocked(getBundleCache);
 const mockSetBundleCache = vi.mocked(setBundleCache);
 const mockBundleCodespace = vi.mocked(bundleCodespace);
@@ -71,6 +73,7 @@ describe("GET /api/codespace/[codeSpace]/bundle", () => {
     mockBundleCodespace.mockResolvedValue({ js: "bundled()", css: "body{}" });
     mockBuildBundleHtml.mockReturnValue("<html>bundle</html>");
     mockSetBundleCache.mockResolvedValue(undefined);
+    mockDeleteBundleCache.mockResolvedValue(undefined);
     mockUpsertSession.mockResolvedValue(baseSession as ReturnType<typeof upsertSession> extends Promise<infer T> ? T : never);
   });
 
@@ -196,6 +199,50 @@ describe("GET /api/codespace/[codeSpace]/bundle", () => {
       "abc123",
       "<html>bundle</html>",
     );
+  });
+});
+
+describe("GET /api/codespace/[codeSpace]/bundle?rebuild=true", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetOrCreateSession.mockResolvedValue(baseSession);
+    mockGetBundleCache.mockResolvedValue(null);
+    mockBundleCodespace.mockResolvedValue({ js: "bundled()", css: "body{}" });
+    mockBuildBundleHtml.mockReturnValue("<html>bundle</html>");
+    mockSetBundleCache.mockResolvedValue(undefined);
+    mockDeleteBundleCache.mockResolvedValue(undefined);
+    mockUpsertSession.mockResolvedValue(baseSession as ReturnType<typeof upsertSession> extends Promise<infer T> ? T : never);
+    mockTranspileCode.mockResolvedValue("re-transpiled code");
+  });
+
+  it("skips cache lookup and deletes old cache on rebuild", async () => {
+    mockGetBundleCache.mockResolvedValue("<html>stale</html>");
+
+    const req = makeRequest(
+      "http://localhost/api/codespace/test-cs/bundle?rebuild=true",
+    );
+    const response = await GET(req, makeContext());
+    expect(response.status).toBe(200);
+
+    // Should NOT use cached HTML
+    const text = await response.text();
+    expect(text).toBe("<html>bundle</html>");
+
+    // Cache lookup should be skipped
+    expect(mockGetBundleCache).not.toHaveBeenCalled();
+
+    // Old cache should be deleted
+    expect(mockDeleteBundleCache).toHaveBeenCalledWith("test-cs", "abc123");
+  });
+
+  it("force re-transpiles from source code on rebuild", async () => {
+    const req = makeRequest(
+      "http://localhost/api/codespace/test-cs/bundle?rebuild=true",
+    );
+    await GET(req, makeContext());
+
+    // Should call transpileCode even though session.transpiled exists
+    expect(mockTranspileCode).toHaveBeenCalledWith(baseSession.code);
   });
 });
 

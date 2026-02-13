@@ -6,7 +6,7 @@
  */
 
 import prisma from "@/lib/prisma";
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes, timingSafeEqual } from "crypto";
 
 const ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -236,10 +236,20 @@ export async function exchangeAuthorizationCode(
   codeVerifier: string,
   redirectUri: string,
 ): Promise<TokenPair | null> {
+  // Atomically mark the code as used to prevent TOCTOU race conditions.
+  // updateMany with usedAt: null ensures only one concurrent request can succeed.
+  const updated = await prisma.oAuthAuthorizationCode.updateMany({
+    where: { code, usedAt: null },
+    data: { usedAt: new Date() },
+  });
+
+  // If no rows were updated, the code was already used, doesn't exist, or is invalid
+  if (updated.count === 0) return null;
+
+  // Now fetch the code details for validation
   const authCode = await prisma.oAuthAuthorizationCode.findUnique({
     where: { code },
     select: {
-      id: true,
       clientId: true,
       userId: true,
       redirectUri: true,
@@ -248,12 +258,10 @@ export async function exchangeAuthorizationCode(
       scope: true,
       resource: true,
       expiresAt: true,
-      usedAt: true,
     },
   });
 
   if (!authCode) return null;
-  if (authCode.usedAt) return null; // Single-use
   if (authCode.expiresAt < new Date()) return null;
   if (authCode.clientId !== clientId) return null;
   if (authCode.redirectUri !== redirectUri) return null;
@@ -262,12 +270,6 @@ export async function exchangeAuthorizationCode(
   if (!verifyPkce(codeVerifier, authCode.codeChallenge)) {
     return null;
   }
-
-  // Mark code as used
-  await prisma.oAuthAuthorizationCode.update({
-    where: { id: authCode.id },
-    data: { usedAt: new Date() },
-  });
 
   // Generate tokens
   return generateTokenPair(
@@ -292,5 +294,9 @@ export function verifyPkce(
   const computed = createHash("sha256")
     .update(codeVerifier)
     .digest("base64url");
-  return computed === codeChallenge;
+  // Use timing-safe comparison to prevent side-channel attacks
+  const a = Buffer.from(computed);
+  const b = Buffer.from(codeChallenge);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }

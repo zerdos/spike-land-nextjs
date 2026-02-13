@@ -96,4 +96,27 @@ describe("buildBundleHtml", () => {
     expect(html).toContain('<style type="text/tailwindcss">');
     expect(html).toContain("<style>\n    \n    </style>");
   });
+
+  it("includes error detection script before IIFE bundle", () => {
+    const html = buildBundleHtml(defaultOpts);
+    expect(html).toContain("spike-land-bundle");
+    expect(html).toContain("window.onerror");
+    expect(html).toContain("unhandledrejection");
+    expect(html).toContain("parent.postMessage");
+    // Error script should appear before the IIFE bundle script
+    const errorScriptIdx = html.indexOf("spike-land-bundle");
+    const iifeScriptIdx = html.indexOf(defaultOpts.js);
+    expect(errorScriptIdx).toBeLessThan(iifeScriptIdx);
+  });
+
+  it("injects codeSpace into error detection script", () => {
+    const html = buildBundleHtml(defaultOpts);
+    expect(html).toContain(JSON.stringify("test-app"));
+  });
+
+  it("includes empty-embed timeout check in error script", () => {
+    const html = buildBundleHtml(defaultOpts);
+    expect(html).toContain("el.children.length === 0");
+    expect(html).toContain("Render timeout");
+  });
 });
