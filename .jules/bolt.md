@@ -1,9 +1,3 @@
-# Bolt's Notes ⚡
-
-**Last Modified:** 2024-05-22
-**Health Score:** 9/10
-
-## 2024-05-22 - Vitest Output Suppression
-
-**Learning:** `yarn test` or `vitest run` output might be suppressed or buffered when running in non-interactive shell environments here, making debugging hard. `fs.writeFileSync` is a reliable way to verify execution.
-**Action:** When debugging tests in this environment, use explicit file writes to verify execution paths if stdout is silent.
+## 2026-02-13 - CI E2E Failures due to Memory Exhaustion
+**Learning:** E2E tests in CI (GitHub Actions) running `next start` (production mode) were failing en masse with `ECONNRESET` and timeouts. This was traced to the Node process running the Next.js server running out of memory under the heavy load of concurrent tests. The `build` script had `NODE_OPTIONS='--max-old-space-size=4096'`, but the runtime `start:e2e` script did not.
+**Action:** Always ensure `NODE_OPTIONS='--max-old-space-size=4096'` is set in `start:e2e` and `dev:ci` scripts in `package.json` to prevent server crashes during CI test execution.
