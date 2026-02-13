@@ -65,6 +65,19 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   "enhancement-jobs": "Enhancement job lifecycle: start, cancel with refund, status, and history",
   create: "Public /create app generator: search apps, classify ideas, check status, and manage created apps",
   learnit: "AI wiki knowledge base: search topics, explore relationships, and navigate the topic graph",
+  admin: "Admin dashboard: manage agents, emails, gallery, jobs, and photo moderation",
+  auth: "Authentication: session validation, route access checks, and user profiles",
+  pixel: "Pixel image processing: pipelines, tools, and image detail management",
+  "orbit-allocator": "Budget allocation: create, update, audit, and autopilot settings",
+  "orbit-calendar": "Content calendar: schedule, manage, and overview social media posts",
+  "orbit-social": "Social integration: connect platforms, onboarding, and content posting",
+  canvas: "Canvas display and editing for visual content",
+  merch: "Merchandise store: products, cart, checkout, and order management",
+  tabletop: "Tabletop game sessions: create, join, and manage multiplayer games",
+  "brand-brain": "AI brand voice: rewrite text and analyze brand characteristics",
+  connections: "Business connections and competitor tracking",
+  boxes: "Box management: organize items in virtual containers",
+  "smart-routing": "Smart routing: traffic rules, weights, and performance stats",
 };
 
 export class ToolRegistry {

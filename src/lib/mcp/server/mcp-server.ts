@@ -26,6 +26,19 @@ import { registerBatchEnhanceTools } from "./tools/batch-enhance";
 import { registerEnhancementJobsTools } from "./tools/enhancement-jobs";
 import { registerCreateTools } from "./tools/create";
 import { registerLearnItTools } from "./tools/learnit";
+import { registerAdminTools } from "./tools/admin";
+import { registerAuthTools } from "./tools/auth";
+import { registerPixelTools } from "./tools/pixel";
+import { registerOrbitAllocatorTools } from "./tools/orbit-allocator";
+import { registerOrbitCalendarTools } from "./tools/orbit-calendar";
+import { registerOrbitSocialTools } from "./tools/orbit-social";
+import { registerCanvasTools } from "./tools/canvas";
+import { registerMerchTools } from "./tools/merch";
+import { registerTabletopTools } from "./tools/tabletop";
+import { registerBrandBrainTools } from "./tools/brand-brain";
+import { registerConnectionsTools } from "./tools/connections";
+import { registerBoxesTools } from "./tools/boxes";
+import { registerSmartRoutingTools } from "./tools/smart-routing";
 
 /**
  * Create a fully configured MCP server for a specific user.
@@ -106,6 +119,45 @@ export function createMcpServer(userId: string): McpServer {
 
   // LearnIt wiki tools (discoverable)
   registerLearnItTools(registry, userId);
+
+  // Admin tools (discoverable)
+  registerAdminTools(registry, userId);
+
+  // Auth tools (discoverable)
+  registerAuthTools(registry, userId);
+
+  // Pixel tools (discoverable)
+  registerPixelTools(registry, userId);
+
+  // Orbit allocator tools (discoverable)
+  registerOrbitAllocatorTools(registry, userId);
+
+  // Orbit calendar tools (discoverable)
+  registerOrbitCalendarTools(registry, userId);
+
+  // Orbit social tools (discoverable)
+  registerOrbitSocialTools(registry, userId);
+
+  // Canvas tools (discoverable)
+  registerCanvasTools(registry, userId);
+
+  // Merch tools (discoverable)
+  registerMerchTools(registry, userId);
+
+  // Tabletop tools (discoverable)
+  registerTabletopTools(registry, userId);
+
+  // Brand Brain tools (discoverable)
+  registerBrandBrainTools(registry, userId);
+
+  // Connections tools (discoverable)
+  registerConnectionsTools(registry, userId);
+
+  // Boxes tools (discoverable)
+  registerBoxesTools(registry, userId);
+
+  // Smart routing tools (discoverable)
+  registerSmartRoutingTools(registry, userId);
 
   return mcpServer;
 }

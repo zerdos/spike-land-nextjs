@@ -128,7 +128,6 @@ change:
    - ✅ Run Tests (unit tests with enforced CI coverage thresholds)
    - ✅ Build Application (Next.js build)
    - ✅ Deploy to Vercel Preview
-   - ✅ E2E Tests (Playwright/Cucumber)
 6. **Fix any failures immediately** - Do not leave failing CI
 7. **Only consider the task complete** when all checks are green ✅
 
@@ -284,7 +283,6 @@ yarn dev              # Start dev server (http://localhost:3000)
 yarn build            # Build for production
 yarn lint             # Run ESLint
 yarn test:coverage    # Unit tests with enforced CI coverage thresholds
-yarn test:e2e:local   # E2E tests (requires dev server)
 ```
 
 **Shared Package:**
@@ -317,7 +315,7 @@ cd packages/js.spike.land && yarn dev           # Start worker locally
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS 4 + shadcn/ui
-- **Testing**: Vitest + Playwright + Cucumber
+- **Testing**: Vitest (unit + MCP tool tests)
 - **CI/CD**: GitHub Actions + Vercel
 
 ### Directory Structure (Monorepo)
@@ -353,10 +351,6 @@ spike-land-nextjs/
 │           ├── constants/    # Shared constants
 │           ├── validations/  # Zod schemas
 │           └── utils/        # Utility functions
-│
-└── e2e/
-    ├── features/             # Cucumber feature files
-    └── step-definitions/     # Playwright steps
 ```
 
 See [README.md](./README.md) for full development setup.
@@ -367,8 +361,7 @@ See [README.md](./README.md) for full development setup.
 
 - **100% code coverage required** for unit tests
 - **Test files**: Place `.test.ts(x)` alongside source files
-- **E2E tests**: Create `.feature` files in `e2e/features/`
-- **Skipped tests**: All `.skip()` calls must be documented - see [docs/SKIPPED_TESTS.md](./docs/SKIPPED_TESTS.md)
+- **MCP tool tests**: Business logic exposed as MCP tools, tested with `createMockRegistry()` pattern
 
 ---
 
@@ -378,13 +371,13 @@ See [README.md](./README.md) for full development setup.
 
 ### Step 1: Reproduce the Bug
 
-- Visually confirm the bug exists (use Playwright MCP browser tools for UI bugs)
+- Visually confirm the bug exists
 - Document the reproduction steps
 
 ### Step 2: Write a Failing Test
 
 - **Unit test** (preferred for logic/state bugs): Write a test in the component's `.test.tsx` that fails with the current buggy code
-- **E2E test** (preferred for styling/hydration/browser-specific bugs): Write a `.feature` scenario + step definitions that fails with the buggy code
+- **MCP tool test** (preferred for business logic bugs): Write an MCP tool test that fails with the buggy code
 - **Verify the test fails** before proceeding to the fix
 
 ### Step 3: Fix the Bug
@@ -417,12 +410,6 @@ See [README.md](./README.md) for full development setup.
 
 - Run `yarn test:coverage` to see uncovered lines
 - Check `coverage/` for detailed HTML report
-
-### E2E Tests Failing
-
-- Ensure dev server is running: `yarn dev`
-- Use `yarn test:e2e:local`
-- Install browser: `yarn dlx playwright install chromium`
 
 ### CI/CD Failing
 
