@@ -21,12 +21,6 @@ spike_land/
 
 # testing
 **/coverage/
-/e2e/reports
-/e2e/.auth-state.json
-test-results/
-playwright-report/
-playwright/.cache/
-.playwright-mcp
 
 # next.js
 /.next/
@@ -45,6 +39,7 @@ packages/shared/dist/
 .DS_Store
 *.pem
 *.bak
+.eslintcache
 
 # debug
 npm-debug.log*
@@ -65,7 +60,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-e2e-reports/
 .wrangler/
 .env*.local
 prisma/generated/
@@ -103,10 +97,6 @@ ralph-worktrees/
 *.sql.gz
 *.dump
 .prisma/
-
-# E2E test screenshots (generated artifacts)
-e2e/mobile-test-screenshots/
-e2e/smoke-test-screenshots/
 
 # Agent debug/scratch files
 reproduce_validation.ts

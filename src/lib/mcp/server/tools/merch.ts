@@ -55,7 +55,8 @@ export function registerMerchTools(
     inputSchema: ListProductsSchema.shape,
     handler: async ({ category, limit = 20 }: z.infer<typeof ListProductsSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_list_products", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const where = category ? { category, active: true } : { active: true };
         const products = await prisma.product.findMany({
           where,
@@ -80,7 +81,8 @@ export function registerMerchTools(
     inputSchema: GetProductSchema.shape,
     handler: async ({ product_id }: z.infer<typeof GetProductSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_get_product", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const product = await prisma.product.findUnique({
           where: { id: product_id },
           select: { id: true, name: true, description: true, price: true, category: true, imageUrl: true, inStock: true, variants: true },
@@ -105,7 +107,8 @@ export function registerMerchTools(
     inputSchema: AddToCartSchema.shape,
     handler: async ({ product_id, quantity = 1, variant }: z.infer<typeof AddToCartSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_add_to_cart", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const item = await prisma.cartItem.create({
           data: { productId: product_id, quantity, variant, userId },
         });
@@ -121,7 +124,8 @@ export function registerMerchTools(
     inputSchema: GetCartSchema.shape,
     handler: async (): Promise<CallToolResult> =>
       safeToolCall("merch_get_cart", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const items = await prisma.cartItem.findMany({
           where: { userId },
           include: { product: { select: { name: true, price: true } } },
@@ -147,7 +151,8 @@ export function registerMerchTools(
     inputSchema: RemoveFromCartSchema.shape,
     handler: async ({ cart_item_id }: z.infer<typeof RemoveFromCartSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_remove_from_cart", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         await prisma.cartItem.delete({ where: { id: cart_item_id } });
         return textResult(`**Removed from cart!** Item ID: ${cart_item_id}`);
       }),
@@ -161,7 +166,8 @@ export function registerMerchTools(
     inputSchema: CheckoutSchema.shape,
     handler: async ({ payment_method = "stripe" }: z.infer<typeof CheckoutSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_checkout", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const items = await prisma.cartItem.findMany({
           where: { userId },
           include: { product: { select: { price: true } } },
@@ -191,7 +197,8 @@ export function registerMerchTools(
     inputSchema: ListOrdersSchema.shape,
     handler: async ({ status = "ALL", limit = 10 }: z.infer<typeof ListOrdersSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_list_orders", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const where = status === "ALL" ? { userId } : { userId, status };
         const orders = await prisma.order.findMany({
           where,
@@ -216,7 +223,8 @@ export function registerMerchTools(
     inputSchema: GetOrderSchema.shape,
     handler: async ({ order_id }: z.infer<typeof GetOrderSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_get_order", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const order = await prisma.order.findUnique({
           where: { id: order_id },
           select: { id: true, total: true, status: true, paymentMethod: true, itemCount: true, createdAt: true },

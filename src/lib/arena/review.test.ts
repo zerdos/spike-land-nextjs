@@ -1,21 +1,21 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { submitReview, checkApprovalThreshold, scoreSubmission } from "./review";
 
-// Mock dependencies
-vi.mock("@/lib/prisma", () => ({
-  default: {
-    arenaSubmission: {
-      findUniqueOrThrow: vi.fn(),
-      update: vi.fn(),
-    },
-    arenaReview: {
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      count: vi.fn(),
-      findMany: vi.fn(),
-    },
+const mockPrisma = {
+  arenaSubmission: {
+    findUniqueOrThrow: vi.fn(),
+    update: vi.fn(),
   },
-}));
+  arenaReview: {
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    count: vi.fn(),
+    findMany: vi.fn(),
+  },
+};
+
+// Mock dependencies
+vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
 
 vi.mock("./elo", () => ({
   updateEloAfterScoring: vi.fn().mockResolvedValue({ newElo: 1216, eloChange: 16 }),
@@ -25,10 +25,8 @@ vi.mock("./redis", () => ({
   publishArenaEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
-import prisma from "@/lib/prisma";
 import { updateEloAfterScoring } from "./elo";
 
-const mockPrisma = vi.mocked(prisma);
 const mockUpdateElo = vi.mocked(updateEloAfterScoring);
 
 describe("Arena Review System", () => {

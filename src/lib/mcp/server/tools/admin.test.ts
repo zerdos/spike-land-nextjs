@@ -85,7 +85,7 @@ describe("admin tools", () => {
     it("should deactivate an agent", async () => {
       mockPrisma.aIProvider.update.mockResolvedValue({});
       const handler = registry.handlers.get("admin_manage_agent")!;
-      const result = await handler({ agent_id: "a1", action: "deactivate" });
+      await handler({ agent_id: "a1", action: "deactivate" });
       expect(mockPrisma.aIProvider.update).toHaveBeenCalledWith(
         expect.objectContaining({ data: { isActive: false } }),
       );

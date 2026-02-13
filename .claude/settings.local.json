@@ -42,7 +42,8 @@
       "Bash(gh issue list:*)",
       "mcp__playwright__browser_take_screenshot",
       "Bash(source ~/.secrets)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(yarn vitest run:*)"
     ],
     "deny": [],
     "ask": []

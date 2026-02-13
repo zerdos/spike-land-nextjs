@@ -33,7 +33,8 @@ export function registerAuthTools(
     inputSchema: CheckAuthSchema.shape,
     handler: async (_args: z.infer<typeof CheckAuthSchema>): Promise<CallToolResult> =>
       safeToolCall("auth_check_session", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const user = await prisma.user.findUnique({
           where: { id: userId },
           select: { id: true, name: true, email: true, role: true, createdAt: true },
@@ -59,7 +60,8 @@ export function registerAuthTools(
     inputSchema: CheckRouteAccessSchema.shape,
     handler: async ({ path }: z.infer<typeof CheckRouteAccessSchema>): Promise<CallToolResult> =>
       safeToolCall("auth_check_route_access", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const user = await prisma.user.findUnique({
           where: { id: userId },
           select: { role: true },
@@ -88,7 +90,8 @@ export function registerAuthTools(
     inputSchema: GetUserProfileSchema.shape,
     handler: async ({ include_workspaces = false }: z.infer<typeof GetUserProfileSchema>): Promise<CallToolResult> =>
       safeToolCall("auth_get_profile", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const user = await prisma.user.findUnique({
           where: { id: userId },
           select: {

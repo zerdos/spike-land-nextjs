@@ -121,19 +121,22 @@ export async function arenaGenerateFromPrompt(
 
       await publishArenaEvent(submissionId, {
         type: "error_detected",
-        data: { error: structuredError.summary, iteration },
+        data: { error: structuredError.message, iteration },
       });
 
-      if (isUnrecoverableError(structuredError)) {
+      if (isUnrecoverableError(structuredError, errors)) {
         break;
       }
 
       // Try to fix
-      const fixSystem = buildFixSystemPrompt(structuredError, currentCode);
-      const fixUser = buildFixUserPrompt(structuredError, currentCode);
+      const fixSystem = buildFixSystemPrompt("arena", []);
+      const fixUser = buildFixUserPrompt(currentCode, errorMsg, errors, {
+        type: structuredError.type,
+        library: structuredError.library,
+      });
 
       const fixResponse = await callClaude({
-        systemPrompt: fixSystem,
+        systemPrompt: fixSystem.full,
         userPrompt: fixUser,
         model: "sonnet",
         maxTokens: FIX_MAX_TOKENS,

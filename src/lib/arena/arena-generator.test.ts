@@ -1,15 +1,15 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { arenaGenerateFromPrompt } from "./arena-generator";
 
-// Mock all dependencies
-vi.mock("@/lib/prisma", () => ({
-  default: {
-    arenaSubmission: {
-      findUniqueOrThrow: vi.fn(),
-      update: vi.fn(),
-    },
+const mockPrismaObj = {
+  arenaSubmission: {
+    findUniqueOrThrow: vi.fn(),
+    update: vi.fn(),
   },
-}));
+};
+
+// Mock all dependencies
+vi.mock("@/lib/prisma", () => ({ default: mockPrismaObj }));
 
 vi.mock("@/lib/create/agent-client", () => ({
   callClaude: vi.fn(),
@@ -21,12 +21,12 @@ vi.mock("@/lib/create/codespace-service", () => ({
 }));
 
 vi.mock("@/lib/create/agent-prompts", () => ({
-  buildFixSystemPrompt: vi.fn().mockReturnValue("fix system"),
+  buildFixSystemPrompt: vi.fn().mockReturnValue({ full: "fix system", stablePrefix: "fix", dynamicSuffix: "" }),
   buildFixUserPrompt: vi.fn().mockReturnValue("fix user"),
 }));
 
 vi.mock("@/lib/create/error-parser", () => ({
-  parseTranspileError: vi.fn().mockReturnValue({ summary: "error", type: "syntax" }),
+  parseTranspileError: vi.fn().mockReturnValue({ message: "error", type: "transpile", severity: "fixable", fixStrategy: "patch" }),
   isUnrecoverableError: vi.fn().mockReturnValue(false),
 }));
 
@@ -44,12 +44,11 @@ vi.mock("./redis", () => ({
   setSubmissionWorking: vi.fn().mockResolvedValue(undefined),
 }));
 
-import prisma from "@/lib/prisma";
 import { callClaude, extractCodeFromResponse } from "@/lib/create/agent-client";
 import { updateCodespace } from "@/lib/create/codespace-service";
 import { publishArenaEvent, setSubmissionState, setSubmissionWorking } from "./redis";
 
-const mockPrisma = vi.mocked(prisma);
+const mockPrisma = mockPrismaObj;
 const mockCallClaude = vi.mocked(callClaude);
 const mockExtractCode = vi.mocked(extractCodeFromResponse);
 const mockUpdateCodespace = vi.mocked(updateCodespace);

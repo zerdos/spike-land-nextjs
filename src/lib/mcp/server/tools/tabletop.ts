@@ -41,7 +41,8 @@ export function registerTabletopTools(
     inputSchema: CreateGameSchema.shape,
     handler: async ({ name, game_type, max_players = 4 }: z.infer<typeof CreateGameSchema>): Promise<CallToolResult> =>
       safeToolCall("tabletop_create_game", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const game = await prisma.gameSession.create({
           data: { name, gameType: game_type, maxPlayers: max_players, status: "WAITING", hostId: userId, playerCount: 1 },
         });
@@ -64,7 +65,8 @@ export function registerTabletopTools(
     inputSchema: GetGameSchema.shape,
     handler: async ({ game_id }: z.infer<typeof GetGameSchema>): Promise<CallToolResult> =>
       safeToolCall("tabletop_get_game", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const game = await prisma.gameSession.findUnique({
           where: { id: game_id },
           select: { id: true, name: true, gameType: true, status: true, maxPlayers: true, playerCount: true, createdAt: true },
@@ -90,7 +92,8 @@ export function registerTabletopTools(
     inputSchema: ListGamesSchema.shape,
     handler: async ({ status = "ALL", limit = 10 }: z.infer<typeof ListGamesSchema>): Promise<CallToolResult> =>
       safeToolCall("tabletop_list_games", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const where = status === "ALL" ? {} : { status };
         const games = await prisma.gameSession.findMany({
           where,
@@ -115,13 +118,14 @@ export function registerTabletopTools(
     inputSchema: GameActionSchema.shape,
     handler: async ({ game_id, action }: z.infer<typeof GameActionSchema>): Promise<CallToolResult> =>
       safeToolCall("tabletop_game_action", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const statusMap: Record<string, string> = { start: "IN_PROGRESS", end: "FINISHED", reset: "WAITING" };
         const data: Record<string, unknown> = {};
-        if (statusMap[action]) data.status = statusMap[action];
-        if (action === "join") data.playerCount = { increment: 1 };
-        if (action === "leave") data.playerCount = { decrement: 1 };
-        if (action === "reset") data.playerCount = 1;
+        if (statusMap[action]) data["status"] = statusMap[action];
+        if (action === "join") data["playerCount"] = { increment: 1 };
+        if (action === "leave") data["playerCount"] = { decrement: 1 };
+        if (action === "reset") data["playerCount"] = 1;
         await prisma.gameSession.update({ where: { id: game_id }, data });
         return textResult(`**Game ${game_id}** — ${action} completed!`);
       }),

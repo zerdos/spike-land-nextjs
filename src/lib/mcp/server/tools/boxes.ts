@@ -59,7 +59,8 @@ export function registerBoxesTools(
     inputSchema: ListBoxesSchema.shape,
     handler: async ({ status = "ALL", limit = 20 }: z.infer<typeof ListBoxesSchema>): Promise<CallToolResult> =>
       safeToolCall("boxes_list", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const where = status === "ALL" ? { userId } : { userId, status };
         const boxes = await prisma.box.findMany({
           where,
@@ -84,7 +85,8 @@ export function registerBoxesTools(
     inputSchema: CreateBoxSchema.shape,
     handler: async ({ name, description, category }: z.infer<typeof CreateBoxSchema>): Promise<CallToolResult> =>
       safeToolCall("boxes_create", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const box = await prisma.box.create({
           data: { name, description, category, status: "ACTIVE", userId, itemCount: 0 },
         });
@@ -100,7 +102,8 @@ export function registerBoxesTools(
     inputSchema: GetBoxSchema.shape,
     handler: async ({ box_id }: z.infer<typeof GetBoxSchema>): Promise<CallToolResult> =>
       safeToolCall("boxes_get", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const box = await prisma.box.findUnique({
           where: { id: box_id },
           select: { id: true, name: true, description: true, category: true, status: true, itemCount: true, createdAt: true },
@@ -127,7 +130,8 @@ export function registerBoxesTools(
     inputSchema: UpdateBoxSchema.shape,
     handler: async ({ box_id, name, description, status }: z.infer<typeof UpdateBoxSchema>): Promise<CallToolResult> =>
       safeToolCall("boxes_update", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const data: Record<string, unknown> = {};
         if (name) data.name = name;
         if (description !== undefined) data.description = description;
@@ -145,7 +149,8 @@ export function registerBoxesTools(
     inputSchema: DeleteBoxSchema.shape,
     handler: async ({ box_id }: z.infer<typeof DeleteBoxSchema>): Promise<CallToolResult> =>
       safeToolCall("boxes_delete", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         await prisma.boxItem.deleteMany({ where: { boxId: box_id } });
         await prisma.box.delete({ where: { id: box_id } });
         return textResult(`**Box Deleted!** ID: ${box_id}`);
@@ -160,7 +165,8 @@ export function registerBoxesTools(
     inputSchema: AddItemToBoxSchema.shape,
     handler: async ({ box_id, item_name, item_type, metadata }: z.infer<typeof AddItemToBoxSchema>): Promise<CallToolResult> =>
       safeToolCall("boxes_add_item", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const item = await prisma.boxItem.create({
           data: { boxId: box_id, name: item_name, type: item_type, metadata },
         });
@@ -177,7 +183,8 @@ export function registerBoxesTools(
     inputSchema: ListBoxItemsSchema.shape,
     handler: async ({ box_id, limit = 50 }: z.infer<typeof ListBoxItemsSchema>): Promise<CallToolResult> =>
       safeToolCall("boxes_list_items", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const items = await prisma.boxItem.findMany({
           where: { boxId: box_id },
           select: { id: true, name: true, type: true, createdAt: true },

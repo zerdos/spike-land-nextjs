@@ -58,7 +58,8 @@ export function registerConnectionsTools(
     inputSchema: ListConnectionsSchema.shape,
     handler: async ({ type = "ALL", limit = 20 }: z.infer<typeof ListConnectionsSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_list", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const where = type === "ALL" ? { userId } : { userId, type };
         const connections = await prisma.businessConnection.findMany({
           where,
@@ -83,7 +84,8 @@ export function registerConnectionsTools(
     inputSchema: AddConnectionSchema.shape,
     handler: async ({ name, type, url, notes }: z.infer<typeof AddConnectionSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_add", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const connection = await prisma.businessConnection.create({
           data: { name, type, url, notes, userId },
         });
@@ -99,7 +101,8 @@ export function registerConnectionsTools(
     inputSchema: UpdateConnectionSchema.shape,
     handler: async ({ connection_id, name, type, notes }: z.infer<typeof UpdateConnectionSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_update", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const data: Record<string, unknown> = {};
         if (name) data.name = name;
         if (type) data.type = type;
@@ -117,7 +120,8 @@ export function registerConnectionsTools(
     inputSchema: DeleteConnectionSchema.shape,
     handler: async ({ connection_id }: z.infer<typeof DeleteConnectionSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_delete", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         await prisma.businessConnection.delete({ where: { id: connection_id } });
         return textResult(`**Connection Deleted!** ID: ${connection_id}`);
       }),
@@ -131,7 +135,8 @@ export function registerConnectionsTools(
     inputSchema: TrackCompetitorSchema.shape,
     handler: async ({ competitor_id, metric, value }: z.infer<typeof TrackCompetitorSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_track_competitor", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const entry = await prisma.competitorMetric.create({
           data: { connectionId: competitor_id, metric, value, userId, recordedAt: new Date() },
         });
@@ -147,7 +152,8 @@ export function registerConnectionsTools(
     inputSchema: GetCompetitorReportSchema.shape,
     handler: async ({ competitor_id }: z.infer<typeof GetCompetitorReportSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_competitor_report", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const where: Record<string, unknown> = { userId };
         if (competitor_id) where.connectionId = competitor_id;
         const metrics = await prisma.competitorMetric.findMany({
@@ -183,7 +189,8 @@ export function registerConnectionsTools(
     inputSchema: SearchConnectionsSchema.shape,
     handler: async ({ query }: z.infer<typeof SearchConnectionsSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_search", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const connections = await prisma.businessConnection.findMany({
           where: {
             userId,

@@ -31,7 +31,7 @@ const mockPrisma = vi.mocked(prisma);
 
 // Create a mock registry that captures tool registrations
 function createMockRegistry() {
-  const tools = new Map<string, { handler: Function; inputSchema: unknown }>();
+  const tools = new Map<string, { handler: (...args: unknown[]) => unknown; inputSchema: Record<string, unknown> }>();
 
   return {
     tools,
@@ -47,8 +47,7 @@ describe("Arena MCP Tools", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     registry = createMockRegistry();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    registerArenaTools(registry as any, "user123");
+    registerArenaTools(registry as unknown as Parameters<typeof registerArenaTools>[0], "user123");
   });
 
   it("registers 5 arena tools", () => {

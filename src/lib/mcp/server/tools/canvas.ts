@@ -39,7 +39,8 @@ export function registerCanvasTools(
     inputSchema: GetCanvasSchema.shape,
     handler: async ({ canvas_id }: z.infer<typeof GetCanvasSchema>): Promise<CallToolResult> =>
       safeToolCall("canvas_get", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const canvas = await prisma.canvas.findUnique({
           where: { id: canvas_id },
           select: { id: true, title: true, width: true, height: true, backgroundColor: true, published: true, elementCount: true, createdAt: true },
@@ -66,7 +67,8 @@ export function registerCanvasTools(
     inputSchema: CreateCanvasSchema.shape,
     handler: async ({ title, width = 1920, height = 1080, background_color = "#ffffff" }: z.infer<typeof CreateCanvasSchema>): Promise<CallToolResult> =>
       safeToolCall("canvas_create", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const canvas = await prisma.canvas.create({
           data: { title, width, height, backgroundColor: background_color, published: false, userId, elementCount: 0 },
         });
@@ -88,7 +90,8 @@ export function registerCanvasTools(
     inputSchema: UpdateCanvasSchema.shape,
     handler: async ({ canvas_id, title, elements, published }: z.infer<typeof UpdateCanvasSchema>): Promise<CallToolResult> =>
       safeToolCall("canvas_update", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const data: Record<string, unknown> = {};
         if (title !== undefined) data.title = title;
         if (elements !== undefined) data.elements = elements;
