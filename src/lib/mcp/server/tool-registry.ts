@@ -16,7 +16,8 @@ export interface ToolDefinition {
   tier: "free" | "workspace";
   inputSchema?: z.ZodRawShape;
   annotations?: ToolAnnotations;
-  handler: (...args: unknown[]) => Promise<CallToolResult> | CallToolResult;
+  // Handlers are cast in register() — accept typed Zod-inferred params
+  handler: (input: never) => Promise<CallToolResult> | CallToolResult;
   alwaysEnabled?: boolean;
 }
 

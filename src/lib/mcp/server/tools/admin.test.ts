@@ -1,12 +1,14 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-const mockPrisma = {
-  aIProvider: { findMany: vi.fn(), update: vi.fn() },
-  emailLog: { findMany: vi.fn(), create: vi.fn() },
-  featuredGalleryItem: { findMany: vi.fn(), update: vi.fn(), delete: vi.fn() },
-  mcpGenerationJob: { findMany: vi.fn(), update: vi.fn(), delete: vi.fn() },
-  enhancedImage: { findMany: vi.fn(), update: vi.fn() },
-};
+const { mockPrisma } = vi.hoisted(() => ({
+  mockPrisma: {
+    aIProvider: { findMany: vi.fn(), update: vi.fn() },
+    emailLog: { findMany: vi.fn(), create: vi.fn() },
+    featuredGalleryItem: { findMany: vi.fn(), update: vi.fn(), delete: vi.fn() },
+    mcpGenerationJob: { findMany: vi.fn(), update: vi.fn(), delete: vi.fn() },
+    enhancedImage: { findMany: vi.fn(), update: vi.fn() },
+  },
+}));
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
 
@@ -55,12 +57,12 @@ describe("admin tools", () => {
   describe("admin_list_agents", () => {
     it("should list agents", async () => {
       mockPrisma.aIProvider.findMany.mockResolvedValue([
-        { id: "a1", name: "GPT-4", provider: "openai", isActive: true, createdAt: new Date() },
+        { id: "a1", name: "GPT-4", isDefault: true, createdAt: new Date() },
       ]);
       const handler = registry.handlers.get("admin_list_agents")!;
       const result = await handler({});
       expect(getText(result)).toContain("GPT-4");
-      expect(getText(result)).toContain("ACTIVE");
+      expect(getText(result)).toContain("DEFAULT");
     });
 
     it("should return message when no agents found", async () => {
@@ -78,7 +80,7 @@ describe("admin tools", () => {
       const result = await handler({ agent_id: "a1", action: "activate" });
       expect(getText(result)).toContain("activate completed");
       expect(mockPrisma.aIProvider.update).toHaveBeenCalledWith(
-        expect.objectContaining({ data: { isActive: true } }),
+        expect.objectContaining({ data: { isDefault: true } }),
       );
     });
 
@@ -87,7 +89,7 @@ describe("admin tools", () => {
       const handler = registry.handlers.get("admin_manage_agent")!;
       await handler({ agent_id: "a1", action: "deactivate" });
       expect(mockPrisma.aIProvider.update).toHaveBeenCalledWith(
-        expect.objectContaining({ data: { isActive: false } }),
+        expect.objectContaining({ data: { isDefault: false } }),
       );
     });
   });
@@ -116,12 +118,12 @@ describe("admin tools", () => {
   describe("admin_list_gallery", () => {
     it("should list gallery items", async () => {
       mockPrisma.featuredGalleryItem.findMany.mockResolvedValue([
-        { id: "g1", title: "Sunset", imageUrl: "https://example.com/sunset.jpg", featured: true, createdAt: new Date() },
+        { id: "g1", title: "Sunset", enhancedUrl: "https://example.com/sunset.jpg", isActive: true, createdAt: new Date() },
       ]);
       const handler = registry.handlers.get("admin_list_gallery")!;
       const result = await handler({});
       expect(getText(result)).toContain("Sunset");
-      expect(getText(result)).toContain("FEATURED");
+      expect(getText(result)).toContain("ACTIVE");
     });
   });
 
@@ -172,12 +174,12 @@ describe("admin tools", () => {
   describe("admin_list_photos", () => {
     it("should list photos", async () => {
       mockPrisma.enhancedImage.findMany.mockResolvedValue([
-        { id: "p1", title: "Beach", url: "https://example.com/beach.jpg", moderationStatus: "APPROVED", createdAt: new Date() },
+        { id: "p1", name: "Beach", originalUrl: "https://example.com/beach.jpg", isPublic: true, createdAt: new Date() },
       ]);
       const handler = registry.handlers.get("admin_list_photos")!;
       const result = await handler({});
       expect(getText(result)).toContain("Beach");
-      expect(getText(result)).toContain("APPROVED");
+      expect(getText(result)).toContain("PUBLIC");
     });
   });
 
@@ -189,12 +191,11 @@ describe("admin tools", () => {
       expect(getText(result)).toContain("approved");
     });
 
-    it("should reject a photo with reason", async () => {
+    it("should reject a photo", async () => {
       mockPrisma.enhancedImage.update.mockResolvedValue({});
       const handler = registry.handlers.get("admin_moderate_photo")!;
-      const result = await handler({ photo_id: "p1", action: "reject", reason: "Inappropriate" });
+      const result = await handler({ photo_id: "p1", action: "reject" });
       expect(getText(result)).toContain("rejected");
-      expect(getText(result)).toContain("Inappropriate");
     });
   });
 });

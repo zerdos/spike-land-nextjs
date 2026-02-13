@@ -1,12 +1,14 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { arenaGenerateFromPrompt } from "./arena-generator";
 
-const mockPrismaObj = {
-  arenaSubmission: {
-    findUniqueOrThrow: vi.fn(),
-    update: vi.fn(),
+const { mockPrismaObj } = vi.hoisted(() => ({
+  mockPrismaObj: {
+    arenaSubmission: {
+      findUniqueOrThrow: vi.fn(),
+      update: vi.fn(),
+    },
   },
-};
+}));
 
 // Mock all dependencies
 vi.mock("@/lib/prisma", () => ({ default: mockPrismaObj }));

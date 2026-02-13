@@ -32,7 +32,7 @@ const SendEmailSchema = z.object({
 
 const ListGallerySchema = z.object({
   limit: z.number().int().min(1).max(50).optional().describe("Max results (default 20)."),
-  featured: z.boolean().optional().describe("Filter featured items only."),
+  featured: z.boolean().optional().describe("Filter by active/featured status."),
 });
 
 const ManageGallerySchema = z.object({
@@ -41,7 +41,7 @@ const ManageGallerySchema = z.object({
 });
 
 const ListJobsSchema = z.object({
-  status: z.enum(["QUEUED", "RUNNING", "COMPLETED", "FAILED", "ALL"]).optional().default("ALL").describe("Filter by status."),
+  status: z.enum(["PENDING", "PROCESSING", "COMPLETED", "FAILED", "ALL"]).optional().default("ALL").describe("Filter by status."),
   limit: z.number().int().min(1).max(50).optional().describe("Max results (default 20)."),
 });
 
@@ -51,14 +51,13 @@ const ManageJobSchema = z.object({
 });
 
 const ListPhotosSchema = z.object({
-  status: z.enum(["APPROVED", "PENDING", "REJECTED", "ALL"]).optional().default("ALL").describe("Filter by moderation status."),
+  status: z.enum(["PUBLIC", "PRIVATE", "ALL"]).optional().default("ALL").describe("Filter by visibility."),
   limit: z.number().int().min(1).max(50).optional().describe("Max results (default 20)."),
 });
 
 const ModeratePhotoSchema = z.object({
   photo_id: z.string().min(1).describe("Photo ID."),
-  action: z.enum(["approve", "reject"]).describe("Moderation action."),
-  reason: z.string().optional().describe("Reason for rejection."),
+  action: z.enum(["approve", "reject"]).describe("Moderation action (approve = make public, reject = make private)."),
 });
 
 export function registerAdminTools(
@@ -67,24 +66,24 @@ export function registerAdminTools(
 ): void {
   registry.register({
     name: "admin_list_agents",
-    description: "List all registered AI agents and their statuses.",
+    description: "List all registered AI providers and their statuses.",
     category: "admin",
     tier: "workspace",
     inputSchema: ListAgentsSchema.shape,
     handler: async ({ status = "ALL", limit = 20 }: z.infer<typeof ListAgentsSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_agents", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const where = status === "ALL" ? {} : { status };
+        const where = status === "ALL" ? {} : { isDefault: status === "ACTIVE" };
         const agents = await prisma.aIProvider.findMany({
           where,
-          select: { id: true, name: true, provider: true, isActive: true, createdAt: true },
+          select: { id: true, name: true, isDefault: true, createdAt: true },
           take: limit,
           orderBy: { createdAt: "desc" },
         });
         if (agents.length === 0) return textResult("No agents found.");
         let text = `**Agents (${agents.length}):**\n\n`;
         for (const a of agents) {
-          text += `- **${a.name}** (${a.provider}) [${a.isActive ? "ACTIVE" : "INACTIVE"}]\n  ID: ${a.id}\n\n`;
+          text += `- **${a.name}** [${a.isDefault ? "DEFAULT" : "STANDBY"}]\n  ID: ${a.id}\n\n`;
         }
         return textResult(text);
       }),
@@ -92,17 +91,17 @@ export function registerAdminTools(
 
   registry.register({
     name: "admin_manage_agent",
-    description: "Activate, deactivate, or restart an AI agent.",
+    description: "Set an AI provider as the default or remove default status.",
     category: "admin",
     tier: "workspace",
     inputSchema: ManageAgentSchema.shape,
     handler: async ({ agent_id, action }: z.infer<typeof ManageAgentSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_manage_agent", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const isActive = action === "activate" || action === "restart";
+        const isDefault = action === "activate" || action === "restart";
         await prisma.aIProvider.update({
           where: { id: agent_id },
-          data: { isActive },
+          data: { isDefault },
         });
         return textResult(`**Agent ${agent_id}** — action: ${action} completed.`);
       }),
@@ -151,24 +150,24 @@ export function registerAdminTools(
 
   registry.register({
     name: "admin_list_gallery",
-    description: "List gallery items, optionally filtering by featured status.",
+    description: "List gallery items, optionally filtering by active status.",
     category: "admin",
     tier: "workspace",
     inputSchema: ListGallerySchema.shape,
     handler: async ({ limit = 20, featured }: z.infer<typeof ListGallerySchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_gallery", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const where = featured !== undefined ? { featured } : {};
+        const where = featured !== undefined ? { isActive: featured } : {};
         const items = await prisma.featuredGalleryItem.findMany({
           where,
-          select: { id: true, title: true, imageUrl: true, featured: true, createdAt: true },
+          select: { id: true, title: true, enhancedUrl: true, isActive: true, createdAt: true },
           take: limit,
           orderBy: { createdAt: "desc" },
         });
         if (items.length === 0) return textResult("No gallery items found.");
         let text = `**Gallery (${items.length}):**\n\n`;
         for (const item of items) {
-          text += `- **${item.title}** ${item.featured ? "[FEATURED]" : ""}\n  ID: ${item.id}\n\n`;
+          text += `- **${item.title}** ${item.isActive ? "[ACTIVE]" : "[INACTIVE]"}\n  ID: ${item.id}\n\n`;
         }
         return textResult(text);
       }),
@@ -176,7 +175,7 @@ export function registerAdminTools(
 
   registry.register({
     name: "admin_manage_gallery",
-    description: "Feature, unfeature, or remove a gallery item.",
+    description: "Activate, deactivate, or remove a gallery item.",
     category: "admin",
     tier: "workspace",
     inputSchema: ManageGallerySchema.shape,
@@ -189,7 +188,7 @@ export function registerAdminTools(
         }
         await prisma.featuredGalleryItem.update({
           where: { id: item_id },
-          data: { featured: action === "feature" },
+          data: { isActive: action === "feature" },
         });
         return textResult(`**Gallery item ${item_id}** — ${action} completed.`);
       }),
@@ -233,7 +232,7 @@ export function registerAdminTools(
           await prisma.mcpGenerationJob.delete({ where: { id: job_id } });
           return textResult(`**Job ${job_id}** deleted.`);
         }
-        const newStatus = action === "cancel" ? "FAILED" : "QUEUED";
+        const newStatus = action === "cancel" ? "FAILED" : "PENDING";
         await prisma.mcpGenerationJob.update({
           where: { id: job_id },
           data: { status: newStatus },
@@ -244,24 +243,24 @@ export function registerAdminTools(
 
   registry.register({
     name: "admin_list_photos",
-    description: "List photos with moderation status filter.",
+    description: "List photos with visibility filter.",
     category: "admin",
     tier: "workspace",
     inputSchema: ListPhotosSchema.shape,
     handler: async ({ status = "ALL", limit = 20 }: z.infer<typeof ListPhotosSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_photos", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const where = status === "ALL" ? {} : { moderationStatus: status };
+        const where = status === "ALL" ? {} : { isPublic: status === "PUBLIC" };
         const photos = await prisma.enhancedImage.findMany({
           where,
-          select: { id: true, title: true, url: true, moderationStatus: true, createdAt: true },
+          select: { id: true, name: true, originalUrl: true, isPublic: true, createdAt: true },
           take: limit,
           orderBy: { createdAt: "desc" },
         });
         if (photos.length === 0) return textResult("No photos found.");
         let text = `**Photos (${photos.length}):**\n\n`;
         for (const p of photos) {
-          text += `- **${p.title || "Untitled"}** [${p.moderationStatus}]\n  ID: ${p.id}\n\n`;
+          text += `- **${p.name || "Untitled"}** [${p.isPublic ? "PUBLIC" : "PRIVATE"}]\n  ID: ${p.id}\n\n`;
         }
         return textResult(text);
       }),
@@ -269,21 +268,18 @@ export function registerAdminTools(
 
   registry.register({
     name: "admin_moderate_photo",
-    description: "Approve or reject a photo for public display.",
+    description: "Approve (make public) or reject (make private) a photo.",
     category: "admin",
     tier: "workspace",
     inputSchema: ModeratePhotoSchema.shape,
-    handler: async ({ photo_id, action, reason }: z.infer<typeof ModeratePhotoSchema>): Promise<CallToolResult> =>
+    handler: async ({ photo_id, action }: z.infer<typeof ModeratePhotoSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_moderate_photo", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         await prisma.enhancedImage.update({
           where: { id: photo_id },
-          data: {
-            moderationStatus: action === "approve" ? "APPROVED" : "REJECTED",
-            moderationReason: reason,
-          },
+          data: { isPublic: action === "approve" },
         });
-        return textResult(`**Photo ${photo_id}** — ${action === "approve" ? "approved" : "rejected"}.${reason ? ` Reason: ${reason}` : ""}`);
+        return textResult(`**Photo ${photo_id}** — ${action === "approve" ? "approved (public)" : "rejected (private)"}.`);
       }),
   });
 }
