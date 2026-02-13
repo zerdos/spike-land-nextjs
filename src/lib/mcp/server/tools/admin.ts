@@ -73,8 +73,7 @@ export function registerAdminTools(
     inputSchema: ListAgentsSchema.shape,
     handler: async ({ status = "ALL", limit = 20 }: z.infer<typeof ListAgentsSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_agents", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const where = status === "ALL" ? {} : { status };
         const agents = await prisma.aIProvider.findMany({
           where,
@@ -99,8 +98,7 @@ export function registerAdminTools(
     inputSchema: ManageAgentSchema.shape,
     handler: async ({ agent_id, action }: z.infer<typeof ManageAgentSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_manage_agent", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const isActive = action === "activate" || action === "restart";
         await prisma.aIProvider.update({
           where: { id: agent_id },
@@ -118,8 +116,7 @@ export function registerAdminTools(
     inputSchema: ListEmailsSchema.shape,
     handler: async ({ status = "ALL", limit = 20 }: z.infer<typeof ListEmailsSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_emails", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const where = status === "ALL" ? {} : { status };
         const emails = await prisma.emailLog.findMany({
           where,
@@ -144,8 +141,7 @@ export function registerAdminTools(
     inputSchema: SendEmailSchema.shape,
     handler: async ({ to, subject, template }: z.infer<typeof SendEmailSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_send_email", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const email = await prisma.emailLog.create({
           data: { to, subject, template, status: "PENDING", userId },
         });
@@ -161,10 +157,9 @@ export function registerAdminTools(
     inputSchema: ListGallerySchema.shape,
     handler: async ({ limit = 20, featured }: z.infer<typeof ListGallerySchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_gallery", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const where = featured !== undefined ? { featured } : {};
-        const items = await prisma.galleryItem.findMany({
+        const items = await prisma.featuredGalleryItem.findMany({
           where,
           select: { id: true, title: true, imageUrl: true, featured: true, createdAt: true },
           take: limit,
@@ -187,13 +182,12 @@ export function registerAdminTools(
     inputSchema: ManageGallerySchema.shape,
     handler: async ({ item_id, action }: z.infer<typeof ManageGallerySchema>): Promise<CallToolResult> =>
       safeToolCall("admin_manage_gallery", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         if (action === "remove") {
-          await prisma.galleryItem.delete({ where: { id: item_id } });
+          await prisma.featuredGalleryItem.delete({ where: { id: item_id } });
           return textResult(`**Gallery item ${item_id}** removed.`);
         }
-        await prisma.galleryItem.update({
+        await prisma.featuredGalleryItem.update({
           where: { id: item_id },
           data: { featured: action === "feature" },
         });
@@ -209,8 +203,7 @@ export function registerAdminTools(
     inputSchema: ListJobsSchema.shape,
     handler: async ({ status = "ALL", limit = 20 }: z.infer<typeof ListJobsSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_jobs", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const where = status === "ALL" ? {} : { status };
         const jobs = await prisma.mcpGenerationJob.findMany({
           where,
@@ -235,8 +228,7 @@ export function registerAdminTools(
     inputSchema: ManageJobSchema.shape,
     handler: async ({ job_id, action }: z.infer<typeof ManageJobSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_manage_job", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         if (action === "delete") {
           await prisma.mcpGenerationJob.delete({ where: { id: job_id } });
           return textResult(`**Job ${job_id}** deleted.`);
@@ -258,10 +250,9 @@ export function registerAdminTools(
     inputSchema: ListPhotosSchema.shape,
     handler: async ({ status = "ALL", limit = 20 }: z.infer<typeof ListPhotosSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_photos", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const where = status === "ALL" ? {} : { moderationStatus: status };
-        const photos = await prisma.photo.findMany({
+        const photos = await prisma.enhancedImage.findMany({
           where,
           select: { id: true, title: true, url: true, moderationStatus: true, createdAt: true },
           take: limit,
@@ -284,9 +275,8 @@ export function registerAdminTools(
     inputSchema: ModeratePhotoSchema.shape,
     handler: async ({ photo_id, action, reason }: z.infer<typeof ModeratePhotoSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_moderate_photo", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        await prisma.photo.update({
+        const prisma = (await import("@/lib/prisma")).default;
+        await prisma.enhancedImage.update({
           where: { id: photo_id },
           data: {
             moderationStatus: action === "approve" ? "APPROVED" : "REJECTED",

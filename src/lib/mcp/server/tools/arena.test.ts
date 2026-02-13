@@ -30,8 +30,7 @@ import { registerArenaTools } from "./arena";
 
 // Create a mock registry that captures tool registrations
 function createMockRegistry() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tools = new Map<string, { handler: (...args: any[]) => any; inputSchema: Record<string, unknown> }>();
+  const tools = new Map<string, { handler: (...args: unknown[]) => unknown; inputSchema: Record<string, unknown> }>();
 
   return {
     tools,

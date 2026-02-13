@@ -1,8 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockPrisma = {
-  photo: { findUnique: vi.fn(), findMany: vi.fn() },
-  pipeline: { create: vi.fn(), findUnique: vi.fn(), update: vi.fn(), findMany: vi.fn() },
+  enhancedImage: { findUnique: vi.fn(), findMany: vi.fn() },
+  enhancementPipeline: { create: vi.fn(), findUnique: vi.fn(), update: vi.fn(), findMany: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -48,7 +48,7 @@ describe("pixel tools", () => {
 
   describe("pixel_get_image", () => {
     it("should return image details", async () => {
-      mockPrisma.photo.findUnique.mockResolvedValue({
+      mockPrisma.enhancedImage.findUnique.mockResolvedValue({
         id: "img-1", title: "Sunset", url: "https://example.com/sunset.jpg",
         width: 1920, height: 1080, moderationStatus: "APPROVED", createdAt: new Date(), userId,
       });
@@ -59,7 +59,7 @@ describe("pixel tools", () => {
     });
 
     it("should return NOT_FOUND for missing image", async () => {
-      mockPrisma.photo.findUnique.mockResolvedValue(null);
+      mockPrisma.enhancedImage.findUnique.mockResolvedValue(null);
       const handler = registry.handlers.get("pixel_get_image")!;
       const result = await handler({ image_id: "nope" });
       expect(getText(result)).toContain("NOT_FOUND");
@@ -68,7 +68,7 @@ describe("pixel tools", () => {
 
   describe("pixel_list_images", () => {
     it("should list images", async () => {
-      mockPrisma.photo.findMany.mockResolvedValue([
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([
         { id: "img-1", title: "Beach", url: "https://example.com/beach.jpg", moderationStatus: "APPROVED", createdAt: new Date() },
       ]);
       const handler = registry.handlers.get("pixel_list_images")!;
@@ -77,7 +77,7 @@ describe("pixel tools", () => {
     });
 
     it("should return message when no images", async () => {
-      mockPrisma.photo.findMany.mockResolvedValue([]);
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("pixel_list_images")!;
       const result = await handler({});
       expect(getText(result)).toContain("No pixel images found");
@@ -86,7 +86,7 @@ describe("pixel tools", () => {
 
   describe("pixel_create_pipeline", () => {
     it("should create a pipeline", async () => {
-      mockPrisma.pipeline.create.mockResolvedValue({ id: "pip-1", name: "Enhance", steps: ["upscale", "denoise"] });
+      mockPrisma.enhancementPipeline.create.mockResolvedValue({ id: "pip-1", name: "Enhance", steps: ["upscale", "denoise"] });
       const handler = registry.handlers.get("pixel_create_pipeline")!;
       const result = await handler({ name: "Enhance", steps: ["upscale", "denoise"] });
       expect(getText(result)).toContain("Pipeline Created");
@@ -96,7 +96,7 @@ describe("pixel tools", () => {
 
   describe("pixel_get_pipeline", () => {
     it("should get pipeline details", async () => {
-      mockPrisma.pipeline.findUnique.mockResolvedValue({
+      mockPrisma.enhancementPipeline.findUnique.mockResolvedValue({
         id: "pip-1", name: "Enhance", status: "CREATED", steps: ["upscale", "denoise"],
       });
       const handler = registry.handlers.get("pixel_get_pipeline")!;
@@ -105,7 +105,7 @@ describe("pixel tools", () => {
     });
 
     it("should return NOT_FOUND for missing pipeline", async () => {
-      mockPrisma.pipeline.findUnique.mockResolvedValue(null);
+      mockPrisma.enhancementPipeline.findUnique.mockResolvedValue(null);
       const handler = registry.handlers.get("pixel_get_pipeline")!;
       const result = await handler({ pipeline_id: "nope" });
       expect(getText(result)).toContain("NOT_FOUND");
@@ -114,7 +114,7 @@ describe("pixel tools", () => {
 
   describe("pixel_run_pipeline", () => {
     it("should start a pipeline", async () => {
-      mockPrisma.pipeline.update.mockResolvedValue({ name: "Enhance", status: "RUNNING" });
+      mockPrisma.enhancementPipeline.update.mockResolvedValue({ name: "Enhance", status: "RUNNING" });
       const handler = registry.handlers.get("pixel_run_pipeline")!;
       const result = await handler({ pipeline_id: "pip-1", image_id: "img-1" });
       expect(getText(result)).toContain("Pipeline Started");
@@ -124,7 +124,7 @@ describe("pixel tools", () => {
 
   describe("pixel_list_pipelines", () => {
     it("should list pipelines", async () => {
-      mockPrisma.pipeline.findMany.mockResolvedValue([
+      mockPrisma.enhancementPipeline.findMany.mockResolvedValue([
         { id: "pip-1", name: "Enhance", status: "COMPLETED", createdAt: new Date() },
       ]);
       const handler = registry.handlers.get("pixel_list_pipelines")!;

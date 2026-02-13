@@ -3,9 +3,9 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const mockPrisma = {
   aIProvider: { findMany: vi.fn(), update: vi.fn() },
   emailLog: { findMany: vi.fn(), create: vi.fn() },
-  galleryItem: { findMany: vi.fn(), update: vi.fn(), delete: vi.fn() },
+  featuredGalleryItem: { findMany: vi.fn(), update: vi.fn(), delete: vi.fn() },
   mcpGenerationJob: { findMany: vi.fn(), update: vi.fn(), delete: vi.fn() },
-  photo: { findMany: vi.fn(), update: vi.fn() },
+  enhancedImage: { findMany: vi.fn(), update: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -115,7 +115,7 @@ describe("admin tools", () => {
 
   describe("admin_list_gallery", () => {
     it("should list gallery items", async () => {
-      mockPrisma.galleryItem.findMany.mockResolvedValue([
+      mockPrisma.featuredGalleryItem.findMany.mockResolvedValue([
         { id: "g1", title: "Sunset", imageUrl: "https://example.com/sunset.jpg", featured: true, createdAt: new Date() },
       ]);
       const handler = registry.handlers.get("admin_list_gallery")!;
@@ -127,14 +127,14 @@ describe("admin tools", () => {
 
   describe("admin_manage_gallery", () => {
     it("should remove a gallery item", async () => {
-      mockPrisma.galleryItem.delete.mockResolvedValue({});
+      mockPrisma.featuredGalleryItem.delete.mockResolvedValue({});
       const handler = registry.handlers.get("admin_manage_gallery")!;
       const result = await handler({ item_id: "g1", action: "remove" });
       expect(getText(result)).toContain("removed");
     });
 
     it("should feature a gallery item", async () => {
-      mockPrisma.galleryItem.update.mockResolvedValue({});
+      mockPrisma.featuredGalleryItem.update.mockResolvedValue({});
       const handler = registry.handlers.get("admin_manage_gallery")!;
       const result = await handler({ item_id: "g1", action: "feature" });
       expect(getText(result)).toContain("feature completed");
@@ -171,7 +171,7 @@ describe("admin tools", () => {
 
   describe("admin_list_photos", () => {
     it("should list photos", async () => {
-      mockPrisma.photo.findMany.mockResolvedValue([
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([
         { id: "p1", title: "Beach", url: "https://example.com/beach.jpg", moderationStatus: "APPROVED", createdAt: new Date() },
       ]);
       const handler = registry.handlers.get("admin_list_photos")!;
@@ -183,14 +183,14 @@ describe("admin tools", () => {
 
   describe("admin_moderate_photo", () => {
     it("should approve a photo", async () => {
-      mockPrisma.photo.update.mockResolvedValue({});
+      mockPrisma.enhancedImage.update.mockResolvedValue({});
       const handler = registry.handlers.get("admin_moderate_photo")!;
       const result = await handler({ photo_id: "p1", action: "approve" });
       expect(getText(result)).toContain("approved");
     });
 
     it("should reject a photo with reason", async () => {
-      mockPrisma.photo.update.mockResolvedValue({});
+      mockPrisma.enhancedImage.update.mockResolvedValue({});
       const handler = registry.handlers.get("admin_moderate_photo")!;
       const result = await handler({ photo_id: "p1", action: "reject", reason: "Inappropriate" });
       expect(getText(result)).toContain("rejected");

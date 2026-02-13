@@ -7,19 +7,16 @@
 
 import type { McpServer, RegisteredTool } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult, ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyZodShape = Record<string, any>;
+import type { z } from "zod";
 
 export interface ToolDefinition {
   name: string;
   description: string;
   category: string;
   tier: "free" | "workspace";
-  inputSchema?: AnyZodShape;
+  inputSchema?: z.ZodRawShape;
   annotations?: ToolAnnotations;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handler: (...args: any[]) => Promise<CallToolResult> | CallToolResult;
+  handler: (...args: unknown[]) => Promise<CallToolResult> | CallToolResult;
   alwaysEnabled?: boolean;
 }
 
@@ -97,8 +94,8 @@ export class ToolRegistry {
         annotations: def.annotations,
         _meta: { category: def.category, tier: def.tier },
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      def.handler as any,
+      // Handler type is erased in ToolDefinition for heterogeneous storage
+      def.handler as unknown as Parameters<McpServer["registerTool"]>[2],
     );
 
     if (!def.alwaysEnabled) {

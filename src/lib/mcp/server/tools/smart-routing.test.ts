@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockPrisma = {
-  routingRule: { findMany: vi.fn(), update: vi.fn() },
+  policyRule: { findMany: vi.fn(), update: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -43,7 +43,7 @@ describe("smart-routing tools", () => {
 
   describe("routing_get_config", () => {
     it("should return routing rules", async () => {
-      mockPrisma.routingRule.findMany.mockResolvedValue([
+      mockPrisma.policyRule.findMany.mockResolvedValue([
         { id: "r1", name: "API Route", pattern: "/api/*", target: "backend-1", weight: 80, enabled: true },
       ]);
       const handler = registry.handlers.get("routing_get_config")!;
@@ -53,7 +53,7 @@ describe("smart-routing tools", () => {
     });
 
     it("should return message when no rules", async () => {
-      mockPrisma.routingRule.findMany.mockResolvedValue([]);
+      mockPrisma.policyRule.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("routing_get_config")!;
       const result = await handler({});
       expect(getText(result)).toContain("No routing rules configured");
@@ -62,7 +62,7 @@ describe("smart-routing tools", () => {
 
   describe("routing_update_rule", () => {
     it("should update a rule", async () => {
-      mockPrisma.routingRule.update.mockResolvedValue({
+      mockPrisma.policyRule.update.mockResolvedValue({
         id: "r1", name: "API Route", enabled: false, weight: 50, target: "backend-2",
       });
       const handler = registry.handlers.get("routing_update_rule")!;
@@ -79,7 +79,7 @@ describe("smart-routing tools", () => {
 
   describe("routing_get_stats", () => {
     it("should return routing stats", async () => {
-      mockPrisma.routingRule.findMany.mockResolvedValue([
+      mockPrisma.policyRule.findMany.mockResolvedValue([
         { id: "r1", name: "API Route", weight: 80, requestCount: 1000 },
       ]);
       const handler = registry.handlers.get("routing_get_stats")!;

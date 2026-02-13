@@ -36,12 +36,11 @@ export function registerSmartRoutingTools(
     inputSchema: GetRoutingConfigSchema.shape,
     handler: async ({ workspace_slug }: z.infer<typeof GetRoutingConfigSchema>): Promise<CallToolResult> =>
       safeToolCall("routing_get_config", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const where = workspace_slug
           ? { workspace: { slug: workspace_slug, members: { some: { userId } } } }
           : { userId };
-        const rules = await prisma.routingRule.findMany({
+        const rules = await prisma.policyRule.findMany({
           where,
           select: { id: true, name: true, pattern: true, target: true, weight: true, enabled: true },
           orderBy: { priority: "asc" },
@@ -65,14 +64,13 @@ export function registerSmartRoutingTools(
     inputSchema: UpdateRoutingRuleSchema.shape,
     handler: async ({ rule_id, enabled, weight, target }: z.infer<typeof UpdateRoutingRuleSchema>): Promise<CallToolResult> =>
       safeToolCall("routing_update_rule", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const data: Record<string, unknown> = {};
         if (enabled !== undefined) data["enabled"] = enabled;
         if (weight !== undefined) data["weight"] = weight;
         if (target !== undefined) data["target"] = target;
         if (Object.keys(data).length === 0) return textResult("No updates provided.");
-        const rule = await prisma.routingRule.update({
+        const rule = await prisma.policyRule.update({
           where: { id: rule_id },
           data,
         });
@@ -95,12 +93,11 @@ export function registerSmartRoutingTools(
     inputSchema: GetRoutingStatsSchema.shape,
     handler: async ({ period = "24h" }: z.infer<typeof GetRoutingStatsSchema>): Promise<CallToolResult> =>
       safeToolCall("routing_get_stats", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const periodMap: Record<string, number> = { "1h": 1, "24h": 24, "7d": 168, "30d": 720 };
         const hours = periodMap[period] || 24;
         void new Date(Date.now() - hours * 60 * 60 * 1000); // since — reserved for future time-filtered queries
-        const rules: Array<{ id: string; name: string; weight: number; requestCount: number }> = await prisma.routingRule.findMany({
+        const rules: Array<{ id: string; name: string; weight: number; requestCount: number }> = await prisma.policyRule.findMany({
           where: { userId, enabled: true },
           select: { id: true, name: true, weight: true, requestCount: true },
         });

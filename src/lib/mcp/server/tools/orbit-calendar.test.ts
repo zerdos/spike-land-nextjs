@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockPrisma = {
-  calendarEvent: { findMany: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
+  calendarContentSuggestion: { findMany: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -34,7 +34,7 @@ describe("orbit-calendar tools", () => {
 
   describe("calendar_list_events", () => {
     it("should list events", async () => {
-      mockPrisma.calendarEvent.findMany.mockResolvedValue([
+      mockPrisma.calendarContentSuggestion.findMany.mockResolvedValue([
         { id: "ev1", title: "Launch Post", channel: "twitter", status: "SCHEDULED", scheduledAt: new Date() },
       ]);
       const handler = registry.handlers.get("calendar_list_events")!;
@@ -43,7 +43,7 @@ describe("orbit-calendar tools", () => {
     });
 
     it("should return message when no events", async () => {
-      mockPrisma.calendarEvent.findMany.mockResolvedValue([]);
+      mockPrisma.calendarContentSuggestion.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("calendar_list_events")!;
       const result = await handler({});
       expect(getText(result)).toContain("No calendar events found");
@@ -52,7 +52,7 @@ describe("orbit-calendar tools", () => {
 
   describe("calendar_create_event", () => {
     it("should create event", async () => {
-      mockPrisma.calendarEvent.create.mockResolvedValue({ id: "ev2" });
+      mockPrisma.calendarContentSuggestion.create.mockResolvedValue({ id: "ev2" });
       const handler = registry.handlers.get("calendar_create_event")!;
       const result = await handler({ title: "New Post", content: "Hello!", scheduled_at: "2025-07-01T10:00:00Z", channel: "twitter" });
       expect(getText(result)).toContain("Event Created");
@@ -61,7 +61,7 @@ describe("orbit-calendar tools", () => {
 
   describe("calendar_update_event", () => {
     it("should update event", async () => {
-      mockPrisma.calendarEvent.update.mockResolvedValue({ id: "ev1", status: "CANCELLED" });
+      mockPrisma.calendarContentSuggestion.update.mockResolvedValue({ id: "ev1", status: "CANCELLED" });
       const handler = registry.handlers.get("calendar_update_event")!;
       const result = await handler({ event_id: "ev1", status: "CANCELLED" });
       expect(getText(result)).toContain("Event Updated");
@@ -70,7 +70,7 @@ describe("orbit-calendar tools", () => {
 
   describe("calendar_delete_event", () => {
     it("should delete event", async () => {
-      mockPrisma.calendarEvent.delete.mockResolvedValue({});
+      mockPrisma.calendarContentSuggestion.delete.mockResolvedValue({});
       const handler = registry.handlers.get("calendar_delete_event")!;
       const result = await handler({ event_id: "ev1" });
       expect(getText(result)).toContain("Event Deleted");
@@ -79,7 +79,7 @@ describe("orbit-calendar tools", () => {
 
   describe("calendar_overview", () => {
     it("should return monthly overview", async () => {
-      mockPrisma.calendarEvent.findMany.mockResolvedValue([
+      mockPrisma.calendarContentSuggestion.findMany.mockResolvedValue([
         { channel: "twitter", status: "SCHEDULED" },
         { channel: "twitter", status: "PUBLISHED" },
         { channel: "instagram", status: "SCHEDULED" },

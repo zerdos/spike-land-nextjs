@@ -1,8 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockPrisma = {
-  socialConnection: { findMany: vi.fn(), create: vi.fn(), update: vi.fn(), findUnique: vi.fn() },
-  onboardingStep: { findMany: vi.fn(), update: vi.fn() },
+  socialAccount: { findMany: vi.fn(), create: vi.fn(), update: vi.fn(), findUnique: vi.fn() },
   socialPost: { create: vi.fn() },
 };
 
@@ -36,7 +35,7 @@ describe("orbit-social tools", () => {
 
   describe("social_list_connections", () => {
     it("should list connections", async () => {
-      mockPrisma.socialConnection.findMany.mockResolvedValue([
+      mockPrisma.socialAccount.findMany.mockResolvedValue([
         { id: "c1", platform: "twitter", handle: "spike_land", status: "ACTIVE", connectedAt: new Date() },
       ]);
       const handler = registry.handlers.get("social_list_connections")!;
@@ -46,7 +45,7 @@ describe("orbit-social tools", () => {
     });
 
     it("should return empty message", async () => {
-      mockPrisma.socialConnection.findMany.mockResolvedValue([]);
+      mockPrisma.socialAccount.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("social_list_connections")!;
       const result = await handler({});
       expect(getText(result)).toContain("No social connections found");
@@ -55,7 +54,7 @@ describe("orbit-social tools", () => {
 
   describe("social_connect_platform", () => {
     it("should connect platform", async () => {
-      mockPrisma.socialConnection.create.mockResolvedValue({ id: "c2" });
+      mockPrisma.socialAccount.create.mockResolvedValue({ id: "c2" });
       const handler = registry.handlers.get("social_connect_platform")!;
       const result = await handler({ platform: "instagram", handle: "spike_land" });
       expect(getText(result)).toContain("Connected");
@@ -64,7 +63,7 @@ describe("orbit-social tools", () => {
 
   describe("social_disconnect_platform", () => {
     it("should disconnect", async () => {
-      mockPrisma.socialConnection.update.mockResolvedValue({});
+      mockPrisma.socialAccount.update.mockResolvedValue({});
       const handler = registry.handlers.get("social_disconnect_platform")!;
       const result = await handler({ connection_id: "c1" });
       expect(getText(result)).toContain("Disconnected");
@@ -72,29 +71,24 @@ describe("orbit-social tools", () => {
   });
 
   describe("social_onboarding_status", () => {
-    it("should show progress", async () => {
-      mockPrisma.onboardingStep.findMany.mockResolvedValue([
-        { id: "s1", name: "Connect Account", completed: true },
-        { id: "s2", name: "Set Schedule", completed: false },
-      ]);
+    it("should return TODO stub", async () => {
       const handler = registry.handlers.get("social_onboarding_status")!;
       const result = await handler({});
-      expect(getText(result)).toContain("1/2");
+      expect(getText(result)).toContain("OnboardingStep model not yet added to schema");
     });
   });
 
   describe("social_complete_onboarding_step", () => {
-    it("should complete step", async () => {
-      mockPrisma.onboardingStep.update.mockResolvedValue({});
+    it("should return TODO stub", async () => {
       const handler = registry.handlers.get("social_complete_onboarding_step")!;
       const result = await handler({ step: "s2" });
-      expect(getText(result)).toContain("Step Completed");
+      expect(getText(result)).toContain("OnboardingStep model not yet added to schema");
     });
   });
 
   describe("social_post_content", () => {
     it("should post content", async () => {
-      mockPrisma.socialConnection.findUnique.mockResolvedValue({ platform: "twitter", handle: "spike_land" });
+      mockPrisma.socialAccount.findUnique.mockResolvedValue({ platform: "twitter", handle: "spike_land" });
       mockPrisma.socialPost.create.mockResolvedValue({ id: "p1" });
       const handler = registry.handlers.get("social_post_content")!;
       const result = await handler({ connection_id: "c1", content: "Hello world!" });
@@ -102,7 +96,7 @@ describe("orbit-social tools", () => {
     });
 
     it("should return NOT_FOUND for missing connection", async () => {
-      mockPrisma.socialConnection.findUnique.mockResolvedValue(null);
+      mockPrisma.socialAccount.findUnique.mockResolvedValue(null);
       const handler = registry.handlers.get("social_post_content")!;
       const result = await handler({ connection_id: "nope", content: "test" });
       expect(getText(result)).toContain("NOT_FOUND");

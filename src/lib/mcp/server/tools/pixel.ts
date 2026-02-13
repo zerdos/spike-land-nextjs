@@ -54,7 +54,7 @@ export function registerPixelTools(
     handler: async ({ image_id }: z.infer<typeof GetPixelImageSchema>): Promise<CallToolResult> =>
       safeToolCall("pixel_get_image", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const image = await prisma.photo.findUnique({
+        const image = await prisma.enhancedImage.findUnique({
           where: { id: image_id },
           select: { id: true, title: true, url: true, width: true, height: true, moderationStatus: true, createdAt: true, userId: true },
         });
@@ -81,7 +81,7 @@ export function registerPixelTools(
       safeToolCall("pixel_list_images", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         const where = { userId, ...(status !== "ALL" ? { moderationStatus: status } : {}) };
-        const images = await prisma.photo.findMany({
+        const images = await prisma.enhancedImage.findMany({
           where,
           select: { id: true, title: true, url: true, moderationStatus: true, createdAt: true },
           take: limit,
@@ -104,9 +104,8 @@ export function registerPixelTools(
     inputSchema: CreatePipelineSchema.shape,
     handler: async ({ name, steps, input_image_id }: z.infer<typeof CreatePipelineSchema>): Promise<CallToolResult> =>
       safeToolCall("pixel_create_pipeline", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const pipeline = await prisma.pipeline.create({
+        const prisma = (await import("@/lib/prisma")).default;
+        const pipeline = await prisma.enhancementPipeline.create({
           data: { name, steps, userId, status: "CREATED", inputImageId: input_image_id },
         });
         return textResult(
@@ -127,9 +126,8 @@ export function registerPixelTools(
     inputSchema: GetPipelineSchema.shape,
     handler: async ({ pipeline_id }: z.infer<typeof GetPipelineSchema>): Promise<CallToolResult> =>
       safeToolCall("pixel_get_pipeline", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const pipeline = await prisma.pipeline.findUnique({
+        const prisma = (await import("@/lib/prisma")).default;
+        const pipeline = await prisma.enhancementPipeline.findUnique({
           where: { id: pipeline_id },
         });
         if (!pipeline) return textResult("**Error: NOT_FOUND**\nPipeline not found.\n**Retryable:** false");
@@ -151,9 +149,8 @@ export function registerPixelTools(
     inputSchema: RunPipelineSchema.shape,
     handler: async ({ pipeline_id, image_id }: z.infer<typeof RunPipelineSchema>): Promise<CallToolResult> =>
       safeToolCall("pixel_run_pipeline", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const pipeline = await prisma.pipeline.update({
+        const prisma = (await import("@/lib/prisma")).default;
+        const pipeline = await prisma.enhancementPipeline.update({
           where: { id: pipeline_id },
           data: { status: "RUNNING", inputImageId: image_id },
         });
@@ -175,7 +172,7 @@ export function registerPixelTools(
     handler: async ({ limit = 10 }: z.infer<typeof ListPipelinesSchema>): Promise<CallToolResult> =>
       safeToolCall("pixel_list_pipelines", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const pipelines = await prisma.pipeline.findMany({
+        const pipelines = await prisma.enhancementPipeline.findMany({
           where: { userId },
           select: { id: true, name: true, status: true, createdAt: true },
           take: limit,

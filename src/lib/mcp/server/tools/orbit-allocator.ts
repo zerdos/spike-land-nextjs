@@ -55,9 +55,8 @@ export function registerOrbitAllocatorTools(
     inputSchema: GetAllocationsSchema.shape,
     handler: async ({ period = "current" }: z.infer<typeof GetAllocationsSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_get_allocations", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const allocations = await prisma.budgetAllocation.findMany({
+        const prisma = (await import("@/lib/prisma")).default;
+        const allocations = await prisma.allocatorDailyBudgetMove.findMany({
           where: { userId, period },
           select: { id: true, channel: true, amount: true, spent: true, period: true },
           orderBy: { amount: "desc" },
@@ -84,11 +83,10 @@ export function registerOrbitAllocatorTools(
     inputSchema: UpdateAllocationSchema.shape,
     handler: async ({ allocation_id, amount, channel }: z.infer<typeof UpdateAllocationSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_update_allocation", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const data: Record<string, unknown> = { amount };
         if (channel) data.channel = channel;
-        const allocation = await prisma.budgetAllocation.update({
+        const allocation = await prisma.allocatorDailyBudgetMove.update({
           where: { id: allocation_id },
           data,
         });
@@ -104,9 +102,8 @@ export function registerOrbitAllocatorTools(
     inputSchema: CreateAllocationSchema.shape,
     handler: async ({ channel, amount, period = "current" }: z.infer<typeof CreateAllocationSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_create_allocation", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const allocation = await prisma.budgetAllocation.create({
+        const prisma = (await import("@/lib/prisma")).default;
+        const allocation = await prisma.allocatorDailyBudgetMove.create({
           data: { channel, amount, spent: 0, period, userId },
         });
         return textResult(`**Allocation Created!**\n\n**ID:** ${allocation.id}\n**Channel:** ${channel}\n**Amount:** $${amount.toFixed(2)}\n**Period:** ${period}`);
@@ -121,9 +118,8 @@ export function registerOrbitAllocatorTools(
     inputSchema: GetDashboardSchema.shape,
     handler: async ({ period = "30d" }: z.infer<typeof GetDashboardSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_dashboard", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const allocations = await prisma.budgetAllocation.findMany({
+        const prisma = (await import("@/lib/prisma")).default;
+        const allocations = await prisma.allocatorDailyBudgetMove.findMany({
           where: { userId },
           select: { channel: true, amount: true, spent: true },
         });
@@ -147,8 +143,7 @@ export function registerOrbitAllocatorTools(
     inputSchema: GetAuditTrailSchema.shape,
     handler: async ({ allocation_id, limit = 20 }: z.infer<typeof GetAuditTrailSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_audit_trail", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const where = allocation_id ? { allocationId: allocation_id, userId } : { userId };
         const entries = await prisma.auditLog.findMany({
           where,
@@ -173,9 +168,8 @@ export function registerOrbitAllocatorTools(
     inputSchema: SetAutopilotSchema.shape,
     handler: async ({ enabled, max_daily_spend, channels }: z.infer<typeof SetAutopilotSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_set_autopilot", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        await prisma.autopilotConfig.upsert({
+        const prisma = (await import("@/lib/prisma")).default;
+        await prisma.allocatorAutopilotConfig.upsert({
           where: { userId },
           create: { userId, enabled, maxDailySpend: max_daily_spend, channels: channels || [] },
           update: { enabled, ...(max_daily_spend !== undefined ? { maxDailySpend: max_daily_spend } : {}), ...(channels ? { channels } : {}) },
@@ -192,9 +186,8 @@ export function registerOrbitAllocatorTools(
     inputSchema: GetAutopilotStatusSchema.shape,
     handler: async (): Promise<CallToolResult> =>
       safeToolCall("allocator_autopilot_status", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const config = await prisma.autopilotConfig.findUnique({ where: { userId } });
+        const prisma = (await import("@/lib/prisma")).default;
+        const config = await prisma.allocatorAutopilotConfig.findUnique({ where: { userId } });
         if (!config) return textResult("**Autopilot:** Not configured.\n\nUse `allocator_set_autopilot` to enable.");
         return textResult(
           `**Autopilot Status**\n\n` +

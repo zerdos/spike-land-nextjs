@@ -7,7 +7,7 @@
 import { z } from "zod";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { ToolRegistry } from "../tool-registry";
-import { safeToolCall, textResult } from "./tool-helpers";
+import { safeToolCall } from "./tool-helpers";
 
 const GetCanvasSchema = z.object({
   canvas_id: z.string().min(1).describe("Canvas ID."),
@@ -29,7 +29,7 @@ const UpdateCanvasSchema = z.object({
 
 export function registerCanvasTools(
   registry: ToolRegistry,
-  userId: string,
+  _userId: string,
 ): void {
   registry.register({
     name: "canvas_get",
@@ -39,23 +39,9 @@ export function registerCanvasTools(
     inputSchema: GetCanvasSchema.shape,
     handler: async ({ canvas_id }: z.infer<typeof GetCanvasSchema>): Promise<CallToolResult> =>
       safeToolCall("canvas_get", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const canvas = await prisma.canvas.findUnique({
-          where: { id: canvas_id },
-          select: { id: true, title: true, width: true, height: true, backgroundColor: true, published: true, elementCount: true, createdAt: true },
-        });
-        if (!canvas) return textResult("**Error: NOT_FOUND**\nCanvas not found.\n**Retryable:** false");
-        return textResult(
-          `**Canvas**\n\n` +
-          `**ID:** ${canvas.id}\n` +
-          `**Title:** ${canvas.title}\n` +
-          `**Dimensions:** ${canvas.width}x${canvas.height}\n` +
-          `**Background:** ${canvas.backgroundColor}\n` +
-          `**Elements:** ${canvas.elementCount || 0}\n` +
-          `**Published:** ${canvas.published}\n` +
-          `**Created:** ${canvas.createdAt.toISOString()}`
-        );
+        void canvas_id;
+        // TODO: Add Canvas model to prisma/schema.prisma
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "Canvas model not yet added to schema" }) }] };
       }),
   });
 
@@ -67,18 +53,9 @@ export function registerCanvasTools(
     inputSchema: CreateCanvasSchema.shape,
     handler: async ({ title, width = 1920, height = 1080, background_color = "#ffffff" }: z.infer<typeof CreateCanvasSchema>): Promise<CallToolResult> =>
       safeToolCall("canvas_create", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const canvas = await prisma.canvas.create({
-          data: { title, width, height, backgroundColor: background_color, published: false, userId, elementCount: 0 },
-        });
-        return textResult(
-          `**Canvas Created!**\n\n` +
-          `**ID:** ${canvas.id}\n` +
-          `**Title:** ${title}\n` +
-          `**Dimensions:** ${width}x${height}\n` +
-          `**Background:** ${background_color}`
-        );
+        void title; void width; void height; void background_color;
+        // TODO: Add Canvas model to prisma/schema.prisma
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "Canvas model not yet added to schema" }) }] };
       }),
   });
 
@@ -90,14 +67,9 @@ export function registerCanvasTools(
     inputSchema: UpdateCanvasSchema.shape,
     handler: async ({ canvas_id, title, elements, published }: z.infer<typeof UpdateCanvasSchema>): Promise<CallToolResult> =>
       safeToolCall("canvas_update", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const data: Record<string, unknown> = {};
-        if (title !== undefined) data.title = title;
-        if (elements !== undefined) data.elements = elements;
-        if (published !== undefined) data.published = published;
-        const canvas = await prisma.canvas.update({ where: { id: canvas_id }, data });
-        return textResult(`**Canvas Updated!**\n\n**ID:** ${canvas.id}\n**Published:** ${canvas.published}`);
+        void canvas_id; void title; void elements; void published;
+        // TODO: Add Canvas model to prisma/schema.prisma
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "Canvas model not yet added to schema" }) }] };
       }),
   });
 }

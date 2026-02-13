@@ -46,11 +46,10 @@ export function registerOrbitSocialTools(
     inputSchema: ListConnectionsSchema.shape,
     handler: async ({ platform }: z.infer<typeof ListConnectionsSchema>): Promise<CallToolResult> =>
       safeToolCall("social_list_connections", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const where: Record<string, unknown> = { userId };
         if (platform) where.platform = platform;
-        const connections = await prisma.socialConnection.findMany({
+        const connections = await prisma.socialAccount.findMany({
           where,
           select: { id: true, platform: true, handle: true, status: true, connectedAt: true },
         });
@@ -71,9 +70,8 @@ export function registerOrbitSocialTools(
     inputSchema: ConnectPlatformSchema.shape,
     handler: async ({ platform, handle }: z.infer<typeof ConnectPlatformSchema>): Promise<CallToolResult> =>
       safeToolCall("social_connect_platform", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const connection = await prisma.socialConnection.create({
+        const prisma = (await import("@/lib/prisma")).default;
+        const connection = await prisma.socialAccount.create({
           data: { platform, handle, status: "ACTIVE", userId, connectedAt: new Date() },
         });
         return textResult(`**Connected!**\n\n**Platform:** ${platform}\n**Handle:** @${handle}\n**ID:** ${connection.id}`);
@@ -88,9 +86,8 @@ export function registerOrbitSocialTools(
     inputSchema: DisconnectPlatformSchema.shape,
     handler: async ({ connection_id }: z.infer<typeof DisconnectPlatformSchema>): Promise<CallToolResult> =>
       safeToolCall("social_disconnect_platform", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        await prisma.socialConnection.update({
+        const prisma = (await import("@/lib/prisma")).default;
+        await prisma.socialAccount.update({
           where: { id: connection_id },
           data: { status: "DISCONNECTED" },
         });
@@ -106,20 +103,8 @@ export function registerOrbitSocialTools(
     inputSchema: GetOnboardingStatusSchema.shape,
     handler: async (): Promise<CallToolResult> =>
       safeToolCall("social_onboarding_status", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const steps = await prisma.onboardingStep.findMany({
-          where: { userId },
-          select: { id: true, name: true, completed: true },
-          orderBy: { order: "asc" },
-        });
-        if (steps.length === 0) return textResult("No onboarding steps configured.");
-        const completed = steps.filter((s) => s.completed).length;
-        let text = `**Onboarding Progress: ${completed}/${steps.length}**\n\n`;
-        for (const s of steps) {
-          text += `- ${s.completed ? "[x]" : "[ ]"} ${s.name} (${s.id})\n`;
-        }
-        return textResult(text);
+        // TODO: Add OnboardingStep model to prisma/schema.prisma
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "OnboardingStep model not yet added to schema" }) }] };
       }),
   });
 
@@ -129,15 +114,10 @@ export function registerOrbitSocialTools(
     category: "orbit-social",
     tier: "workspace",
     inputSchema: CompleteOnboardingStepSchema.shape,
-    handler: async ({ step }: z.infer<typeof CompleteOnboardingStepSchema>): Promise<CallToolResult> =>
+    handler: async ({ step: _step }: z.infer<typeof CompleteOnboardingStepSchema>): Promise<CallToolResult> =>
       safeToolCall("social_complete_onboarding_step", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        await prisma.onboardingStep.update({
-          where: { id: step },
-          data: { completed: true },
-        });
-        return textResult(`**Step Completed!** ${step}`);
+        // TODO: Add OnboardingStep model to prisma/schema.prisma
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "OnboardingStep model not yet added to schema" }) }] };
       }),
   });
 
@@ -149,9 +129,8 @@ export function registerOrbitSocialTools(
     inputSchema: PostContentSchema.shape,
     handler: async ({ connection_id, content, media_urls }: z.infer<typeof PostContentSchema>): Promise<CallToolResult> =>
       safeToolCall("social_post_content", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const connection = await prisma.socialConnection.findUnique({
+        const prisma = (await import("@/lib/prisma")).default;
+        const connection = await prisma.socialAccount.findUnique({
           where: { id: connection_id },
           select: { platform: true, handle: true },
         });

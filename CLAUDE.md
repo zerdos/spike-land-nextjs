@@ -365,6 +365,15 @@ See [README.md](./README.md) for full development setup.
 
 ---
 
+## 🔒 Code Quality Rules (BLOCKING)
+
+- **NEVER** use `any` type (`as any`, `: any`, `Record<string, any>`) - use proper types or `unknown`
+- **NEVER** add `eslint-disable` or `eslint-ignore` comments - fix the underlying issue instead
+- **NEVER** use `@ts-ignore` or `@ts-nocheck` - fix the type error properly
+- Existing pattern for dynamic Prisma imports: `const prisma = (await import("@/lib/prisma")).default;` (no type annotation needed - TypeScript infers it)
+
+---
+
 ## 🐛 Bug-Fixing Workflow (BLOCKING REQUIREMENT)
 
 **CRITICAL**: When fixing styling or UI bugs, agents MUST follow this test-driven process:

@@ -7,7 +7,7 @@
 import { z } from "zod";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { ToolRegistry } from "../tool-registry";
-import { safeToolCall, textResult } from "./tool-helpers";
+import { safeToolCall } from "./tool-helpers";
 
 const CreateGameSchema = z.object({
   name: z.string().min(1).max(200).describe("Game session name."),
@@ -31,7 +31,7 @@ const GameActionSchema = z.object({
 
 export function registerTabletopTools(
   registry: ToolRegistry,
-  userId: string,
+  _userId: string,
 ): void {
   registry.register({
     name: "tabletop_create_game",
@@ -41,19 +41,9 @@ export function registerTabletopTools(
     inputSchema: CreateGameSchema.shape,
     handler: async ({ name, game_type, max_players = 4 }: z.infer<typeof CreateGameSchema>): Promise<CallToolResult> =>
       safeToolCall("tabletop_create_game", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const game = await prisma.gameSession.create({
-          data: { name, gameType: game_type, maxPlayers: max_players, status: "WAITING", hostId: userId, playerCount: 1 },
-        });
-        return textResult(
-          `**Game Created!**\n\n` +
-          `**ID:** ${game.id}\n` +
-          `**Name:** ${name}\n` +
-          `**Type:** ${game_type}\n` +
-          `**Max Players:** ${max_players}\n` +
-          `**Status:** WAITING`
-        );
+        void name; void game_type; void max_players;
+        // TODO: Add GameSession model to prisma/schema.prisma
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "GameSession model not yet added to schema" }) }] };
       }),
   });
 
@@ -65,22 +55,9 @@ export function registerTabletopTools(
     inputSchema: GetGameSchema.shape,
     handler: async ({ game_id }: z.infer<typeof GetGameSchema>): Promise<CallToolResult> =>
       safeToolCall("tabletop_get_game", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const game = await prisma.gameSession.findUnique({
-          where: { id: game_id },
-          select: { id: true, name: true, gameType: true, status: true, maxPlayers: true, playerCount: true, createdAt: true },
-        });
-        if (!game) return textResult("**Error: NOT_FOUND**\nGame not found.\n**Retryable:** false");
-        return textResult(
-          `**Tabletop Game**\n\n` +
-          `**ID:** ${game.id}\n` +
-          `**Name:** ${game.name}\n` +
-          `**Type:** ${game.gameType}\n` +
-          `**Status:** ${game.status}\n` +
-          `**Players:** ${game.playerCount}/${game.maxPlayers}\n` +
-          `**Created:** ${game.createdAt.toISOString()}`
-        );
+        void game_id;
+        // TODO: Add GameSession model to prisma/schema.prisma
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "GameSession model not yet added to schema" }) }] };
       }),
   });
 
@@ -92,21 +69,9 @@ export function registerTabletopTools(
     inputSchema: ListGamesSchema.shape,
     handler: async ({ status = "ALL", limit = 10 }: z.infer<typeof ListGamesSchema>): Promise<CallToolResult> =>
       safeToolCall("tabletop_list_games", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const where = status === "ALL" ? {} : { status };
-        const games = await prisma.gameSession.findMany({
-          where,
-          select: { id: true, name: true, gameType: true, status: true, playerCount: true, maxPlayers: true },
-          take: limit,
-          orderBy: { createdAt: "desc" },
-        });
-        if (games.length === 0) return textResult("No games found.");
-        let text = `**Games (${games.length}):**\n\n`;
-        for (const g of games) {
-          text += `- **${g.name}** (${g.gameType}) [${g.status}] — ${g.playerCount}/${g.maxPlayers} players\n  ID: ${g.id}\n\n`;
-        }
-        return textResult(text);
+        void status; void limit;
+        // TODO: Add GameSession model to prisma/schema.prisma
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "GameSession model not yet added to schema" }) }] };
       }),
   });
 
@@ -118,16 +83,9 @@ export function registerTabletopTools(
     inputSchema: GameActionSchema.shape,
     handler: async ({ game_id, action }: z.infer<typeof GameActionSchema>): Promise<CallToolResult> =>
       safeToolCall("tabletop_game_action", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const statusMap: Record<string, string> = { start: "IN_PROGRESS", end: "FINISHED", reset: "WAITING" };
-        const data: Record<string, unknown> = {};
-        if (statusMap[action]) data["status"] = statusMap[action];
-        if (action === "join") data["playerCount"] = { increment: 1 };
-        if (action === "leave") data["playerCount"] = { decrement: 1 };
-        if (action === "reset") data["playerCount"] = 1;
-        await prisma.gameSession.update({ where: { id: game_id }, data });
-        return textResult(`**Game ${game_id}** — ${action} completed!`);
+        void game_id; void action;
+        // TODO: Add GameSession model to prisma/schema.prisma
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "GameSession model not yet added to schema" }) }] };
       }),
   });
 }

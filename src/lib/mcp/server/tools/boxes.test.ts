@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockPrisma = {
   box: { findMany: vi.fn(), create: vi.fn(), findUnique: vi.fn(), update: vi.fn(), delete: vi.fn() },
-  boxItem: { create: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn() },
+  boxMessage: { create: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -91,7 +91,7 @@ describe("boxes tools", () => {
 
   describe("boxes_delete", () => {
     it("should delete box and items", async () => {
-      mockPrisma.boxItem.deleteMany.mockResolvedValue({});
+      mockPrisma.boxMessage.deleteMany.mockResolvedValue({});
       mockPrisma.box.delete.mockResolvedValue({});
       const handler = registry.handlers.get("boxes_delete")!;
       const result = await handler({ box_id: "b1" });
@@ -101,7 +101,7 @@ describe("boxes tools", () => {
 
   describe("boxes_add_item", () => {
     it("should add item to box", async () => {
-      mockPrisma.boxItem.create.mockResolvedValue({ id: "bi1" });
+      mockPrisma.boxMessage.create.mockResolvedValue({ id: "bi1" });
       mockPrisma.box.update.mockResolvedValue({});
       const handler = registry.handlers.get("boxes_add_item")!;
       const result = await handler({ box_id: "b1", item_name: "Widget" });
@@ -111,7 +111,7 @@ describe("boxes tools", () => {
 
   describe("boxes_list_items", () => {
     it("should list items", async () => {
-      mockPrisma.boxItem.findMany.mockResolvedValue([
+      mockPrisma.boxMessage.findMany.mockResolvedValue([
         { id: "bi1", name: "Widget", type: "gadget", createdAt: new Date() },
       ]);
       const handler = registry.handlers.get("boxes_list_items")!;
@@ -120,7 +120,7 @@ describe("boxes tools", () => {
     });
 
     it("should return empty message", async () => {
-      mockPrisma.boxItem.findMany.mockResolvedValue([]);
+      mockPrisma.boxMessage.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("boxes_list_items")!;
       const result = await handler({ box_id: "b1" });
       expect(getText(result)).toContain("Box is empty");

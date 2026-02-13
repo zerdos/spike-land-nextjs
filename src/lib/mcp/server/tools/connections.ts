@@ -58,10 +58,9 @@ export function registerConnectionsTools(
     inputSchema: ListConnectionsSchema.shape,
     handler: async ({ type = "ALL", limit = 20 }: z.infer<typeof ListConnectionsSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_list", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const where = type === "ALL" ? { userId } : { userId, type };
-        const connections = await prisma.businessConnection.findMany({
+        const connections = await prisma.connection.findMany({
           where,
           select: { id: true, name: true, type: true, url: true, createdAt: true },
           take: limit,
@@ -84,9 +83,8 @@ export function registerConnectionsTools(
     inputSchema: AddConnectionSchema.shape,
     handler: async ({ name, type, url, notes }: z.infer<typeof AddConnectionSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_add", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const connection = await prisma.businessConnection.create({
+        const prisma = (await import("@/lib/prisma")).default;
+        const connection = await prisma.connection.create({
           data: { name, type, url, notes, userId },
         });
         return textResult(`**Connection Added!**\n\n**ID:** ${connection.id}\n**Name:** ${name}\n**Type:** ${type}`);
@@ -101,13 +99,12 @@ export function registerConnectionsTools(
     inputSchema: UpdateConnectionSchema.shape,
     handler: async ({ connection_id, name, type, notes }: z.infer<typeof UpdateConnectionSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_update", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const data: Record<string, unknown> = {};
         if (name) data.name = name;
         if (type) data.type = type;
         if (notes !== undefined) data.notes = notes;
-        const connection = await prisma.businessConnection.update({ where: { id: connection_id }, data });
+        const connection = await prisma.connection.update({ where: { id: connection_id }, data });
         return textResult(`**Connection Updated!** ${connection.name} (${connection.type})`);
       }),
   });
@@ -120,9 +117,8 @@ export function registerConnectionsTools(
     inputSchema: DeleteConnectionSchema.shape,
     handler: async ({ connection_id }: z.infer<typeof DeleteConnectionSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_delete", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        await prisma.businessConnection.delete({ where: { id: connection_id } });
+        const prisma = (await import("@/lib/prisma")).default;
+        await prisma.connection.delete({ where: { id: connection_id } });
         return textResult(`**Connection Deleted!** ID: ${connection_id}`);
       }),
   });
@@ -135,9 +131,8 @@ export function registerConnectionsTools(
     inputSchema: TrackCompetitorSchema.shape,
     handler: async ({ competitor_id, metric, value }: z.infer<typeof TrackCompetitorSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_track_competitor", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const entry = await prisma.competitorMetric.create({
+        const prisma = (await import("@/lib/prisma")).default;
+        const entry = await prisma.scoutBenchmark.create({
           data: { connectionId: competitor_id, metric, value, userId, recordedAt: new Date() },
         });
         return textResult(`**Metric Recorded!**\n\n**ID:** ${entry.id}\n**Competitor:** ${competitor_id}\n**Metric:** ${metric}\n**Value:** ${value}`);
@@ -152,11 +147,10 @@ export function registerConnectionsTools(
     inputSchema: GetCompetitorReportSchema.shape,
     handler: async ({ competitor_id }: z.infer<typeof GetCompetitorReportSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_competitor_report", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
+        const prisma = (await import("@/lib/prisma")).default;
         const where: Record<string, unknown> = { userId };
         if (competitor_id) where.connectionId = competitor_id;
-        const metrics = await prisma.competitorMetric.findMany({
+        const metrics = await prisma.scoutBenchmark.findMany({
           where,
           include: { connection: { select: { name: true } } },
           orderBy: { recordedAt: "desc" },
@@ -189,9 +183,8 @@ export function registerConnectionsTools(
     inputSchema: SearchConnectionsSchema.shape,
     handler: async ({ query }: z.infer<typeof SearchConnectionsSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_search", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
-        const prisma: any = (await import("@/lib/prisma")).default;
-        const connections = await prisma.businessConnection.findMany({
+        const prisma = (await import("@/lib/prisma")).default;
+        const connections = await prisma.connection.findMany({
           where: {
             userId,
             OR: [
