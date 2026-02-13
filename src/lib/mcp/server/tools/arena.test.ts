@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-const mockPrisma = {
+const mockPrisma = vi.hoisted(() => ({
   arenaChallenge: {
     findMany: vi.fn(),
     findUnique: vi.fn(),
@@ -11,7 +11,7 @@ const mockPrisma = {
   arenaElo: {
     findMany: vi.fn(),
   },
-};
+}));
 
 // Mock prisma
 vi.mock("@/lib/prisma", () => ({
