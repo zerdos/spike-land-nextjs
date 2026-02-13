@@ -317,6 +317,7 @@ export default function VibeTimeline({
           </div>
           {selVer && (
             <iframe
+              title={`Preview of ${resolvedCS} v${selVer.number}`}
               key={`${resolvedCS}-${selVer.number}`}
               src={`/live/${resolvedCS}/version/${selVer.number}/embed`}
               style={{
@@ -402,6 +403,12 @@ export default function VibeTimeline({
 
       {/* Timeline scrubber */}
       <div
+        role="slider"
+        tabIndex={0}
+        aria-valuemin={1}
+        aria-valuemax={versions.length}
+        aria-valuenow={selIdx + 1}
+        aria-label="Timeline scrubber"
         style={{
           height: 44,
           background: BG_DARK,
@@ -411,6 +418,10 @@ export default function VibeTimeline({
           flexShrink: 0,
         }}
         onClick={handleTimelineClick}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft") setSelIdx((i) => Math.max(0, i - 1));
+          if (e.key === "ArrowRight") setSelIdx((i) => Math.min(versions.length - 1, i + 1));
+        }}
       >
         {versions.map((v, i) => {
           const pct =

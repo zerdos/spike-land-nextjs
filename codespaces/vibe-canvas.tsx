@@ -35,12 +35,6 @@ function extractImports(code: string): string[] {
   return out;
 }
 
-function getCodeSpaceFromUrl(): string {
-  if (typeof window === "undefined") return "vibe-canvas";
-  const match = window.location.pathname.match(/^\/live\/([^/]+)/);
-  return match ? match[1] : "vibe-canvas";
-}
-
 export default function VibeCanvas({
   codeSpaces,
   width,
@@ -49,6 +43,7 @@ export default function VibeCanvas({
 }: VibeCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const resolved = codeSpaces || DEFAULT_SPACES;
+  const resolvedKey = resolved.join(",");
 
   const [cards, setCards] = useState<CardData[]>([]);
   const [pan, setPan] = useState({ x: 40, y: 40 });
@@ -95,7 +90,7 @@ export default function VibeCanvas({
     return () => {
       cancelled = true;
     };
-  }, [resolved.join(",")]);
+  }, [resolved, resolvedKey]);
 
   // Pan handlers
   const onMouseDown = useCallback(
@@ -151,8 +146,10 @@ export default function VibeCanvas({
   }, [cards]);
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <div
       ref={containerRef}
+      role="application"
       style={{
         width: width || "100%",
         height: height || "100%",
@@ -307,6 +304,7 @@ export default function VibeCanvas({
               }}
             >
               <iframe
+                title={`Preview of ${card.codeSpace}`}
                 src={`/live/${card.codeSpace}/embed`}
                 style={{
                   width: `${Math.round(100 / THUMB_SCALE)}%`,

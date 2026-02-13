@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import VibePulse from "/live/vibe-pulse";
 import VibeTimeline from "/live/vibe-timeline";
@@ -131,8 +131,16 @@ export default function VibeNexus({
         </div>
 
         {/* Left resize handle */}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
         <div
+          role="separator"
+          aria-orientation="vertical"
+          tabIndex={0}
           onMouseDown={() => setResizing("left")}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowLeft") setLeftPct((p) => Math.max(15, p - 1));
+            if (e.key === "ArrowRight") setLeftPct((p) => Math.min(45, p + 1));
+          }}
           style={{
             width: 3,
             cursor: "col-resize",
@@ -154,6 +162,7 @@ export default function VibeNexus({
             <div style={{ flex: 1, position: "relative", background: "#fff" }}>
               <iframe
                 key={selectedCS}
+                title={`Live preview of ${selectedCS}`}
                 src={`/live/${selectedCS}/embed`}
                 style={{ width: "100%", height: "100%", border: "none" }}
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
@@ -165,8 +174,16 @@ export default function VibeNexus({
         </div>
 
         {/* Right resize handle */}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
         <div
+          role="separator"
+          aria-orientation="vertical"
+          tabIndex={0}
           onMouseDown={() => setResizing("right")}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowLeft") setRightPct((p) => Math.min(35, p + 1));
+            if (e.key === "ArrowRight") setRightPct((p) => Math.max(10, p - 1));
+          }}
           style={{
             width: 3,
             cursor: "col-resize",
