@@ -9,12 +9,26 @@
 import { auth } from "@/auth";
 import { getClient } from "@/lib/mcp/oauth/clients-store";
 import { generateAuthorizationCode } from "@/lib/mcp/oauth/token-service";
+import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  // Rate limit by IP
+  const ip = request.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "unknown";
+  const { isLimited } = await checkRateLimit(
+    `oauth-authorize:${ip}`,
+    rateLimitConfigs.oauthAuthorize,
+  );
+  if (isLimited) {
+    return NextResponse.json(
+      { error: "too_many_requests", error_description: "Rate limit exceeded" },
+      { status: 429 },
+    );
+  }
+
   const { searchParams } = request.nextUrl;
 
   const responseType = searchParams.get("response_type");

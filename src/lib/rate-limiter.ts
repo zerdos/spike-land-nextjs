@@ -449,4 +449,19 @@ export const rateLimitConfigs = {
     maxRequests: 20,
     windowMs: 60 * 1000, // 1 minute
   },
+  /** OAuth Token endpoint: 20 requests per minute per IP */
+  oauthToken: {
+    maxRequests: 20,
+    windowMs: 60 * 1000, // 1 minute
+  },
+  /** OAuth Authorize endpoint: 30 requests per minute per IP */
+  oauthAuthorize: {
+    maxRequests: 30,
+    windowMs: 60 * 1000, // 1 minute
+  },
+  /** MCP JSON-RPC endpoint: 60 requests per minute per user */
+  mcpJsonRpc: {
+    maxRequests: 60,
+    windowMs: 60 * 1000, // 1 minute
+  },
 } as const;

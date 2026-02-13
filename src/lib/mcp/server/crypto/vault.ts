@@ -26,8 +26,9 @@ export function deriveUserKey(masterKey: Buffer, userId: string): Buffer {
 }
 
 /**
- * Get the master key from environment, with a dev fallback.
- * In production, VAULT_MASTER_KEY must be set.
+ * Get the master key from environment.
+ * VAULT_MASTER_KEY must be set in all environments.
+ * In development, generate one with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
  */
 export function getMasterKey(): Buffer {
   const envKey = process.env["VAULT_MASTER_KEY"];
@@ -38,7 +39,16 @@ export function getMasterKey(): Buffer {
     }
     return Buffer.from(envKey, "base64");
   }
-  // Dev fallback — deterministic but not secure for production
+  if (process.env["NODE_ENV"] === "production") {
+    throw new Error(
+      "VAULT_MASTER_KEY environment variable is required in production. " +
+      "Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
+    );
+  }
+  // Dev-only fallback — logged as warning
+  console.warn(
+    "[VAULT] WARNING: Using dev fallback key. Set VAULT_MASTER_KEY for production.",
+  );
   const fallback = createHmac("sha256", "spike-land-dev-vault-key");
   fallback.update("dev-master-key");
   return fallback.digest();

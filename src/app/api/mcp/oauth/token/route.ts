@@ -10,12 +10,28 @@ import {
   exchangeAuthorizationCode,
   refreshAccessToken,
 } from "@/lib/mcp/oauth/token-service";
+import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
+  // Rate limit by IP
+  const ip = request.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "unknown";
+  const { isLimited, resetAt } = await checkRateLimit(
+    `oauth-token:${ip}`,
+    rateLimitConfigs.oauthToken,
+  );
+  if (isLimited) {
+    return NextResponse.json(
+      { error: "too_many_requests", error_description: "Rate limit exceeded" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) },
+      },
+    );
+  }
   let body: Record<string, string>;
   const contentType = request.headers.get("content-type") || "";
 
@@ -120,13 +136,22 @@ async function handleAuthorizationCode(
     );
   }
 
-  return NextResponse.json({
-    access_token: tokens.accessToken,
-    token_type: tokens.tokenType,
-    expires_in: tokens.expiresIn,
-    refresh_token: tokens.refreshToken,
-    scope: tokens.scope,
-  });
+  // RFC 6749 Section 5.1: token responses must not be cached
+  return NextResponse.json(
+    {
+      access_token: tokens.accessToken,
+      token_type: tokens.tokenType,
+      expires_in: tokens.expiresIn,
+      refresh_token: tokens.refreshToken,
+      scope: tokens.scope,
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+        "Pragma": "no-cache",
+      },
+    },
+  );
 }
 
 async function handleRefreshToken(
@@ -151,11 +176,20 @@ async function handleRefreshToken(
     );
   }
 
-  return NextResponse.json({
-    access_token: tokens.accessToken,
-    token_type: tokens.tokenType,
-    expires_in: tokens.expiresIn,
-    refresh_token: tokens.refreshToken,
-    scope: tokens.scope,
-  });
+  // RFC 6749 Section 5.1: token responses must not be cached
+  return NextResponse.json(
+    {
+      access_token: tokens.accessToken,
+      token_type: tokens.tokenType,
+      expires_in: tokens.expiresIn,
+      refresh_token: tokens.refreshToken,
+      scope: tokens.scope,
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+        "Pragma": "no-cache",
+      },
+    },
+  );
 }
