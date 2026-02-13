@@ -18,6 +18,13 @@ describe("McpErrorCode", () => {
     expect(McpErrorCode.GEMINI_API_ERROR).toBe("GEMINI_API_ERROR");
     expect(McpErrorCode.R2_UPLOAD_ERROR).toBe("R2_UPLOAD_ERROR");
     expect(McpErrorCode.GENERATION_ERROR).toBe("GENERATION_ERROR");
+    expect(McpErrorCode.WORKSPACE_NOT_FOUND).toBe("WORKSPACE_NOT_FOUND");
+    expect(McpErrorCode.APP_NOT_FOUND).toBe("APP_NOT_FOUND");
+    expect(McpErrorCode.PERMISSION_DENIED).toBe("PERMISSION_DENIED");
+    expect(McpErrorCode.INSUFFICIENT_CREDITS).toBe("INSUFFICIENT_CREDITS");
+    expect(McpErrorCode.VALIDATION_ERROR).toBe("VALIDATION_ERROR");
+    expect(McpErrorCode.CONFLICT).toBe("CONFLICT");
+    expect(McpErrorCode.UPSTREAM_SERVICE_ERROR).toBe("UPSTREAM_SERVICE_ERROR");
     expect(McpErrorCode.UNKNOWN).toBe("UNKNOWN");
   });
 });
@@ -63,6 +70,16 @@ describe("MCP_ERROR_RETRYABLE", () => {
     expect(MCP_ERROR_RETRYABLE[McpErrorCode.AUTH_ERROR]).toBe(false);
     expect(MCP_ERROR_RETRYABLE[McpErrorCode.INVALID_IMAGE]).toBe(false);
     expect(MCP_ERROR_RETRYABLE[McpErrorCode.INVALID_INPUT]).toBe(false);
+    expect(MCP_ERROR_RETRYABLE[McpErrorCode.WORKSPACE_NOT_FOUND]).toBe(false);
+    expect(MCP_ERROR_RETRYABLE[McpErrorCode.APP_NOT_FOUND]).toBe(false);
+    expect(MCP_ERROR_RETRYABLE[McpErrorCode.PERMISSION_DENIED]).toBe(false);
+    expect(MCP_ERROR_RETRYABLE[McpErrorCode.INSUFFICIENT_CREDITS]).toBe(false);
+    expect(MCP_ERROR_RETRYABLE[McpErrorCode.VALIDATION_ERROR]).toBe(false);
+    expect(MCP_ERROR_RETRYABLE[McpErrorCode.CONFLICT]).toBe(false);
+  });
+
+  it("should mark upstream service errors as retryable", () => {
+    expect(MCP_ERROR_RETRYABLE[McpErrorCode.UPSTREAM_SERVICE_ERROR]).toBe(true);
   });
 });
 

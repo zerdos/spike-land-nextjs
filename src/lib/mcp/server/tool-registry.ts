@@ -54,6 +54,10 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   vault: "Encrypted secret storage for agent integrations",
   tools: "Dynamic tool registration and management",
   bootstrap: "One-session workspace setup: create workspace, store secrets, deploy apps",
+  apps: "Full My-Apps lifecycle: create, chat, iterate, manage versions, and batch operations",
+  "orbit-workspace": "Orbit workspace listing, connected accounts, and real-time pulse metrics",
+  "orbit-inbox": "Social media inbox: list, analyze, reply, escalate, and batch reply across platforms",
+  "orbit-relay": "AI response drafts: generate, review, approve/reject, and performance metrics",
 };
 
 export class ToolRegistry {
