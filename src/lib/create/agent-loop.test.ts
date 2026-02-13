@@ -5,19 +5,27 @@ import { agentGenerateApp } from "./agent-loop";
 
 // ---- Mocks ----
 
-vi.mock("@prisma/client", () => ({
-  CreatedAppStatus: {
-    PUBLISHED: "PUBLISHED",
-    FAILED: "FAILED",
-    GENERATING: "GENERATING",
-  },
-}));
+vi.mock("@prisma/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@prisma/client")>();
+  return {
+    ...actual,
+    CreatedAppStatus: {
+      PUBLISHED: "PUBLISHED",
+      FAILED: "FAILED",
+      GENERATING: "GENERATING",
+    },
+  };
+});
 
-vi.mock("./agent-client", () => ({
-  callClaude: vi.fn(),
-  extractCodeFromResponse: vi.fn(),
-  parseGenerationResponse: vi.fn(),
-}));
+vi.mock("./agent-client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./agent-client")>();
+  return {
+    ...actual,
+    callClaude: vi.fn(),
+    extractCodeFromResponse: vi.fn(),
+    parseGenerationResponse: vi.fn(),
+  };
+});
 
 vi.mock("./agent-memory", () => ({
   batchExtractAndSaveNotes: vi.fn(),

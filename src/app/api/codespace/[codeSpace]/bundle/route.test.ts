@@ -23,6 +23,15 @@ vi.mock("@/lib/codespace/transpile", () => ({
   transpileCode: vi.fn(),
 }));
 
+// Mock auth and rate-limiter as per standard practice for API route tests
+vi.mock("@/auth", () => ({
+  auth: vi.fn(() => Promise.resolve({ user: { id: "test-user" } })),
+}));
+
+vi.mock("@/lib/rate-limiter", () => ({
+  checkRateLimit: vi.fn(() => Promise.resolve({ isLimited: false })),
+}));
+
 import { getBundleCache, setBundleCache } from "@/lib/codespace/bundle-cache";
 import { buildBundleHtml } from "@/lib/codespace/bundle-template";
 import { bundleCodespace } from "@/lib/codespace/bundler";
@@ -200,7 +209,7 @@ describe("GET /api/codespace/[codeSpace]/bundle", () => {
 });
 
 describe("OPTIONS /api/codespace/[codeSpace]/bundle", () => {
-  it("returns 204 with CORS headers", () => {
+  it("returns 204 with cors headers", () => {
     const response = OPTIONS();
     expect(response.status).toBe(204);
   });

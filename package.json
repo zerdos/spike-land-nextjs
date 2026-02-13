@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:silent": "next dev --webpack > /dev/null 2> /dev/null || true",
-    "dev:ci": "E2E_BYPASS_AUTH=true UPSTASH_REDIS_REST_URL='' UPSTASH_REDIS_REST_TOKEN='' KV_REST_API_URL='' KV_REST_API_TOKEN='' next dev --webpack",
+    "dev:ci": "E2E_BYPASS_AUTH=true UPSTASH_REDIS_REST_URL='' UPSTASH_REDIS_REST_TOKEN='' KV_REST_API_URL='' KV_REST_API_TOKEN='' NODE_OPTIONS='--max-old-space-size=4096' next dev --webpack",
     "dev:turbo": "E2E_BYPASS_AUTH=true UPSTASH_REDIS_REST_URL='' UPSTASH_REDIS_REST_TOKEN='' KV_REST_API_URL='' KV_REST_API_TOKEN='' next dev",
     "build": "yarn workspace @spike-npm-land/shared build && yarn db:generate && NODE_OPTIONS='--max-old-space-size=4096' next build --webpack",
     "deploy:dev": "NODE_ENV=development yarn build:fe && cd packages/testing.spike.land && yarn w:deploy:dev",
