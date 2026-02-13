@@ -98,12 +98,12 @@ export function registerOrbitInboxTools(
 
         const where: Record<string, unknown> = { workspaceId: workspace.id };
         if (status) {
-          where.status = status;
+          where["status"] = status;
         } else {
-          where.status = { in: ["UNREAD", "PENDING_REPLY"] };
+          where["status"] = { in: ["UNREAD", "PENDING_REPLY"] };
         }
-        if (platform) where.platform = platform;
-        if (sentiment) where.sentiment = sentiment;
+        if (platform) where["platform"] = platform;
+        if (sentiment) where["sentiment"] = sentiment;
 
         const items = await prisma.inboxItem.findMany({
           where,
@@ -172,8 +172,8 @@ export function registerOrbitInboxTools(
           include: {
             account: { select: { accountName: true, platform: true } },
             suggestedResponses: {
-              select: { id: true, content: true, confidence: true, strategy: true },
-              orderBy: { confidence: "desc" },
+              select: { id: true, content: true, confidenceScore: true, category: true },
+              orderBy: { confidenceScore: "desc" },
               take: 3,
             },
             drafts: {
@@ -182,7 +182,15 @@ export function registerOrbitInboxTools(
               take: 3,
             },
           },
-        });
+        }) as {
+          id: string; senderName: string; senderHandle: string | null; platform: string;
+          type: string; status: string; content: string; originalPostContent: string | null;
+          sentiment: string | null; sentimentScore: number | null; priorityScore: number | null;
+          escalationStatus: string | null; receivedAt: Date;
+          account: { accountName: string; platform: string };
+          suggestedResponses: { id: string; content: string; confidenceScore: number; category: string }[];
+          drafts: { id: string; content: string; status: string; confidenceScore: number }[];
+        } | null;
 
         if (!item) {
           return textResult(
@@ -214,7 +222,7 @@ export function registerOrbitInboxTools(
         if (item.suggestedResponses.length > 0) {
           text += `\n**AI Suggestions:**\n`;
           for (const s of item.suggestedResponses) {
-            text += `- (${(s.confidence * 100).toFixed(0)}%) ${s.strategy || "reply"}: "${s.content.slice(0, 200)}"\n`;
+            text += `- (${(s.confidenceScore * 100).toFixed(0)}%) ${s.category || "reply"}: "${s.content.slice(0, 200)}"\n`;
           }
         }
 

@@ -158,9 +158,9 @@ export function registerAppsTools(
     }: z.infer<typeof AppsCreateSchema>): Promise<CallToolResult> =>
       safeToolCall("apps_create", async () => {
         const body: Record<string, unknown> = { prompt };
-        if (codespace_id) body.codespaceId = codespace_id;
-        if (image_ids?.length) body.imageIds = image_ids;
-        if (template_id) body.templateId = template_id;
+        if (codespace_id) body["codespaceId"] = codespace_id;
+        if (image_ids?.length) body["imageIds"] = image_ids;
+        if (template_id) body["templateId"] = template_id;
 
         const app = await apiRequest<{
           id: string;
@@ -204,9 +204,9 @@ export function registerAppsTools(
           deletedAt: null,
         };
         if (status) {
-          where.status = status;
+          where["status"] = status;
         } else {
-          where.status = { notIn: ["ARCHIVED"] };
+          where["status"] = { notIn: ["ARCHIVED"] };
         }
 
         const apps = await prisma.app.findMany({
@@ -315,7 +315,7 @@ export function registerAppsTools(
     }: z.infer<typeof AppsChatSchema>): Promise<CallToolResult> =>
       safeToolCall("apps_chat", async () => {
         const body: Record<string, unknown> = { content: message, role: "USER" };
-        if (image_ids?.length) body.imageIds = image_ids;
+        if (image_ids?.length) body["imageIds"] = image_ids;
 
         const result = await apiRequest<{
           id: string;
@@ -364,7 +364,7 @@ export function registerAppsTools(
           deletedAt: null,
         };
         if (cursor) {
-          where.createdAt = { lt: new Date(cursor) };
+          where["createdAt"] = { lt: new Date(cursor) };
         }
 
         const messages = await prisma.appMessage.findMany({

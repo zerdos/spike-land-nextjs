@@ -17,6 +17,7 @@ vi.mock("./agent-client", () => ({
   callClaude: vi.fn(),
   extractCodeFromResponse: vi.fn(),
   parseGenerationResponse: vi.fn(),
+  isAuthError: vi.fn().mockReturnValue(false),
 }));
 
 vi.mock("./agent-memory", () => ({

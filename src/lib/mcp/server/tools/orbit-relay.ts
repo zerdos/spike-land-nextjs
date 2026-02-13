@@ -132,9 +132,9 @@ export function registerOrbitRelayTools(
           inboxItem: { workspaceId: workspace.id },
         };
         if (status) {
-          where.status = status;
+          where["status"] = status;
         } else {
-          where.status = "PENDING";
+          where["status"] = "PENDING";
         }
 
         const drafts = await prisma.relayDraft.findMany({
