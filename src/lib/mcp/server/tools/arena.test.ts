@@ -1,19 +1,21 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
+const mockPrisma = {
+  arenaChallenge: {
+    findMany: vi.fn(),
+    findUnique: vi.fn(),
+  },
+  arenaSubmission: {
+    create: vi.fn(),
+  },
+  arenaElo: {
+    findMany: vi.fn(),
+  },
+};
+
 // Mock prisma
 vi.mock("@/lib/prisma", () => ({
-  default: {
-    arenaChallenge: {
-      findMany: vi.fn(),
-      findUnique: vi.fn(),
-    },
-    arenaSubmission: {
-      create: vi.fn(),
-    },
-    arenaElo: {
-      findMany: vi.fn(),
-    },
-  },
+  default: mockPrisma,
 }));
 
 vi.mock("@/lib/arena/arena-generator", () => ({
@@ -24,14 +26,12 @@ vi.mock("@/lib/arena/review", () => ({
   submitReview: vi.fn().mockResolvedValue({ reviewId: "rev1", scoringTriggered: false }),
 }));
 
-import prisma from "@/lib/prisma";
 import { registerArenaTools } from "./arena";
-
-const mockPrisma = vi.mocked(prisma);
 
 // Create a mock registry that captures tool registrations
 function createMockRegistry() {
-  const tools = new Map<string, { handler: (...args: unknown[]) => unknown; inputSchema: Record<string, unknown> }>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tools = new Map<string, { handler: (...args: any[]) => any; inputSchema: Record<string, unknown> }>();
 
   return {
     tools,
