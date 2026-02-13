@@ -150,7 +150,7 @@ export function LiveAppPreview({
             className="w-full h-full border-none"
             title={fallbackTitle || `App ${codespaceId}`}
             loading={lazy ? "lazy" : "eager"}
-            sandbox="allow-scripts allow-popups allow-forms"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             allow="autoplay"
             onLoad={handleLoad}
             onError={handleError}
