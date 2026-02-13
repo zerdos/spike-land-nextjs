@@ -209,8 +209,9 @@ export async function proxy(request: NextRequest) {
   // Only allow E2E bypass in non-production environments
   // This prevents accidental bypass in production even if the secret leaks
   // Staging (next.spike.land) is allowed to use E2E bypass for smoke tests
-  const host = request.headers.get("host") || "";
-  const isStagingDomain = host === "next.spike.land" || host.includes("localhost");
+  // Use environment variable for domain check to prevent Host header injection
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const isStagingDomain = appUrl === "https://next.spike.land" || appUrl.includes("localhost");
   const isProduction = process.env.NODE_ENV === "production" &&
     process.env.VERCEL_ENV === "production" &&
     !isStagingDomain;

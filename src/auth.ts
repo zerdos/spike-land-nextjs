@@ -500,8 +500,9 @@ export const auth = async () => {
   // SECURITY: Only enabled in non-production environments
   // Staging (next.spike.land) is allowed to use E2E bypass for smoke tests
   const { data: headersList } = await tryCatch(headers());
-  const host = headersList?.get("host") || "";
-  const isStagingDomain = host === "next.spike.land" || host.includes("localhost");
+  // Use environment variable for domain check to prevent Host header injection
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const isStagingDomain = appUrl === "https://next.spike.land" || appUrl.includes("localhost");
   const isProduction = process.env.NODE_ENV === "production" &&
     process.env.VERCEL_ENV === "production" &&
     !isStagingDomain;

@@ -54,8 +54,9 @@ async function getE2EBypassMembership(
   const bypassSecret = process.env.E2E_BYPASS_SECRET;
 
   // Mirror auth.ts behavior: allow bypass outside strict production.
-  const host = headersList.get("host") || "";
-  const isStagingDomain = host === "next.spike.land" || host.includes("localhost");
+  // Use environment variable for domain check to prevent Host header injection
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const isStagingDomain = appUrl === "https://next.spike.land" || appUrl.includes("localhost");
   const isStrictProduction = process.env.NODE_ENV === "production" &&
     process.env.VERCEL_ENV === "production" &&
     !isStagingDomain;
