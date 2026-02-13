@@ -46,7 +46,8 @@ export function registerOrbitSocialTools(
     inputSchema: ListConnectionsSchema.shape,
     handler: async ({ platform }: z.infer<typeof ListConnectionsSchema>): Promise<CallToolResult> =>
       safeToolCall("social_list_connections", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const where: Record<string, unknown> = { userId };
         if (platform) where.platform = platform;
         const connections = await prisma.socialConnection.findMany({
@@ -70,7 +71,8 @@ export function registerOrbitSocialTools(
     inputSchema: ConnectPlatformSchema.shape,
     handler: async ({ platform, handle }: z.infer<typeof ConnectPlatformSchema>): Promise<CallToolResult> =>
       safeToolCall("social_connect_platform", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const connection = await prisma.socialConnection.create({
           data: { platform, handle, status: "ACTIVE", userId, connectedAt: new Date() },
         });
@@ -86,7 +88,8 @@ export function registerOrbitSocialTools(
     inputSchema: DisconnectPlatformSchema.shape,
     handler: async ({ connection_id }: z.infer<typeof DisconnectPlatformSchema>): Promise<CallToolResult> =>
       safeToolCall("social_disconnect_platform", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         await prisma.socialConnection.update({
           where: { id: connection_id },
           data: { status: "DISCONNECTED" },
@@ -103,7 +106,8 @@ export function registerOrbitSocialTools(
     inputSchema: GetOnboardingStatusSchema.shape,
     handler: async (): Promise<CallToolResult> =>
       safeToolCall("social_onboarding_status", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const steps = await prisma.onboardingStep.findMany({
           where: { userId },
           select: { id: true, name: true, completed: true },
@@ -127,7 +131,8 @@ export function registerOrbitSocialTools(
     inputSchema: CompleteOnboardingStepSchema.shape,
     handler: async ({ step }: z.infer<typeof CompleteOnboardingStepSchema>): Promise<CallToolResult> =>
       safeToolCall("social_complete_onboarding_step", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         await prisma.onboardingStep.update({
           where: { id: step },
           data: { completed: true },
@@ -144,7 +149,8 @@ export function registerOrbitSocialTools(
     inputSchema: PostContentSchema.shape,
     handler: async ({ connection_id, content, media_urls }: z.infer<typeof PostContentSchema>): Promise<CallToolResult> =>
       safeToolCall("social_post_content", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const connection = await prisma.socialConnection.findUnique({
           where: { id: connection_id },
           select: { platform: true, handle: true },

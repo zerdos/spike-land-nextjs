@@ -52,7 +52,8 @@ export function registerOrbitCalendarTools(
     inputSchema: ListEventsSchema.shape,
     handler: async ({ start_date, end_date, channel, limit = 20 }: z.infer<typeof ListEventsSchema>): Promise<CallToolResult> =>
       safeToolCall("calendar_list_events", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const where: Record<string, unknown> = { userId };
         if (channel) where.channel = channel;
         if (start_date || end_date) {
@@ -83,7 +84,8 @@ export function registerOrbitCalendarTools(
     inputSchema: CreateEventSchema.shape,
     handler: async ({ title, content, scheduled_at, channel }: z.infer<typeof CreateEventSchema>): Promise<CallToolResult> =>
       safeToolCall("calendar_create_event", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const event = await prisma.calendarEvent.create({
           data: { title, content, scheduledAt: new Date(scheduled_at), channel, status: "SCHEDULED", userId },
         });
@@ -99,7 +101,8 @@ export function registerOrbitCalendarTools(
     inputSchema: UpdateEventSchema.shape,
     handler: async ({ event_id, title, content, scheduled_at, status }: z.infer<typeof UpdateEventSchema>): Promise<CallToolResult> =>
       safeToolCall("calendar_update_event", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const data: Record<string, unknown> = {};
         if (title) data.title = title;
         if (content) data.content = content;
@@ -118,7 +121,8 @@ export function registerOrbitCalendarTools(
     inputSchema: DeleteEventSchema.shape,
     handler: async ({ event_id }: z.infer<typeof DeleteEventSchema>): Promise<CallToolResult> =>
       safeToolCall("calendar_delete_event", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         await prisma.calendarEvent.delete({ where: { id: event_id } });
         return textResult(`**Event Deleted!** ID: ${event_id}`);
       }),
@@ -132,7 +136,8 @@ export function registerOrbitCalendarTools(
     inputSchema: GetCalendarOverviewSchema.shape,
     handler: async ({ month, year }: z.infer<typeof GetCalendarOverviewSchema>): Promise<CallToolResult> =>
       safeToolCall("calendar_overview", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- future Prisma model
+        const prisma: any = (await import("@/lib/prisma")).default;
         const now = new Date();
         const m = month || now.getMonth() + 1;
         const y = year || now.getFullYear();
