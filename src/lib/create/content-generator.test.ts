@@ -4,6 +4,7 @@ import {
   attemptCodeCorrection,
   buildSystemPrompt,
   buildUserPrompt,
+  cleanCode,
   extractCodeFromRawText,
   extractKeywords,
   generateAppContent,
@@ -53,6 +54,44 @@ describe("content-generator", () => {
       expect(extractKeywords("to-do-list")).toEqual(["list"]);
       expect(extractKeywords("tools/my_calculator")).toEqual(["tools", "calculator"]);
       expect(extractKeywords("a-note-for-the-day")).toEqual(["note", "day"]);
+    });
+  });
+
+  describe("cleanCode", () => {
+    it("should strip ```tsx fences", () => {
+      expect(cleanCode("```tsx\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip ```typescript fences (the bug case)", () => {
+      expect(cleanCode("```typescript\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip ```javascript fences", () => {
+      expect(cleanCode("```javascript\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip ```jsx fences", () => {
+      expect(cleanCode("```jsx\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip ```ts fences", () => {
+      expect(cleanCode("```ts\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip ```js fences", () => {
+      expect(cleanCode("```js\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should strip bare ``` fences", () => {
+      expect(cleanCode("```\nconst x = 1;\n```")).toBe("const x = 1;");
+    });
+
+    it("should return code unchanged when no fences are present", () => {
+      expect(cleanCode("const x = 1;")).toBe("const x = 1;");
+    });
+
+    it("should handle leading whitespace before fences", () => {
+      expect(cleanCode("  ```tsx\nconst x = 1;\n```")).toBe("const x = 1;");
     });
   });
 
@@ -646,17 +685,17 @@ describe("content-generator", () => {
       expect(prompt).toContain("QuickTasks");
     });
 
-    it("should include plan field mention in the response format", () => {
+    it("should include PLAN line mention in the response format", () => {
       const prompt = buildUserPrompt("games/tetris");
-      expect(prompt).toContain('"plan"');
-      expect(prompt).toContain("architecture");
+      expect(prompt).toContain("PLAN line");
+      expect(prompt).toContain("before TITLE");
     });
 
-    it("should show plan field usage in examples", () => {
+    it("should show PLAN line usage in examples", () => {
       const prompt = buildUserPrompt("anything");
-      // Both examples include a plan field
-      expect(prompt).toContain('"plan": "useState for count');
-      expect(prompt).toContain('"plan": "useState for tasks');
+      // Both examples include a PLAN line
+      expect(prompt).toContain("PLAN: useState for count");
+      expect(prompt).toContain("PLAN: useState for tasks");
     });
   });
 

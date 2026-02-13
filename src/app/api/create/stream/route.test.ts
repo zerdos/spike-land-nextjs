@@ -60,14 +60,6 @@ function makeRequest(body: unknown): Request {
   });
 }
 
-async function readSSEEvents(response: Response): Promise<Array<Record<string, unknown>>> {
-  const text = await response.text();
-  return text
-    .split("\n\n")
-    .filter((line) => line.startsWith("data: "))
-    .map((line) => JSON.parse(line.slice(6)) as Record<string, unknown>);
-}
-
 describe("POST /api/create/stream", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -133,46 +125,20 @@ describe("POST /api/create/stream", () => {
     expect(res.status).toBe(202);
   });
 
-  it("streams SSE events with direct generation (no agent)", async () => {
+  it("returns JSON with success result for direct generation", async () => {
     const res = await POST(makeRequest({ path: ["games", "tetris"] }));
     expect(res.status).toBe(200);
-    expect(res.headers.get("Content-Type")).toBe("text/event-stream");
+    expect(res.headers.get("Content-Type")).toContain("application/json");
 
-    const events = await readSSEEvents(res);
-    const types = events.map((e) => e["type"]);
-    expect(types).toContain("agent");
-    expect(types).toContain("status");
-    expect(types).toContain("complete");
-
-    const complete = events.find((e) => e["type"] === "complete");
-    expect(complete?.["title"]).toBe("Test App");
-    expect(complete?.["agent"]).toBe("Opus 4.6");
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.codeSpace).toBe("games/tetris");
+    expect(data.title).toBe("Test App");
+    expect(data.buildLog).toBeInstanceOf(Array);
+    expect(data.buildLog.length).toBeGreaterThan(0);
   });
 
-  it("emits heartbeat events in SSE stream", async () => {
-    vi.useFakeTimers();
-
-    const res = await POST(makeRequest({ path: ["games", "tetris"] }));
-    expect(res.headers.get("Content-Type")).toBe("text/event-stream");
-
-    // The stream should contain events - heartbeats fire every 15s
-    // Since generation is fast in mocks, we may not see heartbeats
-    // But the response should still work
-    const events = await readSSEEvents(res);
-    const types = events.map((e) => e["type"]);
-    expect(types).toContain("complete");
-
-    vi.useRealTimers();
-  });
-
-  it("stream response includes proper SSE headers", async () => {
-    const res = await POST(makeRequest({ path: ["games", "tetris"] }));
-    expect(res.headers.get("Content-Type")).toBe("text/event-stream");
-    expect(res.headers.get("Cache-Control")).toBe("no-cache, no-transform");
-    expect(res.headers.get("Connection")).toBe("keep-alive");
-  });
-
-  it("streams error event on generation failure", async () => {
+  it("returns JSON with error on generation failure", async () => {
     const { generateAppContent } = await import("@/lib/create/content-generator");
     vi.mocked(generateAppContent).mockResolvedValueOnce({
       content: null,
@@ -181,9 +147,21 @@ describe("POST /api/create/stream", () => {
     });
 
     const res = await POST(makeRequest({ path: ["games", "tetris"] }));
-    const events = await readSSEEvents(res);
-    const errorEvent = events.find((e) => e["type"] === "error");
-    expect(errorEvent?.["message"]).toBe("AI service down");
+    expect(res.headers.get("Content-Type")).toContain("application/json");
+
+    const data = await res.json();
+    expect(data.success).toBe(false);
+    expect(data.error).toBe("AI service down");
+  });
+
+  it("includes build log messages in response", async () => {
+    const res = await POST(makeRequest({ path: ["games", "tetris"] }));
+    const data = await res.json();
+
+    expect(data.buildLog).toContain("Initializing app generation...");
+    expect(data.buildLog).toContain("Designing application logic...");
+    expect(data.buildLog).toContain("Writing code...");
+    expect(data.buildLog).toContain("Finalizing...");
   });
 });
 
@@ -194,13 +172,11 @@ describe("isAgentAvailable", () => {
   });
 
   it("returns false when env vars not set", async () => {
-    // CREATE_AGENT_URL and CREATE_AGENT_SECRET are undefined by default in tests
     const result = await isAgentAvailable();
     expect(result).toBe(false);
   });
 
   it("returns false when fetch fails", async () => {
-    // Even if env vars were set, fetch rejection means unavailable
     const result = await isAgentAvailable();
     expect(result).toBe(false);
   });
@@ -220,31 +196,25 @@ describe("circuit breaker integration", () => {
     const { getCircuitState } = await import("@/lib/create/circuit-breaker");
     vi.mocked(getCircuitState).mockResolvedValueOnce("OPEN");
 
-    // Claude is not configured in tests, so OPEN circuit has no effect
-    // (circuit is only checked inside isClaudeConfigured() block)
     const res = await POST(makeRequest({ path: ["games", "tetris"] }));
     expect(res.status).toBe(200);
 
-    const events = await readSSEEvents(res);
-    // Should use Gemini agent (fallback)
-    const agentEvent = events.find((e) => e["type"] === "agent");
-    expect(agentEvent?.["name"]).toBe("Opus 4.6");
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.title).toBe("Test App");
   });
 
   it("records circuit success after successful Claude generation", async () => {
-    // Claude is not configured in test env, so it falls through to Gemini
-    // We test the CLOSED path which doesn't skip Claude
     const { getCircuitState, recordCircuitSuccess } = await import("@/lib/create/circuit-breaker");
     vi.mocked(getCircuitState).mockResolvedValueOnce("CLOSED");
 
     const res = await POST(makeRequest({ path: ["games", "tetris"] }));
     expect(res.status).toBe(200);
 
-    const events = await readSSEEvents(res);
-    expect(events.some((e) => e["type"] === "complete")).toBe(true);
+    const data = await res.json();
+    expect(data.success).toBe(true);
 
     // recordCircuitSuccess is not called when Claude is not configured (falls through to Gemini)
-    // This test verifies the CLOSED state allows normal operation
     expect(vi.mocked(recordCircuitSuccess)).not.toHaveBeenCalled();
   });
 
@@ -252,11 +222,10 @@ describe("circuit breaker integration", () => {
     const { getCircuitState } = await import("@/lib/create/circuit-breaker");
     vi.mocked(getCircuitState).mockResolvedValueOnce("HALF_OPEN");
 
-    // Claude is not configured in tests, so it falls through to Gemini
     const res = await POST(makeRequest({ path: ["games", "tetris"] }));
     expect(res.status).toBe(200);
 
-    const events = await readSSEEvents(res);
-    expect(events.some((e) => e["type"] === "complete")).toBe(true);
+    const data = await res.json();
+    expect(data.success).toBe(true);
   });
 });

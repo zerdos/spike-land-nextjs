@@ -8,6 +8,7 @@ vi.mock("./esbuild-init", () => ({
 // Mock esbuild-wasm
 vi.mock("esbuild-wasm", () => ({
   build: vi.fn(),
+  initialize: vi.fn(),
 }));
 
 // Mock fetch for the plugin

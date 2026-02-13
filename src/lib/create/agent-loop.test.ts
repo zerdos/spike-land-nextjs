@@ -154,6 +154,7 @@ function setupDefaultMocks() {
     outputTokens: 200,
     cacheReadTokens: 50,
     cacheCreationTokens: 10,
+    truncated: false,
   } as never);
   vi.mocked(parseGenerationResponse).mockReturnValue({
     code: DEFAULT_CODE,
@@ -318,7 +319,7 @@ describe("agentGenerateApp", () => {
         dynamicSuffix: undefined,
         userPrompt: "user prompt",
         model: "opus",
-        maxTokens: 16384,
+        maxTokens: 32768,
         temperature: 0.5,
       });
     });
@@ -466,7 +467,7 @@ describe("agentGenerateApp", () => {
           systemPrompt: "fix system prompt",
           userPrompt: "fix user prompt",
           model: "sonnet",
-          maxTokens: 8192,
+          maxTokens: 32768,
           temperature: 0.2,
         }),
       );
@@ -632,6 +633,55 @@ describe("agentGenerateApp", () => {
       );
 
       expect(recordSuccess).not.toHaveBeenCalled();
+    });
+  });
+
+  // ----------------------------------------------------------------
+  // 3b. Code completeness validation (export default)
+  // ----------------------------------------------------------------
+  describe("code completeness validation", () => {
+    it("throws when generated code is missing export default", async () => {
+      vi.mocked(parseGenerationResponse).mockReturnValue({
+        code: "import { useState } from 'react';\nfunction App() { return <div/>; }",
+        title: "Test",
+        description: "Test",
+        relatedApps: [],
+      } as never);
+
+      await expect(
+        collectEvents(
+          agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+        ),
+      ).rejects.toThrow("Generated code is incomplete (missing export default)");
+    });
+
+    it("logs warning when generated code is missing export default", async () => {
+      vi.mocked(parseGenerationResponse).mockReturnValue({
+        code: "function App() { return <div/>; }",
+        title: "Test",
+        description: "Test",
+        relatedApps: [],
+      } as never);
+      vi.mocked(callClaude).mockResolvedValue({
+        text: "gen",
+        inputTokens: 100,
+        outputTokens: 200,
+        cacheReadTokens: 50,
+        cacheCreationTokens: 10,
+        truncated: true,
+      } as never);
+
+      await collectEvents(
+        agentGenerateApp("my-app", ["category", "my-app"], "user-1"),
+      ).catch(() => {});
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        "Generated code missing 'export default', likely truncated",
+        expect.objectContaining({
+          slug: "my-app",
+          truncated: true,
+        }),
+      );
     });
   });
 
@@ -1314,7 +1364,7 @@ describe("agentGenerateApp", () => {
 
   describe("code preview truncation", () => {
     it("truncates code preview to 200 characters", async () => {
-      const longCode = "x".repeat(500);
+      const longCode = "export default function App() { " + "x".repeat(500) + " }";
       vi.mocked(parseGenerationResponse).mockReturnValue({
         code: longCode,
         title: "T",
@@ -1693,7 +1743,7 @@ describe("agentGenerateApp", () => {
       expect(callClaude).toHaveBeenCalledWith(
         expect.objectContaining({
           model: "opus",
-          maxTokens: 8192,
+          maxTokens: 32768,
         }),
       );
 
@@ -1720,7 +1770,7 @@ describe("agentGenerateApp", () => {
       expect(callClaude).toHaveBeenCalledWith(
         expect.objectContaining({
           model: "opus",
-          maxTokens: 24576,
+          maxTokens: 32768,
         }),
       );
     });
@@ -1787,6 +1837,7 @@ describe("agentGenerateApp", () => {
         outputTokens: 60000,
         cacheReadTokens: 0,
         cacheCreationTokens: 0,
+        truncated: false,
       } as never);
 
       await expect(

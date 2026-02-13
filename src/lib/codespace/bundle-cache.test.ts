@@ -3,14 +3,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mock redis
 const mockGet = vi.fn();
 const mockSet = vi.fn();
+const mockDel = vi.fn();
 vi.mock("@/lib/upstash/client", () => ({
   redis: {
     get: (...args: unknown[]) => mockGet(...args),
     set: (...args: unknown[]) => mockSet(...args),
+    del: (...args: unknown[]) => mockDel(...args),
   },
 }));
 
 import {
+  deleteBundleCache,
   getBundleCache,
   getPackageCache,
   setBundleCache,
@@ -21,6 +24,7 @@ describe("bundle-cache", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSet.mockResolvedValue("OK");
+    mockDel.mockResolvedValue(1);
   });
 
   describe("getBundleCache", () => {
@@ -46,6 +50,13 @@ describe("bundle-cache", () => {
         "<html>bundle</html>",
         { ex: 3600 },
       );
+    });
+  });
+
+  describe("deleteBundleCache", () => {
+    it("deletes with correct key", async () => {
+      await deleteBundleCache("test-cs", "hash123");
+      expect(mockDel).toHaveBeenCalledWith("codespace:bundle:test-cs:hash123");
     });
   });
 

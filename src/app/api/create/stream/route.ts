@@ -12,7 +12,7 @@ import {
   updateAppContent,
   updateAppStatus,
 } from "@/lib/create/content-service";
-import { type StreamEvent } from "@/lib/create/types";
+import { type CreateGenerationResult, type StreamEvent } from "@/lib/create/types";
 import { agentGenerateApp } from "@/lib/create/agent-loop";
 import { isClaudeConfigured } from "@/lib/ai/claude-client";
 import logger from "@/lib/logger";
@@ -95,11 +95,11 @@ export async function POST(req: Request) {
 
   if (agentAvailable) {
     logger.info("Create: using local agent", { slug });
-    return createAgentProxyResponse(slug, path, userId);
+    return consumeAgentProxy(slug, path, userId);
   }
 
   logger.info("Create: falling back to direct generation", { slug });
-  return createSSEResponse(generateStream(slug, path, userId, imageUrls));
+  return consumeGenerator(generateStream(slug, path, userId, imageUrls), slug);
 }
 
 /**
@@ -122,114 +122,89 @@ export async function isAgentAvailable(): Promise<boolean> {
 }
 
 /**
- * Proxy the request to the local agent and stream back the response.
+ * Proxy the request to the local agent, collect SSE events, return JSON.
  * Falls back to direct generation on error.
  */
-function createAgentProxyResponse(
+async function consumeAgentProxy(
   slug: string,
   path: string[],
   userId: string | undefined,
-): Response {
-  const encoder = new TextEncoder();
+): Promise<NextResponse<CreateGenerationResult>> {
+  try {
+    const res = await fetch(`${CREATE_AGENT_URL}/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${CREATE_AGENT_SECRET}`,
+      },
+      body: JSON.stringify({ path }),
+    });
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      const heartbeatTimer = setInterval(() => {
+    if (!res.ok || !res.body) {
+      throw new Error(`Agent returned ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let result: CreateGenerationResult = { success: false, codeSpace: slug };
+    const buildLog: string[] = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6);
+
         try {
-          const heartbeat = { type: "heartbeat", timestamp: Date.now() };
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(heartbeat)}\n\n`));
-        } catch {
-          // Controller may be closed
-        }
-      }, 15_000);
+          const event = JSON.parse(data) as Record<string, unknown>;
 
-      try {
-        const res = await fetch(`${CREATE_AGENT_URL}/generate`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${CREATE_AGENT_SECRET}`,
-          },
-          body: JSON.stringify({ path }),
-        });
-
-        if (!res.ok || !res.body) {
-          throw new Error(`Agent returned ${res.status}`);
-        }
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() ?? "";
-
-          for (const line of lines) {
-            if (!line.startsWith("data: ")) continue;
-            const data = line.slice(6);
-
-            try {
-              const event = JSON.parse(data) as Record<string, unknown>;
-
-              // Agent failed — fall back to direct generation
-              if (event["type"] === "error") {
-                throw new Error(String(event["message"] || "Agent generation failed"));
-              }
-
-              if (event["type"] === "agent") {
-                controller.enqueue(
-                  encoder.encode(`data: ${data}\n\n`),
-                );
-                continue;
-              }
-
-              // Forward all other events as-is
-              controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-            } catch (parseError) {
-              if (parseError instanceof SyntaxError) continue;
-              throw parseError;
-            }
+          if (event["type"] === "error") {
+            result = {
+              success: false,
+              codeSpace: slug,
+              error: String(event["message"] || "Agent generation failed"),
+              code: event["generatedCode"] ? String(event["generatedCode"]) : undefined,
+              buildLog,
+            };
+            return NextResponse.json(result, { status: 500 });
           }
-        }
-      } catch (error) {
-        logger.info("Create agent proxy failed, falling back to direct generation", {
-          slug,
-          error: error instanceof Error ? error.message : String(error),
-        });
 
-        // Fall back to direct generation inline
-        try {
-          for await (const event of generateStream(slug, path, userId)) {
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
-            );
+          if (event["type"] === "status" || event["type"] === "phase") {
+            buildLog.push(String(event["message"] || ""));
           }
-        } catch {
-          controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({ type: "error", message: "Generation failed" })}\n\n`,
-            ),
-          );
+
+          if (event["type"] === "complete") {
+            result = {
+              success: true,
+              codeSpace: slug,
+              title: String(event["title"] || ""),
+              description: String(event["description"] || ""),
+              buildLog,
+            };
+          }
+        } catch (parseError) {
+          if (parseError instanceof SyntaxError) continue;
+          throw parseError;
         }
-      } finally {
-        clearInterval(heartbeatTimer);
-        controller.close();
       }
-    },
-  });
+    }
 
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
-    },
-  });
+    return NextResponse.json(result);
+  } catch (error) {
+    logger.info("Create agent proxy failed, falling back to direct generation", {
+      slug,
+      error: error instanceof Error ? error.message : String(error),
+    });
+
+    return consumeGenerator(generateStream(slug, path, userId), slug);
+  }
 }
 
 /**
@@ -347,6 +322,7 @@ async function* geminiFallbackStream(
         type: "error",
         message: genError || "Generated content failed validation",
         codespaceUrl,
+        generatedCode: codeToPush ?? undefined,
       };
       return;
     }
@@ -383,58 +359,59 @@ async function* geminiFallbackStream(
   }
 }
 
-function createSSEResponse(generator: AsyncGenerator<StreamEvent>): Response {
-  const encoder = new TextEncoder();
-  const HEARTBEAT_INTERVAL_MS = 15_000;
-  const TIMEOUT_BUDGET_MS = 100_000; // 100s of 120s max
+/**
+ * Drain the async generator, collect the final result, and return JSON.
+ */
+async function consumeGenerator(
+  generator: AsyncGenerator<StreamEvent>,
+  slug: string,
+): Promise<NextResponse<CreateGenerationResult>> {
+  const buildLog: string[] = [];
+  let result: CreateGenerationResult = { success: false, codeSpace: slug };
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      const startTime = Date.now();
-
-      // Heartbeat interval
-      const heartbeatTimer = setInterval(() => {
-        try {
-          const heartbeat: StreamEvent = { type: "heartbeat", timestamp: Date.now() };
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(heartbeat)}\n\n`));
-        } catch {
-          // Controller may be closed
-        }
-      }, HEARTBEAT_INTERVAL_MS);
-
-      try {
-        for await (const event of generator) {
-          // Check timeout budget
-          if (Date.now() - startTime > TIMEOUT_BUDGET_MS) {
-            const timeoutEvent: StreamEvent = {
-              type: "timeout",
-              message: "Generation approaching time limit",
-            };
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify(timeoutEvent)}\n\n`));
-            break;
-          }
-
-          const data = JSON.stringify(event);
-          controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-        }
-      } catch (error) {
-        const errorEvent = JSON.stringify({
-          type: "error",
-          message: error instanceof Error ? error.message : "Stream error",
-        });
-        controller.enqueue(encoder.encode(`data: ${errorEvent}\n\n`));
-      } finally {
-        clearInterval(heartbeatTimer);
-        controller.close();
+  try {
+    for await (const event of generator) {
+      switch (event.type) {
+        case "status":
+          buildLog.push(event.message);
+          break;
+        case "phase":
+          buildLog.push(event.message);
+          break;
+        case "error_detected":
+          buildLog.push(`Error: ${event.error}`);
+          break;
+        case "error_fixed":
+          buildLog.push(`Fixed (attempt ${event.iteration + 1})`);
+          break;
+        case "complete":
+          result = {
+            success: true,
+            codeSpace: slug,
+            title: event.title,
+            description: event.description,
+            buildLog,
+          };
+          break;
+        case "error":
+          result = {
+            success: false,
+            codeSpace: slug,
+            error: event.message,
+            code: event.generatedCode,
+            buildLog,
+          };
+          break;
       }
-    },
-  });
+    }
+  } catch (error) {
+    result = {
+      success: false,
+      codeSpace: slug,
+      error: error instanceof Error ? error.message : "Generation failed",
+      buildLog,
+    };
+  }
 
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
-    },
-  });
+  return NextResponse.json(result, { status: result.success ? 200 : 500 });
 }

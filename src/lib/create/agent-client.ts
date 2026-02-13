@@ -3,7 +3,7 @@ import type {
   ContentBlockParam,
   TextBlock,
 } from "@anthropic-ai/sdk/resources/messages.js";
-import { getClaudeClient } from "@/lib/ai/claude-client";
+import { getClaudeClient, resetClaudeClient } from "@/lib/ai/claude-client";
 import { generateAgentResponse } from "@/lib/ai/gemini-client";
 
 export interface ClaudeResponse {
@@ -12,6 +12,8 @@ export interface ClaudeResponse {
   outputTokens: number;
   cacheReadTokens: number;
   cacheCreationTokens: number;
+  /** Whether the response was truncated due to hitting max_tokens. */
+  truncated: boolean;
 }
 
 export type ClaudeModel = "opus" | "sonnet" | "haiku";
@@ -33,6 +35,13 @@ function isRetryableError(error: unknown): boolean {
   if (error && typeof error === "object" && "status" in error) {
     const status = (error as APIError).status;
     return typeof status === "number" && RETRYABLE_STATUS_CODES.has(status);
+  }
+  return false;
+}
+
+export function isAuthError(error: unknown): boolean {
+  if (error && typeof error === "object" && "status" in error) {
+    return (error as APIError).status === 401;
   }
   return false;
 }
@@ -110,9 +119,14 @@ export async function callClaude(params: {
         outputTokens: usage.output_tokens,
         cacheReadTokens: usageRecord["cache_read_input_tokens"] ?? 0,
         cacheCreationTokens: usageRecord["cache_creation_input_tokens"] ?? 0,
+        truncated: response.stop_reason === "max_tokens",
       };
     } catch (error) {
       lastError = error;
+
+      if (isAuthError(error)) {
+        resetClaudeClient();
+      }
 
       if (!isRetryableError(error) || attempt >= CLAUDE_MAX_RETRIES) {
         // If we've exhausted retries (or error is not retryable) and the model was Opus, fall back to Gemini Flash
@@ -152,6 +166,7 @@ export async function callClaude(params: {
               outputTokens: 0,
               cacheReadTokens: 0,
               cacheCreationTokens: 0,
+              truncated: false,
             };
 
           } catch (geminiError) {
@@ -271,15 +286,68 @@ export interface ParsedGeneration {
 }
 
 /**
+ * Parse a markdown-formatted generation response.
+ *
+ * Expected format:
+ *   TITLE: App Name
+ *   DESCRIPTION: One sentence
+ *   RELATED: path/one, path/two, path/three
+ *
+ *   ```tsx
+ *   // code here
+ *   ```
+ *
+ * Returns null if the response doesn't contain a tsx/jsx fence with `export default`.
+ */
+export function parseMarkdownResponse(
+  text: string,
+  slug: string,
+): ParsedGeneration | null {
+  // Extract code from tsx/jsx fence
+  const fenceMatch = text.match(
+    /```(?:tsx|jsx)\n([\s\S]*?)```/,
+  );
+  if (!fenceMatch?.[1]) return null;
+
+  const code = fenceMatch[1].trim();
+  if (!code.includes("export default")) return null;
+
+  // Extract metadata from lines before the fence
+  const beforeFence = text.slice(0, fenceMatch.index ?? 0);
+
+  const titleMatch = beforeFence.match(/^TITLE:\s*(.+)$/m);
+  const descMatch = beforeFence.match(/^DESCRIPTION:\s*(.+)$/m);
+  const relatedMatch = beforeFence.match(/^RELATED:\s*(.+)$/m);
+
+  const title = titleMatch?.[1]?.trim()
+    || slug.split("/").pop()?.replace(/-/g, " ")
+    || "Generated App";
+  const description = descMatch?.[1]?.trim() || "Generated application";
+  const relatedApps = relatedMatch
+    ? relatedMatch[1]!.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  return { title, description, code, relatedApps };
+}
+
+/**
  * Parse a structured generation response from Claude.
- * Expected format: JSON with { title, description, code, relatedApps }.
- * Falls back to extracting just code if JSON parsing fails.
+ *
+ * Tries formats in order:
+ * 1. Markdown sections (TITLE/DESCRIPTION/RELATED + tsx fence) — preferred
+ * 2. Clean JSON with { title, description, code, relatedApps }
+ * 3. Embedded JSON block within surrounding text
+ * 4. extractCodeFromResponse fallback (fences, partial JSON, raw code)
  */
 export function parseGenerationResponse(
   text: string,
   slug: string,
 ): ParsedGeneration | null {
-  // Try to parse as clean JSON
+  // 1. Try markdown format first (new preferred format)
+  const markdown = parseMarkdownResponse(text, slug);
+  if (markdown) return markdown;
+
+  // 2. Try to parse as clean JSON
   try {
     const json = JSON.parse(text);
     if (json.code && json.title) {
@@ -294,7 +362,7 @@ export function parseGenerationResponse(
     // Not clean JSON
   }
 
-  // Try to find a JSON block within the response
+  // 3. Try to find a JSON block within the response
   const jsonMatch = text.match(/\{[\s\S]*"code"\s*:\s*"[\s\S]*\}/);
   if (jsonMatch) {
     try {
@@ -313,7 +381,7 @@ export function parseGenerationResponse(
     }
   }
 
-  // Extract just code and synthesize metadata
+  // 4. Extract just code and synthesize metadata
   const code = extractCodeFromResponse(text);
   if (code) {
     return {

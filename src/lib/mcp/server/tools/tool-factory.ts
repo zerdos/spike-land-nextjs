@@ -336,6 +336,21 @@ export function registerToolFactoryTools(
           test_input as Record<string, unknown>,
           secrets,
         );
+
+        // Re-validate the resolved URL to prevent SSRF via template injection
+        const resolvedUrlError = validateUrl(resolvedUrl);
+        if (resolvedUrlError) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Resolved URL is invalid: ${resolvedUrlError}. Template variables may have injected a disallowed URL.`,
+              },
+            ],
+            isError: true,
+          };
+        }
+
         const resolvedHeaders: Record<string, string> = {};
         for (const [k, v] of Object.entries(spec.headers || {})) {
           resolvedHeaders[k] = resolveTemplate(

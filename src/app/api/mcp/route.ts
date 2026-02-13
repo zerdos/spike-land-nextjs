@@ -15,6 +15,7 @@
 import { authenticateMcpRequest } from "@/lib/mcp/auth";
 import { getMcpBaseUrl } from "@/lib/mcp/get-base-url";
 import { createMcpServer } from "@/lib/mcp/server/mcp-server";
+import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -54,6 +55,21 @@ export async function POST(request: NextRequest) {
   const authResult = await authenticateMcpRequest(request);
   if (!authResult.success || !authResult.userId) {
     return unauthorizedResponse();
+  }
+
+  // Rate limit by userId
+  const { isLimited, resetAt } = await checkRateLimit(
+    `mcp-rpc:${authResult.userId}`,
+    rateLimitConfigs.mcpJsonRpc,
+  );
+  if (isLimited) {
+    return NextResponse.json(
+      { jsonrpc: "2.0", error: { code: -32000, message: "Rate limit exceeded" }, id: null },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) },
+      },
+    );
   }
 
   // Parse the JSON-RPC request body
@@ -111,8 +127,8 @@ export async function POST(request: NextRequest) {
           }
           return mockRes;
         },
-        setHeader(name: string, value: string) {
-          responseHeaders[name] = value;
+        setHeader(name: string, value: string | string[]) {
+          responseHeaders[name] = Array.isArray(value) ? value.join(", ") : value;
         },
         write(chunk: string | Buffer) {
           responseBody += typeof chunk === "string" ? chunk : chunk.toString();
@@ -149,9 +165,6 @@ export async function POST(request: NextRequest) {
 
     const result = await responsePromise;
 
-    // Clean up
-    await mcpServer.close();
-
     return new NextResponse(result.body, {
       status: result.status,
       headers: {
@@ -160,12 +173,13 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    await mcpServer.close();
     console.error("MCP request error:", error);
     return NextResponse.json(
       { jsonrpc: "2.0", error: { code: -32603, message: "Internal error" }, id: null },
       { status: 500 },
     );
+  } finally {
+    await mcpServer.close();
   }
 }
 

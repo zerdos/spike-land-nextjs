@@ -6,7 +6,7 @@
  */
 
 import prisma from "@/lib/prisma";
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes, timingSafeEqual } from "crypto";
 
 interface ClientRegistrationRequest {
   client_name: string;
@@ -166,5 +166,9 @@ export function verifyClientSecret(
   const providedHash = createHash("sha256")
     .update(providedSecret)
     .digest("hex");
-  return storedHash === providedHash;
+  // Use timing-safe comparison to prevent side-channel attacks
+  const a = Buffer.from(storedHash);
+  const b = Buffer.from(providedHash);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }

@@ -65,7 +65,7 @@ export function McpHero({ onExploreClick }: McpHeroProps) {
       >
         {/* Badge */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-cyan-400 mb-8 backdrop-blur-xl overflow-hidden shadow-2xl hover:bg-white/10 transition-colors cursor-default"
@@ -81,7 +81,7 @@ export function McpHero({ onExploreClick }: McpHeroProps) {
         <div className="relative inline-block py-4">
           <div className="absolute -inset-10 bg-cyan-500/20 blur-[100px] rounded-full pointer-events-none mix-blend-screen" />
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
             className="relative text-6xl sm:text-7xl md:text-9xl font-bold text-white max-w-6xl mx-auto leading-none mb-8 tracking-tighter py-2 drop-shadow-2xl"
@@ -96,7 +96,7 @@ export function McpHero({ onExploreClick }: McpHeroProps) {
 
         {/* Subtitle */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-lg sm:text-2xl text-zinc-400 max-w-3xl mx-auto mb-16 font-light leading-relaxed"

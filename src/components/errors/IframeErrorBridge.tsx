@@ -9,6 +9,7 @@ const ALLOWED_ORIGINS = [
 
 interface IframeErrorMessage {
   type: "iframe-error";
+  source?: string;
   message: string;
   stack?: string;
   componentStack?: string;
@@ -29,9 +30,13 @@ function isIframeErrorMessage(data: unknown): data is IframeErrorMessage {
 export function IframeErrorBridge(): null {
   useEffect(() => {
     function handleMessage(event: MessageEvent): void {
-      // Allow same-origin messages (iframes using relative URLs) and explicitly allowed origins
+      // Allow same-origin messages (iframes using relative URLs), explicitly allowed origins,
+      // and sandboxed iframes (origin === "null") with our sentinel source field
       const isSameOrigin = event.origin === window.location.origin;
-      if (!isSameOrigin && !ALLOWED_ORIGINS.includes(event.origin)) {
+      const isSandboxedBundle = event.origin === "null"
+        && typeof event.data === "object" && event.data !== null
+        && event.data.source === "spike-land-bundle";
+      if (!isSameOrigin && !isSandboxedBundle && !ALLOWED_ORIGINS.includes(event.origin)) {
         return;
       }
 

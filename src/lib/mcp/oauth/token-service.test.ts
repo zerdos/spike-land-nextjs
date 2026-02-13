@@ -13,6 +13,7 @@ const { mockPrisma } = vi.hoisted(() => ({
       create: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
     },
   },
 }));
@@ -289,8 +290,10 @@ describe("token-service", () => {
         .update(codeVerifier)
         .digest("base64url");
 
+      // Atomic mark-as-used succeeds
+      mockPrisma.oAuthAuthorizationCode.updateMany.mockResolvedValue({ count: 1 });
+      // Then fetch details
       mockPrisma.oAuthAuthorizationCode.findUnique.mockResolvedValue({
-        id: "code-id",
         clientId: "client-1",
         userId: "user-1",
         redirectUri: "https://example.com/callback",
@@ -299,10 +302,8 @@ describe("token-service", () => {
         scope: "mcp",
         resource: null,
         expiresAt: new Date(Date.now() + 600000),
-        usedAt: null,
       });
 
-      mockPrisma.oAuthAuthorizationCode.update.mockResolvedValue({});
       mockPrisma.oAuthAccessToken.create.mockResolvedValue({ id: "token-id" });
 
       const result = await exchangeAuthorizationCode(
@@ -315,21 +316,16 @@ describe("token-service", () => {
       expect(result).not.toBeNull();
       expect(result!.accessToken).toMatch(/^mcp_/);
       expect(result!.refreshToken).toMatch(/^mcp_/);
+      // Verify atomic update was called with usedAt: null condition
+      expect(mockPrisma.oAuthAuthorizationCode.updateMany).toHaveBeenCalledWith({
+        where: { code: "test-code", usedAt: null },
+        data: { usedAt: expect.any(Date) },
+      });
     });
 
-    it("should reject already-used codes", async () => {
-      mockPrisma.oAuthAuthorizationCode.findUnique.mockResolvedValue({
-        id: "code-id",
-        clientId: "client-1",
-        userId: "user-1",
-        redirectUri: "https://example.com/callback",
-        codeChallenge: "challenge",
-        codeChallengeMethod: "S256",
-        scope: "mcp",
-        resource: null,
-        expiresAt: new Date(Date.now() + 600000),
-        usedAt: new Date(), // Already used
-      });
+    it("should reject already-used codes (atomic update returns count 0)", async () => {
+      // Atomic update finds no unused code — already used
+      mockPrisma.oAuthAuthorizationCode.updateMany.mockResolvedValue({ count: 0 });
 
       const result = await exchangeAuthorizationCode(
         "used-code",
@@ -339,11 +335,13 @@ describe("token-service", () => {
       );
 
       expect(result).toBeNull();
+      // findUnique should NOT be called since updateMany returned 0
+      expect(mockPrisma.oAuthAuthorizationCode.findUnique).not.toHaveBeenCalled();
     });
 
     it("should reject expired codes", async () => {
+      mockPrisma.oAuthAuthorizationCode.updateMany.mockResolvedValue({ count: 1 });
       mockPrisma.oAuthAuthorizationCode.findUnique.mockResolvedValue({
-        id: "code-id",
         clientId: "client-1",
         userId: "user-1",
         redirectUri: "https://example.com/callback",
@@ -352,7 +350,6 @@ describe("token-service", () => {
         scope: "mcp",
         resource: null,
         expiresAt: new Date(Date.now() - 1000), // Expired
-        usedAt: null,
       });
 
       const result = await exchangeAuthorizationCode(
@@ -366,8 +363,8 @@ describe("token-service", () => {
     });
 
     it("should reject wrong client", async () => {
+      mockPrisma.oAuthAuthorizationCode.updateMany.mockResolvedValue({ count: 1 });
       mockPrisma.oAuthAuthorizationCode.findUnique.mockResolvedValue({
-        id: "code-id",
         clientId: "client-1",
         userId: "user-1",
         redirectUri: "https://example.com/callback",
@@ -376,7 +373,6 @@ describe("token-service", () => {
         scope: "mcp",
         resource: null,
         expiresAt: new Date(Date.now() + 600000),
-        usedAt: null,
       });
 
       const result = await exchangeAuthorizationCode(
@@ -390,8 +386,8 @@ describe("token-service", () => {
     });
 
     it("should reject wrong redirect URI", async () => {
+      mockPrisma.oAuthAuthorizationCode.updateMany.mockResolvedValue({ count: 1 });
       mockPrisma.oAuthAuthorizationCode.findUnique.mockResolvedValue({
-        id: "code-id",
         clientId: "client-1",
         userId: "user-1",
         redirectUri: "https://example.com/callback",
@@ -400,7 +396,6 @@ describe("token-service", () => {
         scope: "mcp",
         resource: null,
         expiresAt: new Date(Date.now() + 600000),
-        usedAt: null,
       });
 
       const result = await exchangeAuthorizationCode(
@@ -413,8 +408,9 @@ describe("token-service", () => {
       expect(result).toBeNull();
     });
 
-    it("should reject nonexistent code", async () => {
-      mockPrisma.oAuthAuthorizationCode.findUnique.mockResolvedValue(null);
+    it("should reject nonexistent code (atomic update returns count 0)", async () => {
+      // updateMany finds no matching code
+      mockPrisma.oAuthAuthorizationCode.updateMany.mockResolvedValue({ count: 0 });
 
       const result = await exchangeAuthorizationCode(
         "nonexistent",

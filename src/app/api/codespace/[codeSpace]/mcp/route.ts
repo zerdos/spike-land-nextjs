@@ -11,6 +11,7 @@
 import { CORS_HEADERS, corsOptions } from "@/lib/codespace/cors";
 import {
   handleMcpRequest,
+  WRITE_TOOL_NAMES,
   type McpRequest,
   type McpResponse,
 } from "@/lib/codespace/mcp-tools";
@@ -87,6 +88,30 @@ export async function POST(
       status: 400,
       headers: CORS_HEADERS,
     });
+  }
+
+  // Require authentication for write operations (update_code, edit_code, search_and_replace)
+  if (
+    mcpRequest.method === "tools/call" &&
+    typeof mcpRequest.params?.["name"] === "string" &&
+    WRITE_TOOL_NAMES.has(mcpRequest.params["name"])
+  ) {
+    const { authenticateMcpRequest } = await import("@/lib/mcp/auth");
+    const authResult = await authenticateMcpRequest(request);
+    if (!authResult.success) {
+      const errorResponse: McpResponse = {
+        jsonrpc: "2.0",
+        id: mcpRequest.id,
+        error: {
+          code: -32600,
+          message: "Authentication required for write operations",
+        },
+      };
+      return Response.json(errorResponse, {
+        status: 401,
+        headers: CORS_HEADERS,
+      });
+    }
   }
 
   const response = await handleMcpRequest(mcpRequest, codeSpace, origin);

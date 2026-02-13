@@ -1,13 +1,12 @@
 /**
- * Transpile helper — uses esbuild-wasm locally to transpile JSX/TSX code.
+ * Transpile helper — uses esbuild-wasm locally via the singleton initializer.
  *
  * Used by codespace API routes to convert raw source code into browser-ready JavaScript.
- * Transform options match packages/code/src/@/lib/transpile.ts:65-81 (same as js.spike.land).
  */
 
 export async function transpileCode(
   code: string,
-  _origin?: string,
+  _origin = "https://spike.land",
 ): Promise<string> {
   const { ensureEsbuildReady } = await import("./esbuild-init");
   await ensureEsbuildReady();

@@ -2,6 +2,7 @@ import { CreatedAppStatus } from "@prisma/client";
 import {
   callClaude,
   extractCodeFromResponse,
+  isAuthError,
   parseGenerationResponse,
 } from "./agent-client";
 import {
@@ -34,20 +35,21 @@ import logger from "@/lib/logger";
 const TOKEN_BUDGET_MAX = 150_000;
 /** Maximum fix iterations, clamped regardless of env var. */
 const MAX_ITERATIONS_CAP = 5;
-/** Max tokens for Sonnet fix calls — fixes rarely produce >4k tokens. */
-const FIX_MAX_TOKENS = 8192;
+/** Max tokens for Sonnet fix calls — must be enough to output a full component. */
+const FIX_MAX_TOKENS = 32768;
 
-/** Adaptive max_tokens based on topic complexity. */
-const GEN_TOKENS_SIMPLE = 8192;
-const GEN_TOKENS_MEDIUM = 16384;
-const GEN_TOKENS_COMPLEX = 24576;
+/**
+ * Flat max_tokens for all generations.
+ * JSON-escaped code roughly doubles token usage, so 32k is the minimum
+ * to avoid truncation of complex components.
+ */
+const GEN_MAX_TOKENS = 32768;
 
 /** Determine generation max_tokens based on matched skills for the topic. */
-function getAdaptiveMaxTokens(topic: string): number {
-  const skills = getMatchedSkills(topic);
-  if (skills.length === 0) return GEN_TOKENS_SIMPLE;
-  if (skills.length <= 2) return GEN_TOKENS_MEDIUM;
-  return GEN_TOKENS_COMPLEX;
+function getAdaptiveMaxTokens(_topic: string): number {
+  // Flat budget — JSON-encoding of code eats ~2x tokens, so even "simple"
+  // apps need a generous budget to avoid mid-response truncation.
+  return GEN_MAX_TOKENS;
 }
 
 /** Determine which model to use for generation based on topic complexity. */
@@ -182,10 +184,33 @@ export async function* agentGenerateApp(
       throw new Error(`Token budget exceeded (${ctx.totalInputTokens + ctx.totalOutputTokens}/${TOKEN_BUDGET_MAX})`);
     }
 
+    // Truncation detection — if Claude hit max_tokens the JSON response is
+    // cut off and the extracted code will be incomplete.
+    if (genResponse.truncated) {
+      logger.warn("Generation response was truncated (hit max_tokens)", {
+        outputTokens: genResponse.outputTokens,
+        maxTokens: adaptiveMaxTokens,
+        slug,
+      });
+    }
+
     // Parse structured response
     const parsed = parseGenerationResponse(genResponse.text, slug);
     if (!parsed?.code) {
       throw new Error("Failed to generate valid code from Claude");
+    }
+
+    // Validate code completeness — incomplete code (e.g. truncated response)
+    // will fail transpilation with cryptic esbuild errors
+    if (!parsed.code.includes("export default")) {
+      logger.warn("Generated code missing 'export default', likely truncated", {
+        slug,
+        codeLength: parsed.code.length,
+        truncated: genResponse.truncated,
+      });
+      throw new Error(
+        "Generated code is incomplete (missing export default). Response may have been truncated.",
+      );
     }
 
     ctx.currentCode = cleanCode(parsed.code);
@@ -364,6 +389,9 @@ export async function* agentGenerateApp(
           error: fixError,
           iteration: ctx.iteration,
         });
+        if (isAuthError(fixError)) {
+          throw fixError;
+        }
       }
 
       // === LEARNING: Collect error/fix pair for batch extraction later ===
@@ -420,6 +448,7 @@ export async function* agentGenerateApp(
       type: "error",
       message: `Failed after ${ctx.maxIterations} fix attempts`,
       codespaceUrl,
+      generatedCode: ctx.currentCode ?? undefined,
     };
   } catch (error) {
     logger.error(`Agent loop failed for ${slug}:`, { error });

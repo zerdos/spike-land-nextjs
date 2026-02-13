@@ -17,7 +17,9 @@ import {
   callClaude,
   type ClaudeResponse,
   extractCodeFromResponse,
+  isAuthError,
   parseGenerationResponse,
+  parseMarkdownResponse,
 } from "./agent-client";
 import { resetClaudeClient } from "@/lib/ai/claude-client";
 
@@ -207,6 +209,33 @@ describe("agent-client", () => {
       await expect(
         callClaude({ systemPrompt: "sys", userPrompt: "usr" }),
       ).rejects.toThrow("API rate limit exceeded");
+    });
+  });
+
+  // ---------------------------------------------------------------
+  // isAuthError
+  // ---------------------------------------------------------------
+  describe("isAuthError", () => {
+    it("should return true for 401 status", () => {
+      expect(isAuthError({ status: 401, message: "Unauthorized" })).toBe(true);
+    });
+
+    it("should return false for other status codes", () => {
+      expect(isAuthError({ status: 429, message: "Rate limited" })).toBe(false);
+      expect(isAuthError({ status: 500, message: "Server error" })).toBe(false);
+      expect(isAuthError({ status: 403, message: "Forbidden" })).toBe(false);
+    });
+
+    it("should return false for non-objects", () => {
+      expect(isAuthError(null)).toBe(false);
+      expect(isAuthError(undefined)).toBe(false);
+      expect(isAuthError("error")).toBe(false);
+      expect(isAuthError(401)).toBe(false);
+    });
+
+    it("should return false for objects without status property", () => {
+      expect(isAuthError({ message: "no status" })).toBe(false);
+      expect(isAuthError(new Error("plain error"))).toBe(false);
     });
   });
 
@@ -461,6 +490,136 @@ describe("agent-client", () => {
       expect(result).not.toBeNull();
       expect(result!.description).toBe("Generated application");
       expect(result!.relatedApps).toEqual([]);
+    });
+
+    it("should prefer markdown format over embedded JSON", () => {
+      const input = `TITLE: Markdown App
+DESCRIPTION: Built with markdown format
+RELATED: tools/one, tools/two
+
+\`\`\`tsx
+import { useState } from "react";
+export default function App() { return <div>Markdown</div>; }
+\`\`\`
+
+{"title":"JSON App","code":"export default function JSONApp() {}"}`;
+
+      const result = parseGenerationResponse(input, "test/prefer-md");
+
+      expect(result).not.toBeNull();
+      expect(result!.title).toBe("Markdown App");
+      expect(result!.description).toBe("Built with markdown format");
+      expect(result!.code).toContain("Markdown");
+      expect(result!.relatedApps).toEqual(["tools/one", "tools/two"]);
+    });
+  });
+
+  // ---------------------------------------------------------------
+  // parseMarkdownResponse
+  // ---------------------------------------------------------------
+  describe("parseMarkdownResponse", () => {
+    it("should parse response with all fields present", () => {
+      const input = `TITLE: My Counter
+DESCRIPTION: A click counter with animations
+RELATED: tools/timer, games/clicker, tools/scoreboard
+
+\`\`\`tsx
+import { useState } from "react";
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  return <div>{count}</div>;
+}
+\`\`\``;
+
+      const result = parseMarkdownResponse(input, "tools/counter");
+
+      expect(result).toEqual({
+        title: "My Counter",
+        description: "A click counter with animations",
+        code: 'import { useState } from "react";\nexport default function Counter() {\n  const [count, setCount] = useState(0);\n  return <div>{count}</div>;\n}',
+        relatedApps: ["tools/timer", "games/clicker", "tools/scoreboard"],
+      });
+    });
+
+    it("should handle missing RELATED line", () => {
+      const input = `TITLE: Simple App
+DESCRIPTION: Just a simple app
+
+\`\`\`tsx
+export default function App() { return <div>Hello</div>; }
+\`\`\``;
+
+      const result = parseMarkdownResponse(input, "test/simple");
+
+      expect(result).not.toBeNull();
+      expect(result!.title).toBe("Simple App");
+      expect(result!.relatedApps).toEqual([]);
+    });
+
+    it("should derive title from slug when TITLE line is missing", () => {
+      const input = `DESCRIPTION: No title here
+
+\`\`\`tsx
+export default function App() { return <div/>; }
+\`\`\``;
+
+      const result = parseMarkdownResponse(input, "tools/my-cool-widget");
+
+      expect(result).not.toBeNull();
+      expect(result!.title).toBe("my cool widget");
+    });
+
+    it("should return null when code is missing export default", () => {
+      const input = `TITLE: Incomplete
+DESCRIPTION: Missing export
+
+\`\`\`tsx
+import { useState } from "react";
+function App() { return <div/>; }
+\`\`\``;
+
+      const result = parseMarkdownResponse(input, "test/incomplete");
+
+      expect(result).toBeNull();
+    });
+
+    it("should return null when there is no tsx/jsx fence", () => {
+      const input = `TITLE: No Code
+DESCRIPTION: Just metadata
+RELATED: a, b, c`;
+
+      const result = parseMarkdownResponse(input, "test/no-fence");
+
+      expect(result).toBeNull();
+    });
+
+    it("should handle PLAN line without breaking", () => {
+      const input = `PLAN: useState for items. Card layout.
+TITLE: Planner
+DESCRIPTION: A planning app
+RELATED: tools/todo
+
+\`\`\`tsx
+export default function Planner() { return <div>Plan</div>; }
+\`\`\``;
+
+      const result = parseMarkdownResponse(input, "tools/planner");
+
+      expect(result).not.toBeNull();
+      expect(result!.title).toBe("Planner");
+    });
+
+    it("should handle jsx fence language", () => {
+      const input = `TITLE: JSX App
+
+\`\`\`jsx
+export default function App() { return <div>JSX</div>; }
+\`\`\``;
+
+      const result = parseMarkdownResponse(input, "test/jsx");
+
+      expect(result).not.toBeNull();
+      expect(result!.code).toContain("JSX");
     });
   });
 });

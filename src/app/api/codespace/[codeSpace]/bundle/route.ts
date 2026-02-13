@@ -1,4 +1,4 @@
-import { getBundleCache, setBundleCache } from "@/lib/codespace/bundle-cache";
+import { deleteBundleCache, getBundleCache, setBundleCache } from "@/lib/codespace/bundle-cache";
 import { buildBundleHtml } from "@/lib/codespace/bundle-template";
 import { bundleCodespace } from "@/lib/codespace/bundler";
 import { CORS_HEADERS, corsOptions } from "@/lib/codespace/cors";
@@ -35,6 +35,7 @@ function isTransientError(error: unknown): boolean {
  *
  * Query params:
  *   ?download=true — returns the HTML as a downloadable file
+ *   ?rebuild=true  — force re-transpile and rebuild, bypassing cache
  */
 export async function GET(
   request: NextRequest,
@@ -49,6 +50,7 @@ export async function GET(
   }
 
   const { codeSpace } = params;
+  const rebuild = request.nextUrl.searchParams.get("rebuild") === "true";
 
   // Load session
   const { data: session, error: sessionError } = await tryCatch(
@@ -74,9 +76,10 @@ export async function GET(
     );
   }
 
-  // Auto-transpile if session has code but no transpiled output
+  // Auto-transpile if session has code but no transpiled output.
+  // On rebuild, always re-transpile from source code.
   let { transpiled } = session;
-  if (!transpiled && session.code) {
+  if ((!transpiled || rebuild) && session.code) {
     const { data: result, error: transpileError } = await tryCatch(
       transpileCode(session.code),
     );
@@ -100,14 +103,23 @@ export async function GET(
     });
   }
 
-  // Check cache
+  // Check cache (skip on rebuild)
   const sessionHash = session.hash || codeSpace;
-  const { data: cached } = await tryCatch(
-    getBundleCache(codeSpace, sessionHash),
-  );
 
-  if (cached) {
-    return bundleResponse(cached, codeSpace, request);
+  if (rebuild) {
+    deleteBundleCache(codeSpace, sessionHash).catch((err) =>
+      console.error(`[Codespace Bundle] Failed to delete cache on rebuild:`, err),
+    );
+  }
+
+  if (!rebuild) {
+    const { data: cached } = await tryCatch(
+      getBundleCache(codeSpace, sessionHash),
+    );
+
+    if (cached) {
+      return bundleResponse(cached, codeSpace, request);
+    }
   }
 
   // Build bundle with timeout
@@ -125,10 +137,16 @@ export async function GET(
       `[Codespace Bundle] Build failed for "${codeSpace}":`,
       bundleError,
     );
-    const status = bundleError.message?.includes("timed out") ? 504 : 500;
+
+    const message = bundleError instanceof Error ? bundleError.message : String(bundleError);
+    const isTimeout = message.includes("timed out");
+
     return new Response(
-      status === 504 ? "Bundle build timed out" : "Bundle build failed",
-      { status, headers: { ...CORS_HEADERS, "Content-Type": "text/plain" } },
+      isTimeout ? "Bundle build timed out" : "Bundle build failed",
+      {
+        status: isTimeout ? 504 : 500,
+        headers: { ...CORS_HEADERS, "Content-Type": "text/plain" },
+      },
     );
   }
 
