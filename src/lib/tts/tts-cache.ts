@@ -12,11 +12,12 @@ const TTS_KEY_PREFIX = "tts";
  * Generate a cache key for TTS audio based on normalized text content.
  * Uses SHA-256 hash for consistent, compact keys.
  */
-export function generateTTSCacheKey(text: string): string {
+export function generateTTSCacheKey(text: string, voiceId?: string): string {
   const normalized = text.trim().toLowerCase();
+  const hashInput = voiceId ? `${normalized}::${voiceId}` : normalized;
   const hash = crypto
     .createHash("sha256")
-    .update(normalized)
+    .update(hashInput)
     .digest("hex");
 
   return `${TTS_KEY_PREFIX}/${hash}.mp3`;
@@ -28,8 +29,9 @@ export function generateTTSCacheKey(text: string): string {
  */
 export async function getCachedTTSUrl(
   text: string,
+  voiceId?: string,
 ): Promise<string | null> {
-  const key = generateTTSCacheKey(text);
+  const key = generateTTSCacheKey(text, voiceId);
 
   const { data: metadata, error } = await tryCatch(getAudioMetadata(key));
 
@@ -61,8 +63,9 @@ export async function getCachedTTSUrl(
 export async function cacheTTSAudio(
   text: string,
   buffer: Buffer,
+  voiceId?: string,
 ): Promise<string | null> {
-  const key = generateTTSCacheKey(text);
+  const key = generateTTSCacheKey(text, voiceId);
 
   const { data: result, error } = await tryCatch(
     uploadAudioToR2({

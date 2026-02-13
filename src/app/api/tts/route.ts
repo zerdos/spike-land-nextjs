@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { text } = body as { text?: string; };
+  const { text, voiceId } = body as { text?: string; voiceId?: string; };
   if (!text || typeof text !== "string" || text.trim().length === 0) {
     return NextResponse.json(
       { error: "Text is required and must be a non-empty string" },
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   }
 
   // Check R2 cache first
-  const { data: cachedUrl } = await tryCatch(getCachedTTSUrl(text));
+  const { data: cachedUrl } = await tryCatch(getCachedTTSUrl(text, voiceId));
   if (cachedUrl) {
     return NextResponse.json({ url: cachedUrl });
   }
