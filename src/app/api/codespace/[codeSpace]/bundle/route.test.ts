@@ -3,12 +3,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mock all dependencies
 vi.mock("@/lib/codespace/bundle-cache", () => ({
   deleteBundleCache: vi.fn(),
+  deleteBundleFallbackCache: vi.fn(),
   getBundleCache: vi.fn(),
+  getBundleFallbackCache: vi.fn(),
   setBundleCache: vi.fn(),
+  setBundleFallbackCache: vi.fn(),
 }));
 
 vi.mock("@/lib/codespace/bundle-template", () => ({
   buildBundleHtml: vi.fn(),
+}));
+
+vi.mock("@/lib/codespace/html-template", () => ({
+  buildEmbedHtml: vi.fn(),
 }));
 
 vi.mock("@/lib/codespace/bundler", () => ({
@@ -24,9 +31,17 @@ vi.mock("@/lib/codespace/transpile", () => ({
   transpileCode: vi.fn(),
 }));
 
-import { deleteBundleCache, getBundleCache, setBundleCache } from "@/lib/codespace/bundle-cache";
+import {
+  deleteBundleCache,
+  deleteBundleFallbackCache,
+  getBundleCache,
+  getBundleFallbackCache,
+  setBundleCache,
+  setBundleFallbackCache,
+} from "@/lib/codespace/bundle-cache";
 import { buildBundleHtml } from "@/lib/codespace/bundle-template";
 import { bundleCodespace } from "@/lib/codespace/bundler";
+import { buildEmbedHtml } from "@/lib/codespace/html-template";
 import {
   getOrCreateSession,
   upsertSession,
@@ -37,10 +52,14 @@ import { GET, OPTIONS } from "./route";
 const mockGetOrCreateSession = vi.mocked(getOrCreateSession);
 const mockTranspileCode = vi.mocked(transpileCode);
 const mockDeleteBundleCache = vi.mocked(deleteBundleCache);
+const mockDeleteBundleFallbackCache = vi.mocked(deleteBundleFallbackCache);
 const mockGetBundleCache = vi.mocked(getBundleCache);
+const mockGetBundleFallbackCache = vi.mocked(getBundleFallbackCache);
 const mockSetBundleCache = vi.mocked(setBundleCache);
+const mockSetBundleFallbackCache = vi.mocked(setBundleFallbackCache);
 const mockBundleCodespace = vi.mocked(bundleCodespace);
 const mockBuildBundleHtml = vi.mocked(buildBundleHtml);
+const mockBuildEmbedHtml = vi.mocked(buildEmbedHtml);
 const mockUpsertSession = vi.mocked(upsertSession);
 
 function makeRequest(url = "http://localhost/api/codespace/test-cs/bundle") {
@@ -70,10 +89,14 @@ describe("GET /api/codespace/[codeSpace]/bundle", () => {
     vi.clearAllMocks();
     mockGetOrCreateSession.mockResolvedValue(baseSession);
     mockGetBundleCache.mockResolvedValue(null);
+    mockGetBundleFallbackCache.mockResolvedValue(null);
     mockBundleCodespace.mockResolvedValue({ js: "bundled()", css: "body{}" });
     mockBuildBundleHtml.mockReturnValue("<html>bundle</html>");
+    mockBuildEmbedHtml.mockReturnValue("<html><body></body></html>");
     mockSetBundleCache.mockResolvedValue(undefined);
+    mockSetBundleFallbackCache.mockResolvedValue(undefined);
     mockDeleteBundleCache.mockResolvedValue(undefined);
+    mockDeleteBundleFallbackCache.mockResolvedValue(undefined);
     mockUpsertSession.mockResolvedValue(baseSession as ReturnType<typeof upsertSession> extends Promise<infer T> ? T : never);
   });
 
@@ -105,8 +128,8 @@ describe("GET /api/codespace/[codeSpace]/bundle", () => {
   it("sets Content-Security-Policy header", async () => {
     const response = await GET(makeRequest(), makeContext());
     const csp = response.headers.get("Content-Security-Policy");
-    expect(csp).toContain("script-src 'unsafe-inline'");
-    expect(csp).toContain("connect-src https://esm.sh");
+    expect(csp).toContain("script-src 'unsafe-inline' 'wasm-unsafe-eval'");
+    expect(csp).toContain("connect-src *");
   });
 
   it("adds Content-Disposition for download=true", async () => {
@@ -169,7 +192,7 @@ describe("GET /api/codespace/[codeSpace]/bundle", () => {
     expect(response.headers.get("Retry-After")).toBe("5");
   });
 
-  it("returns 504 on build timeout", async () => {
+  it("returns 200 with fallback HTML on build timeout", async () => {
     mockBundleCodespace.mockImplementation(
       () =>
         new Promise((_, reject) =>
@@ -181,13 +204,42 @@ describe("GET /api/codespace/[codeSpace]/bundle", () => {
     );
 
     const response = await GET(makeRequest(), makeContext());
-    expect(response.status).toBe(504);
+    expect(response.status).toBe(200);
+    expect(mockBuildEmbedHtml).toHaveBeenCalled();
+    const text = await response.text();
+    expect(text).toContain("spike-land-bundle");
   });
 
-  it("returns 500 on build failure", async () => {
+  it("returns 200 with fallback HTML on build failure", async () => {
     mockBundleCodespace.mockRejectedValue(new Error("Build failed"));
     const response = await GET(makeRequest(), makeContext());
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(200);
+    expect(mockBuildEmbedHtml).toHaveBeenCalledWith(
+      expect.objectContaining({ codeSpace: "test-cs" }),
+    );
+  });
+
+  it("uses fallback cache on repeated build failures", async () => {
+    mockBundleCodespace.mockRejectedValue(new Error("Build failed"));
+    mockGetBundleFallbackCache.mockResolvedValue("<html>cached-fallback</html>");
+
+    const response = await GET(makeRequest(), makeContext());
+    expect(response.status).toBe(200);
+    const text = await response.text();
+    expect(text).toBe("<html>cached-fallback</html>");
+    // Should not rebuild embed HTML when fallback cache exists
+    expect(mockBuildEmbedHtml).not.toHaveBeenCalled();
+  });
+
+  it("caches fallback HTML after build failure", async () => {
+    mockBundleCodespace.mockRejectedValue(new Error("Build failed"));
+    await GET(makeRequest(), makeContext());
+    await new Promise((r) => setTimeout(r, 10));
+    expect(mockSetBundleFallbackCache).toHaveBeenCalledWith(
+      "test-cs",
+      "abc123",
+      expect.any(String),
+    );
   });
 
   it("caches bundle in background after build", async () => {
@@ -207,10 +259,14 @@ describe("GET /api/codespace/[codeSpace]/bundle?rebuild=true", () => {
     vi.clearAllMocks();
     mockGetOrCreateSession.mockResolvedValue(baseSession);
     mockGetBundleCache.mockResolvedValue(null);
+    mockGetBundleFallbackCache.mockResolvedValue(null);
     mockBundleCodespace.mockResolvedValue({ js: "bundled()", css: "body{}" });
     mockBuildBundleHtml.mockReturnValue("<html>bundle</html>");
+    mockBuildEmbedHtml.mockReturnValue("<html><body></body></html>");
     mockSetBundleCache.mockResolvedValue(undefined);
+    mockSetBundleFallbackCache.mockResolvedValue(undefined);
     mockDeleteBundleCache.mockResolvedValue(undefined);
+    mockDeleteBundleFallbackCache.mockResolvedValue(undefined);
     mockUpsertSession.mockResolvedValue(baseSession as ReturnType<typeof upsertSession> extends Promise<infer T> ? T : never);
     mockTranspileCode.mockResolvedValue("re-transpiled code");
   });
@@ -233,6 +289,15 @@ describe("GET /api/codespace/[codeSpace]/bundle?rebuild=true", () => {
 
     // Old cache should be deleted
     expect(mockDeleteBundleCache).toHaveBeenCalledWith("test-cs", "abc123");
+  });
+
+  it("clears fallback cache on rebuild", async () => {
+    const req = makeRequest(
+      "http://localhost/api/codespace/test-cs/bundle?rebuild=true",
+    );
+    await GET(req, makeContext());
+    await new Promise((r) => setTimeout(r, 10));
+    expect(mockDeleteBundleFallbackCache).toHaveBeenCalledWith("test-cs", "abc123");
   });
 
   it("force re-transpiles from source code on rebuild", async () => {

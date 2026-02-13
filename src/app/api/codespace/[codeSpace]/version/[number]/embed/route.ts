@@ -73,7 +73,7 @@ export async function GET(
       // Versions are immutable -- cache for 1 year
       "Cache-Control": "public, max-age=31536000, immutable",
       "Content-Security-Policy":
-        "default-src 'self'; script-src 'self' 'unsafe-inline' https://esm.sh data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src * data: blob:; connect-src *;",
+        "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://esm.sh data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src * data: blob:; connect-src *;",
     },
   });
 }

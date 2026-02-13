@@ -14,9 +14,12 @@ vi.mock("@/lib/upstash/client", () => ({
 
 import {
   deleteBundleCache,
+  deleteBundleFallbackCache,
   getBundleCache,
+  getBundleFallbackCache,
   getPackageCache,
   setBundleCache,
+  setBundleFallbackCache,
   setPackageCache,
 } from "./bundle-cache";
 
@@ -57,6 +60,39 @@ describe("bundle-cache", () => {
     it("deletes with correct key", async () => {
       await deleteBundleCache("test-cs", "hash123");
       expect(mockDel).toHaveBeenCalledWith("codespace:bundle:test-cs:hash123");
+    });
+  });
+
+  describe("getBundleFallbackCache", () => {
+    it("returns cached fallback HTML on hit", async () => {
+      mockGet.mockResolvedValue("<html>fallback</html>");
+      const result = await getBundleFallbackCache("test-cs", "hash123");
+      expect(result).toBe("<html>fallback</html>");
+      expect(mockGet).toHaveBeenCalledWith("codespace:bundle:test-cs:hash123:fallback");
+    });
+
+    it("returns null on miss", async () => {
+      mockGet.mockResolvedValue(null);
+      const result = await getBundleFallbackCache("test-cs", "hash123");
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("setBundleFallbackCache", () => {
+    it("sets with correct key and 10min TTL", async () => {
+      await setBundleFallbackCache("test-cs", "hash123", "<html>fallback</html>");
+      expect(mockSet).toHaveBeenCalledWith(
+        "codespace:bundle:test-cs:hash123:fallback",
+        "<html>fallback</html>",
+        { ex: 600 },
+      );
+    });
+  });
+
+  describe("deleteBundleFallbackCache", () => {
+    it("deletes with correct key", async () => {
+      await deleteBundleFallbackCache("test-cs", "hash123");
+      expect(mockDel).toHaveBeenCalledWith("codespace:bundle:test-cs:hash123:fallback");
     });
   });
 

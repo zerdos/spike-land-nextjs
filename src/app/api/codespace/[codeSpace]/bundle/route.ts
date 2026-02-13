@@ -1,7 +1,15 @@
-import { deleteBundleCache, getBundleCache, setBundleCache } from "@/lib/codespace/bundle-cache";
+import {
+  deleteBundleCache,
+  deleteBundleFallbackCache,
+  getBundleCache,
+  getBundleFallbackCache,
+  setBundleCache,
+  setBundleFallbackCache,
+} from "@/lib/codespace/bundle-cache";
 import { buildBundleHtml } from "@/lib/codespace/bundle-template";
 import { bundleCodespace } from "@/lib/codespace/bundler";
 import { CORS_HEADERS, corsOptions } from "@/lib/codespace/cors";
+import { buildEmbedHtml } from "@/lib/codespace/html-template";
 import {
   getOrCreateSession,
   upsertSession,
@@ -110,6 +118,9 @@ export async function GET(
     deleteBundleCache(codeSpace, sessionHash).catch((err) =>
       console.error(`[Codespace Bundle] Failed to delete cache on rebuild:`, err),
     );
+    deleteBundleFallbackCache(codeSpace, sessionHash).catch((err) =>
+      console.error(`[Codespace Bundle] Failed to delete fallback cache on rebuild:`, err),
+    );
   }
 
   if (!rebuild) {
@@ -134,20 +145,32 @@ export async function GET(
 
   if (bundleError) {
     console.error(
-      `[Codespace Bundle] Build failed for "${codeSpace}":`,
+      `[Codespace Bundle] Build failed for "${codeSpace}", falling back to embed HTML:`,
       bundleError,
     );
 
-    const message = bundleError instanceof Error ? bundleError.message : String(bundleError);
-    const isTimeout = message.includes("timed out");
-
-    return new Response(
-      isTimeout ? "Bundle build timed out" : "Bundle build failed",
-      {
-        status: isTimeout ? 504 : 500,
-        headers: { ...CORS_HEADERS, "Content-Type": "text/plain" },
-      },
+    // Check fallback cache first
+    const { data: cachedFallback } = await tryCatch(
+      getBundleFallbackCache(codeSpace, sessionHash),
     );
+    if (cachedFallback) {
+      return bundleResponse(cachedFallback, codeSpace, request);
+    }
+
+    // Build fallback using import-map based embed HTML (no esbuild needed)
+    const fallbackHtml = buildFallbackHtml({
+      transpiled,
+      html: session.html || "",
+      css: session.css || "",
+      codeSpace,
+    });
+
+    // Cache fallback with shorter TTL
+    setBundleFallbackCache(codeSpace, sessionHash, fallbackHtml).catch((err) =>
+      console.error(`[Codespace Bundle] Failed to cache fallback:`, err),
+    );
+
+    return bundleResponse(fallbackHtml, codeSpace, request);
   }
 
   const html = buildBundleHtml({
@@ -165,6 +188,59 @@ export async function GET(
   return bundleResponse(html, codeSpace, request);
 }
 
+/**
+ * Build fallback HTML using import-map based embed (no esbuild needed).
+ * Injects the same error-reporting script used by buildBundleHtml so that
+ * LiveAppDisplay error detection still works.
+ */
+function buildFallbackHtml(opts: {
+  transpiled: string;
+  html: string;
+  css: string;
+  codeSpace: string;
+}): string {
+  const html = buildEmbedHtml(opts);
+
+  // Inject error-reporting script before </body> (same as buildBundleHtml)
+  const errorScript = `<script>
+    (function() {
+      var reported = false;
+      var cs = ${JSON.stringify(opts.codeSpace)};
+      function report(msg, stack) {
+        if (reported) return;
+        reported = true;
+        try {
+          parent.postMessage({
+            type: "iframe-error",
+            source: "spike-land-bundle",
+            codeSpace: cs,
+            message: String(msg),
+            stack: stack || ""
+          }, "*");
+        } catch (e) {}
+      }
+      window.onerror = function(msg, url, line, col, err) {
+        report(msg, err && err.stack ? err.stack : url + ":" + line + ":" + col);
+      };
+      window.addEventListener("unhandledrejection", function(ev) {
+        var r = ev.reason;
+        report(
+          r && r.message ? r.message : String(r),
+          r && r.stack ? r.stack : ""
+        );
+      });
+      setTimeout(function() {
+        var el = document.getElementById("embed");
+        if (el && el.children.length === 0) {
+          report("Render timeout: #embed is still empty after 5s");
+        }
+      }, 5000);
+    })();
+    </script>`;
+
+  return html.replace("</body>", `${errorScript}\n</body>`);
+}
+
 function bundleResponse(
   html: string,
   codeSpace: string,
@@ -177,7 +253,7 @@ function bundleResponse(
     "Content-Type": "text/html; charset=utf-8",
     "Cache-Control": "private, max-age=60",
     "Content-Security-Policy":
-      "default-src 'self'; script-src 'unsafe-inline' https://esm.sh; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src * data: blob:; connect-src https://esm.sh;",
+      "default-src 'self' https://testing.spike.land; script-src 'unsafe-inline' 'wasm-unsafe-eval' https://esm.sh https://testing.spike.land data:; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src * data: blob:; connect-src * https://testing.spike.land wss://testing.spike.land;",
   };
 
   if (download) {

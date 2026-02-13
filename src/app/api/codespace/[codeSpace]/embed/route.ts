@@ -83,7 +83,7 @@ export async function GET(
       // The embed HTML uses inline scripts and module imports from esm.sh.
       // Override the parent page's CSP so the iframe content can execute.
       "Content-Security-Policy":
-        "default-src 'self' https://testing.spike.land; script-src 'self' 'unsafe-inline' https://esm.sh https://testing.spike.land data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src * data: blob:; connect-src * https://testing.spike.land wss://testing.spike.land;",
+        "default-src 'self' https://testing.spike.land; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://esm.sh https://testing.spike.land data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src * data: blob:; connect-src * https://testing.spike.land wss://testing.spike.land;",
     },
   });
 }
