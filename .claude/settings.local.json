@@ -39,7 +39,10 @@
       "Bash(yarn test:run:*)",
       "Bash(yarn build:*)",
       "Bash(xargs:*)",
-      "Bash(gh issue list:*)"
+      "Bash(gh issue list:*)",
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(source ~/.secrets)",
+      "Bash(npx tsx:*)"
     ],
     "deny": [],
     "ask": []
