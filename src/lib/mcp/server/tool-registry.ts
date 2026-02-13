@@ -58,6 +58,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   "orbit-workspace": "Orbit workspace listing, connected accounts, and real-time pulse metrics",
   "orbit-inbox": "Social media inbox: list, analyze, reply, escalate, and batch reply across platforms",
   "orbit-relay": "AI response drafts: generate, review, approve/reject, and performance metrics",
+  arena: "AI Prompt Arena: submit prompts, review code, compete on ELO leaderboard",
 };
 
 export class ToolRegistry {

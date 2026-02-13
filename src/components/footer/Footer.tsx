@@ -25,11 +25,12 @@ export function Footer() {
     },
   });
 
-  // Hide footer on my-apps, live, create, orbit (but not orbit-landing), and audio-mixer routes
+  // Hide footer on my-apps, live, create, connect, orbit (but not orbit-landing), and audio-mixer routes
   if (
     pathname?.startsWith("/my-apps") || pathname?.startsWith("/live") ||
     (pathname?.startsWith("/orbit") && !pathname?.startsWith("/orbit-landing")) ||
     pathname?.startsWith("/create") ||
+    pathname?.startsWith("/connect") ||
     pathname?.startsWith("/apps/audio-mixer")
   ) {
     return null;

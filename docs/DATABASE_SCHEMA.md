@@ -2345,6 +2345,62 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
+"arena_challenges" {
+  String id PK
+  String title
+  String description
+  String category
+  ArenaDifficulty difficulty
+  ArenaChallengeStatus status
+  DateTime closesAt "nullable"
+  String createdById FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"arena_submissions" {
+  String id PK
+  String challengeId FK
+  String userId FK
+  String prompt
+  String systemPrompt "nullable"
+  ArenaSubmissionStatus status
+  String generatedCode "nullable"
+  String codespaceId "nullable"
+  String codespaceUrl "nullable"
+  Boolean transpileSuccess "nullable"
+  Int iterations
+  String model "nullable"
+  Int inputTokens
+  Int outputTokens
+  Int cachedTokens
+  Int totalDurationMs "nullable"
+  Float reviewScore "nullable"
+  Int eloChange "nullable"
+  Json errors
+  DateTime createdAt
+  DateTime updatedAt
+}
+"arena_reviews" {
+  String id PK
+  String submissionId FK
+  String reviewerId FK
+  Json bugs
+  Float score
+  Boolean approved
+  String comment "nullable"
+  DateTime createdAt
+}
+"arena_elos" {
+  String id PK
+  String userId FK,UK
+  Int elo
+  Int wins
+  Int losses
+  Int draws
+  Int streak
+  Int bestElo
+  DateTime updatedAt
+}
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
 "campaign_briefs" }o--o| "workspaces" : workspace
@@ -2575,6 +2631,12 @@ erDiagram
 "vault_secrets" }o--|| "users" : user
 "registered_tools" }o--|| "users" : user
 "workspace_configs" |o--|| "users" : user
+"arena_challenges" }o--|| "users" : createdBy
+"arena_submissions" }o--|| "arena_challenges" : challenge
+"arena_submissions" }o--|| "users" : user
+"arena_reviews" }o--|| "arena_submissions" : submission
+"arena_reviews" }o--|| "users" : reviewer
+"arena_elos" |o--|| "users" : user
 ```
 
 ### `users`
@@ -5516,4 +5578,72 @@ Properties as follows:
 - `settings`:
 - `integrations`:
 - `createdAt`:
+- `updatedAt`:
+
+### `arena_challenges`
+
+Properties as follows:
+
+- `id`:
+- `title`:
+- `description`:
+- `category`:
+- `difficulty`:
+- `status`:
+- `closesAt`:
+- `createdById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `arena_submissions`
+
+Properties as follows:
+
+- `id`:
+- `challengeId`:
+- `userId`:
+- `prompt`:
+- `systemPrompt`:
+- `status`:
+- `generatedCode`:
+- `codespaceId`:
+- `codespaceUrl`:
+- `transpileSuccess`:
+- `iterations`:
+- `model`:
+- `inputTokens`:
+- `outputTokens`:
+- `cachedTokens`:
+- `totalDurationMs`:
+- `reviewScore`:
+- `eloChange`:
+- `errors`:
+- `createdAt`:
+- `updatedAt`:
+
+### `arena_reviews`
+
+Properties as follows:
+
+- `id`:
+- `submissionId`:
+- `reviewerId`:
+- `bugs`:
+- `score`:
+- `approved`:
+- `comment`:
+- `createdAt`:
+
+### `arena_elos`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `elo`:
+- `wins`:
+- `losses`:
+- `draws`:
+- `streak`:
+- `bestElo`:
 - `updatedAt`:

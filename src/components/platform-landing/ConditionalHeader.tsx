@@ -14,6 +14,7 @@ const EXCLUDED_PATHS = [
   "/auth",
   "/live",
   "/create",
+  "/connect",
   "/apps/audio-mixer",
 ];
 

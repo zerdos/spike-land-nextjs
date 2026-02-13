@@ -19,6 +19,7 @@ import { registerAppsTools } from "./tools/apps";
 import { registerOrbitWorkspaceTools } from "./tools/orbit-workspace";
 import { registerOrbitInboxTools } from "./tools/orbit-inbox";
 import { registerOrbitRelayTools } from "./tools/orbit-relay";
+import { registerArenaTools } from "./tools/arena";
 
 /**
  * Create a fully configured MCP server for a specific user.
@@ -78,6 +79,9 @@ export function createMcpServer(userId: string): McpServer {
 
   // Orbit relay tools (discoverable)
   registerOrbitRelayTools(registry, userId);
+
+  // Arena tools (discoverable)
+  registerArenaTools(registry, userId);
 
   return mcpServer;
 }
