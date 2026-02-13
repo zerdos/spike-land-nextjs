@@ -89,6 +89,52 @@ describe("IframeErrorBridge", () => {
     expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledTimes(1);
   });
 
+  it("should report error from sandboxed iframe with null origin and spike-land-bundle source", () => {
+    render(<IframeErrorBridge />);
+
+    const handler = addEventListenerSpy.mock.calls.find(
+      (call) => call[0] === "message",
+    )![1] as EventListener;
+
+    handler(
+      new MessageEvent("message", {
+        origin: "null",
+        data: {
+          type: "iframe-error",
+          source: "spike-land-bundle",
+          message: "React error #130",
+          codeSpace: "test-cs",
+        },
+      }),
+    );
+
+    expect(consoleCaptureModule.reportErrorBoundary).toHaveBeenCalledTimes(1);
+    const [error] = (
+      consoleCaptureModule.reportErrorBoundary as ReturnType<typeof vi.fn>
+    ).mock.calls[0]!;
+    expect(error.message).toBe("React error #130");
+  });
+
+  it("should ignore null-origin messages without spike-land-bundle source", () => {
+    render(<IframeErrorBridge />);
+
+    const handler = addEventListenerSpy.mock.calls.find(
+      (call) => call[0] === "message",
+    )![1] as EventListener;
+
+    handler(
+      new MessageEvent("message", {
+        origin: "null",
+        data: {
+          type: "iframe-error",
+          message: "Spoofed error",
+        },
+      }),
+    );
+
+    expect(consoleCaptureModule.reportErrorBoundary).not.toHaveBeenCalled();
+  });
+
   it("should ignore messages from disallowed origins", () => {
     render(<IframeErrorBridge />);
 

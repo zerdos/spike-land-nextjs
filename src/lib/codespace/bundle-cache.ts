@@ -25,6 +25,17 @@ export async function setBundleCache(
 }
 
 /**
+ * Delete cached bundle HTML for a codespace session (used by rebuild flow).
+ */
+export async function deleteBundleCache(
+  codeSpace: string,
+  sessionHash: string,
+): Promise<void> {
+  const key = `codespace:bundle:${codeSpace}:${sessionHash}`;
+  await redis.del(key);
+}
+
+/**
  * Get cached npm package content by URL hash.
  */
 export async function getPackageCache(

@@ -27,6 +27,9 @@ vi.mock("next/link", () => ({
 
 // Mock lucide-react icons as simple spans with data-testid
 vi.mock("lucide-react", () => ({
+  AlertTriangle: (props: Record<string, unknown>) => (
+    <span data-testid="icon-alert-triangle" className={props["className"] as string} />
+  ),
   ArrowLeft: (props: Record<string, unknown>) => (
     <span data-testid="icon-arrow-left" className={props["className"] as string} />
   ),
@@ -200,6 +203,137 @@ describe("LiveAppDisplay", () => {
     expect(sandbox).toContain("allow-scripts");
     expect(sandbox).toContain("allow-popups");
     expect(sandbox).toContain("allow-forms");
+  });
+
+  it("auto-rebuilds on first iframe error message", () => {
+    render(<LiveAppDisplay {...defaultProps} />);
+
+    // Simulate iframe load
+    const iframe = screen.getByTitle("My Test App");
+    act(() => {
+      iframe.dispatchEvent(new Event("load"));
+    });
+
+    // Simulate error postMessage from bundle iframe
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: {
+            type: "iframe-error",
+            source: "spike-land-bundle",
+            codeSpace: "abc-123",
+            message: "React error #130",
+          },
+        }),
+      );
+    });
+
+    // After first error, should switch to rebuild src
+    const iframeAfter = screen.getByTitle("My Test App");
+    expect(iframeAfter).toHaveAttribute(
+      "src",
+      "/api/codespace/abc-123/bundle?rebuild=true",
+    );
+  });
+
+  it("shows error UI after rebuild also fails", () => {
+    render(<LiveAppDisplay {...defaultProps} />);
+
+    // Simulate first error -> triggers rebuild
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: {
+            type: "iframe-error",
+            source: "spike-land-bundle",
+            codeSpace: "abc-123",
+            message: "React error #130",
+          },
+        }),
+      );
+    });
+
+    // Simulate second error (rebuild also failed)
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: {
+            type: "iframe-error",
+            source: "spike-land-bundle",
+            codeSpace: "abc-123",
+            message: "Still broken",
+          },
+        }),
+      );
+    });
+
+    // Error UI should be shown
+    expect(
+      screen.getByText("This app failed to render. The bundle may contain errors."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Try Again")).toBeInTheDocument();
+  });
+
+  it("ignores error messages from other codespaces", () => {
+    render(<LiveAppDisplay {...defaultProps} />);
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: {
+            type: "iframe-error",
+            source: "spike-land-bundle",
+            codeSpace: "different-codespace",
+            message: "Not my error",
+          },
+        }),
+      );
+    });
+
+    // Should still show normal iframe, not rebuild src
+    const iframe = screen.getByTitle("My Test App");
+    expect(iframe).toHaveAttribute("src", "/api/codespace/abc-123/bundle");
+  });
+
+  it("Try Again button resets error state", async () => {
+    const user = userEvent.setup();
+    render(<LiveAppDisplay {...defaultProps} />);
+
+    // Trigger first + second error to get error UI
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: {
+            type: "iframe-error",
+            source: "spike-land-bundle",
+            codeSpace: "abc-123",
+            message: "Error 1",
+          },
+        }),
+      );
+    });
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: {
+            type: "iframe-error",
+            source: "spike-land-bundle",
+            codeSpace: "abc-123",
+            message: "Error 2",
+          },
+        }),
+      );
+    });
+
+    // Click "Try Again"
+    await user.click(screen.getByText("Try Again"));
+
+    // Error UI should be gone, iframe should be back to normal src
+    expect(
+      screen.queryByText("This app failed to render. The bundle may contain errors."),
+    ).not.toBeInTheDocument();
+    const iframe = screen.getByTitle("My Test App");
+    expect(iframe).toHaveAttribute("src", "/api/codespace/abc-123/bundle");
   });
 
   it("auto-refreshes when refreshCounter changes", () => {

@@ -1,9 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Download, ExternalLink, RefreshCw, Sparkles } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Download, ExternalLink, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 
 // Import the context directly to safely check without throwing
 import { VibeCodeContext } from "./vibe-code-provider";
@@ -29,11 +29,49 @@ export function LiveAppDisplay({
 }: LiveAppDisplayProps) {
   const [iframeKey, setIframeKey] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [isRebuilding, setIsRebuilding] = useState(false);
+  const rebuildAttemptedRef = useRef(false);
+  const [useRebuildSrc, setUseRebuildSrc] = useState(false);
 
   const handleRefresh = useCallback(() => {
     setLoading(true);
+    setHasError(false);
+    setIsRebuilding(false);
+    rebuildAttemptedRef.current = false;
+    setUseRebuildSrc(false);
     setIframeKey((prev) => prev + 1);
   }, []);
+
+  // Listen for error messages from the sandboxed bundle iframe
+  useEffect(() => {
+    function handleMessage(event: MessageEvent): void {
+      if (
+        event.data?.type !== "iframe-error"
+        || event.data?.source !== "spike-land-bundle"
+        || event.data?.codeSpace !== codespaceId
+      ) {
+        return;
+      }
+
+      if (!rebuildAttemptedRef.current) {
+        // First failure: auto-rebuild
+        rebuildAttemptedRef.current = true;
+        setIsRebuilding(true);
+        setLoading(true);
+        setUseRebuildSrc(true);
+        setIframeKey((prev) => prev + 1);
+      } else {
+        // Rebuild also failed: show error UI
+        setIsRebuilding(false);
+        setLoading(false);
+        setHasError(true);
+      }
+    }
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [codespaceId]);
 
   // Auto-refresh iframe when vibe-code edits update the code
   const refreshCounter = useVibeCodeRefreshCounter();
@@ -43,7 +81,7 @@ export function LiveAppDisplay({
     }
   }, [refreshCounter, handleRefresh]);
 
-  const iframeSrc = `/api/codespace/${codespaceId}/bundle`;
+  const iframeSrc = `/api/codespace/${codespaceId}/bundle${useRebuildSrc ? "?rebuild=true" : ""}`;
 
   return (
     <div className={cn("flex flex-col h-[calc(100vh-4rem)] w-full", className)}>
@@ -106,9 +144,31 @@ export function LiveAppDisplay({
       <div className="flex-1 relative bg-muted/20">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10">
-            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+              {isRebuilding && (
+                <span className="text-sm text-muted-foreground">Rebuilding app...</span>
+              )}
+            </div>
           </div>
         )}
+
+        {hasError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/90 backdrop-blur-sm z-20">
+            <AlertTriangle className="w-10 h-10 text-destructive" />
+            <p className="text-sm text-muted-foreground text-center max-w-xs">
+              This app failed to render. The bundle may contain errors.
+            </p>
+            <button
+              onClick={handleRefresh}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Try Again
+            </button>
+          </div>
+        )}
+
         <iframe
           key={iframeKey}
           src={iframeSrc}
