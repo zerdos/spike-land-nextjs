@@ -131,7 +131,7 @@ export default function VibeNexus({
         </div>
 
         {/* Left resize handle */}
-        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
+        {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
         <div
           role="separator"
           aria-orientation="vertical"
@@ -155,6 +155,7 @@ export default function VibeNexus({
             if (!resizing) e.currentTarget.style.background = "transparent";
           }}
         />
+        {/* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
 
         {/* Center: Preview or Timeline */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
@@ -174,7 +175,7 @@ export default function VibeNexus({
         </div>
 
         {/* Right resize handle */}
-        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
+        {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
         <div
           role="separator"
           aria-orientation="vertical"
@@ -198,6 +199,7 @@ export default function VibeNexus({
             if (!resizing) e.currentTarget.style.background = "transparent";
           }}
         />
+        {/* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
 
         {/* Right: Pulse monitors */}
         <div
