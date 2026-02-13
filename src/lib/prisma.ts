@@ -49,6 +49,7 @@ const prismaClientSingleton = () => {
 
   const adapter = new PrismaPg({
     connectionString,
+    connectionTimeoutMillis: 5_000,
     ssl: process.env.NODE_ENV === "production" ? true : undefined,
   });
   return new PrismaClient({
