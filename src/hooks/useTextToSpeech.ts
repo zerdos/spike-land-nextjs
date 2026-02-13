@@ -6,7 +6,7 @@ export type TTSState = "idle" | "loading" | "playing" | "error";
 
 interface UseTextToSpeechReturn {
   state: TTSState;
-  play: (text: string) => Promise<void>;
+  play: (text: string, voiceId?: string) => Promise<void>;
   stop: () => void;
 }
 
@@ -40,7 +40,7 @@ export function useTextToSpeech(): UseTextToSpeechReturn {
     }
   }, []);
 
-  const play = useCallback(async (text: string) => {
+  const play = useCallback(async (text: string, voiceId?: string) => {
     // Stop any current playback
     if (audioRef.current) {
       audioRef.current.pause();
@@ -51,13 +51,14 @@ export function useTextToSpeech(): UseTextToSpeechReturn {
     setState("loading");
 
     try {
-      let url = urlCache.get(text);
+      const cacheKey = voiceId ? `${text}::${voiceId}` : text;
+      let url = urlCache.get(cacheKey);
 
       if (!url) {
         const response = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify({ text, ...(voiceId && { voiceId }) }),
         });
 
         if (!response.ok) {
@@ -75,7 +76,7 @@ export function useTextToSpeech(): UseTextToSpeechReturn {
         }
 
         if (url) {
-          urlCache.set(text, url);
+          urlCache.set(cacheKey, url);
         }
       }
 

@@ -55,6 +55,31 @@ describe("tts-cache", () => {
       const key2 = generateTTSCacheKey("Same text");
       expect(key1).toBe(key2);
     });
+
+    it("should produce different keys when voiceId is provided", () => {
+      const keyWithout = generateTTSCacheKey("Hello");
+      const keyWith = generateTTSCacheKey("Hello", "voice-1");
+      expect(keyWithout).not.toBe(keyWith);
+    });
+
+    it("should produce different keys for different voiceIds", () => {
+      const keyA = generateTTSCacheKey("Hello", "a");
+      const keyB = generateTTSCacheKey("Hello", "b");
+      expect(keyA).not.toBe(keyB);
+    });
+
+    it("should use text::voiceId format for hashing when voiceId provided", () => {
+      const text = "test input";
+      const voiceId = "my-voice";
+      const normalized = text.trim().toLowerCase();
+      const expectedHash = crypto
+        .createHash("sha256")
+        .update(`${normalized}::${voiceId}`)
+        .digest("hex");
+
+      const key = generateTTSCacheKey(text, voiceId);
+      expect(key).toBe(`tts/${expectedHash}.mp3`);
+    });
   });
 
   describe("getCachedTTSUrl", () => {
@@ -118,6 +143,22 @@ describe("tts-cache", () => {
       await expect(getCachedTTSUrl("Hello")).rejects.toThrow(
         "URL config missing",
       );
+    });
+
+    it("should pass voiceId to generateTTSCacheKey", async () => {
+      vi.mocked(getAudioMetadata).mockResolvedValue({
+        key: "tts/voice-key.mp3",
+        size: 512,
+      });
+      vi.mocked(getAudioPublicUrl).mockReturnValue(
+        "https://cdn.example.com/tts/voice-key.mp3",
+      );
+
+      await getCachedTTSUrl("Hello", "custom-voice");
+
+      const expectedKey = generateTTSCacheKey("Hello", "custom-voice");
+      expect(getAudioMetadata).toHaveBeenCalledWith(expectedKey);
+      expect(getAudioPublicUrl).toHaveBeenCalledWith(expectedKey);
     });
 
     it("should return null when getAudioPublicUrl returns a rejecting thenable", async () => {
@@ -224,6 +265,23 @@ describe("tts-cache", () => {
       // generatedAt should be a valid ISO date string
       expect(new Date(call.metadata!["generatedAt"]!).toISOString()).toBe(
         call.metadata!["generatedAt"],
+      );
+    });
+
+    it("should pass voiceId to generateTTSCacheKey", async () => {
+      const buffer = Buffer.from("audio data");
+      vi.mocked(uploadAudioToR2).mockResolvedValue({
+        success: true,
+        key: "tts/voice-hash.mp3",
+        url: "https://cdn.example.com/tts/voice-hash.mp3",
+        sizeBytes: buffer.length,
+      });
+
+      await cacheTTSAudio("Hello world", buffer, "custom-voice");
+
+      const expectedKey = generateTTSCacheKey("Hello world", "custom-voice");
+      expect(vi.mocked(uploadAudioToR2).mock.calls[0]![0].key).toBe(
+        expectedKey,
       );
     });
 

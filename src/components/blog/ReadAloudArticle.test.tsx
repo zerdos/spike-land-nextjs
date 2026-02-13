@@ -31,10 +31,10 @@ let audioInstances: MockAudioClass[] = [];
 vi.stubGlobal("Audio", MockAudioClass);
 
 // Helper to render with article content
-function renderWithArticle(paragraphs: string[]) {
+function renderWithArticle(paragraphs: string[], voiceId?: string) {
   return render(
     <div>
-      <ReadAloudArticle />
+      <ReadAloudArticle voiceId={voiceId} />
       <div data-article-content>
         {paragraphs.map((text, i) => (
           <p key={i}>{text}</p>
@@ -632,5 +632,42 @@ describe("ReadAloudArticle", () => {
 
     // Emit error after unmount - should not throw
     audio.emit("error");
+  });
+
+  it("includes voiceId in fetch body when voiceId prop is provided", async () => {
+    const user = userEvent.setup();
+
+    renderWithArticle(
+      ["This paragraph is long enough to test voiceId forwarding."],
+      "custom-voice-id",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Listen to article" }));
+
+    await waitFor(() => {
+      expect(vi.mocked(fetch)).toHaveBeenCalled();
+    });
+
+    const fetchCall = vi.mocked(fetch).mock.calls[0]!;
+    const body = JSON.parse(fetchCall[1]?.body as string);
+    expect(body.voiceId).toBe("custom-voice-id");
+  });
+
+  it("does not include voiceId in fetch body when voiceId prop is not provided", async () => {
+    const user = userEvent.setup();
+
+    renderWithArticle([
+      "This paragraph is long enough for no-voiceId test check.",
+    ]);
+
+    await user.click(screen.getByRole("button", { name: "Listen to article" }));
+
+    await waitFor(() => {
+      expect(vi.mocked(fetch)).toHaveBeenCalled();
+    });
+
+    const fetchCall = vi.mocked(fetch).mock.calls[0]!;
+    const body = JSON.parse(fetchCall[1]?.body as string);
+    expect(body.voiceId).toBeUndefined();
   });
 });

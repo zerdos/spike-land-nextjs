@@ -6,3 +6,4 @@ export * from "./RecursiveZoomDemo";
 export * from "./AgentLoopDemo";
 export * from "./ModelCascadeDemo";
 export * from "./BayesianConfidenceDemo";
+export * from "./DisciplineCardShowcase";

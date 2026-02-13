@@ -570,9 +570,13 @@ export const mdxComponents: MDXComponents = {
     ssr: false,
     loading: () => <div className="w-full aspect-video bg-muted animate-pulse rounded-xl my-16" />,
   }),
-  BayesianConfidenceDemo: dynamic(() => import("./interactive").then((mod) => mod.BayesianConfidenceDemo), { 
+  BayesianConfidenceDemo: dynamic(() => import("./interactive").then((mod) => mod.BayesianConfidenceDemo), {
     ssr: false,
     loading: () => <div className="w-full aspect-video bg-muted animate-pulse rounded-xl my-16" />,
+  }),
+  DisciplineCardShowcase: dynamic(() => import("./interactive").then((mod) => mod.DisciplineCardShowcase), {
+    ssr: false,
+    loading: () => <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 my-8">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-40 bg-muted animate-pulse rounded-xl" />)}</div>,
   }),
 };
 

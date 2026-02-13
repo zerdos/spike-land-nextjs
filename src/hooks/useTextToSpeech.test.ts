@@ -495,6 +495,42 @@ describe("useTextToSpeech", () => {
     result.current.stop();
   });
 
+  it("should include voiceId in fetch body when provided", async () => {
+    mockFetchJson("https://example.com/voice.mp3");
+
+    const { result } = renderHook(() => useTextToSpeech());
+
+    await act(async () => {
+      await result.current.play("unique-text-voiceid-022", "my-voice");
+    });
+
+    expect(vi.mocked(fetch)).toHaveBeenCalledWith("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "unique-text-voiceid-022", voiceId: "my-voice" }),
+    });
+  });
+
+  it("should use voiceId in cache key", async () => {
+    mockFetchJson("https://example.com/voice-a.mp3");
+
+    const { result } = renderHook(() => useTextToSpeech());
+
+    // First call with voice-a
+    await act(async () => {
+      await result.current.play("unique-text-voicecache-023", "voice-a");
+    });
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
+
+    // Second call with voice-b (same text, different voice) should trigger a new fetch
+    mockFetchJson("https://example.com/voice-b.mp3");
+
+    await act(async () => {
+      await result.current.play("unique-text-voicecache-023", "voice-b");
+    });
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1); // new mock, so 1 call on the new mock
+  });
+
   it("handles unmount during fetch when url is valid but component gone", async () => {
     // This covers the guard at line 104: if (!mountedRef.current) return;
     // after audio is created but before setState("playing")

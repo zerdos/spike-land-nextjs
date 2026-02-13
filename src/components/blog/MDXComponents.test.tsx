@@ -97,6 +97,10 @@ describe("MDXComponents", () => {
     expect(components["h1"]).toBeDefined();
   });
 
+  it("includes DisciplineCardShowcase as a dynamic component", () => {
+    expect(mdxComponents["DisciplineCardShowcase"]).toBeDefined();
+  });
+
   describe("Table components", () => {
     it("renders table with overflow wrapper", () => {
       const Table = mdxComponents["table"] as any;

@@ -231,8 +231,45 @@ describe("POST /api/tts", () => {
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data.url).toBe(uploadUrl);
-    expect(synthesizeSpeech).toHaveBeenCalledWith("hello world");
-    expect(cacheTTSAudio).toHaveBeenCalledWith("hello world", audioBuffer);
+    expect(synthesizeSpeech).toHaveBeenCalledWith("hello world", { voiceId: undefined });
+    expect(cacheTTSAudio).toHaveBeenCalledWith("hello world", audioBuffer, undefined);
+  });
+
+  // ---------------------------------------------------------------
+  // voiceId parameter forwarding
+  // ---------------------------------------------------------------
+
+  it("should pass voiceId to synthesizeSpeech when provided", async () => {
+    vi.mocked(getCachedTTSUrl).mockResolvedValue(null);
+    const audioBuffer = Buffer.from("voice-audio");
+    vi.mocked(synthesizeSpeech).mockResolvedValue(audioBuffer);
+    vi.mocked(cacheTTSAudio).mockResolvedValue("https://r2.example.com/tts/voice.mp3");
+
+    const request = makeRequest({ text: "hello", voiceId: "custom-voice" });
+    await POST(request);
+
+    expect(synthesizeSpeech).toHaveBeenCalledWith("hello", { voiceId: "custom-voice" });
+  });
+
+  it("should pass voiceId to getCachedTTSUrl", async () => {
+    vi.mocked(getCachedTTSUrl).mockResolvedValue("https://r2.example.com/tts/cached-voice.mp3");
+
+    const request = makeRequest({ text: "hello", voiceId: "custom-voice" });
+    await POST(request);
+
+    expect(getCachedTTSUrl).toHaveBeenCalledWith("hello", "custom-voice");
+  });
+
+  it("should pass voiceId to cacheTTSAudio", async () => {
+    vi.mocked(getCachedTTSUrl).mockResolvedValue(null);
+    const audioBuffer = Buffer.from("voice-audio");
+    vi.mocked(synthesizeSpeech).mockResolvedValue(audioBuffer);
+    vi.mocked(cacheTTSAudio).mockResolvedValue("https://r2.example.com/tts/voice.mp3");
+
+    const request = makeRequest({ text: "hello", voiceId: "custom-voice" });
+    await POST(request);
+
+    expect(cacheTTSAudio).toHaveBeenCalledWith("hello", audioBuffer, "custom-voice");
   });
 
   // ---------------------------------------------------------------

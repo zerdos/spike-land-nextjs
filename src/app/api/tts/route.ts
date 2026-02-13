@@ -63,7 +63,7 @@ export async function POST(request: Request) {
 
   // Generate speech via ElevenLabs
   const { data: audioBuffer, error: synthError } = await tryCatch(
-    synthesizeSpeech(text),
+    synthesizeSpeech(text, { voiceId }),
   );
 
   if (synthError) {
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
   }
 
   // Cache to R2
-  const { data: url } = await tryCatch(cacheTTSAudio(text, audioBuffer));
+  const { data: url } = await tryCatch(cacheTTSAudio(text, audioBuffer, voiceId));
 
   if (url) {
     return NextResponse.json({ url });

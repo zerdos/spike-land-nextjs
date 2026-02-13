@@ -1,0 +1,103 @@
+---
+title: "How I Use AI to Spread an Idea"
+slug: "how-i-use-ai-to-spread-an-idea"
+description: "Step 0: smoke weed. Step 1: prompt Claude. Step 6: five voices read your idea back to you through Plato, Kahneman, Hayek, Palladio, and Bach."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Developer Experience"
+tags: ["ai", "claude-code", "writing", "meta-process", "testing"]
+featured: true
+---
+
+## Step 0: Have an Original Idea
+
+I wrote a blog post called "The Testing Pyramid Is Upside Down." The thesis is simple: MCPs let you test business logic that previously required slow, flaky E2E tests -- but at unit test speed. By exposing your app's user stories as MCP tools, you get a text-based interface that's inherently unit-testable, effectively collapsing the worst layer of the testing pyramid.
+
+That's the idea. One idea. One article. But I wanted to see what happens when you refract a single idea through multiple disciplinary lenses -- and whether the refracted versions might reach people the original never could.
+
+This post documents exactly how I did it, with the actual prompts, plans, and tools. No polish. Raw process.
+
+## Step 1: Prompt Your AI
+
+Everything starts with a plan. Here's the exact prompt I gave Claude Code to write the original article:
+
+> Write a technical blog post with a personal narrative thread. The core thesis: MCPs let you test business logic that previously required slow, flaky E2E/browser tests -- but at unit test speed. By exposing your app's user stories as MCP tools, you get a text-based interface that's inherently unit-testable.
+>
+> Include:
+> - An opening about a meetup ~15 years ago where someone dismissed UI testing
+> - What happened next: Selenium, Cypress, Playwright -- the painful top of the pyramid
+> - The insight: MCPs change everything -- text in, text out
+> - The architecture argument: user stories spec -> MCP tools -> unit-testable business logic
+> - Practical steps to start migrating
+> - A closing that ties back to the meetup
+>
+> Dedicated to Laszlo Merklik, a developer who passed away from cancer ~10 years ago in his 30s.
+
+Claude Code entered plan mode. It read the codebase. It checked the blog post schema. It produced a seven-section outline with structure, emotional beats, and verification steps.
+
+I approved the plan. The article was written.
+
+## Step 2: Read the Plan
+
+Claude Code doesn't just write. It plans. Here's what the plan looked like -- a structured outline with sections, content goals, and verification criteria:
+
+1. **Dedication** -- short, respectful, at the top
+2. **The Meetup** -- personal narrative hook (Budapest, ~15 years ago)
+3. **What Happened Next** -- the problem (Selenium, Cypress, flaky tests)
+4. **The Insight** -- MCPs are text in, text out; unit-testable business logic
+5. **The Architecture Argument** -- user stories -> MCP tools -> test contracts
+6. **Practical Steps** -- start with your most painful E2E tests
+7. **Closing** -- tie back to the meetup and Laszlo's spirit
+
+Each section had a clear purpose. The plan was a contract between me and the AI: I approve the structure, it executes the writing.
+
+## Step 3: Approve and Iterate
+
+The first draft wasn't perfect. I gave feedback. Claude refined. This is the part people skip when they talk about "AI-generated content" -- the iteration cycle is where the quality lives.
+
+Corrections were specific: strengthen the prior art references, tighten the code examples, make the Laszlo thread less sentimental and more grounded. Each round of feedback produced a better draft. After three rounds, the article was ready.
+
+The key insight: AI writing isn't a one-shot process. It's a conversation with a plan in the middle.
+
+## Step 4: Go Bigger
+
+One article, one perspective. But the testing pyramid argument touches philosophy (what is verification?), economics (transaction costs), cognitive science (substitution heuristics), architecture (load-bearing walls), music theory (figured bass). Each of these lenses isn't just decoration -- it's a different way to understand the same truth.
+
+So I prompted Claude Code with a bigger plan: write 16 discipline-specific versions of the same argument, each through the eyes of a different thinker.
+
+The plan was structured as a production pipeline:
+
+- **16 agents**, each embodying a discipline (Socrates, Kahneman, Hayek, Bach, Palladio, Darwin, Sun Tzu, Saussure, Stanislavski, Feynman, Jung, Euler, Escoffier, Jacobs, Holmes, Lombardi)
+- **4 batches of 4** for parallel writing
+- Each agent gets: the original article, their discipline's top reframing ideas, and instructions to write a ~1500-word post through their lens
+- Same emotional core (the Laszlo dedication, the Budapest conference, "three players one truth")
+- Same title, unique slug per discipline
+
+## Step 5: The Peer Review Machine
+
+Writing 16 posts is easy. Quality control is hard. So the plan included an automated peer review process:
+
+- **Each post gets 4 reviewers** from other disciplines
+- Reviewers check: accuracy of the disciplinary metaphor, clarity for non-specialists, emotional resonance, technical correctness, length
+- Output: **APPROVE** or **CHANGE_REQUEST** with specific feedback
+- Maximum 2 fix rounds per post
+
+The review assignment matrix was randomized so no reviewer judges a post from their own discipline. 64 total reviews across 16 posts.
+
+This is the part that surprised me most. The reviewer agents caught things I wouldn't have -- a false analogy in the economics post, a metaphor that fell apart under scrutiny in the physics post, a Laszlo reference that felt forced in the culinary arts post. The agents argued with each other. Some change requests were accepted, others were argued back with reasoning.
+
+The result: 16 posts, each peer-reviewed by 4 other "disciplinary experts," each iterated until the metaphor held up.
+
+## Step 6: The Result
+
+Five of these discipline-lensed posts are showcased below. Click any card to read the full article. Each one can be read aloud in a distinct voice -- because if you're going to embody Socrates, Kahneman, Hayek, Palladio, and Bach, they shouldn't all sound the same.
+
+<DisciplineCardShowcase />
+
+---
+
+That's the process. No magic. Just a loop: **prompt -> plan -> approve -> iterate -> scale -> review -> ship.**
+
+The AI doesn't replace the idea. The idea is mine. What the AI does is let me explore the idea space faster than I ever could alone -- and with quality controls that would be impossible to coordinate manually across 16 perspectives.
+
+The testing pyramid is upside down. And now five different thinkers can explain why.

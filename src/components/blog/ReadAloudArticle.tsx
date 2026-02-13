@@ -9,14 +9,15 @@ type ArticleReaderState = "idle" | "loading" | "playing" | "paused";
 // Client-side URL cache
 const urlCache = new Map<string, string>();
 
-async function fetchTTSUrl(text: string): Promise<string> {
-  const cached = urlCache.get(text);
+async function fetchTTSUrl(text: string, voiceId?: string): Promise<string> {
+  const cacheKey = voiceId ? `${text}::${voiceId}` : text;
+  const cached = urlCache.get(cacheKey);
   if (cached) return cached;
 
   const response = await fetch("/api/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text, ...(voiceId && { voiceId }) }),
   });
 
   if (!response.ok) {
@@ -34,11 +35,15 @@ async function fetchTTSUrl(text: string): Promise<string> {
     url = data.url;
   }
 
-  urlCache.set(text, url);
+  urlCache.set(cacheKey, url);
   return url;
 }
 
-export function ReadAloudArticle() {
+interface ReadAloudArticleProps {
+  voiceId?: string;
+}
+
+export function ReadAloudArticle({ voiceId }: ReadAloudArticleProps = {}) {
   const [state, setState] = useState<ArticleReaderState>("idle");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalParagraphs, setTotalParagraphs] = useState(0);
@@ -85,12 +90,12 @@ export function ReadAloudArticle() {
     try {
       // Pre-fetch next paragraph while current one loads
       if (index + 1 < texts.length) {
-        fetchTTSUrl(texts[index + 1]!).catch(() => {
+        fetchTTSUrl(texts[index + 1]!, voiceId).catch(() => {
           // Silently ignore prefetch failures
         });
       }
 
-      const url = await fetchTTSUrl(texts[index]!);
+      const url = await fetchTTSUrl(texts[index]!, voiceId);
       if (!mountedRef.current) return;
 
       const audio = new Audio(url);
@@ -120,7 +125,7 @@ export function ReadAloudArticle() {
         playParagraph(index + 1, texts);
       }
     }
-  }, []);
+  }, [voiceId]);
 
   const handlePlay = useCallback(() => {
     if (state === "playing" || state === "loading") {
