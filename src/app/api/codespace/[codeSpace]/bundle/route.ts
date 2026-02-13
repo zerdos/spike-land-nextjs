@@ -138,11 +138,16 @@ export async function GET(
       bundleError,
     );
 
-    // esbuild-wasm doesn't work on Vercel's serverless runtime.
-    // Fall back to redirecting to the testing.spike.land live page
-    // which uses import maps and works without bundling.
-    const liveUrl = `https://testing.spike.land/live/${codeSpace}/`;
-    return Response.redirect(liveUrl, 302);
+    const message = bundleError instanceof Error ? bundleError.message : String(bundleError);
+    const isTimeout = message.includes("timed out");
+
+    return new Response(
+      isTimeout ? "Bundle build timed out" : "Bundle build failed",
+      {
+        status: isTimeout ? 504 : 500,
+        headers: { ...CORS_HEADERS, "Content-Type": "text/plain" },
+      },
+    );
   }
 
   const html = buildBundleHtml({
