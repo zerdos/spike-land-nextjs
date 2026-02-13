@@ -36,8 +36,7 @@ export const dynamic = "force-dynamic";
  *       outputWidth?: number,
  *       outputHeight?: number,
  *       createdAt: string,
- *       processingCompletedAt?: string,
- *       apiKeyName?: string
+ *       processingCompletedAt?: string
  *     }>,
  *     total: number,
  *     hasMore: boolean

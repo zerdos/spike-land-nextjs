@@ -581,21 +581,9 @@ erDiagram
   DateTime updatedAt
   String createdById FK
 }
-"api_keys" {
-  String id PK
-  String userId FK
-  String name
-  String keyHash UK
-  String keyPrefix
-  DateTime lastUsedAt "nullable"
-  Boolean isActive
-  DateTime createdAt
-  DateTime updatedAt
-}
 "mcp_generation_jobs" {
   String id PK
   String userId FK
-  String apiKeyId FK "nullable"
   McpJobType type
   EnhancementTier tier
   Int creditsCost
@@ -2397,8 +2385,6 @@ erDiagram
 "sandbox_jobs" }o--|| "apps" : app
 "email_logs" }o--|| "users" : user
 "tracked_urls" }o--|| "users" : createdBy
-"api_keys" }o--|| "users" : user
-"mcp_generation_jobs" }o--o| "api_keys" : apiKey
 "mcp_generation_jobs" }o--|| "users" : user
 "box_messages" }o--|| "boxes" : box
 "enhancement_pipelines" }o--o| "users" : user
@@ -3282,27 +3268,12 @@ Properties as follows:
 - `updatedAt`:
 - `createdById`:
 
-### `api_keys`
-
-Properties as follows:
-
-- `id`:
-- `userId`:
-- `name`:
-- `keyHash`:
-- `keyPrefix`:
-- `lastUsedAt`:
-- `isActive`:
-- `createdAt`:
-- `updatedAt`:
-
 ### `mcp_generation_jobs`
 
 Properties as follows:
 
 - `id`:
 - `userId`:
-- `apiKeyId`:
 - `type`:
 - `tier`:
 - `creditsCost`:

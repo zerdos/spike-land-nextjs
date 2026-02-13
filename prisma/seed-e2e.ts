@@ -9,7 +9,6 @@ import {
   PrismaClient,
   WorkspaceRole,
 } from "@prisma/client";
-import { createHash } from "crypto";
 import { config } from "dotenv";
 
 import { getE2EDatabaseUrl } from "./lib/db-protection";
@@ -424,22 +423,7 @@ async function main() {
     "Created 4 enhancement jobs (PENDING, PROCESSING, COMPLETED, FAILED)",
   );
 
-  // 9. Create API keys for MCP tests
-  const apiKeyPlaintext = "e2e-test-api-key-12345";
-  const apiKeyHash = createHash("sha256").update(apiKeyPlaintext).digest("hex");
-  await prisma.apiKey.upsert({
-    where: { id: "e2e-api-key-1" },
-    update: {},
-    create: {
-      id: "e2e-api-key-1",
-      userId: TEST_USER_ID,
-      name: "E2E Test API Key",
-      keyHash: apiKeyHash,
-      keyPrefix: "e2e-test",
-      isActive: true,
-    },
-  });
-  console.log("Created API key for MCP tests");
+  // 9. API keys removed (OAuth only now)
 
   // 10. Voucher model removed — workspace credits are used instead
 

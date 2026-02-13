@@ -117,15 +117,7 @@ async function cleanup() {
   });
   console.log(`Deleted ${deletedImages.count} test images`);
 
-  // 8. Delete test API keys
-  const deletedApiKeys = await prisma.apiKey.deleteMany({
-    where: {
-      id: {
-        startsWith: "e2e-",
-      },
-    },
-  });
-  console.log(`Deleted ${deletedApiKeys.count} test API keys`);
+  // 8. API keys removed (OAuth only now)
 
   // 9. Delete test featured gallery items
   const deletedGalleryItems = await prisma.featuredGalleryItem.deleteMany({

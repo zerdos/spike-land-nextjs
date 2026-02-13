@@ -20,7 +20,6 @@ import {
   Check,
   CheckCircle2,
   Copy,
-  ExternalLink,
   ImagePlus,
   Loader2,
   RefreshCw,
@@ -30,13 +29,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
-
-interface ApiKey {
-  id: string;
-  name: string;
-  keyPrefix: string;
-}
+import { useCallback, useState } from "react";
 
 interface JobResult {
   id: string;
@@ -62,11 +55,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
   const { data: session } = useSession();
   const isAuthenticated = isLoggedIn || !!session?.user;
 
-  // API keys state - unused for now but kept for future API key selection feature
-  const [_apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [_selectedApiKey, _setSelectedApiKey] = useState<string>("");
   const [manualApiKey, setManualApiKey] = useState<string>("");
-  const [_isLoadingKeys, setIsLoadingKeys] = useState(true);
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
 
   // Generate form state
@@ -98,24 +87,6 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
 
-  // Fetch API keys on mount
-  useEffect(() => {
-    async function fetchApiKeys() {
-      try {
-        const response = await fetch("/api/settings/api-keys");
-        if (response.ok) {
-          const data = await response.json();
-          setApiKeys(data.apiKeys || []);
-        }
-      } catch (error) {
-        console.error("Failed to fetch API keys:", error);
-      } finally {
-        setIsLoadingKeys(false);
-      }
-    }
-    fetchApiKeys();
-  }, []);
-
   const getApiKey = useCallback(() => {
     return manualApiKey || "";
   }, [manualApiKey]);
@@ -127,14 +98,14 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
   ) => {
     const apiKey = getApiKey();
 
-    // If not authenticated and no API key provided, show error
+    // If not authenticated and no token provided, show error
     if (!isAuthenticated && !apiKey) {
-      throw new Error("Please enter an API key to test the API");
+      throw new Error("Please sign in or enter an OAuth token to test the API");
     }
 
     const headers: Record<string, string> = {};
 
-    // Only add Authorization header if API key is explicitly provided
+    // Only add Authorization header if token is explicitly provided
     // Otherwise, session cookies will be sent automatically for logged-in users
     if (apiKey) {
       headers["Authorization"] = `Bearer ${apiKey}`;
@@ -364,32 +335,25 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-lg">
-            {isAuthenticated ? "Authentication" : "API Key Required"}
+            {isAuthenticated ? "Authentication" : "Sign In Required"}
           </CardTitle>
           <CardDescription>
             {isAuthenticated
               ? (
                 <>
                   You&apos;re signed in and can use the tools directly with your session.
-                  Optionally, enter an API key to test Bearer token authentication.{" "}
-                  <Link
-                    href="/settings"
-                    className="text-primary hover:underline"
-                  >
-                    Manage API keys
-                  </Link>
+                  Optionally, enter an OAuth token to test Bearer token authentication.
                 </>
               )
               : (
                 <>
-                  Enter an API key to test the MCP API.{" "}
                   <Link
                     href="/auth/signin"
                     className="text-primary hover:underline"
                   >
                     Sign in
                   </Link>{" "}
-                  to use your session instead.
+                  to use the MCP API, or enter an OAuth token below.
                 </>
               )}
           </CardDescription>
@@ -400,44 +364,37 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
               <>
                 <div className="flex items-center gap-2 text-sm text-green-400">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>Using session authentication (no API key needed)</span>
+                  <span>Using session authentication</span>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="manual-key">
-                    Optional: Test with API Key
+                    Optional: Test with OAuth Token
                   </Label>
                   <Input
                     id="manual-key"
                     type="password"
-                    placeholder="sk_live_... (leave empty to use session)"
+                    placeholder="mcp_... (leave empty to use session)"
                     value={manualApiKey}
                     onChange={(e) => setManualApiKey(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Enter a full API key here to test Bearer token authentication instead of session
-                    auth.
+                    Enter an OAuth token to test Bearer token authentication instead of session auth.
                   </p>
                 </div>
               </>
             )
             : (
               <div className="space-y-2">
-                <Label htmlFor="manual-key">API Key</Label>
+                <Label htmlFor="manual-key">OAuth Token</Label>
                 <Input
                   id="manual-key"
                   type="password"
-                  placeholder="sk_live_..."
+                  placeholder="mcp_..."
                   value={manualApiKey}
                   onChange={(e) => setManualApiKey(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Get your API key from the{" "}
-                  <Link
-                    href="/settings"
-                    className="text-primary hover:underline"
-                  >
-                    Settings page
-                  </Link>
+                  Sign in to use session authentication, or provide an OAuth token.
                 </p>
               </div>
             )}
@@ -934,7 +891,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
         <CardHeader>
           <CardTitle>API Documentation</CardTitle>
           <CardDescription>
-            Use these endpoints with your API key for programmatic access
+            Use these endpoints with your OAuth token for programmatic access
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -943,7 +900,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
             <div className="bg-muted p-3 rounded-md font-mono text-sm relative">
               <pre className="overflow-x-auto">
 {`curl -X POST https://spike.land/api/mcp/generate \\
-  -H "Authorization: Bearer sk_live_..." \\
+  -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "your prompt", "tier": "TIER_1K"}'`}
               </pre>
@@ -953,7 +910,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                 className="absolute top-2 right-2"
                 onClick={() =>
                   copyToClipboard(
-                    `curl -X POST https://spike.land/api/mcp/generate -H "Authorization: Bearer sk_live_..." -H "Content-Type: application/json" -d '{"prompt": "your prompt", "tier": "TIER_1K"}'`,
+                    `curl -X POST https://spike.land/api/mcp/generate -H "Authorization: Bearer YOUR_TOKEN" -H "Content-Type: application/json" -d '{"prompt": "your prompt", "tier": "TIER_1K"}'`,
                     "generate",
                   )}
               >
@@ -969,7 +926,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
             <div className="bg-muted p-3 rounded-md font-mono text-sm relative">
               <pre className="overflow-x-auto">
 {`curl -X POST https://spike.land/api/mcp/modify \\
-  -H "Authorization: Bearer sk_live_..." \\
+  -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "your prompt", "image": "base64...", "mimeType": "image/jpeg", "tier": "TIER_1K"}'`}
               </pre>
@@ -979,7 +936,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                 className="absolute top-2 right-2"
                 onClick={() =>
                   copyToClipboard(
-                    `curl -X POST https://spike.land/api/mcp/modify -H "Authorization: Bearer sk_live_..." -H "Content-Type: application/json" -d '{"prompt": "your prompt", "image": "base64...", "mimeType": "image/jpeg", "tier": "TIER_1K"}'`,
+                    `curl -X POST https://spike.land/api/mcp/modify -H "Authorization: Bearer YOUR_TOKEN" -H "Content-Type: application/json" -d '{"prompt": "your prompt", "image": "base64...", "mimeType": "image/jpeg", "tier": "TIER_1K"}'`,
                     "modify",
                   )}
               >
@@ -995,7 +952,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
             <div className="bg-muted p-3 rounded-md font-mono text-sm relative">
               <pre className="overflow-x-auto">
 {`curl https://spike.land/api/mcp/jobs/{jobId} \\
-  -H "Authorization: Bearer sk_live_..."`}
+  -H "Authorization: Bearer YOUR_TOKEN"`}
               </pre>
               <Button
                 variant="ghost"
@@ -1003,7 +960,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                 className="absolute top-2 right-2"
                 onClick={() =>
                   copyToClipboard(
-                    `curl https://spike.land/api/mcp/jobs/{jobId} -H "Authorization: Bearer sk_live_..."`,
+                    `curl https://spike.land/api/mcp/jobs/{jobId} -H "Authorization: Bearer YOUR_TOKEN"`,
                     "status",
                   )}
               >
@@ -1019,7 +976,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
             <div className="bg-muted p-3 rounded-md font-mono text-sm relative">
               <pre className="overflow-x-auto">
 {`curl https://spike.land/api/mcp/balance \\
-  -H "Authorization: Bearer sk_live_..."`}
+  -H "Authorization: Bearer YOUR_TOKEN"`}
               </pre>
               <Button
                 variant="ghost"
@@ -1027,7 +984,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                 className="absolute top-2 right-2"
                 onClick={() =>
                   copyToClipboard(
-                    `curl https://spike.land/api/mcp/balance -H "Authorization: Bearer sk_live_..."`,
+                    `curl https://spike.land/api/mcp/balance -H "Authorization: Bearer YOUR_TOKEN"`,
                     "balance",
                   )}
               >
@@ -1043,11 +1000,19 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
               MCP Server (Claude Desktop / Claude Code)
             </h4>
             <p className="text-sm text-muted-foreground mb-3">
-              Install the MCP server to use these tools directly in Claude:
+              Add the MCP server to your Claude Code config to use these tools directly:
             </p>
             <div className="bg-muted p-3 rounded-md font-mono text-sm relative">
               <pre className="overflow-x-auto">
-{`SPIKE_LAND_API_KEY=sk_live_... npx @spike-npm-land/mcp-server`}
+{`// .mcp.json
+{
+  "mcpServers": {
+    "spike-land": {
+      "type": "streamable-http",
+      "url": "https://spike.land/api/mcp"
+    }
+  }
+}`}
               </pre>
               <Button
                 variant="ghost"
@@ -1055,7 +1020,7 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                 className="absolute top-2 right-2"
                 onClick={() =>
                   copyToClipboard(
-                    `SPIKE_LAND_API_KEY=sk_live_... npx @spike-npm-land/mcp-server`,
+                    `{"mcpServers":{"spike-land":{"type":"streamable-http","url":"https://spike.land/api/mcp"}}}`,
                     "mcp",
                   )}
               >
@@ -1064,15 +1029,9 @@ export function McpToolsClient({ isLoggedIn = false }: McpToolsClientProps) {
                   : <Copy className="h-4 w-4" />}
               </Button>
             </div>
-            <div className="flex items-center gap-4 mt-3">
-              <Link
-                href="/settings"
-                className="inline-flex items-center text-sm text-primary hover:underline"
-              >
-                <ExternalLink className="h-4 w-4 mr-1" />
-                Manage API Keys
-              </Link>
-            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Authentication is handled via OAuth 2.1 - Claude will open a browser window to sign in.
+            </p>
           </div>
         </CardContent>
       </Card>

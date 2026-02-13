@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: authResult.error }, { status: 401 });
   }
 
-  const { userId, apiKeyId } = authResult;
+  const { userId } = authResult;
 
   // Rate limiting
   const rateLimitResult = await checkRateLimit(
@@ -137,7 +137,6 @@ export async function POST(request: NextRequest) {
   const { data: result, error: jobError } = await tryCatch(
     createGenerationJob({
       userId: userId!,
-      apiKeyId,
       prompt: prompt.trim(),
       tier: tier as EnhancementTier,
       negativePrompt: negativePrompt?.trim(),

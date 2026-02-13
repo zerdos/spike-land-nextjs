@@ -2,22 +2,19 @@ import { auth } from "@/auth";
 import { verifyAccessToken } from "@/lib/mcp/oauth/token-service";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
-import type { ApiKeyValidationResult } from "./api-key-manager";
-import { validateApiKey } from "./api-key-manager";
 
 interface McpAuthResult {
   success: boolean;
   userId?: string;
-  apiKeyId?: string;
   oauthClientId?: string;
   error?: string;
 }
 
 /**
- * Authenticates an MCP API request using Bearer token
+ * Authenticates an MCP API request using Bearer token (OAuth only)
  *
  * @param request - The incoming Next.js request
- * @returns Authentication result with userId and apiKeyId if successful
+ * @returns Authentication result with userId if successful
  *
  * @example
  * ```typescript
@@ -27,7 +24,7 @@ interface McpAuthResult {
  *     return NextResponse.json({ error: authResult.error }, { status: 401 });
  *   }
  *
- *   const { userId, apiKeyId } = authResult;
+ *   const { userId } = authResult;
  *   // Continue with authenticated request...
  * }
  * ```
@@ -48,7 +45,7 @@ export async function authenticateMcpRequest(
   if (!authHeader.startsWith("Bearer ")) {
     return {
       success: false,
-      error: "Invalid Authorization header format. Expected: Bearer <api_key>",
+      error: "Invalid Authorization header format. Expected: Bearer <token>",
     };
   }
 
@@ -58,92 +55,45 @@ export async function authenticateMcpRequest(
   if (!token) {
     return {
       success: false,
-      error: "Missing API key or token",
+      error: "Missing token",
     };
   }
 
-  // Check if this is an MCP OAuth token (prefixed with "mcp_")
-  if (token.startsWith("mcp_")) {
-    const { data: payload, error: oauthError } = await tryCatch(
-      verifyAccessToken(token),
-    );
-
-    if (oauthError) {
-      return {
-        success: false,
-        error: "OAuth token verification failed",
-      };
-    }
-
-    if (!payload) {
-      return {
-        success: false,
-        error: "Invalid or expired OAuth token",
-      };
-    }
-
-    return {
-      success: true,
-      userId: payload.userId,
-      oauthClientId: payload.clientId,
-    };
-  }
-
-  // Fall back to API key validation
-  const { data: validationResult, error: validationError } = await tryCatch<
-    ApiKeyValidationResult,
-    Error
-  >(validateApiKey(token));
-
-  if (validationError) {
+  // Only accept MCP OAuth tokens (prefixed with "mcp_")
+  if (!token.startsWith("mcp_")) {
     return {
       success: false,
-      error: validationError.message || "API key validation failed",
+      error: "Invalid token format. Only OAuth tokens are accepted.",
     };
   }
 
-  if (!validationResult.isValid) {
+  const { data: payload, error: oauthError } = await tryCatch(
+    verifyAccessToken(token),
+  );
+
+  if (oauthError) {
     return {
       success: false,
-      error: validationResult.error || "Invalid API key",
+      error: "OAuth token verification failed",
+    };
+  }
+
+  if (!payload) {
+    return {
+      success: false,
+      error: "Invalid or expired OAuth token",
     };
   }
 
   return {
     success: true,
-    userId: validationResult.userId,
-    apiKeyId: validationResult.apiKeyId,
+    userId: payload.userId,
+    oauthClientId: payload.clientId,
   };
 }
 
 /**
- * Extracts the API key from a request without validating it
- * Useful for logging or debugging
- */
-export function extractApiKey(request: NextRequest): string | null {
-  const authHeader = request.headers.get("Authorization");
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
-  }
-
-  return authHeader.slice(7).trim() || null;
-}
-
-/**
- * Creates a masked version of an API key for logging
- * Security: Only reveal 7 characters to match api-key-manager.ts
- * @example sk_live_abc123... -> sk_live...****
- */
-export function maskApiKey(apiKey: string): string {
-  if (!apiKey || apiKey.length < 7) {
-    return "***";
-  }
-  return apiKey.slice(0, 7) + "...****";
-}
-
-/**
- * Authenticates using either API key (Bearer token) or session auth
+ * Authenticates using either OAuth Bearer token or session auth
  * Useful for endpoints that need to work from both the browser UI and external API clients
  *
  * @param request - The incoming Next.js request
@@ -152,7 +102,7 @@ export function maskApiKey(apiKey: string): string {
 export async function authenticateMcpOrSession(
   request: NextRequest,
 ): Promise<McpAuthResult> {
-  // First try API key auth
+  // First try Bearer token auth
   const authHeader = request.headers.get("Authorization");
 
   if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -178,6 +128,6 @@ export async function authenticateMcpOrSession(
 
   return {
     success: false,
-    error: "Authentication required. Provide an API key or sign in.",
+    error: "Authentication required. Provide an OAuth token or sign in.",
   };
 }

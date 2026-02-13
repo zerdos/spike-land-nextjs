@@ -1,14 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock validateApiKey from api-key-manager
-const { mockValidateApiKey } = vi.hoisted(() => ({
-  mockValidateApiKey: vi.fn(),
-}));
-
-vi.mock("./api-key-manager", () => ({
-  validateApiKey: mockValidateApiKey,
-}));
-
 // Mock auth from @/auth
 const { mockAuth } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
@@ -31,8 +22,6 @@ import type { NextRequest } from "next/server";
 import {
   authenticateMcpOrSession,
   authenticateMcpRequest,
-  extractApiKey,
-  maskApiKey,
 } from "./auth";
 
 // Helper to create mock NextRequest
@@ -46,7 +35,6 @@ function createMockRequest(headers: Record<string, string> = {}): NextRequest {
 
 describe("auth", () => {
   const testUserId = "test-user-123";
-  const testApiKeyId = "api-key-456";
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -75,11 +63,11 @@ describe("auth", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe(
-        "Invalid Authorization header format. Expected: Bearer <api_key>",
+        "Invalid Authorization header format. Expected: Bearer <token>",
       );
     });
 
-    it("should return error when API key is empty", async () => {
+    it("should return error when token is empty", async () => {
       const request = createMockRequest({
         Authorization: "Bearer ",
       });
@@ -87,10 +75,10 @@ describe("auth", () => {
       const result = await authenticateMcpRequest(request);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Missing API key or token");
+      expect(result.error).toBe("Missing token");
     });
 
-    it("should return error when API key is just whitespace", async () => {
+    it("should return error when token is just whitespace", async () => {
       const request = createMockRequest({
         Authorization: "Bearer    ",
       });
@@ -98,58 +86,20 @@ describe("auth", () => {
       const result = await authenticateMcpRequest(request);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Missing API key or token");
+      expect(result.error).toBe("Missing token");
     });
 
-    it("should return success when API key is valid", async () => {
-      mockValidateApiKey.mockResolvedValue({
-        isValid: true,
-        userId: testUserId,
-        apiKeyId: testApiKeyId,
-      });
-
+    it("should reject non-mcp_ tokens", async () => {
       const request = createMockRequest({
         Authorization: "Bearer sk_test_validkey",
       });
 
       const result = await authenticateMcpRequest(request);
 
-      expect(result.success).toBe(true);
-      expect(result.userId).toBe(testUserId);
-      expect(result.apiKeyId).toBe(testApiKeyId);
-      expect(mockValidateApiKey).toHaveBeenCalledWith("sk_test_validkey");
-    });
-
-    it("should return error when API key validation fails", async () => {
-      mockValidateApiKey.mockResolvedValue({
-        isValid: false,
-        error: "Invalid API key format",
-      });
-
-      const request = createMockRequest({
-        Authorization: "Bearer invalid_key",
-      });
-
-      const result = await authenticateMcpRequest(request);
-
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Invalid API key format");
-    });
-
-    it("should trim whitespace from API key", async () => {
-      mockValidateApiKey.mockResolvedValue({
-        isValid: true,
-        userId: testUserId,
-        apiKeyId: testApiKeyId,
-      });
-
-      const request = createMockRequest({
-        Authorization: "Bearer   sk_test_validkey   ",
-      });
-
-      await authenticateMcpRequest(request);
-
-      expect(mockValidateApiKey).toHaveBeenCalledWith("sk_test_validkey");
+      expect(result.error).toBe(
+        "Invalid token format. Only OAuth tokens are accepted.",
+      );
     });
 
     it("should authenticate OAuth tokens (mcp_ prefix)", async () => {
@@ -168,7 +118,6 @@ describe("auth", () => {
       expect(result.success).toBe(true);
       expect(result.userId).toBe(testUserId);
       expect(result.oauthClientId).toBe("test-client-id");
-      expect(mockValidateApiKey).not.toHaveBeenCalled();
     });
 
     it("should return error for invalid OAuth tokens", async () => {
@@ -184,140 +133,39 @@ describe("auth", () => {
       expect(result.error).toBe("Invalid or expired OAuth token");
     });
 
-    it("should return error when validateApiKey throws an exception", async () => {
-      mockValidateApiKey.mockRejectedValue(
-        new Error("Database connection failed"),
+    it("should return error when OAuth verification throws", async () => {
+      mockVerifyAccessToken.mockRejectedValue(
+        new Error("Token service down"),
       );
 
       const request = createMockRequest({
-        Authorization: "Bearer sk_test_validkey",
+        Authorization: "Bearer mcp_some_token",
       });
 
       const result = await authenticateMcpRequest(request);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Database connection failed");
-    });
-
-    it("should return fallback error when validateApiKey throws without message", async () => {
-      mockValidateApiKey.mockRejectedValue(new Error());
-
-      const request = createMockRequest({
-        Authorization: "Bearer sk_test_validkey",
-      });
-
-      const result = await authenticateMcpRequest(request);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("API key validation failed");
-    });
-  });
-
-  describe("extractApiKey", () => {
-    it("should return null when Authorization header is missing", () => {
-      const request = createMockRequest({});
-
-      const result = extractApiKey(request);
-
-      expect(result).toBeNull();
-    });
-
-    it("should return null when header doesn't start with Bearer", () => {
-      const request = createMockRequest({
-        Authorization: "Basic abc123",
-      });
-
-      const result = extractApiKey(request);
-
-      expect(result).toBeNull();
-    });
-
-    it("should return null when API key is empty", () => {
-      const request = createMockRequest({
-        Authorization: "Bearer ",
-      });
-
-      const result = extractApiKey(request);
-
-      expect(result).toBeNull();
-    });
-
-    it("should extract API key correctly", () => {
-      const request = createMockRequest({
-        Authorization: "Bearer sk_test_abc123",
-      });
-
-      const result = extractApiKey(request);
-
-      expect(result).toBe("sk_test_abc123");
-    });
-
-    it("should trim whitespace from API key", () => {
-      const request = createMockRequest({
-        Authorization: "Bearer   sk_test_abc123   ",
-      });
-
-      const result = extractApiKey(request);
-
-      expect(result).toBe("sk_test_abc123");
-    });
-  });
-
-  describe("maskApiKey", () => {
-    it("should mask API key showing first 7 chars (matches api-key-manager)", () => {
-      const result = maskApiKey("sk_test_abcdefghijklmnop");
-
-      expect(result).toBe("sk_test...****");
-    });
-
-    it("should return *** for short API keys (less than 7 chars)", () => {
-      const result = maskApiKey("short");
-
-      expect(result).toBe("***");
-    });
-
-    it("should return *** for empty string", () => {
-      const result = maskApiKey("");
-
-      expect(result).toBe("***");
-    });
-
-    it("should handle exactly 7 character key", () => {
-      const result = maskApiKey("1234567");
-
-      expect(result).toBe("1234567...****");
-    });
-
-    it("should handle keys just under 7 chars", () => {
-      const result = maskApiKey("123456");
-
-      expect(result).toBe("***");
-    });
-
-    it("should mask production keys correctly", () => {
-      const result = maskApiKey("sk_live_abc123xyz789fullkey");
-
-      expect(result).toBe("sk_live...****");
+      expect(result.error).toBe("OAuth token verification failed");
     });
   });
 
   describe("authenticateMcpOrSession", () => {
-    it("should use API key auth when Bearer token is provided", async () => {
-      mockValidateApiKey.mockResolvedValue({
-        isValid: true,
+    it("should use OAuth auth when Bearer token is provided", async () => {
+      mockVerifyAccessToken.mockResolvedValue({
         userId: testUserId,
-        apiKeyId: testApiKeyId,
+        clientId: "test-client-id",
+        scope: "mcp",
       });
 
       const request = createMockRequest({
-        Authorization: "Bearer sk_test_validkey",
+        Authorization: "Bearer mcp_test_token",
       });
 
       const result = await authenticateMcpOrSession(request);
 
       expect(result.success).toBe(true);
       expect(result.userId).toBe(testUserId);
-      expect(result.apiKeyId).toBe(testApiKeyId);
+      expect(result.oauthClientId).toBe("test-client-id");
       expect(mockAuth).not.toHaveBeenCalled();
     });
 
@@ -332,7 +180,6 @@ describe("auth", () => {
 
       expect(result.success).toBe(true);
       expect(result.userId).toBe(testUserId);
-      expect(result.apiKeyId).toBeUndefined();
       expect(mockAuth).toHaveBeenCalled();
     });
 
@@ -350,10 +197,9 @@ describe("auth", () => {
       expect(result.success).toBe(true);
       expect(result.userId).toBe(testUserId);
       expect(mockAuth).toHaveBeenCalled();
-      expect(mockValidateApiKey).not.toHaveBeenCalled();
     });
 
-    it("should return error when neither API key nor session is valid", async () => {
+    it("should return error when neither token nor session is valid", async () => {
       mockAuth.mockResolvedValue(null);
 
       const request = createMockRequest({});
@@ -362,7 +208,7 @@ describe("auth", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe(
-        "Authentication required. Provide an API key or sign in.",
+        "Authentication required. Provide an OAuth token or sign in.",
       );
     });
 
@@ -375,7 +221,7 @@ describe("auth", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe(
-        "Authentication required. Provide an API key or sign in.",
+        "Authentication required. Provide an OAuth token or sign in.",
       );
     });
 
@@ -390,7 +236,7 @@ describe("auth", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe(
-        "Authentication required. Provide an API key or sign in.",
+        "Authentication required. Provide an OAuth token or sign in.",
       );
     });
 

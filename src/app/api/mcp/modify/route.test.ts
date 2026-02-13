@@ -61,7 +61,6 @@ function createMockRequest(
 
 describe("POST /api/mcp/modify", () => {
   const testUserId = "test-user-123";
-  const testApiKeyId = "api-key-456";
   const testJobId = "job-789";
 
   beforeEach(() => {
@@ -70,7 +69,6 @@ describe("POST /api/mcp/modify", () => {
     mockAuthenticateMcpOrSession.mockResolvedValue({
       success: true,
       userId: testUserId,
-      apiKeyId: testApiKeyId,
     });
     // Default no rate limit
     mockCheckRateLimit.mockResolvedValue({
@@ -111,7 +109,7 @@ describe("POST /api/mcp/modify", () => {
       });
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         {
           prompt: "test",
           tier: "TIER_1K",
@@ -130,7 +128,7 @@ describe("POST /api/mcp/modify", () => {
   describe("validation", () => {
     it("should return 400 for invalid JSON body", async () => {
       const request = createMockRequest({
-        Authorization: "Bearer sk_test_validkey",
+        Authorization: "Bearer mcp_test_validkey",
       }, null);
       const response = await POST(request);
       const body = await response.json();
@@ -141,7 +139,7 @@ describe("POST /api/mcp/modify", () => {
 
     it("should return 400 when prompt is missing", async () => {
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { tier: "TIER_1K", image: SMALL_TEST_IMAGE, mimeType: "image/png" },
       );
       const response = await POST(request);
@@ -153,7 +151,7 @@ describe("POST /api/mcp/modify", () => {
 
     it("should return 400 when prompt is too long", async () => {
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         {
           prompt: "a".repeat(4001),
           tier: "TIER_1K",
@@ -170,7 +168,7 @@ describe("POST /api/mcp/modify", () => {
 
     it("should return 400 when tier is invalid", async () => {
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         {
           prompt: "Add a rainbow",
           tier: "TIER_INVALID",
@@ -188,7 +186,7 @@ describe("POST /api/mcp/modify", () => {
 
     it("should return 400 when image is missing", async () => {
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "Add a rainbow", tier: "TIER_1K", mimeType: "image/png" },
       );
       const response = await POST(request);
@@ -202,7 +200,7 @@ describe("POST /api/mcp/modify", () => {
 
     it("should return 400 when mimeType is missing", async () => {
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "Add a rainbow", tier: "TIER_1K", image: SMALL_TEST_IMAGE },
       );
       const response = await POST(request);
@@ -214,7 +212,7 @@ describe("POST /api/mcp/modify", () => {
 
     it("should return 400 when mimeType is invalid", async () => {
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         {
           prompt: "Add a rainbow",
           tier: "TIER_1K",
@@ -245,7 +243,7 @@ describe("POST /api/mcp/modify", () => {
       );
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         {
           prompt: "Add a rainbow",
           tier: "TIER_1K",
@@ -272,7 +270,7 @@ describe("POST /api/mcp/modify", () => {
       });
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         {
           prompt: "Add a rainbow",
           tier: "TIER_1K",
@@ -291,7 +289,6 @@ describe("POST /api/mcp/modify", () => {
 
       expect(mockCreateModificationJob).toHaveBeenCalledWith({
         userId: testUserId,
-        apiKeyId: testApiKeyId,
         prompt: "Add a rainbow",
         tier: "TIER_1K",
         imageData: SMALL_TEST_IMAGE,
@@ -310,7 +307,7 @@ describe("POST /api/mcp/modify", () => {
         const mimeType of ["image/jpeg", "image/png", "image/webp", "image/gif"]
       ) {
         const request = createMockRequest(
-          { Authorization: "Bearer sk_test_validkey" },
+          { Authorization: "Bearer mcp_test_validkey" },
           {
             prompt: "Add a rainbow",
             tier: "TIER_2K",
@@ -332,7 +329,7 @@ describe("POST /api/mcp/modify", () => {
       });
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         {
           prompt: "Add a rainbow",
           tier: "TIER_4K",
@@ -354,7 +351,7 @@ describe("POST /api/mcp/modify", () => {
       });
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         {
           prompt: "Add a rainbow",
           tier: "TIER_1K",
@@ -373,7 +370,7 @@ describe("POST /api/mcp/modify", () => {
       mockCreateModificationJob.mockRejectedValue(new Error("Database error"));
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         {
           prompt: "Add a rainbow",
           tier: "TIER_1K",

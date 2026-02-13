@@ -43,7 +43,6 @@ describe("McpToolsClient", () => {
     vi.clearAllMocks();
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ apiKeys: [] }),
     });
   });
 
@@ -53,9 +52,9 @@ describe("McpToolsClient", () => {
       expect(screen.getByText("MCP Tools")).toBeDefined();
     });
 
-    it("shows API key required message when not logged in", () => {
+    it("shows sign in required message when not logged in", () => {
       renderWithSession(<McpToolsClient isLoggedIn={false} />);
-      expect(screen.getByText("API Key Required")).toBeDefined();
+      expect(screen.getByText("Sign In Required")).toBeDefined();
     });
 
     it("shows authentication message when logged in", () => {
@@ -66,7 +65,7 @@ describe("McpToolsClient", () => {
     it("shows session authentication success message when logged in", () => {
       renderWithSession(<McpToolsClient isLoggedIn={true} />);
       expect(
-        screen.getByText("Using session authentication (no API key needed)"),
+        screen.getByText("Using session authentication"),
       ).toBeDefined();
     });
 
@@ -85,17 +84,17 @@ describe("McpToolsClient", () => {
   });
 
   describe("Authentication", () => {
-    it("shows optional API key input when logged in", () => {
+    it("shows optional OAuth token input when logged in", () => {
       renderWithSession(<McpToolsClient isLoggedIn={true} />);
       const apiKeyInput = screen.getByPlaceholderText(
-        /sk_live_.*leave empty to use session/,
+        /mcp_.*leave empty to use session/,
       );
       expect(apiKeyInput).toBeDefined();
     });
 
-    it("requires API key when not logged in", () => {
+    it("requires OAuth token when not logged in", () => {
       renderWithSession(<McpToolsClient isLoggedIn={false} />);
-      const apiKeyInput = screen.getByPlaceholderText(/sk_live_.../);
+      const apiKeyInput = screen.getByPlaceholderText(/mcp_\.\.\./);
       expect(apiKeyInput).toBeDefined();
     });
   });

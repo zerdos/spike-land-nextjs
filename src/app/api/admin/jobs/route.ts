@@ -106,14 +106,12 @@ function transformMcpJob(job: {
   outputSizeBytes: number | null;
   errorMessage: string | null;
   userId: string;
-  apiKeyId: string | null;
   geminiModel: string | null;
   createdAt: Date;
   updatedAt: Date;
   processingStartedAt: Date | null;
   processingCompletedAt: Date | null;
   user: { email: string | null; name: string | null; };
-  apiKey: { name: string; } | null;
 }): UnifiedJob {
   return {
     id: job.id,
@@ -136,8 +134,6 @@ function transformMcpJob(job: {
     processingStartedAt: job.processingStartedAt?.toISOString() ?? null,
     processingCompletedAt: job.processingCompletedAt?.toISOString() ?? null,
     mcpJobType: job.type as "GENERATE" | "MODIFY",
-    apiKeyId: job.apiKeyId,
-    apiKeyName: job.apiKey?.name ?? null,
     inputR2Key: job.inputImageR2Key,
     outputR2Key: job.outputImageR2Key,
     geminiModel: job.geminiModel,
@@ -260,7 +256,6 @@ export async function GET(request: NextRequest) {
           where: mcpWhere,
           include: {
             user: { select: { email: true, name: true } },
-            apiKey: { select: { name: true } },
           },
           orderBy: { createdAt: "desc" },
         })

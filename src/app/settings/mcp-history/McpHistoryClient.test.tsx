@@ -50,7 +50,6 @@ const createMockJob = (overrides: Partial<McpJob> = {}): McpJob => ({
   outputHeight: 1536,
   createdAt: "2025-01-15T10:00:00Z",
   processingCompletedAt: "2025-01-15T10:00:30Z",
-  apiKeyName: "test-key",
   ...overrides,
 });
 
@@ -67,7 +66,7 @@ interface McpJob {
   outputHeight?: number;
   createdAt: string;
   processingCompletedAt?: string;
-  apiKeyName?: string;
+
 }
 
 const mockCompletedJob = createMockJob();
@@ -77,7 +76,6 @@ const mockProcessingJob = createMockJob({
   status: "PROCESSING",
   outputImageUrl: undefined,
   processingCompletedAt: undefined,
-  apiKeyName: undefined,
 });
 
 const mockFailedJob = createMockJob({
@@ -388,21 +386,6 @@ describe("McpHistoryClient", () => {
       });
     });
 
-    it("should display API key name when available", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({
-          jobs: [mockCompletedJob],
-          total: 1,
-          hasMore: false,
-        }),
-      );
-
-      render(<McpHistoryClient />);
-
-      await waitFor(() => {
-        expect(screen.getByText("test-key")).toBeInTheDocument();
-      });
-    });
   });
 
   describe("Status Badges", () => {
@@ -945,63 +928,6 @@ describe("McpHistoryClient", () => {
 
       await waitFor(() => {
         expect(screen.queryByText("Dimensions")).not.toBeInTheDocument();
-      });
-    });
-
-    it("should display API key name in dialog when available", async () => {
-      vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({
-          jobs: [mockCompletedJob],
-          total: 1,
-          hasMore: false,
-        }),
-      );
-
-      render(<McpHistoryClient />);
-
-      await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean"))
-          .toBeInTheDocument();
-      });
-
-      const jobCard = screen.getByText("A beautiful sunset over the ocean")
-        .closest(
-          "[class*='cursor-pointer']",
-        );
-      fireEvent.click(jobCard!);
-
-      await waitFor(() => {
-        expect(screen.getByText("API Key")).toBeInTheDocument();
-      });
-    });
-
-    it("should not display API key in dialog when not available", async () => {
-      const jobWithoutApiKey = createMockJob({ apiKeyName: undefined });
-      vi.mocked(global.fetch).mockResolvedValue(
-        mockFetchResponse({
-          jobs: [jobWithoutApiKey],
-          total: 1,
-          hasMore: false,
-        }),
-      );
-
-      render(<McpHistoryClient />);
-
-      await waitFor(() => {
-        expect(screen.getByText("A beautiful sunset over the ocean"))
-          .toBeInTheDocument();
-      });
-
-      const jobCard = screen.getByText("A beautiful sunset over the ocean")
-        .closest(
-          "[class*='cursor-pointer']",
-        );
-      fireEvent.click(jobCard!);
-
-      await waitFor(() => {
-        // There should be no "API Key" label in the grid
-        const apiKeyLabels = screen.queryAllByText("API Key");
-        expect(apiKeyLabels.length).toBe(0);
       });
     });
 

@@ -1063,14 +1063,6 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                       </div>
                     )}
                     {/* MCP-specific IDs */}
-                    {selectedJob.source === "mcp" && selectedJob.apiKeyId && (
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">API Key</span>
-                        <span>
-                          {selectedJob.apiKeyName || selectedJob.apiKeyId}
-                        </span>
-                      </div>
-                    )}
                     {selectedJob.source === "mcp" && selectedJob.inputR2Key && (
                       <div className="flex justify-between">
                         <span className="text-neutral-500">Input R2</span>

@@ -40,7 +40,6 @@ interface McpJob {
   outputHeight?: number;
   createdAt: string;
   processingCompletedAt?: string;
-  apiKeyName?: string;
 }
 
 interface HistoryResponse {
@@ -313,11 +312,6 @@ export function McpHistoryClient() {
                         <Clock className="h-3 w-3 mr-1" />
                         {formatDate(job.createdAt)}
                       </span>
-                      {job.apiKeyName && (
-                        <span className="truncate max-w-[100px]">
-                          {job.apiKeyName}
-                        </span>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -406,12 +400,6 @@ export function McpHistoryClient() {
                         </p>
                       </div>
                     </>
-                  )}
-                  {selectedJob.apiKeyName && (
-                    <div>
-                      <p className="text-muted-foreground">API Key</p>
-                      <p>{selectedJob.apiKeyName}</p>
-                    </div>
                   )}
                 </div>
 

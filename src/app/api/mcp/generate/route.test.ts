@@ -57,7 +57,6 @@ function createMockRequest(
 
 describe("POST /api/mcp/generate", () => {
   const testUserId = "test-user-123";
-  const testApiKeyId = "api-key-456";
   const testJobId = "job-789";
 
   beforeEach(() => {
@@ -66,7 +65,6 @@ describe("POST /api/mcp/generate", () => {
     mockAuthenticateMcpOrSession.mockResolvedValue({
       success: true,
       userId: testUserId,
-      apiKeyId: testApiKeyId,
     });
     // Default no rate limit
     mockCheckRateLimit.mockResolvedValue({
@@ -105,7 +103,7 @@ describe("POST /api/mcp/generate", () => {
       });
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "test", tier: "TIER_1K" },
       );
       const response = await POST(request);
@@ -120,7 +118,7 @@ describe("POST /api/mcp/generate", () => {
   describe("validation", () => {
     it("should return 400 for invalid JSON body", async () => {
       const request = createMockRequest({
-        Authorization: "Bearer sk_test_validkey",
+        Authorization: "Bearer mcp_test_validkey",
       }, null);
       const response = await POST(request);
       const body = await response.json();
@@ -131,7 +129,7 @@ describe("POST /api/mcp/generate", () => {
 
     it("should return 400 when prompt is missing", async () => {
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { tier: "TIER_1K" },
       );
       const response = await POST(request);
@@ -143,7 +141,7 @@ describe("POST /api/mcp/generate", () => {
 
     it("should return 400 when prompt is empty", async () => {
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "   ", tier: "TIER_1K" },
       );
       const response = await POST(request);
@@ -155,7 +153,7 @@ describe("POST /api/mcp/generate", () => {
 
     it("should return 400 when prompt is too long", async () => {
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "a".repeat(4001), tier: "TIER_1K" },
       );
       const response = await POST(request);
@@ -167,7 +165,7 @@ describe("POST /api/mcp/generate", () => {
 
     it("should return 400 when tier is missing", async () => {
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "A beautiful sunset" },
       );
       const response = await POST(request);
@@ -179,7 +177,7 @@ describe("POST /api/mcp/generate", () => {
 
     it("should return 400 when tier is invalid", async () => {
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "A beautiful sunset", tier: "TIER_8K" },
       );
       const response = await POST(request);
@@ -200,7 +198,7 @@ describe("POST /api/mcp/generate", () => {
       });
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "A beautiful sunset", tier: "TIER_1K" },
       );
       const response = await POST(request);
@@ -214,7 +212,6 @@ describe("POST /api/mcp/generate", () => {
 
       expect(mockCreateGenerationJob).toHaveBeenCalledWith({
         userId: testUserId,
-        apiKeyId: testApiKeyId,
         prompt: "A beautiful sunset",
         tier: "TIER_1K",
         negativePrompt: undefined,
@@ -229,7 +226,7 @@ describe("POST /api/mcp/generate", () => {
       });
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         {
           prompt: "A beautiful sunset",
           tier: "TIER_2K",
@@ -244,7 +241,6 @@ describe("POST /api/mcp/generate", () => {
 
       expect(mockCreateGenerationJob).toHaveBeenCalledWith({
         userId: testUserId,
-        apiKeyId: testApiKeyId,
         prompt: "A beautiful sunset",
         tier: "TIER_2K",
         negativePrompt: "blurry, dark",
@@ -259,7 +255,7 @@ describe("POST /api/mcp/generate", () => {
       });
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "  A beautiful sunset  ", tier: "TIER_1K" },
       );
       await POST(request);
@@ -280,7 +276,7 @@ describe("POST /api/mcp/generate", () => {
       });
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "A beautiful sunset", tier: "TIER_1K" },
       );
       const response = await POST(request);
@@ -297,7 +293,7 @@ describe("POST /api/mcp/generate", () => {
       });
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "A beautiful sunset", tier: "TIER_1K" },
       );
       const response = await POST(request);
@@ -311,7 +307,7 @@ describe("POST /api/mcp/generate", () => {
       mockCreateGenerationJob.mockRejectedValue(new Error("Database error"));
 
       const request = createMockRequest(
-        { Authorization: "Bearer sk_test_validkey" },
+        { Authorization: "Bearer mcp_test_validkey" },
         { prompt: "A beautiful sunset", tier: "TIER_1K" },
       );
       const response = await POST(request);

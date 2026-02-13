@@ -184,26 +184,6 @@ async function restore() {
       },
     },
     {
-      name: "api_keys",
-      restore: async () => {
-        const data = loadBackupFile<{ id: string; [key: string]: unknown; }>("api_keys");
-        let count = 0;
-        for (const record of data) {
-          try {
-            await prisma.apiKey.upsert({
-              where: { id: record.id },
-              update: record as any,
-              create: record as any,
-            });
-            count++;
-          } catch (e) {
-            console.log(`   ⚠️  ApiKey: ${e instanceof Error ? e.message.substring(0, 50) : e}`);
-          }
-        }
-        return count;
-      },
-    },
-    {
       name: "featured_gallery_items",
       restore: async () => {
         const data = loadBackupFile<{ id: string; [key: string]: unknown; }>(

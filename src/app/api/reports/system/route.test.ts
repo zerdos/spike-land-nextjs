@@ -138,11 +138,10 @@ describe("GET /api/reports/system", () => {
       expect(response.status).toBe(200);
     });
 
-    it("should allow access with valid API key", async () => {
+    it("should allow access with valid OAuth token", async () => {
       vi.mocked(authenticateMcpOrSession).mockResolvedValue({
         success: true,
         userId: "admin_123",
-        apiKeyId: "key_456",
       });
       vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
       vi.mocked(generateSystemReport).mockResolvedValue({

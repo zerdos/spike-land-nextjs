@@ -503,7 +503,7 @@ describe("SettingsPage", () => {
       render(<SettingsPage />);
 
       const tabsList = screen.getByRole("tablist");
-      expect(tabsList).toHaveClass("grid", "w-full", "grid-cols-4");
+      expect(tabsList).toHaveClass("grid", "w-full", "grid-cols-3");
     });
   });
 

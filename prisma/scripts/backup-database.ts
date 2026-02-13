@@ -59,7 +59,7 @@ async function backup() {
     { name: "image_enhancement_jobs", query: () => prisma.imageEnhancementJob.findMany() },
     { name: "albums", query: () => prisma.album.findMany() },
     { name: "album_images", query: () => prisma.albumImage.findMany() },
-    { name: "api_keys", query: () => prisma.apiKey.findMany() },
+
     { name: "featured_gallery_items", query: () => prisma.featuredGalleryItem.findMany() },
     { name: "mcp_generation_jobs", query: () => prisma.mcpGenerationJob.findMany() },
     { name: "external_agent_sessions", query: () => prisma.externalAgentSession.findMany() },

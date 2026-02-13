@@ -68,7 +68,6 @@ import {
 
 describe("generation-service", () => {
   const testUserId = "test-user-123";
-  const testApiKeyId = "api-key-456";
   const testJobId = "job-789";
   const mockDate = new Date("2024-01-15T12:00:00Z");
 
@@ -107,7 +106,6 @@ describe("generation-service", () => {
 
       const result = await createGenerationJob({
         userId: testUserId,
-        apiKeyId: testApiKeyId,
         prompt: "A beautiful sunset",
         tier: "TIER_1K",
       });
@@ -235,7 +233,6 @@ describe("generation-service", () => {
 
       const result = await createModificationJob({
         userId: testUserId,
-        apiKeyId: testApiKeyId,
         prompt: "Add a rainbow",
         tier: "TIER_1K",
         imageData: "base64imagedata",
@@ -322,7 +319,6 @@ describe("generation-service", () => {
           prompt: "Test prompt 1",
           createdAt: mockDate,
           processingCompletedAt: mockDate,
-          apiKey: { name: "Test Key" },
         },
         {
           id: "job2",
@@ -333,7 +329,6 @@ describe("generation-service", () => {
           prompt: "Test prompt 2",
           createdAt: mockDate,
           processingCompletedAt: null,
-          apiKey: null,
         },
       ];
 
@@ -345,8 +340,6 @@ describe("generation-service", () => {
       expect(result.jobs).toHaveLength(2);
       expect(result.total).toBe(10);
       expect(result.hasMore).toBe(false);
-      expect(result.jobs[0]!.apiKeyName).toBe("Test Key");
-      expect(result.jobs[1]!.apiKeyName).toBeNull();
     });
 
     it("should filter by job type", async () => {
@@ -470,7 +463,6 @@ describe("generation-service", () => {
 
       const result = await createGenerationJob({
         userId: testUserId,
-        apiKeyId: testApiKeyId,
         prompt: "A beautiful sunset",
         tier: "TIER_1K",
         negativePrompt: "ugly",
@@ -644,7 +636,6 @@ describe("generation-service", () => {
 
       await createModificationJob({
         userId: testUserId,
-        apiKeyId: testApiKeyId,
         prompt: "Add a rainbow",
         tier: "TIER_2K",
         imageData: inputBase64,
@@ -962,66 +953,6 @@ describe("generation-service", () => {
       expect(result.error).toBe(
         "Insufficient AI credits. Required: 10 credits",
       );
-    });
-  });
-
-  describe("job creation without apiKeyId", () => {
-    it("should create generation job with null apiKeyId when not provided", async () => {
-      mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
-        success: true,
-      });
-      mockMcpGenerationJob.create.mockResolvedValue({
-        id: testJobId,
-        userId: testUserId,
-        type: McpJobType.GENERATE,
-        tier: "TIER_1K",
-        creditsCost: 2,
-        status: JobStatus.PROCESSING,
-      });
-
-      // Call without apiKeyId
-      await createGenerationJob({
-        userId: testUserId,
-        prompt: "A beautiful sunset",
-        tier: "TIER_1K",
-      });
-
-      expect(mockMcpGenerationJob.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          apiKeyId: null,
-        }),
-      });
-    });
-
-    it("should create modification job with null apiKeyId when not provided", async () => {
-      mockMcpGenerationJob.count.mockResolvedValue(0);
-      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
-        success: true,
-      });
-      mockMcpGenerationJob.create.mockResolvedValue({
-        id: testJobId,
-        userId: testUserId,
-        type: McpJobType.MODIFY,
-        tier: "TIER_1K",
-        creditsCost: 2,
-        status: JobStatus.PROCESSING,
-      });
-
-      // Call without apiKeyId
-      await createModificationJob({
-        userId: testUserId,
-        prompt: "Add a rainbow",
-        tier: "TIER_1K",
-        imageData: "base64imagedata",
-        mimeType: "image/jpeg",
-      });
-
-      expect(mockMcpGenerationJob.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          apiKeyId: null,
-        }),
-      });
     });
   });
 

@@ -71,7 +71,7 @@ describe("GET /api/mcp/history", () => {
     it("should return 401 when authentication fails", async () => {
       mockAuthenticateMcpOrSession.mockResolvedValue({
         success: false,
-        error: "Authentication required. Provide an API key or sign in.",
+        error: "Authentication required. Provide an OAuth token or sign in.",
       });
 
       const request = createMockRequest({});
@@ -82,11 +82,10 @@ describe("GET /api/mcp/history", () => {
       expect(body.error).toContain("Authentication required");
     });
 
-    it("should accept API key auth", async () => {
+    it("should accept OAuth token auth", async () => {
       mockAuthenticateMcpOrSession.mockResolvedValue({
         success: true,
         userId: testUserId,
-        apiKeyId: "api-key-123",
       });
       mockGetJobHistory.mockResolvedValue({
         jobs: [],
@@ -95,7 +94,7 @@ describe("GET /api/mcp/history", () => {
       });
 
       const request = createMockRequest({
-        Authorization: "Bearer sk_test_validkey",
+        Authorization: "Bearer mcp_test_validtoken",
       });
       const response = await GET(request);
 
@@ -125,7 +124,7 @@ describe("GET /api/mcp/history", () => {
       });
 
       const request = createMockRequest({
-        Authorization: "Bearer sk_test_validkey",
+        Authorization: "Bearer mcp_test_validtoken",
       });
       const response = await GET(request);
       const body = await response.json();
@@ -306,7 +305,6 @@ describe("GET /api/mcp/history", () => {
           outputHeight: 1024,
           createdAt: mockDate,
           processingCompletedAt: mockDate,
-          apiKeyName: "Test Key",
         },
         {
           id: "job2",
@@ -321,7 +319,6 @@ describe("GET /api/mcp/history", () => {
           outputHeight: null,
           createdAt: mockDate,
           processingCompletedAt: null,
-          apiKeyName: null,
         },
       ];
 

@@ -48,7 +48,6 @@ export function classifyError(
 
 interface CreateGenerationJobParams {
   userId: string;
-  apiKeyId?: string;
   prompt: string;
   tier: EnhancementTier;
   negativePrompt?: string;
@@ -58,7 +57,6 @@ interface CreateGenerationJobParams {
 
 interface CreateModificationJobParams {
   userId: string;
-  apiKeyId?: string;
   prompt: string;
   tier: EnhancementTier;
   imageData: string; // Base64 encoded
@@ -92,7 +90,7 @@ async function checkConcurrentJobLimit(userId: string): Promise<boolean> {
 export async function createGenerationJob(
   params: CreateGenerationJobParams,
 ): Promise<JobResult> {
-  const { userId, apiKeyId, prompt, tier, negativePrompt, aspectRatio } = params;
+  const { userId, prompt, tier, negativePrompt, aspectRatio } = params;
   const tokensCost = getMcpGenerationCost(tier);
 
   // Security: Check concurrent job limit to prevent burst attacks
@@ -126,7 +124,6 @@ export async function createGenerationJob(
   const job = await prisma.mcpGenerationJob.create({
     data: {
       userId,
-      apiKeyId: apiKeyId || null,
       type: McpJobType.GENERATE,
       tier,
       creditsCost: tokensCost,
@@ -162,7 +159,7 @@ export async function createGenerationJob(
 export async function createModificationJob(
   params: CreateModificationJobParams,
 ): Promise<JobResult> {
-  const { userId, apiKeyId, prompt, tier, imageData, mimeType } = params;
+  const { userId, prompt, tier, imageData, mimeType } = params;
   const tokensCost = getMcpGenerationCost(tier);
 
   // Security: Check concurrent job limit to prevent burst attacks
@@ -196,7 +193,6 @@ export async function createModificationJob(
   const job = await prisma.mcpGenerationJob.create({
     data: {
       userId,
-      apiKeyId: apiKeyId || null,
       type: McpJobType.MODIFY,
       tier,
       creditsCost: tokensCost,
@@ -565,11 +561,6 @@ export async function getJobHistory(
         outputHeight: true,
         createdAt: true,
         processingCompletedAt: true,
-        apiKey: {
-          select: {
-            name: true,
-          },
-        },
       },
       orderBy: { createdAt: "desc" },
       take: limit,
@@ -592,7 +583,6 @@ export async function getJobHistory(
       outputHeight: job.outputHeight,
       createdAt: job.createdAt.toISOString(),
       processingCompletedAt: job.processingCompletedAt?.toISOString() || null,
-      apiKeyName: job.apiKey?.name || null,
     })),
     total,
     hasMore: offset + limit < total,
@@ -684,7 +674,6 @@ export async function rerunMcpJob(
   const newJob = await prisma.mcpGenerationJob.create({
     data: {
       userId: job.userId,
-      apiKeyId: job.apiKeyId,
       type: job.type,
       tier: job.tier,
       creditsCost: job.creditsCost,

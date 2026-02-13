@@ -55,8 +55,6 @@ export interface UnifiedJob {
 
   // McpGenerationJob specific
   mcpJobType?: "GENERATE" | "MODIFY";
-  apiKeyId?: string | null;
-  apiKeyName?: string | null;
   inputR2Key?: string | null;
   outputR2Key?: string | null;
 

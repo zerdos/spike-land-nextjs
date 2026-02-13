@@ -29,7 +29,7 @@ model User {
   accounts                 Account[]
   aiDecisionLogs           AIDecisionLog[]           @relation("AIDecisionLogs")
   albums                   Album[]
-  apiKeys                  ApiKey[]
+
   apps                     App[]
   assetFolders             AssetFolder[]
   assetTagAssignments      AssetTagAssignment[]
@@ -972,28 +972,9 @@ model TrackedUrl {
   @@map("tracked_urls")
 }
 
-model ApiKey {
-  id                String             @id @default(cuid())
-  userId            String
-  name              String
-  keyHash           String             @unique
-  keyPrefix         String
-  lastUsedAt        DateTime?
-  isActive          Boolean            @default(true)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mcpGenerationJobs McpGenerationJob[]
-
-  @@index([userId, isActive])
-  @@index([keyHash])
-  @@map("api_keys")
-}
-
 model McpGenerationJob {
   id                    String           @id @default(cuid())
   userId                String
-  apiKeyId              String?
   type                  McpJobType
   tier                  EnhancementTier
   creditsCost           Int
@@ -1013,11 +994,9 @@ model McpGenerationJob {
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
   creativeVariant       CreativeVariant?
-  apiKey                ApiKey?          @relation(fields: [apiKeyId], references: [id])
   user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status, createdAt])
-  @@index([apiKeyId])
   @@index([status, updatedAt])
   @@map("mcp_generation_jobs")
 }

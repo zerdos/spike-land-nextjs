@@ -44,8 +44,8 @@ describe("getMcpBaseUrl", () => {
     expect(getMcpBaseUrl()).toBe("https://my-app-xyz.vercel.app");
   });
 
-  it("falls back to spike.land when no env vars are set", () => {
-    expect(getMcpBaseUrl()).toBe("https://spike.land");
+  it("falls back to localhost:3000 when no env vars are set", () => {
+    expect(getMcpBaseUrl()).toBe("http://localhost:3000");
   });
 
   it("NEXT_PUBLIC_APP_URL takes priority over VERCEL_URL in non-production", () => {
