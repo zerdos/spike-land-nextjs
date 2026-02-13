@@ -1,0 +1,174 @@
+---
+title: "The Testing Pyramid Is Upside Down"
+slug: "the-transcendent-function-of-fast-tests"
+description: "Jung's transcendent function resolves apparent opposites not through compromise but through emergence. For decades we accepted a tragic choice between fast-but-shallow and meaningful-but-slow tests. MCP is the third position the psyche of software testing has been straining toward."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Developer Experience"
+tags: ["testing", "mcp", "psychology", "jung", "transcendent-function"]
+featured: false
+listed: false
+---
+
+## The Persona and the Self
+
+Carl Jung drew a careful distinction between the *persona* -- the mask we present to the world -- and the *Self* -- the authentic totality beneath it. The persona is not false. It is adaptive, necessary, the interface between inner psyche and outer reality. But Jung warned against identifying with the persona. When a person mistakes the mask for the face, individuation stops. The living psyche ossifies into performance.
+
+Software applications have the same architecture. The browser UI is the persona. Beneath it lives the Self: business logic, state transitions, invariants, contracts.
+
+For thirty years, our testing culture has been identifying with the persona.
+
+---
+
+## Inflation of the Persona
+
+We started testing the UI. Selenium. Protractor. Cypress. Playwright. Each generation more sophisticated. Each one a more elaborate attempt to verify the application by examining its mask.
+
+Jung described persona inflation as a state where the individual becomes so absorbed in their social role that they lose contact with their inner life. The executive who cannot distinguish herself from the title on her door. The application whose correctness is defined entirely by whether the right pixels appear in the right places.
+
+E2E tests are persona-verification machines. They assert that the mask looks right. But what have we actually verified? That DOM mutations occurred under specific timing conditions. Not that the state transition was sound. Not that the invariant held.
+
+These tests are slow, because the persona is complex. Flaky, because the persona is context-dependent. Brittle, because the persona changes constantly while the Self remains stable. Change a CSS class? The persona shifts. The Self is untouched. But the test breaks, because the test was watching the mask.
+
+The testing pyramid encoded a tragic choice: verify the Self quickly but partially (unit tests), or verify the persona slowly but completely (E2E tests). Jung would have called this a neurotic impasse -- two opposites locked in unresolvable tension, the psyche straining toward a resolution it cannot yet articulate.
+
+---
+
+## The Transcendent Function
+
+Jung's most radical concept: the *transcendent function*. When the conscious mind holds one position and the unconscious holds the opposite, the resolution is not compromise. It is the emergence of a genuinely novel third position that transcends the original opposition. The opposites were never true opposites -- they were different projections of a constraint the psyche had not yet identified.
+
+For decades: unit tests are fast but shallow. E2E tests are meaningful but slow. Speed versus coverage. The Self versus the persona. Pick one.
+
+MCP -- Model Context Protocol -- is the transcendent function.
+
+It does not balance these opposites. It reveals they were never true opposites at all. "Fast tests cannot exercise full user flows" was not a law of nature. It was an artifact of a single constraint: the browser was the only interface connecting all the pieces of business logic into coherent flows.
+
+Remove the constraint. The opposition dissolves.
+
+MCP exposes your application's capabilities as structured tools. Text in, text out. No browser, no DOM, no CSS selectors. You are testing the Self directly, at unit test speed.
+
+Here is a Cypress E2E test -- persona verification:
+
+```typescript
+// Cypress E2E test -- verifying the persona
+describe('Email update flow', () => {
+  it('should allow user to change their email', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+Every CSS selector is a stage direction for the mask. Change the mask and the test shatters, even if the Self is unchanged. Now here is the same business logic as an MCP tool and its unit test -- direct access to the Self:
+
+```typescript
+// MCP tool -- the Self, made accessible
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+    if (!confirmChange) return { status: 'confirmation_required' };
+
+    await context.userService.updateEmail(user.id, newEmail);
+    return { status: 'success', updatedEmail: newEmail };
+  },
+};
+
+// Unit test -- verifying the Self
+describe('update_user_email', () => {
+  it('should update email when confirmed', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+    expect(context.userService.updateEmail).toHaveBeenCalledWith(
+      '1', 'new@example.com',
+    );
+  });
+
+  it('should require confirmation before updating', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: false },
+      context,
+    );
+    expect(result.status).toBe('confirmation_required');
+    expect(context.userService.updateEmail).not.toHaveBeenCalled();
+  });
+});
+```
+
+This test runs in milliseconds. It does not observe the mask and infer what lies beneath. It interrogates the Self directly. The transcendent function has done its work: fast *and* deep are no longer opposites.
+
+---
+
+## Figure-Ground Reversal
+
+Gestalt psychology -- which deeply influenced Jung -- showed that perception organizes itself into *figure* and *ground*. The vase or the two faces. What you perceive as the figure determines the meaning of everything else.
+
+For decades, the testing pyramid was the figure. We analyzed it, debated its proportions. But what if the pyramid was never the figure? What if the real figure was the *constraint* -- business logic could only be exercised through a browser -- and the pyramid was merely the ground shaped around it?
+
+Remove the constraint. The ground reshapes automatically. Business logic migrates from the slow E2E layer down to the fast unit layer. Not through clever mocking, but because the browser is no longer required. What remains at the top is a thin layer of genuine persona verification -- visual regression, rendering, browser-specific integration.
+
+The pyramid was never a natural law. It was the negative space around a constraint we had not learned to name.
+
+---
+
+## Three Players, One Truth
+
+A unit test and its code, when written properly, specify each other. Two players, one truth.
+
+But I think there is a third player: the name.
+
+Consider the MCP tool: `update_user_email`. That name is what Jung would call a *symbol* -- not a sign that points to a known thing, but a living expression that participates in creating the thing it names. The name constrains what the handler must do. The handler constrains what the test must verify. The test constrains what the name must mean. Each vertex individuating the other two.
+
+Test. Code. Name. Three players, one truth. We had the first two for decades. MCP formalized the third into something machines can discover, invoke, and verify. One symbol, three realizations -- test contract, agent interface, feature documentation. Jung called this individuation: the differentiation of parts that serve a unified whole.
+
+---
+
+## The Pyramid, Individuated
+
+If your test suite is caught in a neurotic impasse -- fast but shallow on one side, meaningful but slow on the other -- here is how to begin individuation.
+
+**Confront the shadow.** Take your flakiest E2E tests. Ask what they are really testing. Strip away the clicks and waits and selectors. The business logic underneath is the shadow content your persona-tests have been projecting onto the browser.
+
+**Make the Self accessible.** Write MCP tools for your business logic flows. You are not rewriting anything. You are giving the Self a voice that does not depend on the persona.
+
+**Test the Self directly.** Unit-test the MCP tools. These tests run in milliseconds, never flake, and survive every UI refactor.
+
+**Let the persona be the persona.** Keep a thin layer of E2E tests for what they are genuinely suited for: visual regression, rendering, browser-specific behavior. The mask. Let the mask be the mask.
+
+The transcendent function does its work. Speed and depth cease to be opposites. The pyramid reshapes around the absence of the old constraint, and the neurotic impasse resolves into something that feels, for the first time, psychologically whole.
+
+---
+
+## Full Circle
+
+MCP dissolves the constraint that forced the identification with the persona. When business logic is accessible through a text interface, you no longer need to examine the mask and guess what lies beneath. You can meet the Self directly.
+
+That is individuation. The long, patient process of becoming what you actually are -- not what the mask says you are. Less time projecting business logic onto browser surfaces. More time working with the thing itself. The boring kind of progress that makes everything else possible.

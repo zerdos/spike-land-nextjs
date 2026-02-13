@@ -33,6 +33,7 @@ describe("BlogHeader", () => {
     image: "/images/hero.jpg",
     featured: true,
     listed: true,
+    language: "en",
   };
 
   const mockReadingTime = "5 min read";

@@ -1,0 +1,165 @@
+---
+title: "The Testing Pyramid Is Upside Down"
+slug: "deep-structure-surface-structure"
+description: "Business logic is langue -- the invariant system of rules. The UI is parole -- contingent, shifting, surface performance. For thirty years we tried to deduce grammar by studying utterances in noisy cafes. Structural linguistics explains why MCP changes everything."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Developer Experience"
+tags: ["testing", "mcp", "linguistics", "saussure", "deep-structure"]
+featured: false
+listed: false
+---
+
+## Langue and Parole
+
+In 1916, Ferdinand de Saussure drew a distinction that would reshape every human science for the next century. He separated *langue* -- the abstract system of rules and relations that constitutes a language -- from *parole* -- the concrete, contingent, messy act of speaking it. Langue is the grammar that makes French possible. Parole is a particular Frenchman arguing with a waiter in a particular cafe on a particular Tuesday afternoon.
+
+The distinction matters because you cannot study langue by recording parole. You can transcribe ten thousand cafe arguments and still not deduce the subjunctive. The surface is too noisy, too variable, too entangled with context. To understand the system, you have to study the system -- not its incidental performances.
+
+I have been thinking about this distinction for months. Because I think it describes, with uncomfortable precision, what we have been doing with browser-based end-to-end tests for the past thirty years. We have been recording cafe arguments and hoping to deduce grammar from them.
+
+## Testing Parole
+
+We did start testing UI. Of course we did. Selenium. Protractor. Cypress. Playwright. Each generation better than the last. Each one a more sophisticated recording device for cafe arguments.
+
+A browser test watches a particular rendering of your application on a particular viewport at a particular moment. It clicks a button -- a deictic gesture, pointing at *this* element, *here*, *now*. It waits for a toast notification -- another deictic reference, contingent on timing, animation state, network latency. Every CSS selector in a Cypress test is a deictic expression: it picks out its referent from context rather than naming it absolutely. And deixis, as any linguist will tell you, is the most fragile layer of language. "This" and "that" and "here" and "now" break the moment context shifts. Move to a different device, a different locale, a different design iteration -- and all your pointing gestures point at nothing.
+
+These tests are slow because rendering is slow. They are flaky because context shifts constantly. They are brittle because deixis breaks across contexts. But the deepest problem is epistemological: they are studying the wrong object. They are sampling parole and hoping it reveals langue.
+
+This is the testing pyramid. Unit tests at the base: fast, cheap, many. E2E tests at the top: slow, expensive, few. Everyone agrees the top is painful. We accepted it as the cost of doing business. You need *some* E2E tests because the browser was the only interface that connected all the pieces of a user flow.
+
+The hard question was always: how do we verify that our business logic is correct? The substitution we made -- unconsciously, collectively, for an entire industry -- was to ask instead: how do we automate a browser? We answered the substituted question brilliantly. We never noticed it was the wrong one.
+
+---
+
+## Competence, Not Performance
+
+Noam Chomsky, building on Saussure, drew a parallel distinction between *competence* -- the native speaker's internalized knowledge of their language -- and *performance* -- the actual utterances they produce, complete with false starts, slips of the tongue, and interruptions. A linguist who studies only performance will drown in noise. To study competence, you need a way to query the system directly.
+
+MCP -- Model Context Protocol -- is that query mechanism for software. It is a standard for exposing your application's capabilities as structured tools. Text in, text out. No browser, no DOM, no deictic selectors. When you write your user stories as MCP tools, you create an interface to the competence of your system -- the invariant business logic -- without going through its performance in any particular browser on any particular day.
+
+Here is what the distinction looks like in practice. A typical E2E test for an email update flow -- studying performance:
+
+```typescript
+// Cypress E2E test -- recording parole
+describe('Email update flow', () => {
+  it('should allow user to change their email', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+Every line is a deictic gesture. `cy.get('[data-testid="save-button"]')` -- *that* button, *there*, in *this* rendering. Move the button to a dropdown menu and the gesture points at nothing. Change the success message from a toast to an inline alert and the observation is meaningless. You are transcribing one specific utterance and hoping it tells you something about the grammar.
+
+Now, the same business logic as an MCP tool -- querying competence directly:
+
+```typescript
+// MCP tool -- the langue itself
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+    if (!confirmChange) {
+      return {
+        status: 'confirmation_required',
+        message: `Confirm change from ${user.email} to ${newEmail}?`,
+      };
+    }
+    await context.userService.updateEmail(user.id, newEmail);
+    return { status: 'success', updatedEmail: newEmail };
+  },
+};
+
+// Unit test -- testing langue, not parole
+describe('update_user_email', () => {
+  it('should update email when confirmed', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+    expect(context.userService.updateEmail).toHaveBeenCalledWith(
+      '1', 'new@example.com',
+    );
+  });
+
+  it('should reject unauthenticated requests', async () => {
+    const context = createMockContext({ user: null });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+    expect(result.error).toBe('Not authenticated');
+  });
+});
+```
+
+This test runs in milliseconds. It does not depend on DOM structure, animation timing, or any particular rendering context. It tests the *system of rules*, not one contingent performance of those rules. You have not lost any coverage. You have lost the noise.
+
+---
+
+## Performative Utterances
+
+J. L. Austin, in *How to Do Things with Words*, distinguished between constative utterances -- statements that describe a state of affairs -- and performative utterances -- statements that *constitute* an action. "The door is open" is constative. "I hereby declare this meeting adjourned" is performative. It does not describe adjouring. It *is* the adjournment.
+
+An MCP tool is a performative utterance. `update_user_email` does not describe updating an email. It *is* the update. When a test invokes the handler, the illocutionary act -- the intended force of the utterance -- is executed directly. There is no gap between what the tool says and what it does. The test verifies the illocutionary force itself, not some downstream locutionary trace observed on a screen.
+
+A browser test, by contrast, can only observe locutionary artifacts. It sees text appear in a toast. It sees a CSS class change. These are the *perlocutionary effects* -- the consequences of the speech act as perceived by a third party. Perlocutionary effects are unreliable evidence of illocutionary force. A toast saying "Email updated" could appear because the email was updated, or because a frontend handler fired optimistically before the backend rejected the request. The surface said one thing. The depths did another.
+
+MCP collapses the gap. The tool name is the illocutionary act. The handler is its execution. The test verifies both in a single gesture.
+
+---
+
+## Three Players, One Truth
+
+A unit test and its code, when written properly, specify each other. Two players, one truth.
+
+But I think there is a third player: the name.
+
+Saussure argued that the linguistic sign has two faces -- the *signifier* (the sound-image, the word) and the *signified* (the concept it evokes). Neither exists without the other. The word "tree" is not the concept of a tree, and the concept of a tree is not the word -- but the sign is the inseparable union of both. Change the signifier and you change what can be thought. Change the signified and you change what can be said.
+
+Consider the MCP tool: `update_user_email`. The name -- the signifier -- constrains what the handler can contain. The handler -- the signified -- constrains what names are appropriate. An AI agent browsing your MCP server reads tool names, descriptions, and schemas. If `update_user_email` is named properly, an agent knows what to call without reading the implementation. The sign is complete: the name evokes the contract, and the contract justifies the name.
+
+Test. Code. Name. Three players, one truth. The name constrains the handler. The handler constrains the test. The test constrains the name. A triangle of mutual specification where each vertex holds the other two accountable. We had two vertices for decades. MCP formalized the third into something machines can discover, invoke, and reason about -- a machine-readable sign in Saussure's sense, where signifier and signified are bound into a single discoverable unit.
+
+---
+
+## Reshaping the Pyramid
+
+The testing pyramid was always a compromise born of interface poverty. We put E2E tests at the top not because we wanted them to be slow and few, but because the browser was the only way to exercise full user flows. The only way to study the language was to record conversations in noisy cafes.
+
+MCP breaks that constraint. If your business logic is accessible through a structured text interface, full user flow verification does not require a browser. It requires a function call. Function calls are fast. Therefore, write as many as you want.
+
+The pyramid does not flip. It reshapes. The E2E layer thins to what it should have always been: verification that the rendering layer *renders*. Does the page load? Does the layout hold? Does the design look right? Those are legitimate questions about parole -- asked knowingly, without mistaking performance for competence.
+
+The business logic that used to bloat the E2E layer moves down to the unit test layer. Not because you found a clever way to mock the browser, but because you removed the need to go through it. You stopped trying to deduce grammar from cafe recordings. You went to the source.
+
+---
+
+## Full Circle
+
+The real answer to the UI testing question was never "automate the browser harder." It was: make the system accessible without going through the noisy surface. Stop trying to deduce grammar from cafe recordings. Go to the source.
+
+Now we can. Less time transcribing noise. More time reasoning about structure. Less friction between the sign and its meaning. The boring kind of progress that makes everything else possible.

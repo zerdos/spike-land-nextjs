@@ -1,0 +1,553 @@
+---
+title: "A Vibe Coding Paradoxon: Miert Lesz Butabb az AI-d, Minel Tobb Szabadsagot Adsz Neki"
+slug: "the-vibe-coding-paradox"
+description: "Epitettunk egy AI-t, ami React appokat general URL-ekbol. Az esetek 40%-aban mukodott. Aztan megtanitottuk, hogy tanuljon a sajat hibaaibol -- ugyanazt a fizikaat hasznalva, ami miatt a promptjaid kudarcot vallanak."
+date: "2026-02-12"
+author: "Zoltan Erdos"
+category: "Fejlesztoi Elmeny"
+tags: ["ai", "context-engineering", "claude", "agents", "onjavito", "developer-tools", "vibe-coding", "fizika"]
+featured: true
+language: "hu"
+---
+
+{/* TL;DR Box */}
+<div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 mb-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">TL;DR</h3>
+  <ul className="space-y-2 text-slate-300">
+    <li>A vibe codingnak fizikai problemaja van: a figyelem nullaosszegu eroforras, es a remelj-es-imaadkozz generalas a nagyreszt elpazarolja.</li>
+    <li>A spike.land app letrehozojaanak sikerarat 40%-rol onjavito agensre alakitottuk, ami minden kudarcbol tanul.</li>
+    <li>A javitas pontosan a termodinamikara kepezheto: oorizd meg az energiat (stabil prompt prefixum), vezesd el a hot (tomorritsd a hibakat tanulasi jegyzetekbe), es hagyd, hogy a termeszetes szelekcio metsze a rossz tudastt.</li>
+    <li>3 Claude modell kaszkadolva koltseg szerint: Opus alkot ($$$), Sonnet debugol ($$), Haiku tanul ($).</li>
+    <li>Maga a rendszer is a Claude Code terv modjaval lett tervezve -- kontextus-tervezes vegig lefele.</li>
+  </ul>
+</div>
+
+## A Paradoxon
+
+Epittettem egy AI-t, ami React appokat general URL-bol.
+
+Ird be a `/create/games/tetris` cimet, kapsz egy jaatszhatoo Tetrist. Ird be a `/create/finance/dashboard` cimet, kapsz egy valos ideju reszveny diagramot. Az URL a prompt. Az app masodpercek alatt megjelenik.
+
+Varaazslatosnak hangzik. Ime, mi tortent valojaaban: az esetek 40%-aban mukodott.
+
+<SplitScreenDemo />
+
+A masik 60%? Torott importok. Nem definialt valtozok. Appok, amik betolteskor kriptikus transpilaacios hibakkal omlottek ossze. Az AI eleg okos volt, hogy megirja a Tetrist -- csak nem volt eleg okos, hogy *emlekezzen* arra, hogy korabban mar kudarcot vallott a Tetrisnel.
+
+Minden generalas a nullarol indult. Nincs emleke a multbeli kudarcoknak. Nincs feljegyzese arrol, mely importok mukodnek es melyek adnak 404-et. Nincs felhalmozott bolcsesseg. Csak nyers intelligencia, ami egy problemara iranyul nulla intezmemyi tudassal.
+
+Ime a paradoxon, ami megtori az intuiciot: az AI-nak **tobb szabadsag** aadasa -- hagyni, hogy "vibe codoljon" -- **rosszabb eredmenyeeket** hoz, mint a korlatozaasa. Azt gondolnad, kevesebb szabaly tobb kreativitaast jelent. A fizika mast mond.
+
+A paradoxonnak neve van a szakteruleten: **kontextus-tervezes.** Es van egy fizikai mechanizmusa, ami pontosan megmagyarazza, miert vall kudarcot a vibe coding -- es pontosan hogyan javitsd ki.
+
+Ez a haromreszes sorozat harmadik cikke. Az [elso](/blog/context-engineering-your-zero-shot-prompt) bemutatta az 5 retegu kontextus vermet -- egy keretrendszert ahhoz, hogy elore betolts mindent, amire az AI-nak szuksege van az elso probalkozasra valo sikerhez. A [masodik](/blog/how-claude-code-engineers-context) bement a transformer belsejebe, hogy elmagyaraazza, *miert* szamit a kontextus a figyelem szintjen. Ez a cikk mindkettoet alkalmazza egy valos termekfunkcio epitesere: egy onjavito agens, ami React appokat general es tanul a sajat hibaibol.
+
+---
+
+## A Fizikaja Annak, Miert Vall Kudarcot a Vibe Coding
+
+<AttentionSpotlightDemo />
+
+Kezdjuk az elso elvekbol. Mi az a token?
+
+A token az LLM vilaganak atomegysege. Minden karakter, amit beirsz, minden utasitas, amit adsz, minden kontextus, amit megadsz, tokenekre bomlik. Egy tipikus angol szo 1-2 token. Egy sor kod 10-15 lehet. A modell ezeket a tokeneket az **onfigyelem** nevu mechanizmuson keresztul dolgozza fel, es ime az egyenlet, ami iranyitja:
+
+```
+attention = softmax(QK^T / sqrt(d)) x V
+```
+
+A donato resz a `softmax`. Normalizalja a figyelmi sulyokat, hogy osszeguk 1,0 legyen. Ez egy megmaradasi torveny, struktrurajaban azonos a fizika energiamegmaradasaval. Nem tudsz figyelmet teremteni a semmibol. Van egy rogzitett koltsegvetes. A kontextusablak minden tokenje versenyez ennek a koltsegvetesnek egy reszeert.
+
+**A figyelem olyan, mint egy szoba egyetlen reflektorral.** A vibe coding 20 embert rak a szobaba es remeli, hogy a reflektor megtalaalja a megfelelot. A kontextus-tervezes 3 embert rak a szobaba es a reflektort a padlohoz szeegezi.
+
+Amikor 10 000 token lenyegtelen kontextust ontesz a promptba -- "minden eshetosegre" -- nem vagy alapos. Halvanyitod a reflektort. A relevaants tokenek meg ott vannak. Csak 9500 lenyegtelen tokennel versenyeznek a modell veges figyelmeert.
+
+<Callout type="info">
+**A fizika szamszerusitve van.** Egy 2025-os tanulmany, amelynek cime "Context Length Alone Hurts LLM Performance Despite Perfect Retrieval", 47,6%-os pontossag-csokkenest talalt 30K tokennel kodolasi feladatoknal -- meg akkor is, amikor a visszakereses tokeletes volt es nem voltak eltero tenyezok. Meg az ures szokozok is 7-48%-os teljesitmenyesest okoztak. Ez nem szoftver hiba. Ez fizika. Tobb token = tobb hiigiitas = rosszabb eredmenyek.
+</Callout>
+
+Ez magyarazza a paradoxont. A vibe coding -- "csak generalj valamit es meglatjuk" -- mukodik rovid, egyszeru promptokkal. De ahogy az osszetettseeg no, a struktura hianya azt jelenti, hogy a modell figyelme szetszooroodik egy egyre novekvoo kontextusban. A jel beleefeullad a zajba. Nem azert, mert a modell buta, hanem mert a softmax nullaosszegu jatek.
+
+---
+
+## Az Elotte -- Egy Vibe Coder Anatomiaja
+
+Legyunk oszintek azzal kapcsolatban, honnan indultunk. Az eredeti app generaator egyszeru, tiszta es elegtelen volt.
+
+Egyetlen Gemini API hivas. Egyetlen ujraproba kudarc eseten. Nincs memoria. Nincs tanulas. Nincs strukturalt hibakezeeles. Ime a fallback utvonal, ami a *teljes* rendszerunk volt:
+
+```typescript
+// A regi mod: egyetlen loves, remeld a legjobbat
+async function* geminiFallbackStream(slug, path, userId) {
+  const { content, rawCode, error } = await generateAppContent(path);
+
+  let updateResult = await updateCodespace(codespaceId, codeToPush);
+
+  if (!updateResult.success) {
+    // Egyetlen ujraprobba hiba javitaassal
+    const correctedCode = await attemptCodeCorrection(
+      codeToPush, updateResult.error, slug
+    );
+    if (correctedCode) {
+      updateResult = await updateCodespace(codespaceId, correctedCode);
+    }
+  }
+
+  if (!updateResult.success) {
+    throw new Error(updateResult.error || "Failed to update codespace");
+  }
+}
+```
+
+Mint egy diak, aki tanulas nelkul irja a vizsgat: neha briliaans, altalaban kozepes. Es ami donato -- egy diak, aki **mindent elfelejt** vizsgak kozott.
+
+| | Elotte (Vibe Coding) | Utana (Kontextus-tervezett Agens) |
+|---|---|---|
+| **Modell** | Gemini Flash (egyetlen hivas) | Claude Opus -> Sonnet -> Haiku (kaszkad) |
+| **Ujraprobak** | 1 vak ujraproba | Akaar 3 celzott javitas hiba-diagnoziissal |
+| **Memoria** | Nincs | Bayesi tanulasi jegyzetek, DB-ben tarolva |
+| **Hibakezeeles** | Nyers hiba string -> ujraproba | Strukturalt elemzes -> kategorrizalt javito promptok |
+| **Kepessegek** | Generikus prompt | 14 kepesseg definicio kulcsszavak szerint |
+| **Prompt gyorsitotarazas** | Nincs | Osztott blokkos KV cache (10x koltsegmegtakaritaas) |
+| **Fallback** | Nincs | Agens proxy -> Kozvetlen Claude -> Gemini |
+
+---
+
+## A Kontextus Megmaradasa -- Az 5 Retegu Javitas
+
+A helyzet a kovetkezo: a javitas nem tobb AI. Jobb fizika.
+
+<FiveLayerStackDemo />
+
+Az [5 retegu kontextus verem](/blog/context-engineering-your-zero-shot-prompt) -- Identitas, Tudas, Peldak, Korlatozasok, Eszkozok -- nem csak egy keretrendszer. Megmaradasi strategia. A retegek, amik nem valtoznak, gyorsitotarazodnak (olcsok). A retegek, amik valtoznak, hozzafeuzodnek (frissek). A modell figyelmi koltsegvetese a megfelelo dolgokra forditoodik, mert a prompt ugy van strukturalva, hogy ez megtortenjen.
+
+Ime, hogyan kepezheto le kodra:
+
+| Keretrendszer Reteg | Fizikai Analoigia | Kod Implementacio |
+|---|---|---|
+| **Identitas** (1. reteg) | Megmaradasi torveny -- stabil vonatkoztatasi keret | `AGENT_IDENTITY` -- gyorsitootarazott, soha nem valtozik |
+| **Tudas** (2. reteg) | Friss meres -- dinamikus keserletenkeent | Tanulasi jegyzetek -- ujraepitve keresenkent |
+| **Peldak** (3. reteg) | Kalibraacios adatok -- stabil muszerbeallitasok | Kepesseg promptok -- kategooiraankeent gyorsitotarazott |
+| **Korlatozasok** (4. reteg) | Hatarfeltetelek -- beallitasonkeent rogzitett | Kimeneti specifikaacioo, javitasi szabalyok -- gyorsitotarazott |
+| **Eszkozok** (5. reteg) | Meresi apparaatus -- definialja, mi megfigyelheto | Transpiler, codespace API -- implicit |
+
+A kulcsfuggveny a `buildAgentSystemPrompt`. *Osztott blokkokat* ad vissza -- egy stabil prefixumot a gyorsitotarazashoz es egy dinamikus szuffixumot a frissesseghez:
+
+```typescript
+export function buildAgentSystemPrompt(
+  topic: string,
+  notes: LearningNote[],
+): SplitPrompt {
+  // Stabil prefixum: identitas + alapveto kepessegek + kimeneti spec -> gyorsitotarazott
+  const coreWithSkills = buildSkillSystemPrompt(topic);
+  const stablePrefix = `${AGENT_IDENTITY}\n\n${coreWithSkills}\n\n${OUTPUT_SPEC}`;
+
+  // Dinamikus szuffixum: tanulasi jegyzetek -> NEM gyorsitotarazott, valtozik keresenkent
+  const noteBlock = formatNotes(notes);
+
+  return {
+    stablePrefix,
+    dynamicSuffix: noteBlock,
+    full: noteBlock ? `${stablePrefix}\n\n${noteBlock}` : stablePrefix,
+  };
+}
+```
+
+A stabil prefixum `cache_control: { type: "ephemeral" }` jellezest kap az API hivasban. Az ugyanazon temaju kovetkezo kereseknel ezek a tokenek a KV cache-bol szolgaltatodnak **10x alacsonyabb koltsegen**. A dinamikus szuffixum -- a tanulasi jegyzetek -- keresenkent valtozik es nem ervenytelenitii a cache-t.
+
+<Callout type="success">
+**KV Cache Felismeres:** Az identitas, kepessegek es kimeneti specifikaacioo ~2000 token, ami soha nem valtozik az ugyanazon kategoria generalasai kozt. Gyorsitotarazasuk keresenkent $0,009-et takarit meg. Ezerny generalaasioo soran ez a kulonbseg egy koltseghatekony szolgaltatas es egy penznyelo kozt. A kontextus-tervezes nem csak technikailag megalapozott -- gazdasagilag optimalis.
+</Callout>
+
+Ez a kontextus megmaradasa a gyakorlatban. A stabil vonatkoztatasi keret (identitas + kepessegek + kimeneti spec) olyan, mint a fizika megmaradoo mennyisegei -- energia, impulzus, toltes. Interakciookon at megmaradnak. A dinamikus megfigyelesek (tanulasi jegyzetek) olyanok, mint a kiserleti meresek -- minden alkalommal frissek, arra epitve, amit a megmaradoo keret lehetove tesz.
+
+---
+
+## A Javitasi Hurok -- Termeszetes Szelekcio Kodnak
+
+<DarwinianTreeDemo />
+
+Az agens hurok darwinista szelekcio kodnak. General (mutaacioo) -> Transpilaaal (kornyezeti teszt) -> Javit (alkalmazkodas) -> Tanul (orokolheto emlekkezet). Akaar 3 iteraacioo -- 3 generaacioo evolucio keresenkent.
+
+<AgentLoopDemo />
+
+```typescript
+export async function* agentGenerateApp(
+  slug: string,
+  path: string[],
+  userId: string | undefined,
+): AsyncGenerator<StreamEvent> {
+  const maxIterations = Math.min(
+    parseInt(process.env["AGENT_MAX_ITERATIONS"] || "3", 10),
+    MAX_ITERATIONS_CAP,
+  );
+  // ...
+
+  // === GENERALAS: Claude Opus hivas ===
+  const genResponse = await callClaude({
+    systemPrompt: systemPrompt.full,
+    stablePrefix: systemPrompt.stablePrefix,
+    dynamicSuffix: systemPrompt.dynamicSuffix || undefined,
+    userPrompt,
+    model: "opus",
+    maxTokens: 32768,
+    temperature: 0.5,
+  });
+```
+
+Az elso hivas **Opus**-t hasznal **0.5** homersekleten -- kreativ felfedezes. Magas homerseklet magas entroopiat jelent, veletlenszrubb mintavetel a valoszinuseeg-eloszlasbol. Jo ujszeru megoldasok generaalasahoz. Rossz pontos sebeeszethez.
+
+Amikor a kod megbukik a transpilaalason, a javito modell **Sonnet**-re valt **0.2** homersekleten -- pontos, determinisztikus, fokuszalt:
+
+```typescript
+      // === JAVITAS: Kerd meg a Claude Sonnet-et a hiba javitasara ===
+      const fixResponse = await callClaude({
+        systemPrompt: fixSystemPrompt.full,
+        stablePrefix: fixSystemPrompt.stablePrefix,
+        dynamicSuffix: fixSystemPrompt.dynamicSuffix || undefined,
+        userPrompt: fixUserPrompt,
+        model: "sonnet",
+        maxTokens: FIX_MAX_TOKENS,
+        temperature: 0.2,
+      });
+```
+
+De a lenyeg... **a javito modell mas modell, mint a generaalo.** Ez olyan, mintha a korrektor nem a szerzo lenne. Elkapjak azokat a hibakat, amikre a szerzo vak. A generaalo (Opus) kreativ lendulette rendelkezik -- befektetett az architekturalis donteeseibe. A javito (Sonnet) csak a hibat es a kodot latja, a dizajnhoz koetoett ego nelkul.
+
+A homerseklet mint fizikai parameter tisztan lekezphoeetoo: magasabb homerseklet = magasabb entroopia = a valoszinuseegi ter tobb felterkeepezese. Alacsonyabb homerseklet = determinisztikusabb = valoszinubb, hogy a pontos javitaasra konvergiial. Az Opus 0.5-on kutato, aki lehetoseegeket terkepez fel. A Sonnet 0.2-on sebeesz, aki egyetlen pontos vagast ejt.
+
+A modell kaszkadnak gazdasagi erve is van:
+
+| Modell | Szerep | Koltseg (Kimenet/MTok) | Homerseklet | Miert Ez a Modell |
+|---|---|---|---|---|
+| **Opus** | Generalas | $25,00 | 0,5 | Kreativ, magas kepesseg ujszeru appokhoz |
+| **Sonnet** | Javitas | $25,00 | 0,2 | Pontos, gyors celzott javitasokhoz |
+| **Haiku** | Tanulas | $5,00 | 0,2 | Legolcsobb kepes modell kivonashoz |
+
+<ModelCascadeDemo />
+
+Hasznald a legdragabb modellt, ahol a kreativitas szamit. Hasznald a legolcsobb kepes modellt mechanikus feladatokhoz. Ez ugyanaz az elv, mint egy haz epitese: epiteszt fogadsz a tervekhez es fizikai munkast a gipszkartonhoz. Mindketto elengedhetetlen. Az egyiknek nem kell a masiknak lennie.
+
+<Callout type="warning">
+**Otlet: Vizualis Hiba Debugger** -- *"Kepzeld el, ha a fordito megmutatna egy idoeltolasos felvetelt arrol, ahogy a hiba megszuletik, diagnosztizalodik es javitodik."* A streaming esemeny rendszer mar minden fazist kiad: `GENERATING -> TRANSPILING -> FIXING -> LEARNING -> PUBLISHED`. Egy vizualis debugger lejatszhatna az agens utjat -- megmutatva a felhasznaloknak, mi tornt el es hogyan javitodott. Az aatlatszmatlan generalast aallaathato debugolasi munkamenetee alakitja. Minden `StreamEvent` tipus vizualis utemmee kepezheto le.
+</Callout>
+
+---
+
+## A Memoria -- Hogyan Fejlodik az Agens
+
+<BayesianConfidenceDemo />
+
+Az agens hurok egyedi hibakat javit. De a *memoria rendszer* megakadalyozza, hogy ezek a hibak megismetlodjenek az osszes jovobeli generalasban. Ez a kulonbseg a debugolas es a tanulas koezt.
+
+Minden alkalommal, amikor hiba torteenik es javitodik (vagy nem), a Haiku kivon egy tanulasi jegyzetet:
+
+```typescript
+export async function extractAndSaveNote(
+  failingCode: string,
+  error: string,
+  fixedCode: string | null,
+  path: string[],
+): Promise<void> {
+  const response = await callClaude({
+    systemPrompt: NOTE_EXTRACTION_PROMPT,
+    userPrompt:
+      `Error: ${error}\n\nFailing code (excerpt):\n${failingCode.slice(0, 2000)}\n\nFixed code (excerpt):\n${fixedCode?.slice(0, 2000) || "N/A"}`,
+    model: "haiku",
+    maxTokens: 1024,
+    temperature: 0.2,
+  });
+  // ... elemzes, deduplikalas, DB-ben tarolas
+}
+```
+
+Minden jegyzet `CANDIDATE` sztatusszal es 0,5-os konfidencia pontszammal kezdi eletet -- egy bizonnyitatlan hipootezzis. A Bayesi konfidencia rendszer azutan termeszetes szelekcciookent mukodik:
+
+```typescript
+async function recalculateConfidence(noteId: string): Promise<void> {
+  const note = await prisma.agentLearningNote.findUnique({
+    where: { id: noteId },
+  });
+
+  const alpha = 1; // Priori sikerek
+  const beta = 1;  // Priori kudarcok
+  const score =
+    (note.helpCount + alpha) / (note.helpCount + note.failCount + alpha + beta);
+
+  // CANDIDATE -> ACTIVE eloleptetees 3+ segitseg es >0.6 konfidencia utaan
+  if (status === "CANDIDATE" && note.helpCount >= 3 && score > 0.6) {
+    status = "ACTIVE";
+  }
+
+  // DEPRECATED-ra fokozas, ha a konfidencia 0.3 ala esik
+  if (score < 0.3 && note.helpCount + note.failCount >= 5) {
+    status = "DEPRECATED";
+  }
+}
+```
+
+A formula -- `(segitsegek + 1) / (segitsegek + kudarcok + 2)` -- egy Beta-binomialis poszteerior eggyenletes priorral. Ez ugyanaz a matematika, ami az A/B teszteles, a Thompson mintavetel es a tobbkaru rablok mogott all. Nem kifinomult. Robusztus. A `+1` es `+2` tagok Laplace simitas -- megaakadaally nulla megfigyeles szelsoseges eseteket es meersekelt priori bizonyytalannsagot fejeznek ki.
+
+Az eletciklus:
+
+1. Hiba torteenik -> Haiku kivon egy jegyzetet -> `CANDIDATE`-kent tarolodik (0,5 konfidencia)
+2. A jegyzet belekerul a jovobeli promptokba az egyezo slugokhoz
+3. Ha a jegyzet segit (generalas sikerrel jar az alkalmazaasa utan) -> **helpCount** no -> konfidencia no
+4. 3+ segitseg es >0,6 konfidencia utan -> eloleptetees **ACTIVE**-ra
+5. Ha a jegyzet nem segit (generaalasok meg mindig kudarcot vallanak) -> **failCount** no -> konfidencia csokken
+6. 0,3 alatti konfidencia 5+ megfigyeles utan -> **DEPRECATED** (kihalt)
+
+| Pelda Jegyzet | Kivalto | Leccke | Sztatusz |
+|---|---|---|---|
+| Three.js importok | `three.js scene setup` | `Import THREE from 'three' not '@three'` | ACTIVE (0,82) |
+| Framer motion kileepes | `AnimatePresence children` | `Wrap exit animations in motion.div with key prop` | ACTIVE (0,71) |
+| Recharts tooltip | `custom recharts tooltip` | `CustomTooltip must accept payload as array, not object` | CANDIDATE (0,55) |
+| Regi tailwind szintaxis | `tailwind v3 classes` | `Use bg-red-500 not bg-red` | DEPRECATED (0,22) |
+
+A minden prompthoz valasztott jegyzetek koltsegvetes-korlatosak. Nem darabszam, hanem tokenek szerint:
+
+```typescript
+function formatNotes(notes: LearningNote[]): string {
+  const sorted = [...notes].sort((a, b) => b.confidenceScore - a.confidenceScore);
+
+  const selected: LearningNote[] = [];
+  let totalTokens = 0;
+  for (const note of sorted) {
+    const noteText = `- **${note.trigger}**: ${note.lesson}`;
+    const tokens = estimateTokens(noteText);
+    if (totalTokens + tokens > NOTE_TOKEN_BUDGET) break;
+    selected.push(note);
+    totalTokens += tokens;
+  }
+  // ...
+}
+```
+
+A 800 tokenes koltsegvetes szandekosan szuk. Emlekezz a figyelem fizikajara: minden jegyzet token versenyez a kodgeneralasi kontextussal a modell figyelmeert. A magas konfidencciaju jegyzetek kierdemelik a helyuket. Az alacsony konfidenciiaju jegyzetek megmetszodnek. Termeszetes szelekcio, softmax-on futva.
+
+<Callout type="warning">
+**Otlet: Kereszt-berloi Tanulas** -- *"Az okologiaban a monokultuurak toerekenyek. Igy az osztagolatlan tanulasi tavak is."* Jelenleg minden tanulasi jegyzet egy kozos tavba kerul. De a jatek-specifikus lecckeek ("mindig adj key propot az AnimatePresence gyermekeihez") higiihatjak a dashboard promptokat, ahol irrelevansak -- pontosan ugyanaz a figyelmi higiitas problema, de az adatretegben. A jegyzetek kategoria szerinti particionaalasa lehetove tennee, hogy a jatek agens jatek szakeeertelmet halmozzon fel a dashboard agens keresztszennyezese nelkul.
+</Callout>
+
+<Callout type="warning">
+**Otlet: Tanulasi Jegyzet Dashboard** -- *"Nem tudod kezelni, amit nem tudsz merni."* Epits egy `/admin/agent-notes` oldalt, ami mutatja a konfidencia palyakat ido multaval, mely slugok profitaltak mely jegyzetekbol, es mely jegyzetek kozelitik a 0,3-as elavulas kuszoot. A megfigyelheto rendszerek jobbak a fekete dobozoknal. Az adatok mar a Prisma-ban elnek -- csak UI kell nekik.
+</Callout>
+
+---
+
+## Kepesseg Ilesztes -- A Megfelelo Eszkoz a Megfelelo Feladathoz
+
+Amikor valaki lekeri a `/create/games/tetris`-t, a kulcsszo-kivonoo elemzi az utvonalat es megtalaalja a "games" es "tetris" szavakat. Ezek jatek-specifikus kepessegeket inditanak: canvas-confetti unneplesshez, howler.js jatek audiohoz. Amikor a `/create/finance/dashboard` erkezik, mas kepessegek aktivaalodnak: recharts diagramokhoz, chart-ui shadcn/ui adat komponensekhez.
+
+<Callout type="info">
+**Fizikai analogia: impedancia illesztes.** Az elektronikaban akkor kapsz maximalis teljesitmenyatvitelt, amikor a forras impedanciaja illeszkedik a terheles impedanciajahoz. A promptolasban akkor kapsz maximalis generalasi minoseeget, amikor a prompt kepesseg-kontextusa illeszkedik a feladat koveetelmeenyeihez. Egy jatek prompt, amibe diagram konyvtar doksik vannak toltve, impedancia-elterees -- az energia elpazarlodik rossz kontextus tolasaval egy modellbe, aminek mas kontextus kell. A kepessegek ilesztese keresekhez impedancia-ilesztes a figyelemnek.
+</Callout>
+
+Az ilesztes kulcsszovezerelt, nem AI-vezerelt -- szandekosan egyszeru:
+
+| Kategoria | Kepessegek | Kivalto Kulcsszavak |
+|---|---|---|
+| **3D** | Three.js, 3D Teljesitmeny | three, 3d, globe, scene, planet, webgl |
+| **Adat Viz** | Recharts, Chart UI | chart, dashboard, analytics, stock, metrics |
+| **Jatek** | Confetti, Jatek Audio | game, puzzle, tetris, snake, arcade |
+| **Urlap** | React Hook Form, Urlap Komponensek | form, survey, checkout, calculator |
+| **DnD** | DnD Kit | kanban, drag, sortable, planner, todo |
+| **Rajz** | Rough.js | draw, paint, sketch, whiteboard, doodle |
+| **Tartalom** | React Markdown, Tartalom UI | blog, story, notes, recipe, portfolio |
+| **Audio** | Howler.js, Web Audio | music, audio, drum, piano, synth |
+
+Minden illeszkedoo kepesseg a sajat prompt szekciojaaat injektaalja konyvtar-specifikus utasitaasokkal, import mintakkal es gyakori buktatokkal. A teljes prompt csak az illeszkedoo kepessegekkel no -- nem a teljes kepesseg katalogussal. Minimalis elegendo kontextus. Maximalis jelsuuruuseg.
+
+<Callout type="warning">
+**Otlet: Tanult Kepessegek** -- *"Az evolucio nem csak a legalkalmasabbakat szelektaalja. Uj fajokat is general."* Ha a Haiku folyamatosan olyan tanulasi jegyzeteket von ki egy konyvtarrol, ami nincs semmilyen kepesseg definiicioban -- mondjuk, a `@tanstack/query` folyamatosan megjelenik adatlekeerose appokban -- az a minta jelolheto lenne teljes kepesseg definiicioova valo eloleptetesre. A kepessegek organikusan noneenek az agens sajat tapasztalatabol, ahelyett, hogy kezzel lenneenek kodolva. Termeszetes szelekcio alkalmazva magara a kepesseg kataloogusra.
+</Callout>
+
+---
+
+## A Proxy -- Fokozatos Leromlaaas
+
+A produkciooss architektura harom reetegu, mint egy villamos halozat: elsoedleges generator, tartalek generator, veszhelyzeti dizel.
+
+```
+Agent Proxy (localhost) -> Kozvetlen Claude API -> Gemini Fallback
+```
+
+Az `isAgentAvailable()` fuggveny 3 masodperces egeszsegi ellenorzest vegez:
+
+```typescript
+export async function isAgentAvailable(): Promise<boolean> {
+  if (!CREATE_AGENT_URL || !CREATE_AGENT_SECRET) return false;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), AGENT_TIMEOUT_MS);
+    const res = await fetch(`${CREATE_AGENT_URL}/health`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+```
+
+Ha a helyi agens szerver fut (tanulasi jegyzetek adatbaazisaval es teljes modell kaszkaddal), a forgalom oda iranyul. Ha le van allva, a rendszer visszaesik a folyamaton beluli Claude agens hurokra. Ha a Claude API nem erhetoo el, a Gemini utvonalra degradaalodik.
+
+A felhasznalo soha nem laatja az atkapcsolaaast. Appot kap. A minoseg fokozatosan romlik, ahelyett, hogy katasztrofaalisan kudarcot vallana.
+
+<Callout type="warning">
+**Otlet: Agens Flotta** -- *"Miert legyen egy altalaanosito, amikor lehetneenek specialistak?"* A proxy minta trivialissa teszi a keresek specializalt agens peldaanyokhoz valo iranyitaasaat. Egy "jatek agens" GPU szerveren jatek-optimalizalt tanulasi jegyzetekkel. Egy "dashboard agens" adatvizualizaacios szakeerteleemmel. Minden peldaany domen-specifikus tudast halmoz fel, es a proxy az osztalyozott kategoria alapjan iranyit. Tobbagens koordinaaciio infrastruktura szinten.
+</Callout>
+
+---
+
+## Hiba Intelligencia
+
+Nem minden hiba egyenloen joszoeroszuemmel alkotott. Egy hianyzo import mas problema, mint egy tipuselteeres, es mindketto kulonbozik egy szintaktikai hibaatol. Az agens nem csak "valami rosszul ment"-et laat -- diagnosztizaal:
+
+```typescript
+export function parseTranspileError(rawError: string): StructuredError {
+  const error: StructuredError = {
+    type: "unknown",
+    message: rawError.slice(0, 500),
+  };
+
+  // Hianyzo import / modul nem talalhato
+  if (/Cannot find module|Could not resolve|Module not found/i.test(rawError)) {
+    error.type = "import";
+    const moduleMatch = rawError.match(/['"]([^'"]+)['"]/);
+    if (moduleMatch) error.library = moduleMatch[1];
+  }
+  // Tipus hibak
+  else if (/Type '.*' is not assignable|Property '.*' does not exist/i.test(rawError)) {
+    error.type = "type";
+  }
+  // JSX/szintaxis hibak
+  else if (/Unexpected token|Unterminated|Parse error/i.test(rawError)) {
+    error.type = "transpile";
+  }
+  // Futtatasideju hibak
+  else if (/is not defined|Cannot read propert/i.test(rawError)) {
+    error.type = "runtime";
+  }
+  // ... sorszam, komponens nev, javaslat kivonaas
+  return error;
+}
+```
+
+Negy hibatipus -- import, tipus, transpile, runtime -- mindegyik mas javitasi strategiat taaplal. A strukturalt hiba explicit kontextuskent kerul injektaalasra a javito promptba:
+
+```
+ERROR TYPE: import
+LIBRARY: @react-three/fiber
+LINE: 3
+SUGGESTION: Did you mean 'three'?
+```
+
+Egy orvos nem azt mondja "valami nem stimmel." Diagnosztizaal. A strukturalt hibak diagnoozis. A nyers hiba stringek "valami nem stimmel." A javito modell (Sonnet) drammtikusan jobban teljesit, amikor ismeri a hiba tipusat, a specifikus konyvtarat es a sorszamot -- mert az kevesebb token nyomozomunka es tobb token tenyleges javitaas.
+
+<Callout type="info">
+**Ez visszacsatol a tanulasba.** A `categorizeErrorForNote` fuggveny a strukturalt hibakat jegyzettipusokra kepezi le. Import hibak `triggerType: "library"` jegyzeteket generalnak a specifikus csomaggal megcimkkezve. Tipus hibak `triggerType: "pattern"` jegyzeteket generalnak TypeScript cimkevel. A hiba strukturaaja hatarozza meg, hogyan tarolodik, ileszkedik es vaaalsztodik ki a jegyzet jovobeli promptokhoz. Strukturalt be, strukturalt ki.
+</Callout>
+
+---
+
+## A Meta-Epites
+
+<RecursiveZoomDemo />
+
+Ime a resz, ami szettoorte az agyam.
+
+A teljes onjavitoo agenst a Claude Code terv modjaaval terveztek -- pontosan azzal a technikaval, amit az agens most belsooleg hasznal. Nem kezzel irtam a kodot, aztan elmelkedtem, miert mukodik. Hasznaltam az eszkozt, aztan tanulmanyoztam, mit csinalt az eszkoz, aztan epittettem egy rendszert, ami azt csinalja, amit az eszkoz csinal.
+
+A terv mod rakenyyszeritette a Claude-ot, hogy **felterkeepezzen a cselekvees elott.** Mielott egyetlen sor kodot megirtak volna, a modell beolvasta a meglevo kodbazist, megtalalta a content-generator mintaakat, azonosittotta a codespace szolgaltatas API-t, felterkepeezte a streaming esemeny tipusokat, es strukturalt tervet keszitett. Az a tervfajl lett a kontextus-tervezett prompt a megvalositaasi fazishoz.
+
+Az 5 retegu keretrendszer strukturaalta a felterkepezeest:
+- **Identitas**: "Egy onjavitoo agenst epitesz a spike.land app letrehozojaahoz"
+- **Tudas**: Fajlutvonalak, meglevo mintak, API szerzoodesek a kodbazis-felterkepezeesbol
+- **Peldak**: A meglevo Gemini fallback mint referencia implementaacioo
+- **Korlatozasok**: "Ne toerd meg a meglevo streaming szerzoodest. Tartsd meg a fallback-et."
+- **Eszkozok**: "Futtasd a `yarn test:coverage`-t a valtoztataaosok utan. Ellenoorizd a transpilaaciot."
+
+Es a terv kimenete -- az agens architektura -- ugyanazt az 5 reteget hasznaalja a sajat promptjaihoz. A `buildAgentSystemPrompt` fuggveny pontosan ugy strukturalja a kontextust, mint a terv, ami tervezte. Identitas reteg (AGENT_IDENTITY). Tudas reteg (tanulasi jegyzetek). Pelda reteg (kepesseg promptok). Korlatozas reteg (OUTPUT_SPEC). Eszkoz reteg (transpiler + codespace API).
+
+Rekurziv: kontextus-tervezest hasznaltam egy rendszer epitesre, ami kontextus-tervezest csinal.
+
+<Callout type="success">
+**A rekurziv felismeres:** A tervfajl egy prompt volt. A prompt egy rendszert epitett, ami promptokat epit. A tanulasi jegyzetek termeszetes szelekcio altal finomitott promptok. Minden szinten -- embertol Claude Code-ig, Claude Code-tol agensig, agenstol modelling -- ugyanaz a minta ismetlodik: kontextus osszealliitaasa, figyelem korlatozaasa, eredmenyek meresee, tanulas. Kontextus-tervezes vegig lefele.
+</Callout>
+
+<AudioPlayer src="/audio/physics-of-attention.m4a" title="Mely Merules: A Figyelem Fizikaja (kisero audio a 2. cikkbol)" />
+
+---
+
+## Amit Mertunk
+
+A `recordGenerationAttempt` fuggveny minden generalast teljes megfigyelhetoseggel kovet: slug, siker/kudarc, iteraacios szaam, idotartam, alkalmazott jegyzetek, eloofordult hibak, hasznalt modell, token szamlaalok es cache talalatok.
+
+| Metrika | Elotte (Gemini Flash) | Utana (Agens Hurok) |
+|---|---|---|
+| **Elso probas sikerarany** | ~40% | ~65% |
+| **Siker ujraprobak utaan** | ~55% (1 ujraproba) | ~85% (akaar 3 iteraacioo) |
+| **Atlag iteraacioo a sikerig** | 1,6 | 1,4 |
+| **Koltseg generaasioonkeent** | ~$0,005 | ~$0,08-0,12 |
+| **Median kesleltetes** | 8 mp | 15-25 mp |
+| **Alkalmazott tanulasi jegyzetek** | 0 | 3-7 generaacioonkeent |
+
+<Callout type="info">
+**A kompromisszum valos.** Az agens lassabb es keresenkent 15-20x dragabb. De gondolj a gazdasagossaagra a felhasznalo szempointjabol: egy $0,10-os generalas, ami mukodik, vegtelenul ertekesebb, mint egy $0,005-os generalas, ami torott appot hoz letre. Egy sikertelen generaalas koltsege nem $0,005 -- hanem a felhasznalo ideeje, frusztraacioja es a visszateeres valoszinusege. A minoseg kamatozik. A kudarcok nem.
+</Callout>
+
+A metrikak valami vaaratlanat is mutatnak: a tanulasi jegyzeteknek csoekkeno hozamuk van. Az elso 3-5 magas konfidencciaju jegyzet jelentosen javitja a sikeraranyt. Ezutan a figyelmi koltsegvetes versengni kezd. Tobb jegyzet nem jelent jobb eredmenyeeeket -- ugyanaz a fizika, ami motivaalja a jegyzetek 800 tokenes koltsegveteset.
+
+<Callout type="warning">
+**Otlet: A/B Teszteles** -- *"A tudomanynak kontrollcsoportra van szuksege."* A fallback architektura trivialissa teszi az A/B tesztelest. Veleetlenszerueen iranyitsd a keresek 50%-at a teljes agens hurkoon es 50%-at a Gemini fallback-en keresztul. Kovesd nyomon a sikeraranyt, felhasznaloi visszateresi aranyt es a sikeres generalaasioonkentti koltseeget. Hagyd, hogy az adatok dontsek, hogy az osszetettseeg es a koltseg indokoolt-e. A proxy mar kezeli az iranyitast -- csak egy ermefeeldobas kell.
+</Callout>
+
+---
+
+## Kezdj El Epiteni
+
+Harom tanulsag, a fizikara alapozva:
+
+**1. Orizd meg a figyelmi koltsegveteesedet.** A promptodban minden token versenyez a modell veges figyelmeert. Mielott kontextust adsz hozza, kerdezd meg: "Megvaltoztatnaa-e ennek eltavolirtaasa a kimenetet?" Ha nem, tavolitsd el. Az 5 retegu verem nem arrol szol, hogy tobb kontextust adj hozza -- hanem a *megfelelo* kontextust es semmi mast. Megmaradas, nem felhlalmozas.
+
+**2. Epits visszacsatolaasi hurkoket, ne nagyobb promptokat.** Az agens nem azert sikeres, mert jobb a promptja, mint a Gemini-e. Azert sikeres, mert kudarcot tud vallani, diagnosztizaalni, javitani es tanulni. Egy kozepes prompt visszacsatolaasi hurokkal felulmul egy briliaans promptot emlekkeeet nelkul. Az evolucio vert az intelligens tervezest -- eleg iteraacioo eseten.
+
+**3. Ileszd az eszkozoket a feladathoz.** Opus az alkootashoz, Sonnet a javitaashoz, Haiku a tanulashoz. Magas homerseklet a felterkepezeshez, alacsony homerseklet a precizitaashoz. Draga modellek, ahol a kreativitas szamit, olcso modellek, ahol a kivonas szamit. A megfelelo eszkoz a megfelelo koltsegen a megfelelo feladathoz -- impedancia-ilesztes vegig lefele.
+
+<CTAButton href="/create">Probald Ki az App Krealtort</CTAButton>
+
+---
+
+<div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-6 mt-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">A Kontextus-tervezes Trilogia</h3>
+  <p className="text-slate-300 mb-4">
+    Ez a cikk egy haromreszes sorozat utolso darabja. Kezdd az elmeelettel, ertsd meg a mechanizmust, aztan lasd alkalmazva egy valos termekre.
+  </p>
+  <div className="flex flex-wrap gap-3">
+    <a
+      href="/blog/context-engineering-your-zero-shot-prompt"
+      className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+    >
+      1. Resz: Az 5 Retegu Keretrendszer
+    </a>
+    <a
+      href="/blog/how-claude-code-engineers-context"
+      className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+    >
+      2. Resz: A Transformer Belsejeben
+    </a>
+    <a
+      href="https://github.com/zerdos/spike-land-nextjs"
+      className="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
+    >
+      Fedezd Fel a Forraskodot
+    </a>
+  </div>
+</div>
+
+---
+
+*A legjobb AI nem az, amelyik a legjobban probaalkozik. Hanem az, amelyik emleekszik arra, mi ment rosszul. A vibe coding entroopia -- energia irany nelkul. A kontextus-tervezes a masodik torveny: a vilagegyetem a rend fele tart, de csak ha elvegzed a munkat.*

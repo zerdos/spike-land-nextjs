@@ -1,0 +1,149 @@
+---
+title: "Mit Tanultam a Legrosszabb Pull Requestembol"
+slug: "what-i-learned-from-my-worst-pull-request"
+description: "Egy fejleszto oszinte tortenete arrol, hogyan hasznalta rosszul az AI eszkozoket egy uj projekten, es a keretrendszer, ami mindent megjavitott."
+date: "2026-01-13"
+author: "Zoltan Erdos"
+category: "Fejlesztoi Elmeny"
+tags: ["ai", "developer-tools", "claude", "tanulsagok", "code-quality", "pull-requests"]
+featured: true
+language: "hu"
+---
+
+El kell mondanom valamit. Valamit, amire nem vagyok bueszke.
+
+2025-ben, egy rovid idoszakra, amikor egy uj projekten kezdtem dolgozni, a pull requestjeim tiszta AI-mocsok voltak. Meg a legjobb szandekaim ellenere is.
+
+Hadd mondjam el pontosan, mi tortent.
+
+---
+
+## Az Uj Projekt
+
+Csatlakoztam egy csapathoz, akik ket osszekapcsolt alkalmazason dolgoztak. Egy Next.js app, ami az ugyfel-lemondast kezeli. Egy Angular app, ami a fo e-commerce aruhazat futtatja. A tech stack erdekesnek tunt. Az emberek okosnak. Keszen alltam, hogy bizonyitsak.
+
+A kodbazis pragmatikus volt. Lathattad, hogy a korabbi fejlesztok gondot forditottak ra. Igen, volt benne nemi technikai adossag -- melyik kodbazisban nincs? De az architektura tudatos volt. Bizonyos dolgokat bizonyos modszerrel kellett csinalni, mert a rendszer ugy volt tervezve.
+
+Meg soha nem epittettem e-commerce oldalt. Ez fontossa valik majd.
+
+Volt egy titkos fegyverem. Legalabbis azt hittem.
+
+Az AI kodolasi eszkozok hihetetlenul hatekonyakka valtak 2025-re. Claude Code. Ezek mar nem egyszeru automatikus kiegeszito eszkozok voltak. Meg tudtak erteni osszetett kodbazisokat. Teljes funkciokat tudtak irni. Nagy mennyisegu kodot tudtak refaktoralni.
+
+Folyamatosan hasznaltam oket. Es gyorsak voltak. Nagyon gyorsak.
+
+Az elso PR-jeim fantasztikusan neztek ki. Tiszta kod. Jo struktura. Megfelelo hibakezeleles. A tesztek atmentek. A linter is elegedett volt. Hosnek ereztem magam.
+
+Nem voltam hos. Homokra epitkeztem.
+
+---
+
+## A Basket API Incidens
+
+Az egyik elso ticketem volt a projekten.
+
+A feladat egyszrunek tunt. Analytics kovetes, amikor egy felhasznalo elfogad egy retencio ajanlatot. A folyamat igy nezett ki: az ugyfel le akarja mondani a fiokjat a Next.js appban, lat egy retencio ajanlatot egy ID-vel az URL-ben, rakattint, atiranyitjak az Angular appba azzal az ID-vel, es fizet. Nekem ezt a fizetes esemenyt kellett kovetnem.
+
+Itt olt meg a tapasztalatlansagom.
+
+Meg soha nem epittettem e-commerce oldalt. A fejemben a frontend tartja a kosarat a memoriaban a fizetesig. A felhasznalo hozzaad dolgokat a kosarhoz, a frontend tarolja, majd mindent elkuld a szervernek, amikor a "vasarlas" gombra kattint. Ez logikusnak tunt.
+
+Igy megkertem a Claude-ot, hogy segitsen implementalni a kovetest. Es a Claude kodot generalt. Gyonyoru kodot. Meghivta a Basket API-t, hogy lekerdezze a kosar adatait a fizetes kovetesehez.
+
+Tokeletesnek tunt. A tesztek atmentek. A linter elegedett volt.
+
+Beadtam a PR-t.
+
+---
+
+## A Tokeletes Vihar
+
+Ime valami, amit akkor nem tudtam. A Claude [dokumentalt technikai problemakat](https://www.anthropic.com/engineering/a-postmortem-of-three-recent-issues) tapasztalt ebben az idoszakban. Kontextusablak-utvalasztasi hibak a Claude Code felhasznalok 30%-at erintettek. A modell olyan valaszokat produalt, amik jonak tuntek, de valojabn leromlottak voltak.
+
+Az eszkoz, amiben biztam, jo kinezesu, de alacsony minosegu kimenetet produkat. Es nem volt modom megtudni.
+
+Amikor az AI magabiztosan hallucinal, teged is hallucinaltat. A Claude kimenete jonak tunt. Jonak erzoedott. Igy en is magabiztosnak ereztem magam. Olyan munkat adtam be, amit nem ertettem teljesen, mert az AI latszolag ertette.
+
+---
+
+## A Kod Review
+
+Az egyik kollegam folyamatosan kerdeseket tett fel. Olyanokat, amikre nem tudtam valaszolni.
+
+"Miert hivod meg itt a Basket API-t?"
+
+Nem tudtam. Azt hittem, szukseges a kosar adatok lekeresehez a koveteshez.
+
+"A kosar mar a szerveren van. Az URL-ben levo ID csak ellenorzesre valo."
+
+Nem ertettem.
+
+Aztan egy tapasztaltabb fejleszto nezete at a PR-t. Egyenes volt. A PR lenyegeben hasznalhatatlan. Csak apro reszei voltak hasznosak.
+
+A kosar szerverodalon volt. Ez volt az architektura. A backend volt az egyetlen igazsagforras. A lemondasi appbol szarmazo ID csak a szerveren mar tarolt adatok ketts ellenorzesere szolgalt. Egyaltalan nem kellett meghivni a Basket API-t.
+
+Ott ultem, a kepernyomre bamulva. Nem volt valaszom arra, miert irtam ezt a kodot. Mert nem en irtam. A Claude irta. Es en jovahagytam anelkul, hogy ertettem volna.
+
+---
+
+## A Gyokerok
+
+Nem az AI a problema. En voltam a problema.
+
+Nem tudtam, mit nem tudok. A ticket kovetelmenyek nem voltak vilagosak, de nem eleg sokat tudtam ahhoz, hogy a megfelelo kerdeseket tegyem fel. Soha nem epittettem e-commerce-t korabban. Nem ertettem az architektuart. Igy nem tudtam ellenorizni, mit feltetelezett az AI.
+
+A kodbazis jol tervezett volt. A korabbi fejlesztok gondolkodtak azon, hogyan mukodik a kosar rendszer. Jo indokok alltak a haromretu architektura mogott. De nem szantam idot arra, hogy megertesm ezeket az indokokat, mielott megkertem a Claude-ot, hogy generaljon kodot.
+
+Az AI-t gyorsitokent hasznaltam eszkoz helyett. Nagy a kulonbseg.
+
+A gyorsito kiszereli a munkadat. Az eszkoz segit jobban vegezni a munkadat. Ugy kezeltem az AI-t, mint egy gyorsitot. Eszkozzzekent kellett volna kezelnem.
+
+---
+
+## Mi Valtozott
+
+Az incidens utan minden megvaltozott.
+
+**Eloszor atfogo dokumentaciot hoztam letre.** Osszegyujtottem mindent -- Confluence doksikat, kod kommenteket, API dokumentaciot, mas csapatok kodbazisait. A NotebookLM-mel tananyagokat, rendszer diagramokat, kartakat, kvizeket generaltam. Egy hetvege alatt elsajatitottam azt a szaktudast, ami hianyzott.
+
+**Masodszor, a projekt mintait beepitettem a Claude utasitasaiba.** Egyedi kepessegek. Csapat konvenciok. Kodolasi szabvanyok. Hogyan mukodik tenylegesen a kosar architektura. Most az AI automatikusan koveti a mintainkat ahelyett, hogy talalgana.
+
+**Harmadszor -- es ez a legfontosabb valtozas -- az agens most interjut keszit velem a tervezes soran.** Mielott barmilyen kodot irna, az agens kerdeseket tesz fel. Addig kerdez, amig teljes kepem nincs. Ha nem tudok valaszolni egy kerdesre, visszamegyek a dokumentaciohoz. Vagy futtatgok egy masik agenst, hogy kideritsem. Ez biztositja, hogy ertsem, mit epitek, mielott megepitem.
+
+Ha az agens interjut keszitett volna velem a kosar PR elott, megkerdezte volna: "Milyen adatok leteznek mar a szerveren?" Es nem lett volna valaszom. Ez megakadalyozott volna a hiba elkoveseteben.
+
+**Negyedszer, mashogy tesztelek most.** Az agens elindit egy bongeszot. Teszt adatokkal bejelentkezik. Megprobalja atelni a funkciot, ahogy egy emberi tesztelo tenene. Kepernyokepeekt keszit. Osszehasolnitja oket a Figma tervekkel. Elkapja azokat a hibakat, amiket a manualis teszteles kapna el.
+
+Az elosztasom teljesen megvaltozott. 30% tervezes. 50% teszteles. 20% minosegjavitas. A tenyleges kodolas szinte semmennyi idot nem vesz igenybe az erteshez es ellenorzeshez kepest.
+
+---
+
+## A Kovetkezmenyek
+
+Abbahagytam a mocsok gyartasat. A PR-jeim most mar magas minoseguek.
+
+De a munkahelyi reputaciom meg mindig serult. A PR-jeimet meg mindig tovabb tart atnezni, mint a kollegaimeit. A bizalom, amit megtortem, idobe telik ujjaepiteni.
+
+Ez a rossz PR-ek rejtett koltsege. Nem csak rossz kod. Megtort bizalom. Es a bizalom lassan epul ujja.
+
+Ennek ellenere pozitivan allok hozza. A rendszer mukodik. A minoseg megvan. Minden jo PR egy kicsit visszaad a bizalombol.
+
+---
+
+## A Tanacsom Neked
+
+Ha uj vagy egy projekten es AI eszkozoket hasznalsz, kerlek, figyelj ram.
+
+Az AI produktivnak erzeztett. Gyorsan szallitasz kodot. A PR-jeid tisztan fognak kinezni. De lehet, hogy olyan feltetelezesekre epitesz, amiket nem tudsz ellenorizni.
+
+Lassits. Tegyel fel kerdeseket. Ertsd meg az architektuarat. Beszelj a csapattarsaiddal. Keszits dokumentaciot. Kesd meg az AI-t, hogy kerdezzen ki a problemarol, mielott barmilyen kodot ir.
+
+A kodbazisnak, amin dolgozol, valoszinuleg jo indokai vannak arra, hogy olyan, amilyen. A korabbi fejlesztok atgondolt donteseket hoztak. Szanj idot arra, hogy megertsd ezeket a donteseket, mielott hagyod, hogy az AI olyan kodot generaljon, ami figyelmen kivul hagyja oket.
+
+Az AI kodolasi eszkozok hihetetlenek. Orokre megvaltoztattak a munkamodszeremet. De nem helyettesitik a megeertst. Szorzok. Es ha a nulla megertest megszorzod egy hatalmas AI-val, meg mindig nullat kapsz.
+
+Meg mindig hasznalom az AI-t minden nap. Tobbet, mint valaha. De most partnerkent hasznalom, aki kerdojelez, nem gyorsitokent, ami megengedi, hogy athassam a megertest.
+
+A PR-jeim tobbet nem mocsok. Az en muntkam, AI altal javitva.
+
+Ez a kulonbseg. Es szamit.

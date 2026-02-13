@@ -33,6 +33,7 @@ describe("BlogCard", () => {
       image: "/images/test.jpg",
       featured: false,
       listed: true,
+      language: "en",
     },
     slug: "test-blog-post",
     readingTime: "3 min read",

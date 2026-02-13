@@ -1,0 +1,171 @@
+---
+title: "The Testing Pyramid Is Upside Down"
+slug: "the-transaction-cost-of-clicking-a-button"
+description: "The testing pyramid was never a technical artifact. It was an economic equilibrium — frozen in place by the transaction cost of verifying business logic without a browser. MCP just collapsed that cost to zero."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Developer Experience"
+tags: ["testing", "mcp", "economics", "transaction-costs", "creative-destruction"]
+featured: false
+listed: false
+---
+
+## The Coasian Boundary
+
+Ronald Coase won the Nobel Prize for a deceptively simple insight: the boundaries of a firm exist wherever the cost of conducting a transaction inside the firm falls below the cost of conducting it on the open market. Firms are not natural entities. They are cost-minimization artifacts. The testing pyramid is the same kind of artifact.
+
+Unit tests sit at the base because their transaction cost is near zero. Call a function, check a value -- milliseconds, in memory. Integration tests cost more: a database, a network layer, state. E2E tests cost the most: a real browser, real DOM, real timing dependencies. Each layer is a step-increase in the transaction cost of verification.
+
+The pyramid was never a prescription. It was a description of the equilibrium that emerges when rational teams allocate scarce CI minutes across verification strategies with radically different costs. You write many unit tests because they are cheap. You write few E2E tests because they are expensive. The pyramid is not architecture. It is economics.
+
+Which means it is not permanent. Equilibria shift when costs shift.
+
+---
+
+## What E2E Tests Actually Cost
+
+A typical E2E test for an email update flow:
+
+```typescript
+// Cypress E2E test
+describe('Email update flow', () => {
+  it('should allow user to change their email', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+Execution cost: 5--15 seconds. But that is the smallest line item.
+
+The maintenance cost is where the real damage accumulates. Change a CSS class: test breaks. Move a button: test breaks. Swap a toast for an inline alert: test breaks. Every refactor that preserves behavior but changes presentation triggers a maintenance event. These are Coasian transaction costs -- overhead from an interface boundary that conflates business logic with rendering.
+
+The flakiness cost is worse. A test that passes locally and fails on CI because an animation took 50ms longer is not a testing problem. It is an information problem. You add `waitForSelector`, retry logic, `waitForTimeout`. You are no longer verifying your application. You are paying a tax on coordination with a non-deterministic system.
+
+These costs are structural. They exist because the browser was the only interface through which business logic could be exercised end-to-end.
+
+---
+
+## The Cost Collapse
+
+MCP -- Model Context Protocol -- is not an improvement to browser testing. It is a substitution.
+
+Schumpeter called it creative destruction: new economic structures emerge not by improving existing ones but by making them obsolete. The railroad did not improve the stagecoach. MCP does not improve Cypress. It removes the reason you needed browser automation for business logic verification in the first place.
+
+Here is the same email update flow, exposed as an MCP tool:
+
+```typescript
+// MCP tool definition
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+
+    if (!confirmChange) {
+      return {
+        status: 'confirmation_required',
+        message: `Confirm email change from ${user.email} to ${newEmail}?`,
+      };
+    }
+
+    await context.userService.updateEmail(user.id, newEmail);
+    return {
+      status: 'success',
+      message: `Email updated to ${newEmail}`,
+      updatedEmail: newEmail,
+    };
+  },
+};
+
+// Unit test for the MCP tool
+describe('update_user_email', () => {
+  it('should update email when confirmed', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+  });
+
+  it('should require confirmation before updating', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: false },
+      context,
+    );
+
+    expect(result.status).toBe('confirmation_required');
+    expect(context.userService.updateEmail).not.toHaveBeenCalled();
+  });
+});
+```
+
+This test runs in milliseconds. It does not depend on DOM structure. It does not flake because an animation was slow. It tests the exact same business logic -- the email update flow with confirmation -- at unit test speed, with unit test reliability.
+
+The transaction cost of verifying this business logic just dropped by two orders of magnitude. And when a transaction cost drops by that much, the equilibrium does not adjust. It shatters.
+
+---
+
+## The Jevons Paradox of Testing
+
+In 1865, William Stanley Jevons observed that more fuel-efficient steam engines did not reduce coal consumption. They increased it. Cheaper energy meant more things became worth powering.
+
+The same paradox applies here. When the cost of testing a business flow drops from 15 seconds in a flaky browser to 5 milliseconds in a deterministic function call, teams do not write the same number of tests at lower cost. They write dramatically more. Edge cases nobody would have burned a 15-second E2E cycle on -- the declined card with an expired session, the concurrent email update, the Unicode display name -- suddenly become cheap enough to verify.
+
+This is a feature, not a budget overrun. The confidence surface expands to cover territory that was previously too expensive to patrol.
+
+---
+
+## Three Players, One Truth
+
+A unit test and its code, when written properly, specify each other. Two players, one truth.
+
+MCP introduces a third player: the name.
+
+Consider `update_user_email`. That name is not just a label. It is a constraint on what the tool must do and must not do. It does not send notifications. It does not update the password. It updates the user's email. In a plain service layer, that name constrains a developer. In an MCP server, it constrains a machine. An AI agent browsing your tool registry does not read source code. It reads names, descriptions, and schemas. The name becomes a discoverable contract.
+
+Test. Code. Name. Three players, one truth. Each vertex constrains the other two. We had the first two for decades. MCP formalized the third into something machines can reason about. And when you give the name enough structure to be machine-readable, it becomes machine-testable too.
+
+The same artifact serves as test contract, agent interface, and feature documentation. You write it once; it earns its keep three ways. The Coasian calculation changes. The firm boundary that used to include a browser in every verification loop now excludes it.
+
+---
+
+## The Equilibrium Shifts
+
+Schumpeter was blunt: creative destruction does not spare incumbents who refuse to adapt. The E2E-heavy test suite is not just slow. It is an institutional commitment to a cost structure that no longer reflects reality.
+
+The new equilibrium: **business logic verification** moves to MCP tool tests -- milliseconds, zero flakiness, full coverage. **E2E tests shrink** to a thin layer of visual smoke tests: does the page render, does the wiring hold, does the CSS look right. **CI gets fast** -- run `yarn vitest run --changed main` and only tests touching changed files execute. An AI reviewer traces the dependency graph and decides which E2E scenarios a given PR actually requires. The pyramid does not just reshape. It gets smart.
+
+---
+
+## Full Circle
+
+The transaction cost of verifying business logic without a browser was once infinite -- no interface existed for it. Rational actors refused the transaction. They built the pyramid. They put E2E at the top and wrote as few as they could tolerate.
+
+MCP collapsed that cost. Not incrementally. Structurally. The boundary that Coase would have drawn around browser-mediated verification no longer makes economic sense. Lower transaction costs between intent and verification. The boring kind of progress that makes everything else possible.

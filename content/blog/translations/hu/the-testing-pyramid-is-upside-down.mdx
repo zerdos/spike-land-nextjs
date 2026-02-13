@@ -1,0 +1,302 @@
+---
+title: "A Tesztpiramis Fejre All"
+slug: "the-testing-pyramid-is-upside-down"
+description: "Mi lenne, ha a tesztcsomagod legrosszabb resze -- a lassu, instabil E2E tesztek -- unit teszt sebesseggel futhatnanak? Az MCP-k lehetnek az a valasz, amire senki nem szamitott."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Fejlesztoi Elmeny"
+tags: ["testing", "mcp", "unit-testing", "e2e", "architektura", "agents"]
+featured: true
+language: "hu"
+---
+
+*Merklik Laszlo (1975--2018) emlekeere ajanilva, aki tul koraan hagyott itt minket. Alig mult negyven, amikor a rak elvitte. Az Emarsys -- amelyet kesobb a SAP felvaaasarolt -- taarsalapitoja es CPO-ja volt, es feleitette Magyarorszag egyik legmegbecsultebb mernoki kulturajat. Meg egy eloadast is tartott "Jobb Minoseg Tesztelok Nelkul" cimmel, ami ugy tunik, kozvetlen elodje az ebben a cikkben levo otleteknek.*
+
+*Laszlo volt az a szemely, aki miatt erdekelni kezdett a kodolas. Nem csak a csinalasa -- hanem hogy toroodjek vele. Megtanitotta, hogy kulonleges kapcsolat van egy unit teszt es a kod kozott, amit tesztel: amikor mindketto helyesen van megirva, az egyik specifikaalja a masikat. A teszt megmondja, mit kell a kodnak csinaalnia. A kod megmondja, mit kell a tesztnek ellenoriznie. Ugyanannak az igazsagnak ket nezete.*
+
+*Olyan fejleszto volt, aki mindenkit jobbaa tett maga korul. Olyan, aki az eloadaasok utan is maradt, hogy segitsen egy juniornak megjavitani a build-jet. Olyan, aki hitt abban, hogy jol szoftvert irni a tisztelet egy formaja -- csapattarsaid, felhasznaloid, magad irant. Ez a cikk arrol szol, hogy eloretoeljuk a mesterseget. Az o dolga is ez volt.*
+
+---
+
+## A Konferencia
+
+Koerulbelul tizenot evvel ezelott elmentem egy fejlesztoi konferenciaara Budapesten. A tema a Jasmine volt -- ami a bongeszooben futott, mivel a Node.js maga meg nem volt szeeles korben elfogadott. Ez meg azelott volt, hogy a Jest felfalta volna a vilagot, mielott a teszteles minden projekten adottsag lett volna. A tesztelest meg kellett ervelni.
+
+Az eloado fiatal volt. Ideges energia. Lathattaan nemreg tert meg -- laatsszott a szemeben. Vegigvezetett minket, hogyan kapott el neehaany tucat unit teszt egy regressziot, ami kiment volna a produkciooba. Megmutatta, hogyan mukodik a mockolaaas. Megmutatta, milyen gyors a visszacsatolaasi hurok. Szinte rezgett.
+
+Aztan valaki a koezonsegbol felemmelte a kezet.
+
+"Es hogy teszteljuk le az UI-t?" -- kerdezte az illeto.
+
+Az eloado megaallt. Aztan vallat vont.
+
+"Az UI-t? Azt teszteljek a hulyeek!" -- valaszolta.
+
+Nehany ember nevetett. A legtobben bolintottak. Akkoriban eszszerunek tunt. A unit tesztek lefedtek az uzleti logikaat. Az UI csak HTML es CSS volt. Megneezed, vagy jonak tunik, vagy nem. Mit kell automatizaalni?
+
+Ez a valasz sokaaig velem maradt. Nem azert, mert helytelen volt. Hanem mert majdnem helyes volt -- es a majdnem helyes es a tenyleg helyes kozeotti szakadek az iparaagunknak egy evtizednyi fajdalmaaba kerult.
+
+---
+
+## Mi Tortent Ezutan
+
+Elkezdtuk tesztelni az UI-t. Termeszetesen.
+
+Eloszor jott a Selenium. Aztan a Protractor. Aztan a Cypress. Aztan a Playwright. Mindegyik jobb volt az elozonel. Mindegyik azt igeerte, hogy vegre megbizhatova teszi a boengeszo tesztelest.
+
+Es tenyleg jobbak lettek. A Playwright kueloenosen egy valooban kivaalo eszkoz. De az alapveto problema soha nem mult el: egy valos bongesszot vezeersz, valos DOM-ot rendersz, valos halozati keresekre varsz, es reeled, hogy az idozites osszejon. A teljes verem legvastagabb, legkiszamitthatatlanabb retegen keresztul tesztelsz.
+
+Ezek a tesztek lettek a legrosszabb resze minden tesztcsomagnak, amin valaha dolgoztam.
+
+Lassaak. Egy gyors unit teszt csomag masodpercek alatt fut. Egy atfogo E2E csomag perceken -- neha tiz perceken -- at fut. CI-n, parhuzamositassal es ujraprobakkal, olyan pipeline idoket nezzunk, amik miatt a fejlesztok kontextust vaaaltanak valami masra, mig varnak.
+
+Instabilak. Nem azert, mert az eszkozok rosszak, hanem mert a bongeszzok osszetett allapotgepek. Egy teszt, ami lokaalisan atmeegy, megbukik CI-n, mert az animaacioo 50ms-sel tovabb tartott. Egy teszt, ami tegnap rendben futott, ma megbukik, mert egy harmadik feles szkript lassabban toltodott. Hozzaadod a `waitForSelector`-t. Hozzaadod a `waitForTimeout`-ot. Hozzaadod az ujraprobaalasi logikaat. Mar nem az alkalmazasodat teszteled -- hanem a kaosszal valo szinkronizalsi kepessegedet.
+
+Torekenyeek. Vaaltoztatsz egy CSS osztalyt? A tesztek eltoernek. Athelyezel egy gombot a bal oldalsaavobol a felso navba? A tesztek eltoornek. Refaktoraalsz egy komponenst, ami azonosan viselkedik, de maskent renderel? A tesztek eltoornek. A tesztek az implementaaciohoz vannak kapcsolva -- pontosan ugy, ahogy a junior fejlesztoknek mondjuk, hogy ne irjanak unit teszteket.
+
+Ez a tesztpiramis. Unit tesztek az alapnal: gyorsak, olcsook, sok. Integraaciooss tesztek kozepen: kozepes sebesseg, kozepes koltseg, kozepes szaam. E2E tesztek a tetejeen: lassuak, dragaak, keveees.
+
+Mindenki tudja, hogy a piramis teteje fajdalmas. Elfogadtuk az uzleteles koltsegekeent. Szukseged van *nehany* E2E tesztre, mert ez az egyetlen mod a teljes felhasznaloi folyamat ellenorzesere. Az API tesztek nem eleegek -- vegpontokat tesztelnek, nem az uzleti logikai folyamatokat, amik osszefuzik ezeket a vegpontokat valami olyanna, amit egy felhasznalo tenyleg csinal.
+
+Vagy igy gondoltuk.
+
+---
+
+## A Felismeres
+
+Ime a dolog az E2E tesztekrol, amirol senki nem beszel eleg vilaagosan: a legtobbjuek nem tenylegesen a bongesszot teszteli. Az uzleti logikaat tesztelik a bongeszon *keresztul*.
+
+Gondolj bele, mit is ellenoriz tenyleg egy tipikus E2E teszt. "A felhasznalo bejelentkezik, a beallitasokhoz navigal, megvaltoztatja az emailjet, megerositi a valtoztatast, latja a frissitett emailt a profil oldalon." Mit is tesztelsz vaalojaaban itt? Azt teszteled, hogy az email-valtoztatasi folyamat mukodik. A bejelentkezees, a navigacio, az urlapbekuldes, a megerosites, az allapot frissites -- ez mind uzleti logika. A boengeszo csak a kezbesitesi mechanizmus.
+
+Ez nem uj megfigyeles. Alistair Cockburn hexagonalis architekturaja (2005) amellett ervelt, hogy az alkalmazasokat egyformaan vezerelhetooknek kell lenniuk felhasznalok, programok es teszt szkriptek altal. Martin Fowler a mintat "szubkutan tesztelesnek" nevezte -- teszteles kozvetlenul az UI alatt. Robert C. Martin Clean Architecture-je ragaszkodott hozza, hogy az uzleti szabalyoknak tesztelhetoknek kell lenniuk barmilyen UI nelkul. A felismeres mindig ott volt. Ami hiaaanyzott, az egy szabvanyositott felueleet volt, ami gyakorlativaa tette legeetekben.
+
+Az MCP -- Model Context Protocol -- az a felulet. Ez egy szabvany az alkalmazasod kepesseegeinek strukturalt eszkozokkeent valo kiajanlasaara. Szoveg be, szoveg ki. Egy agens kerest kuld, ami leirja, mit akar csinalni, az MCP szervered vegreehajtja a muveletet es visszaadja az eredmenyt. Nincs boengeszo. Nincs DOM. Nincs CSS szelektor. Nincs idozitesi problema. Ha a felhasznaloi torteneteidet MCP eszkozokkent irod meg, tesztelhetoo szerzoodest hoztaal letre az uzleti logikaaadhoz.
+
+Hadd mutassam meg, mire gondolok.
+
+Tegyuk fel, van egy felhasznaloi torteneted: "Egy felhasznalo frissitheti az email cimet." Az E2E vilaagban a teszt valahogy igy nez ki:
+
+```typescript
+// Cypress E2E teszt
+describe('Email frissitesi folyamat', () => {
+  it('lehetove kell tennie a felhasznalonak az email valtoztatast', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+Ez a teszt 5-15 masodpercig fut. CSS szelektoroktol, DOM strukturaatol, animaacios idoziitestol es halozati kesleltetestol fugg. Megvaaltoztatod a megerosito dialoguust modalra? A teszt eltorik. Athelyezed a sikeres uzenetet toast-rol inline alertre? A teszt eltorik.
+
+Most ime ugyanaz az uzleti logika MCP eszkozkeent kiajaanlva:
+
+```typescript
+// MCP eszkoz definicio
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+
+    if (!confirmChange) {
+      return {
+        status: 'confirmation_required',
+        message: `Confirm email change from ${user.email} to ${newEmail}?`,
+      };
+    }
+
+    await context.userService.updateEmail(user.id, newEmail);
+    return {
+      status: 'success',
+      message: `Email updated to ${newEmail}`,
+      updatedEmail: newEmail,
+    };
+  },
+};
+```
+
+Es a unit teszt:
+
+```typescript
+// Unit teszt az MCP eszkozhoz
+describe('update_user_email', () => {
+  it('frissiti az emailt megerosites eseten', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+    expect(context.userService.updateEmail).toHaveBeenCalledWith(
+      '1',
+      'new@example.com',
+    );
+  });
+
+  it('megerositest kovetellen frissites elott', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: false },
+      context,
+    );
+
+    expect(result.status).toBe('confirmation_required');
+    expect(context.userService.updateEmail).not.toHaveBeenCalled();
+  });
+
+  it('elutasitja a nem hitelesitett kereseket', async () => {
+    const context = createMockContext({ user: null });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+
+    expect(result.error).toBe('Not authenticated');
+  });
+});
+```
+
+Ez a teszt ezredmasodpercek alatt fut. Nem fugg semmilyen DOM strukturaatol. Nem erdekli, hogyan nez ki az UI. Pontosan ugyanazt az uzleti logikaat teszteli -- az email frissitesi folyamatot megerositessel -- de unit teszt sebeesseeggel, unit teszt megbizhatosaggal.
+
+Nem vesztettel lefedettseget. Elvesztetted a bongesszot.
+
+---
+
+## Az Architektura Erv
+
+Ez nem csak egy tesztelesi trukk. Ez egy architekturalis valtas.
+
+Amikor a felhasznaaloi torteneteidet MCP eszkozokkeent ajanlod ki, laancot hozol letre:
+
+**Felhasznaloi tortenetek -> MCP eszkozok -> Unit-tesztelheto uzleti logika**
+
+Ugyanaz a specifikaacioo harom celt szolgal egyidejuleg:
+
+1. **Felhasznaloi dokumentaaciio.** Az MCP eszkoz leirasok *maguk* a funkcioo dokumentaciood. "Az autentikalt felhasznalo email cimenek frissitese" -- ez a specifikaacioo, sima nyelven, a kodban elve.
+
+2. **Agens felulet.** Barmely AI agens, ami MCP-n keresztul csatlakozik, most mar vegre tudja hajtani a felhasznaaloi torteneteidet. Az appod agens-kesz, nem azert, mert racsavartaal egy AI funkciot, hanem mert az uzleti logikad elerheto egy strukturalt szoveges feluleten.
+
+3. **Teszt szerzodes.** A bemeneti sema definialja, mit fogad el az eszkoz. A handler definialja az elvart viselkedest. A valasz definialja az elvart kimenetet. Ez szerzodes. Ugy tesztelheted, mint barmely fuggvenyt -- mert fuggveny *is*.
+
+Hasonlo tesztelhetoseget kaphatsz egy egyszeru szolgaltatas retegbol is -- egy jol strukturalt `updateUserEmail()` fuggveny eppen ugy tesztelheto, mint egy MCP handler. De egy szolgaltatas fuggveny egy urat szolgal: az alkalmazasodat. Egy MCP eszkoz harmat szolgal. Ugyanaz a mualkotas a teszt szerzoodest, az agens feluleteed es a funkcio dokumentaciood. Egyszer irod meg; harom modon terem meg. Ez nem tesztelesi trukk. Ez architekturalis erot szorzo.
+
+Ez az a kulcsfontossagu felismeres, aminek a meglaaatasahoz evek kellettek: az E2E tesztek fajdalmassaagannak oka nem az, hogy a boengeszo automatizaalas nehez (bar az). Az oka az, hogy rakennyszerultuenk a boengeszon keresztul menni, mert nem volt mas mod teljes felhasznaloi folyamatok gyakorlasaara. A boengeszo volt az egyetlen feluleet, ami osszekotoette az osszes darabot.
+
+Az MCP-k adnak egy masodik feluletet. Egy szoveg-alaput oenleiro semakkal, amiket gepek felfedezhetnek, meghivhatnak es ellenorizhetnek. Egyet, ami osszekoti ugyanazokat a darabokat, de a renderelesi reteg, az idozitesi problemak es a CSS szelektorok nelkul.
+
+---
+
+## A Harmadik Jatekos
+
+Laszlo megtanitotta nekem a duaaliitaast: egy unit teszt es a kodja, ha helyesen vannak megirva, specifikaaljak egymast. Ket jatekos, egy igazsag.
+
+De azt gondolom, van egy harmadik jatekos: a nev.
+
+Gondolj a korabbi MCP eszkozre: `update_user_email`. Az a nev nem csak cimke. Korlatozas. Megmondja, mit kell az eszkoznek csinaalnia es mit nem szabad. Nem kuld ertesiteseket. Nem frissiti a jelszoot. Frissiti a felhasznalo emailjet.
+
+A jo elnevezees mindig szamitott. Egy jol elnevezett fuggveny korlatozza, mit ir egy fejleszto. De egy MCP eszkoz nev korlatozza, amit egy *gep* felfedezhet, meghivhat es tesztelhet. Egy AI agens, ami az MCP szerveredet bongesszi, nem olvassa a forraskodot -- eszkoz neveket, leirasokat es semaakat olvas. Ha az `update_user_email` helyesen van elnevezve, egy agens tudja, mire hivja, anelkul, hogy az implementaaaciot olvasna. A nev felfedezhetoo szerzoodessse vaalik.
+
+Teszt. Kod. Nev. Harom jatekos, egy igazsag. A nev, a bemeneti sema es a handler haromszoeget alkot, ahol minden csucs korlatozza a masik kettot. Az elso kettovel evtizedekig rendelkeztunk. Az MCP a harmadikat formalizaalta valami olyanra, amirol gepek gondolkodni tudnak -- es kiderult, amikor a nevnek eleg strukturaat adsz ahhoz, hogy gep altal olvashato legyen, gep altal tesztelhetove is vaalik.
+
+---
+
+## Gyakorlati Lepesek
+
+Ha eppen egy instabil E2E csomagot bamulsz, ime, hogyan kezdd.
+
+**1. Lepes: Talaald meg a legfajdalmasabb E2E tesztjeidet.** Tudod, melyek azok. Amiktet haromszor ujrafuttatsz, mire atmennek. Amikben `// TODO: ki kell deriteni, miert instabil` kommentek vannak. Amik 30 masodpercig tartanak egyenkent.
+
+**2. Lepes: Kerdezd meg, milyen uzleti logikaat ellenoriznek valojaban.** Hagyd el a kattintasokat, a varakozasokat es a szelektorokat. Mit is ellenoriz tenylegesen a teszt? "A felhasznalo lemondhatja az elofizeteset." "Az admin kitilthat egy felhasznalot." "A fizetesi folyamat kezeli az elutasitott kartyakat." Ez az uzleti logika.
+
+**3. Lepes: Ajannldd ki azt a logikaat MCP eszkozokkeent.** Irj MCP eszkozt minden uzleti folyamathoz. Definiaald a bemeneti semat, implementaald a handlert a meglevo szolgaltatasaid felhasznaalasaaval, adj vissza strukturalt eredmenyeket. Nem irsz ujra semmit -- becsomagolod a meglevo uzleti logikaadat egy strukturalt feluletbe.
+
+**4. Lepes: Irj unit teszteket az MCP eszkozoekhoeez.** Mockold a fuggosegeket. Teszteld a sikeres utvonalat. Teszteld a hibaaeseteket. Teszteld a szelsoseges eseteket. Ezek a tesztek ezredmasodpercek alatt futnak es soha nem lesznek instabilak.
+
+**5. Lepes: Neezd, ahogy az E2E csomagod zsugorodik.** Meg mindig szuekseged lesz nehany E2E tesztre -- vizualis regressziookhoz, bongeszo-specifikus viselkedeshez, integracios kotesekhez, amik csak valos kornyezetben jelennek meg (CORS, auth middleware, hidraacioo). De a szaamuk dramatikusan csokken. Amik megmaradnak, egyszerubbek es stabilabbak lesznek, mert nem hordozzak az uzleti logika ellenorzes sullyat.
+
+Nem helyettesited az E2E teszteket. Kiveszed beloluk az uzleti logikaat. Ami megmarad, az a vizualis fusttoesztek veekony retege -- ami az volt, aminek az E2E teszteknek eleve lenniuk kellett volna.
+
+---
+
+## A CI Osztalek
+
+Miutan az uzleti logikad MCP eszkozokben el, TypeScript-en keresztul szorosan csatolva a frontendedhez, valami figyelemre melto tortennik a CI pipeline-oddal.
+
+Futtasd ezt:
+
+```bash
+yarn vitest run --changed main
+```
+
+A Vitest tudja, mely fajlok vaaltoztak a `main` ota. Tudja, mely tesztek importaaljak azokat a fajlokat. Csak azokat a teszteket futtatja. Az `update_user_email` valtozttataasa az email teszteket futtatja, nem a teljes csomagot. Ez masodperceket vesz igenybbe, nem perceket.
+
+De az igazi trukk az, ami ezutan jon.
+
+A CI-dnek vannak lefedettseegi naploi. Van git elozmenyeee. Tudja, mely MCP eszkozok valtoztak, mely unit tesztek fedik le oket, es mely E2E szceenariook gyakoroljak azokat a folyamatokat. Egy AI reviewer agens olvashatja ezt a grafot es dontesst hozhat: mely E2E teszteknek kell tenyleg futniuk?
+
+Frissitetted a leirast egy teszt fixture fajlban? Nincs szuekseg E2E tesztekre. Valtoztattad az email validaacios logikaat egy MCP eszkozben? Futtasd az email-hez kapcsolodo E2E szceenariokat, hagyd ki a tobbit. Refaktoraaltaal egy megosztott segedfuggvenyt? Az agens vegigkoveti a fuggosegi grafot es pontosan az erintett teszteket futtatja -- sem tobbet, sem kevesebbet.
+
+Ez novekmenyes review, amit ugyanaz a kapcsolas hajt, ami a unit tesztjeidet gyorsssa tette. Az MCP eszkoz nevek eleg szemantikai kontextust adnak az agensnek ahhoz, hogy a robaanasi sugaarrol gondolkodjon. Az `update_user_email` valtozott? Az agens tudja, hogy az email E2E teszteket kell futtatni. A `list_user_notifications` nem valtozott? Hagyd ki azokat.
+
+A megtakaritas halmozodik. Egy nagy kodbazison egy tipikus PR az uzleti logika toreedekeet erinti. A teljes E2E csomag futtatasa minden PR-hez olyan, mint az egesz haz ujjaepitese, mert kivaaltottal egy kilincset. MCP-strukturalt uzleti logikaval es AI reviewerrel a CI-d csak azt futtatja, ami szamit.
+
+Kevesebb szamitas. Gyorsabb visszajelzes. Kevesebb instabil kudarc olyan tesztektoeel, amiknek semmi kozuk a valtoztataasodhoz. A piramis nem csak atalakul -- okos lesz.
+
+---
+
+## A Piramis, Ujragondolva
+
+A tesztpiramis mindig kompromisszum volt. Az E2E teszteket nem azert tettuk a tetejere, mert azt akartuk, hogy lassuak es kevesek legyenek, hanem mert ez volt a korlatozas. A teljes felhasznaloi folyamat ellenorzese bongesszot igenyelt. A bongeszzok lassaak. Ezert a teljes felhasznaloi folyamat tesztek lassaak. Ezert irj kevesebbet beloluk.
+
+Az MCP-k megtoerik ezt a korlatozast.
+
+Ha az uzleti logikad elerheto egy szoeveges feluleten keresztul, a teljes felhasznaloi folyamat ellenorzese nem igenyel boengesszot. Fuggvenyhivast igenyel. A fuggvenyhivasok gyorsak. Ezert a teljes felhasznaloi folyamat tesztek gyorsak. Ezert irj annyit, amennyit akarsz.
+
+A piramis nem fordul fejre. Aatalakul. A fajdalmas felso reteg -- az E2E reteg -- vekonnya valik. Az uzleti logika, ami duzzasztotta, lemozdul a unit teszt retegre. Nem azert, mert talaltaal egy okos modot a bongeszo mockolasaara, hanem mert megszuntetted a bongeszo szueksegessegeet.
+
+A megmaradt E2E tesztek azt csinaljaak, amit mindig is csinaalniuk kellett volna: ellenorzik, hogy az oldal renderel, hogy az integraacios kotesek tartanak, hogy a vizualis dizajn helyes. "Azt teszteljek a hulyeek" -- kiveve most a "hulyeek" a Playwright, ami neehaany celzott ellenorzest futtat, nem szaaz lassu uzleti logika szimulaciot.
+
+---
+
+## Teljes Kor
+
+Meg mindig gondolok arra a konferenciara neha. A fiatal eloado, aki rezeg az izgatottsaagtol a unit tesztek miatt. A koezonsegben a szemely, aki az UI tesztelesrol kerdez. Az elutasito valasz.
+
+"Az UI-t? Azt teszteljek a hulyeek!" -- mondta.
+
+Nem tevedett. Korai volt.
+
+A valos valasz az UI tesztelesi kerdesre soha nem "automatizaald a bongesszot" volt. A valos valasz ez volt: tedd az uzleti logikaat elerhetove bongeszo nelkul. Csak nem volt meg hozzaa a felulet.
+
+Most van.
+
+Laszlo imadta volna ezt. Nem maga a technologiat -- soha nem volt az a tipus, akit felizgat egy protokoll vagy egy specifikaacio. Azt szerette volna, amit jelent a mesterseegnek. Kevesebb ido instabil tesztek elleni harcra. Tobb ido valooban szamito dolgok epitesere. Tobb ido a junior fejleszto segitesere az eloadaasok utan.
+
+Igy nez ki a mesterseeg eloretolesa. Nem villogoo uj eszkozok. Csoendesebb visszacsatolaasi hurkok. Kevesebb surloodas a szandek es az ellenoerzes koezoett. A fajta unalmas haladas, ami mindent mast lehetoveee tesz.
+
+Minden alkalommal ra gondolok, amikor torlok egy instabil tesztet. Azt hiszem, helyeselne.

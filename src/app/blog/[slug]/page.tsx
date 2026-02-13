@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
 import { serialize } from "next-mdx-remote/serialize";
+import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import rehypePrettyCode from "rehype-pretty-code";
 import remarkGfm from "remark-gfm";
 
 import { BlogHeader, Prose } from "@/components/blog";
+import { LanguageBanner } from "@/components/blog/LanguageBanner";
 import { MDXContent } from "@/components/blog/MDXContent";
 import { ReadAloudArticle } from "@/components/blog/ReadAloudArticle";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
 import { getAllPosts, getPostBySlug, getPostSlugs } from "@/lib/blog/get-posts";
+import { getAvailableLanguages, getTranslatedPost } from "@/lib/blog/get-translations";
+import { resolveLanguage } from "@/lib/blog/language-detection";
+import type { SupportedLanguage } from "@/lib/blog/types";
 import { ArrowLeft } from "lucide-react";
 
 // Force dynamic rendering for blog posts with interactive MDX components
@@ -17,14 +22,17 @@ import { ArrowLeft } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 interface PageProps {
-  params: Promise<{ slug: string; }>;
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }
 
 // Generate metadata for SEO
 export async function generateMetadata({
   params,
+  searchParams,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  const { lang: queryLang } = await searchParams;
   const post = getPostBySlug(slug);
 
   if (!post) {
@@ -33,13 +41,37 @@ export async function generateMetadata({
     };
   }
 
-  const { frontmatter } = post;
+  // Resolve language for metadata
+  const cookieStore = await cookies();
+  const headerStore = await headers();
+  const cookieLang = cookieStore.get("spike-lang")?.value;
+  const acceptLanguage = headerStore.get("accept-language");
+
+  const lang = resolveLanguage({ queryLang, cookieLang, acceptLanguage });
+
+  // Use translated title/description if available
+  const translatedPost = lang !== "en" ? getTranslatedPost(slug, lang) : null;
+  const { frontmatter } = translatedPost ?? post;
+
+  const availableLanguages = getAvailableLanguages(slug);
+
+  // Build hreflang alternates
+  const alternates: Record<string, string> = {
+    "x-default": `https://spike.land/blog/${slug}`,
+    en: `https://spike.land/blog/${slug}`,
+  };
+  for (const l of availableLanguages) {
+    alternates[l] = `https://spike.land/blog/${slug}?lang=${l}`;
+  }
 
   return {
     title: `${frontmatter.title} | Spike Land Blog`,
     description: frontmatter.description,
     authors: [{ name: frontmatter.author }],
     keywords: frontmatter.tags,
+    alternates: {
+      languages: alternates,
+    },
     openGraph: {
       title: frontmatter.title,
       description: frontmatter.description,
@@ -69,15 +101,32 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({ slug }));
 }
 
-export default async function BlogPostPage({ params }: PageProps) {
+export default async function BlogPostPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const { lang: queryLang } = await searchParams;
   const post = getPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
-  const { frontmatter, content, readingTime } = post;
+  // Resolve display language
+  const cookieStore = await cookies();
+  const headerStore = await headers();
+  const cookieLang = cookieStore.get("spike-lang")?.value;
+  const acceptLanguage = headerStore.get("accept-language");
+
+  const lang = resolveLanguage({ queryLang, cookieLang, acceptLanguage });
+
+  // Load translated post if not English
+  const translatedPost = lang !== "en" ? getTranslatedPost(slug, lang) : null;
+  const displayPost = translatedPost ?? post;
+  const displayLang: SupportedLanguage = translatedPost ? lang : "en";
+
+  const { frontmatter, content, readingTime } = displayPost;
+
+  // Get available translations for the banner
+  const availableLanguages = getAvailableLanguages(slug);
 
   // Serialize MDX content for client-side rendering with interactive components
   const mdxSource = await serialize(content, {
@@ -113,6 +162,17 @@ export default async function BlogPostPage({ params }: PageProps) {
 
         {/* Header */}
         <BlogHeader frontmatter={frontmatter} readingTime={readingTime} />
+
+        {/* Language Banner */}
+        {availableLanguages.length > 0 && (
+          <div className="mt-6">
+            <LanguageBanner
+              currentLang={displayLang}
+              availableLanguages={availableLanguages}
+              slug={slug}
+            />
+          </div>
+        )}
 
         {/* Listen to article */}
         <div className="mt-6">

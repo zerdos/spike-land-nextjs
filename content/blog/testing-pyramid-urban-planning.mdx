@@ -1,0 +1,175 @@
+---
+title: "The Testing Pyramid Is Upside Down"
+slug: "the-stroad-in-your-test-suite"
+description: "Your E2E test suite is a stroad: too slow for rapid feedback, too cluttered for real user confidence. Urban planning shows us the fix -- build transit, not more lanes."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Developer Experience"
+tags: ["testing", "mcp", "urban-planning", "stroad", "induced-demand"]
+featured: false
+listed: false
+---
+
+## The Stroad in Your Test Suite
+
+If you have ever driven a road that was too fast for the pedestrians beside it and too cluttered with traffic lights for the cars on it, you have driven a stroad. The word is a portmanteau of street and road, coined by the urban designer Charles Marohn. A street is for people: slow, walkable, lined with shops. A road is for movement: fast, uninterrupted, designed to get vehicles from A to B. A stroad is the worst of both. It tries to serve pedestrians and through-traffic simultaneously, and it fails at both. It is the deadliest design in North American transportation. And it is everywhere, because it feels like a reasonable compromise.
+
+Your E2E test suite is a stroad.
+
+A unit test is a street. It is local. It is fast. It is designed for a single neighborhood of logic. You can walk through it, understand it, change it without fear. It serves the people who live there -- the developers who own that code.
+
+An integration test is a road. It moves through multiple neighborhoods, verifying that the connections between them hold. It is not for browsing. It is for throughput.
+
+An E2E test tries to be both. It exercises business logic (the road function) by driving a real browser through your actual UI (the street function). It is too slow for rapid feedback -- a single test can take 15 seconds, a suite can take 20 minutes. It is too tangled in DOM selectors and animation timings to give you authentic confidence in the business logic underneath. You are testing your ability to synchronize with a rendering engine, not your ability to update an email.
+
+Every Cypress `cy.get('[data-testid="save-button"]').click()` is a curb cut on a six-lane road. It sort of works. Nobody loves it. Pedestrians die.
+
+We have been widening this stroad for a decade. Selenium. Protractor. Cypress. Playwright. Each generation of tooling makes browser tests a little faster, a little more reliable. And we respond the way every city responds to a wider highway.
+
+---
+
+## Induced Demand
+
+In the 1960s, traffic engineers had a simple model: roads are congested because there are not enough lanes. Add lanes, reduce congestion. They were wrong. Every time a city widened a highway, traffic volume rose to fill the new capacity within a few years. Economists call this induced demand -- a phenomenon first identified by Anthony Downs in 1962 and later confirmed empirically by Duranton and Turner. The supply of road capacity creates its own demand. More lanes do not reduce congestion. They *generate* traffic.
+
+The same mechanism operates in test suites. Make E2E tests faster and less flaky, and teams write more E2E tests. Playwright is genuinely excellent -- faster than Cypress, more reliable than Selenium. And what happened? Teams wrote more browser tests, not fewer. The proportion of business logic tested through the browser did not shrink. It grew. The stroad got wider.
+
+The fundamental problem was never speed. The fundamental problem was that the browser was the only interface capable of exercising full user flows. There was no subway. There was no bus network. If you wanted to test that a user could cancel their subscription, you had to drive through the entire rendered UI because there was no other route to the destination.
+
+The solution to highway congestion is not faster highways. It is building transit -- a fundamentally different mode of movement that removes trips from the road entirely. Not a faster version of the same. A different thing.
+
+MCP is transit for testing.
+
+---
+
+## Building the Subway
+
+MCP -- Model Context Protocol -- gives your business logic a second interface. A text-based one. Structured inputs, structured outputs, self-describing schemas. No browser. No DOM. No CSS selectors. No timing issues.
+
+Here is the stroad version -- a Cypress test for an email update flow:
+
+```typescript
+// Cypress E2E test -- the stroad
+describe('Email update flow', () => {
+  it('should allow user to change their email', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+This test takes 5-15 seconds. It depends on CSS selectors, animation timing, network latency, and the specific DOM structure of your confirm dialog. Move the success message from a toast to an inline alert? Test breaks. Not because the business logic changed. Because you repainted a curb on the stroad.
+
+Here is the transit version -- the same business logic as an MCP tool, tested at unit speed:
+
+```typescript
+// MCP tool definition -- the subway line
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+    if (!confirmChange) {
+      return {
+        status: 'confirmation_required',
+        message: `Confirm change from ${user.email} to ${newEmail}?`,
+      };
+    }
+    await context.userService.updateEmail(user.id, newEmail);
+    return { status: 'success', updatedEmail: newEmail };
+  },
+};
+
+// Unit test -- the subway ride
+describe('update_user_email', () => {
+  it('updates email when confirmed', async () => {
+    const ctx = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true }, ctx
+    );
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+  });
+
+  it('requires confirmation before updating', async () => {
+    const ctx = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: false }, ctx
+    );
+    expect(result.status).toBe('confirmation_required');
+    expect(ctx.userService.updateEmail).not.toHaveBeenCalled();
+  });
+});
+```
+
+This runs in milliseconds. It does not care what your confirm dialog looks like. It does not care whether your success feedback is a toast or an inline message or a carrier pigeon. It tests the trip, not the road surface.
+
+---
+
+## Mixed-Use Zoning
+
+Jane Jacobs spent her career arguing against single-use zoning -- the planning doctrine that separates residential, commercial, and civic life into isolated districts connected only by highways. She demonstrated that the healthiest neighborhoods are mixed-use: the ground-floor bakery, the apartments above, the park across the street. Diversity of use creates what she called "eyes on the street" -- the natural surveillance that comes from people with different schedules and different reasons to be present, all occupying the same space.
+
+An MCP tool is mixed-use zoning for software.
+
+The same artifact serves three distinct functions. It is **documentation** -- the tool name and description tell humans and machines what the capability does. It is an **agent interface** -- any AI agent that connects via MCP can discover, invoke, and compose your business logic without touching the UI. And it is a **test contract** -- the input schema, handler, and structured response form a verifiable specification.
+
+Single-use test code -- a Cypress test that only serves CI -- is the software equivalent of a strip mall surrounded by parking lots. It exists, it technically works, but nothing else can live there. An MCP tool is a mixed-use building: testing, documentation, and agent interface sharing the same address, each creating "eyes on the street" for the others. A failing test tells you the contract broke. A confused agent tells you the description is unclear. A stale doc tells you the tool drifted from its spec. They surveil each other. This mutual surveillance is not automatic -- it requires the same discipline that makes good urban design work: well-written tool descriptions, thoughtful naming, schemas that capture real contracts. Mixed-use zoning only thrives when each use is genuine, not nominal.
+
+---
+
+## Three Players, One Truth
+
+A unit test and its code, when written properly, specify each other. Two players, one truth.
+
+But I think there is a third player now: the name.
+
+Consider `update_user_email`. That name is not a label. It is a zoning ordinance. It tells you what this block of the city does and what it does not do. It does not send notifications. It does not update passwords. It updates the user's email. An AI agent browsing your MCP server does not read your source code -- it reads tool names, descriptions, and schemas. If `update_user_email` is named properly, any agent knows what to call without inspecting the implementation.
+
+Test. Code. Name. Three players, one truth. Each constrains the other two, the way a well-planned block has its height constrained by the street width, its use constrained by its neighbors, its setback constrained by the pedestrian flow. We had the first two for decades. MCP formalized the third into something machines can reason about.
+
+---
+
+## Tearing Down the Stroad
+
+If you are staring at a flaky E2E suite right now, here is the urban renewal plan.
+
+**Step 1: Survey the stroad.** Identify your slowest, flakiest E2E tests. You know which ones. The ones with `// TODO: figure out why this flakes on CI`. The ones that take 30 seconds and carry three retry wrappers.
+
+**Step 2: Separate the trips from the surface.** For each painful test, ask: what business logic is this actually verifying? Strip away the clicks, the waits, the selectors. "User can cancel a subscription." "Admin can ban a user." That is the trip. The browser chrome is the road surface.
+
+**Step 3: Build the subway line.** Expose each business flow as an MCP tool. Structured inputs, structured outputs, your existing service layer underneath. You are not rewriting logic. You are building a new mode of access to it.
+
+**Step 4: Run trains, not cars.** Write unit tests for the MCP tools. Mock the dependencies. Test happy paths, error paths, edge cases. These tests run in milliseconds and they never flake.
+
+**Step 5: Narrow the stroad.** Your remaining E2E tests now do what E2E should always have done: verify that the page renders, that the visual design is correct, that browser-specific integration wiring holds. A thin layer of smoke tests. A pleasant boulevard, not a six-lane arterial.
+
+The city does not eliminate cars by building a subway. It makes car trips optional for most destinations. You do not eliminate E2E tests by writing MCP tools. You make browser trips optional for most business logic. What remains is manageable, stable, and purposeful.
+
+---
+
+## Full Circle
+
+The real answer to the UI testing question was never "widen the stroad." The real answer was: build a different mode of access to the business logic so you stop driving through the rendering layer for every trip.
+
+Now we have one. Less time idling in traffic on a stroad that serves nobody well. More time walking through the code at human speed, understanding it, improving it. That is what good infrastructure looks like. Not flashier roads. Quieter streets. Fewer trips through the chaos. The boring kind of progress that makes everything else possible.

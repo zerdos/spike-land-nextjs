@@ -1,0 +1,302 @@
+---
+title: "Die Testpyramide steht Kopf"
+slug: "the-testing-pyramid-is-upside-down"
+description: "Was, wenn der schlimmste Teil deiner Testsuite -- die langsamen, instabilen E2E-Tests -- mit Unit-Test-Geschwindigkeit laufen koennten? MCPs koennten die Antwort sein, mit der niemand gerechnet hat."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Entwicklererfahrung"
+tags: ["testing", "mcp", "unit-testing", "e2e", "architektur", "agents"]
+featured: true
+language: "de"
+---
+
+*Dem Andenken an Laszlo Merklik (1975-2018) gewidmet, der uns viel zu frueh verlassen hat. Er war Anfang vierzig, als der Krebs ihn holte. Als Mitgruender und CPO von Emarsys -- spaeter von SAP uebernommen -- baute er eine der angesehensten Engineering-Kulturen Ungarns auf. Er hielt sogar einen Vortrag mit dem Titel "Bessere Qualitaet ohne Tester", der sich wie ein direkter Vorgaenger der Ideen in diesem Artikel anfuehlt.*
+
+*Laszlo war die Person, die mich dazu brachte, Programmieren ernst zu nehmen. Nicht nur es zu tun -- sich darum zu kuemmern. Er brachte mir bei, dass es eine besondere Beziehung zwischen einem Unit-Test und dem Code gibt, den er testet: Wenn beides richtig geschrieben ist, spezifiziert eines das andere. Der Test sagt dir, was der Code tun soll. Der Code sagt dir, was der Test verifizieren soll. Sie sind zwei Ansichten derselben Wahrheit.*
+
+*Er war die Art von Entwickler, die alle um sich herum besser machte. Die Art, die nach den Vortraegen blieb, um einem Junior beim Build zu helfen. Die Art, die glaubte, dass gutes Software-Schreiben eine Form des Respekts ist -- gegenueber deinen Teamkollegen, deinen Nutzern, dir selbst. In diesem Artikel geht es darum, das Handwerk voranzutreiben. Das war auch sein Ding.*
+
+---
+
+## Die Konferenz
+
+Vor etwa fuenfzehn Jahren ging ich zu einer Entwicklerkonferenz in Budapest. Das Thema war Jasmine -- das damals im Browser lief, da Node.js selbst noch nicht weit verbreitet war. Das war vor der Zeit, in der Jest die Welt erobert hatte, bevor Testing auf jedem Projekt als selbstverstaendlich galt. Testen war noch etwas, wofuer man argumentieren musste.
+
+Der Vortragende war jung. Nervöse Energie. Er war offensichtlich vor kurzem bekehrt worden -- man konnte es in seinen Augen sehen. Er fuehrte uns durch, wie ein paar Dutzend Unit-Tests eine Regression abgefangen hatten, die sonst in die Produktion gegangen waere. Er zeigte, wie Mocking funktionierte. Er zeigte, wie schnell die Feedback-Schleife war. Er vibrierte foermlich.
+
+Dann meldete sich jemand im Publikum.
+
+"Es hogy teszteljuek le az UI-t?" fragte die Person -- *"Und wie testen wir die UI?"*
+
+Der Vortragende pausierte. Dann zuckte er die Schultern.
+
+"Az UI-t? Azt teszteljek a huelyek!" -- *"Die UI? Das sollen die Idioten testen!"*
+
+Ein paar Leute lachten. Die meisten nickten. Es schien damals verstaendlich. Die Unit-Tests deckten die Geschaeftslogik ab. Die UI war nur HTML und CSS. Man schaut drauf, und es sieht entweder richtig oder falsch aus. Was gibt es da zu automatisieren?
+
+Diese Antwort blieb mir lange im Gedaechtnis. Nicht weil sie falsch war. Weil sie fast richtig war -- und die Luecke zwischen fast richtig und wirklich richtig unsere Branche ein Jahrzehnt an Schmerzen kosten wuerde.
+
+---
+
+## Was dann geschah
+
+Wir fingen an, die UI zu testen. Natuerlich taten wir das.
+
+Zuerst kam Selenium. Dann Protractor. Dann Cypress. Dann Playwright. Jedes besser als das vorherige. Jedes mit dem Versprechen, Browser-Testing endlich zuverlaessig zu machen.
+
+Und sie wurden besser. Playwright im Besonderen ist ein wirklich exzellentes Tool. Aber das grundlegende Problem ging nie weg: Du steuerst einen echten Browser, renderst echtes DOM, wartest auf echte Netzwerkanfragen und hoffst, dass das Timing passt. Du testest durch die dickste, unvorhersehbarste Schicht deines gesamten Stacks.
+
+Diese Tests wurden der schlimmste Teil jeder Testsuite, an der ich je gearbeitet habe.
+
+Sie sind langsam. Eine schnelle Unit-Test-Suite laeuft in Sekunden. Eine umfassende E2E-Suite laeuft in Minuten -- manchmal Dutzende von Minuten. In der CI, mit Parallelisierung und Retries, schaust du auf Pipeline-Zeiten, die Entwickler dazu bringen, waehrend des Wartens auf etwas anderes umzuschalten.
+
+Sie sind instabil. Nicht weil die Tools schlecht sind, sondern weil Browser komplexe Zustandsmaschinen sind. Ein Test, der lokal besteht, schlaegt in der CI fehl, weil die Animation 50ms laenger gedauert hat. Ein Test, der gestern lief, schlaegt heute fehl, weil ein Drittanbieter-Skript langsamer geladen hat. Du fuegst `waitForSelector` hinzu. Du fuegst `waitForTimeout` hinzu. Du fuegst Retry-Logik hinzu. Du testest nicht mehr deine Anwendung -- du testest deine Faehigkeit, dich mit dem Chaos zu synchronisieren.
+
+Sie sind fragil. Aendere eine CSS-Klasse? Tests brechen. Verschiebe einen Button von der linken Seitenleiste in die obere Navigation? Tests brechen. Refactore eine Komponente, die sich identisch verhaelt, aber anders rendert? Tests brechen. Die Tests sind an die Implementierung gekoppelt, genau so, wie wir Junior-Entwicklern sagen, Unit-Tests nicht zu schreiben.
+
+Das ist die Testpyramide. Unit-Tests an der Basis: schnell, billig, viele. Integrationstests in der Mitte: mittlere Geschwindigkeit, mittlere Kosten, mittlere Anzahl. E2E-Tests an der Spitze: langsam, teuer, wenige.
+
+Jeder weiss, dass die Spitze der Pyramide schmerzhaft ist. Wir akzeptierten es als Geschaeftskosten. Du brauchst *einige* E2E-Tests, weil das der einzige Weg ist, den vollstaendigen Benutzerablauf zu verifizieren. API-Tests reichen nicht -- sie testen Endpoints, nicht die Geschaeftslogik-Ablaeufe, die diese Endpoints zu etwas verbinden, das ein Benutzer tatsaechlich tut.
+
+Oder so dachten wir.
+
+---
+
+## Die Erkenntnis
+
+Hier ist die Sache mit E2E-Tests, ueber die niemand klar genug spricht: Die meisten von ihnen testen nicht wirklich den Browser. Sie testen Geschaeftslogik *durch* den Browser.
+
+Denk darueber nach, was ein typischer E2E-Test tatsaechlich verifiziert. "Benutzer meldet sich an, navigiert zu den Einstellungen, aendert seine E-Mail, bestaetigt die Aenderung, sieht die aktualisierte E-Mail auf der Profilseite." Was testest du hier wirklich? Du testest, dass der E-Mail-Aenderungsablauf funktioniert. Login, Navigation, Formularabsendung, Bestaetigung, Statusaktualisierung -- das ist alles Geschaeftslogik. Der Browser ist nur der Uebermittlungsmechanismus.
+
+Das ist keine neue Beobachtung. Alistair Cockburns hexagonale Architektur (2005) argumentierte, dass Anwendungen gleichermassen von Benutzern, Programmen und Testskripten steuerbar sein sollten. Martin Fowler nannte das Muster "subkutanes Testen" -- Testen knapp unter der UI. Robert C. Martins Clean Architecture bestand darauf, dass Geschaeftsregeln ohne jede UI testbar sein muessen. Die Erkenntnis war immer da. Was fehlte, war eine standardisierte Schnittstelle, die es in der Praxis skalierbar machte.
+
+MCP -- Model Context Protocol -- ist diese Schnittstelle. Es ist ein Standard zum Bereitstellen der Faehigkeiten deiner Anwendung als strukturierte Tools. Text rein, Text raus. Ein Agent sendet eine Anfrage, die beschreibt, was er tun moechte, dein MCP-Server fuehrt die Aktion aus und gibt das Ergebnis zurueck. Kein Browser. Kein DOM. Keine CSS-Selektoren. Keine Timing-Probleme. Wenn du deine User Stories als MCP-Tools schreibst, hast du einen testbaren Kontrakt fuer deine Geschaeftslogik erstellt.
+
+Lass mich zeigen, was ich meine.
+
+Sagen wir, du hast eine User Story: "Ein Benutzer kann seine E-Mail-Adresse aktualisieren." In der E2E-Welt sieht der Test ungefaehr so aus:
+
+```typescript
+// Cypress E2E test
+describe('Email update flow', () => {
+  it('should allow user to change their email', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+Dieser Test braucht 5-15 Sekunden. Er haengt von CSS-Selektoren, DOM-Struktur, Animations-Timing und Netzwerklatenz ab. Aendere den Bestaetigungsdialog zu einem Modal? Test bricht. Verschiebe die Erfolgsmeldung von einem Toast zu einem Inline-Alert? Test bricht.
+
+Nun hier ist dieselbe Geschaeftslogik als MCP-Tool bereitgestellt:
+
+```typescript
+// MCP tool definition
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+
+    if (!confirmChange) {
+      return {
+        status: 'confirmation_required',
+        message: `Confirm email change from ${user.email} to ${newEmail}?`,
+      };
+    }
+
+    await context.userService.updateEmail(user.id, newEmail);
+    return {
+      status: 'success',
+      message: `Email updated to ${newEmail}`,
+      updatedEmail: newEmail,
+    };
+  },
+};
+```
+
+Und der Unit-Test:
+
+```typescript
+// Unit test for the MCP tool
+describe('update_user_email', () => {
+  it('should update email when confirmed', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+    expect(context.userService.updateEmail).toHaveBeenCalledWith(
+      '1',
+      'new@example.com',
+    );
+  });
+
+  it('should require confirmation before updating', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: false },
+      context,
+    );
+
+    expect(result.status).toBe('confirmation_required');
+    expect(context.userService.updateEmail).not.toHaveBeenCalled();
+  });
+
+  it('should reject unauthenticated requests', async () => {
+    const context = createMockContext({ user: null });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+
+    expect(result.error).toBe('Not authenticated');
+  });
+});
+```
+
+Dieser Test laeuft in Millisekunden. Er haengt von keiner DOM-Struktur ab. Es ist ihm egal, wie die UI aussieht. Er testet exakt dieselbe Geschaeftslogik -- den E-Mail-Aktualisierungsablauf mit Bestaetigung -- aber mit Unit-Test-Geschwindigkeit und Unit-Test-Zuverlaessigkeit.
+
+Du hast keine Abdeckung verloren. Du hast den Browser verloren.
+
+---
+
+## Das Architektur-Argument
+
+Das ist nicht nur ein Testing-Trick. Es ist ein architektonischer Wandel.
+
+Wenn du deine User Stories als MCP-Tools bereitstellst, erstellst du eine Kette:
+
+**User Stories -- MCP-Tools -- Unit-testbare Geschaeftslogik**
+
+Dieselbe Spezifikation dient gleichzeitig drei Zwecken:
+
+1. **Benutzerdokumentation.** Die MCP-Tool-Beschreibungen *sind* deine Feature-Dokumentation. "Die E-Mail-Adresse des authentifizierten Benutzers aktualisieren" -- das ist die Spezifikation, in einfacher Sprache geschrieben, im Code lebend.
+
+2. **Agenten-Schnittstelle.** Jeder KI-Agent, der sich ueber MCP verbindet, kann jetzt deine User Stories ausfuehren. Deine App ist agenten-bereit, nicht weil du ein KI-Feature draufgeschraubt hast, sondern weil deine Geschaeftslogik ueber eine strukturierte Text-Schnittstelle zugaenglich ist.
+
+3. **Test-Kontrakt.** Das Input-Schema definiert, was das Tool akzeptiert. Der Handler definiert das erwartete Verhalten. Die Antwort definiert die erwartete Ausgabe. Das ist ein Kontrakt. Du kannst ihn genauso testen wie jede Funktion -- weil er *eine* Funktion ist.
+
+Du koenntest aehnliche Testbarkeit mit einer einfachen Service-Schicht erreichen -- eine gut strukturierte `updateUserEmail()`-Funktion ist genauso testbar wie ein MCP-Handler. Aber eine Service-Funktion dient einem Herrn: deiner Anwendung. Ein MCP-Tool dient dreien. Dasselbe Artefakt ist dein Test-Kontrakt, deine Agenten-Schnittstelle und deine Feature-Dokumentation. Du schreibst es einmal; es verdient sich seinen Platz dreifach. Das ist kein Testing-Trick. Das ist ein architektonischer Kraftmultiplikator.
+
+Das ist die Kernerkenntniss, fuer die ich Jahre gebraucht habe: Der Grund, warum E2E-Tests schmerzhaft sind, ist nicht, dass Browser-Automatisierung schwer ist (obwohl sie es ist). Es ist, dass wir gezwungen waren, durch den Browser zu gehen, weil es keinen anderen Weg gab, vollstaendige Benutzerablaeufe auszuueben. Der Browser war die einzige Schnittstelle, die alle Teile verband.
+
+MCPs geben dir eine zweite Schnittstelle. Eine textbasierte mit selbstbeschreibenden Schemas, die Maschinen entdecken, aufrufen und verifizieren koennen. Eine, die dieselben Teile verbindet, aber ohne die Rendering-Schicht, ohne die Timing-Probleme, ohne die CSS-Selektoren.
+
+---
+
+## Der dritte Spieler
+
+Laszlo brachte mir die Dualitaet bei: Ein Unit-Test und sein Code spezifizieren, wenn richtig geschrieben, einander. Zwei Spieler, eine Wahrheit.
+
+Aber ich denke, es gibt einen dritten Spieler: den Namen.
+
+Betrachte das MCP-Tool von vorhin: `update_user_email`. Dieser Name ist nicht nur ein Label. Er ist eine Einschraenkung. Er sagt dir, was das Tool tun muss und was es nicht tun darf. Es sendet keine Benachrichtigungen. Es aktualisiert nicht das Passwort. Es aktualisiert die E-Mail des Benutzers.
+
+Gute Benennung war schon immer wichtig. Ein gut benannter Funktionsname schraenkt ein, was ein Entwickler schreibt. Aber ein MCP-Tool-Name schraenkt ein, was eine *Maschine* entdecken, aufrufen und testen kann. Ein KI-Agent, der deinen MCP-Server durchsucht, liest nicht deinen Quellcode -- er liest Tool-Namen, Beschreibungen und Schemas. Wenn `update_user_email` richtig benannt ist, weiss ein Agent, wofuer er es aufrufen muss, ohne die Implementierung zu lesen. Der Name wird zu einem entdeckbaren Kontrakt.
+
+Test. Code. Name. Drei Spieler, eine Wahrheit. Der Name, das Input-Schema und der Handler bilden ein Dreieck, in dem jeder Eckpunkt die anderen beiden einschraenkt. Wir hatten die ersten beiden seit Jahrzehnten. MCP hat den dritten in etwas formalisiert, worüber Maschinen nachdenken koennen -- und es stellt sich heraus, wenn du dem Namen genug Struktur gibst, um maschinenlesbar zu sein, wird er auch maschinentestbar.
+
+---
+
+## Praktische Schritte
+
+Wenn du gerade auf eine instabile E2E-Suite starrst, hier ist, wie du anfaengst.
+
+**Schritt 1: Finde deine schmerzhaftesten E2E-Tests.** Du weisst, welche es sind. Die, die du dreimal laufen laesst, bevor sie bestehen. Die mit `// TODO: herausfinden, warum das instabil ist`-Kommentaren. Die, die jeweils 30 Sekunden brauchen.
+
+**Schritt 2: Frage, welche Geschaeftslogik sie tatsaechlich verifizieren.** Streiche die Klicks und die Wartezeiten und die Selektoren weg. Was prueft der Test wirklich? "Benutzer kann sein Abonnement kuendigen." "Admin kann einen Benutzer sperren." "Zahlungsablauf behandelt abgelehnte Karten." Das ist die Geschaeftslogik.
+
+**Schritt 3: Stelle diese Logik als MCP-Tools bereit.** Schreibe ein MCP-Tool fuer jeden Geschaeftsablauf. Definiere das Input-Schema, implementiere den Handler mit deinen bestehenden Services, gib strukturierte Ergebnisse zurueck. Du schreibst nichts um -- du umhuellst deine bestehende Geschaeftslogik in einer strukturierten Schnittstelle.
+
+**Schritt 4: Schreibe Unit-Tests fuer die MCP-Tools.** Mocke die Abhaengigkeiten. Teste den Erfolgsfall. Teste die Fehlerfaelle. Teste die Grenzfaelle. Diese Tests laufen in Millisekunden und werden nie instabil sein.
+
+**Schritt 5: Beobachte, wie deine E2E-Suite schrumpft.** Du wirst immer noch einige E2E-Tests brauchen -- fuer visuelle Regressionen, fuer browserspezifisches Verhalten, fuer Integrations-Verdrahtung, die nur in einer echten Umgebung auftaucht (CORS, Auth-Middleware, Hydration). Aber die Anzahl wird dramatisch sinken. Die verbleibenden werden einfacher und stabiler sein, weil sie nicht mehr die Last der Geschaeftslogik-Verifizierung tragen.
+
+Du ersetzt keine E2E-Tests. Du bewegst die Geschaeftslogik aus ihnen heraus. Was bleibt, ist eine duenne Schicht visueller Smoke-Tests -- was E2E-Tests von Anfang an haetten sein sollen.
+
+---
+
+## Die CI-Dividende
+
+Sobald deine Geschaeftslogik in MCP-Tools lebt, eng gekoppelt an dein Frontend durch TypeScript, passiert etwas Bemerkenswertes mit deiner CI-Pipeline.
+
+Fuehre das aus:
+
+```bash
+yarn vitest run --changed main
+```
+
+Vitest weiss, welche Dateien sich seit `main` geaendert haben. Es weiss, welche Tests diese Dateien importieren. Es fuehrt nur diese Tests aus. Eine Aenderung an `update_user_email` fuehrt die E-Mail-Tests aus, nicht die gesamte Suite. Das dauert Sekunden, nicht Minuten.
+
+Aber der eigentliche Trick ist, was als Naechstes kommt.
+
+Deine CI hat Coverage-Logs. Sie hat Git-History. Sie weiss, welche MCP-Tools sich geaendert haben, welche Unit-Tests sie abdecken und welche E2E-Szenarien diese Ablaeufe durchlaufen. Ein KI-Reviewer-Agent kann diesen Graphen lesen und eine Entscheidung treffen: Welche E2E-Tests muessen wirklich laufen?
+
+Beschreibung in einer Test-Fixture-Datei aktualisiert? Keine E2E-Tests noetig. E-Mail-Validierungslogik in einem MCP-Tool geaendert? Die E-Mail-bezogenen E2E-Szenarien ausfuehren, den Rest ueberspringen. Ein gemeinsames Utility refactored? Der Agent verfolgt den Abhaengigkeitsgraphen und fuehrt genau die betroffenen Tests aus -- nicht mehr, nicht weniger.
+
+Das ist inkrementelles Review, angetrieben durch dieselbe Kopplung, die deine Unit-Tests schnell gemacht hat. Die MCP-Tool-Namen geben dem Agenten genug semantischen Kontext, um ueber den Wirkungsradius nachzudenken. `update_user_email` geaendert? Der Agent weiss, die E-Mail-E2E-Tests auszufuehren. `list_user_notifications` unveraendert? Ueberspringen.
+
+Die Einsparungen kumulieren. In einer grossen Codebasis beruehrt ein typischer PR einen Bruchteil der Geschaeftslogik. Die vollstaendige E2E-Suite fuer jeden PR auszufuehren ist, als wuerde man das ganze Haus neu bauen, weil man eine Tuerklinke ausgetauscht hat. Mit MCP-strukturierter Geschaeftslogik und einem KI-Reviewer fuehrt deine CI nur das aus, was zaehlt.
+
+Weniger Rechenaufwand. Schnelleres Feedback. Weniger instabile Fehler von Tests, die nichts mit deiner Aenderung zu tun hatten. Die Pyramide formt sich nicht nur um -- sie wird intelligent.
+
+---
+
+## Die Pyramide, neu betrachtet
+
+Die Testpyramide war immer ein Kompromiss. Wir setzten E2E-Tests an die Spitze nicht, weil wir wollten, dass sie langsam und wenige sind, sondern weil das die Einschraenkung war. Vollstaendige Benutzerablauf-Verifizierung erforderte einen Browser. Browser sind langsam. Daher sind vollstaendige Benutzerablauf-Tests langsam. Daher schreibe weniger davon.
+
+MCPs brechen diese Einschraenkung.
+
+Wenn deine Geschaeftslogik ueber eine Text-Schnittstelle zugaenglich ist, erfordert vollstaendige Benutzerablauf-Verifizierung keinen Browser. Sie erfordert einen Funktionsaufruf. Funktionsaufrufe sind schnell. Daher sind vollstaendige Benutzerablauf-Tests schnell. Daher schreibe so viele, wie du willst.
+
+Die Pyramide dreht sich nicht auf den Kopf. Sie formt sich um. Die schmerzhafte oberste Schicht -- die E2E-Schicht -- wird duenn. Die Geschaeftslogik, die sie aufblaehte, wandert hinunter zur Unit-Test-Schicht. Nicht weil du einen cleveren Weg gefunden hast, den Browser zu mocken, sondern weil du die Notwendigkeit des Browsers ganz beseitigt hast.
+
+Die verbleibenden E2E-Tests tun, was sie immer haetten tun sollen: Verifizieren, dass die Seite rendert, dass die Integrations-Verdrahtung haelt, dass das visuelle Design stimmt. "Das sollen die Idioten testen" -- nur dass die "Idioten" jetzt Playwright sind, das eine Handvoll gezielter Pruefungen durchfuehrt, nicht hundert langsame Geschaeftslogik-Simulationen.
+
+---
+
+## Der volle Kreis
+
+Ich denke manchmal immer noch an diese Konferenz. Der junge Vortragende, vor Begeisterung ueber Unit-Tests vibrierend. Die Person im Publikum, die nach UI-Testing fragte. Die abschaetzige Antwort.
+
+"Az UI-t? Azt teszteljek a huelyek!" -- *"Die UI? Das sollen die Idioten testen!"*
+
+Er hatte nicht unrecht. Er war zu frueh dran.
+
+Die wahre Antwort auf die UI-Testing-Frage war nie "automatisiere den Browser." Die wahre Antwort war: Mach die Geschaeftslogik ohne Browser zugaenglich. Wir hatten nur noch nicht die Schnittstelle dafuer.
+
+Jetzt haben wir sie.
+
+Laszlo haette das geliebt. Nicht die Technologie selbst -- er war nie der Typ, der sich ueber ein Protokoll oder eine Spezifikation begeisterte. Er haette geliebt, was es fuer das Handwerk bedeutet. Weniger Zeit mit instabilen Tests kaempfen. Mehr Zeit, Dinge bauen, die wichtig sind. Mehr Zeit, dem Junior-Entwickler nach den Vortraegen zu helfen.
+
+So sieht es aus, das Handwerk voranzutreiben. Keine auffaelligen neuen Tools. Leisere Feedback-Schleifen. Weniger Reibung zwischen Absicht und Verifizierung. Die langweilige Art von Fortschritt, die alles andere moeglich macht.
+
+Ich denke an ihn jedes Mal, wenn ich einen instabilen Test loesche. Ich glaube, er wuerde zustimmen.

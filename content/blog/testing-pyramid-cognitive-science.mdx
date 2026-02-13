@@ -1,0 +1,176 @@
+---
+title: "The Testing Pyramid Is Upside Down"
+slug: "the-wrong-question-we-answered-for-thirty-years"
+description: "For thirty years we asked 'does the button work?' instead of 'is the logic sound?' — a textbook substitution heuristic that cost us a decade of flaky tests. Cognitive science explains why MCP is the fix."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Developer Experience"
+tags: ["testing", "mcp", "cognitive-science", "kahneman", "heuristics"]
+featured: false
+listed: false
+---
+
+## The Substitution
+
+Daniel Kahneman spent a career documenting a peculiar failure mode of human reasoning. When the mind encounters a hard question, it does not give up. It does something worse: it silently replaces the hard question with an easier one and answers that instead. He called this the **substitution heuristic**. You do not notice it happening. You feel the confidence of having answered the original question. But you answered a different one entirely.
+
+For thirty years, the testing discipline has been committing this exact cognitive crime.
+
+The hard question was: *"How do we verify that our business logic is correct -- that invariants hold, that state transitions obey their contracts, that causality flows the way the specification demands?"*
+
+The easy question we substituted: *"How do we click a button and check if some text appears on screen?"*
+
+We answered the easy question brilliantly. Selenium. Protractor. Cypress. Playwright. Each generation more sophisticated than the last. Each one a more elaborate answer to the wrong question.
+
+---
+
+## WYSIATI: The Illusion of the Green Checkbox
+
+Kahneman's most unsettling finding is what he called WYSIATI -- What You See Is All There Is. System 1 builds a coherent story from whatever information is available and does not flag what is missing. Ignorance is not experienced as uncertainty. It is experienced as coherence.
+
+Browser tests are WYSIATI machines.
+
+A Cypress test visits a page, clicks a button, asserts that a success toast appears. Green checkbox. Everyone feels confident. But what did we actually observe? A particular sequence of DOM mutations under particular timing conditions. We did not observe whether the underlying state transition was correct. We did not verify the invariant.
+
+The green checkbox is not evidence of correctness. It is evidence of *surface consistency*. And WYSIATI ensures we mistake the latter for the former.
+
+```typescript
+// Cypress E2E test -- surface observation
+describe('Email update flow', () => {
+  it('should allow user to change their email', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+Every CSS selector is a confession -- not of bad engineering, but of an epistemological compromise. We are reading surface features and inferring deep structure. System 1, running on autopilot, whispering: *looks right, must be working.*
+
+---
+
+## System 1 Testing vs. System 2 Testing
+
+Kahneman divided cognition into two systems. System 1 is fast, intuitive, effortless -- it recognizes faces and catches balls. System 2 is slow, deliberate, analytical -- it solves algebra and evaluates arguments.
+
+Browser testing is System 1 testing. Pattern matching against appearances. The page looks right. The toast appeared. Confident -- and often wrong for reasons that never surface.
+
+What we need is System 2 testing. Deliberate verification of business rules. Not "does the page look right?" but "does the logic hold?"
+
+MCP -- Model Context Protocol -- is the interface that makes System 2 testing practical. It exposes business logic as structured tools. Text in, text out. No browser, no DOM, no timing issues:
+
+```typescript
+// MCP tool -- deep structure verification
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+
+    if (!confirmChange) {
+      return {
+        status: 'confirmation_required',
+        message: `Confirm email change from ${user.email} to ${newEmail}?`,
+      };
+    }
+
+    await context.userService.updateEmail(user.id, newEmail);
+    return { status: 'success', updatedEmail: newEmail };
+  },
+};
+
+// Unit test -- System 2 deliberation
+describe('update_user_email', () => {
+  it('should update email when confirmed', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+    expect(context.userService.updateEmail).toHaveBeenCalledWith(
+      '1', 'new@example.com',
+    );
+  });
+
+  it('should require confirmation before updating', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: false },
+      context,
+    );
+
+    expect(result.status).toBe('confirmation_required');
+    expect(context.userService.updateEmail).not.toHaveBeenCalled();
+  });
+});
+```
+
+This test runs in milliseconds. It does not observe surface features and infer depth. It interrogates depth directly. No substitution heuristic. No WYSIATI. System 2, engaged and deliberate.
+
+---
+
+## Deep Structure vs. Surface Structure
+
+Chomsky drew a distinction between the *surface structure* of a sentence -- the words as spoken -- and its *deep structure* -- the underlying grammatical relationships that determine meaning. "The dog bit the man" and "The man was bitten by the dog" have different surface structures but identical deep structures.
+
+Browser tests read surface structure. MCP tests read deep structure. When you refactor a component, you change surface structure while preserving deep structure. Browser tests break. MCP tests do not. This is not a convenience. It is an epistemological correction.
+
+---
+
+## Three Players, One Truth
+
+A unit test and its code, when written properly, specify each other. Two players, one truth.
+
+But I think there is a third player: the name.
+
+Consider the MCP tool: `update_user_email`. That name is not just a label. It is a *cognitive anchor*. Kahneman showed that anchors shape all subsequent reasoning -- once you see a number, you adjust from it but never escape it. A tool name works the same way. Once you name it `update_user_email`, every line of the handler is evaluated against that anchor. Does this line update the email? Does it belong here?
+
+Test. Code. Name. Three players, one truth. The name constrains the handler. The handler constrains the test. The test constrains the name. A triangle of mutual specification where each vertex holds the other two accountable. MCP formalized the third vertex into something machines can discover, invoke, and verify.
+
+---
+
+## Undoing the Substitution
+
+If your test suite is a monument to the substitution heuristic, here is how to begin the correction.
+
+**Step 1: Identify the substituted questions.** Take your flakiest E2E tests. For each one, ask: what hard question was this test supposed to answer? What easy question did it actually answer? The gap is your technical debt.
+
+**Step 2: Expose the deep structure.** Write MCP tools for your business logic flows. You are not rewriting anything. You are making the deep structure legible.
+
+**Step 3: Write System 2 tests.** Unit-test the MCP tools. These tests interrogate contracts, not appearances.
+
+**Step 4: Thin the surface layer.** The remaining E2E tests verify only what they are uniquely qualified for: rendering, visual regression, browser-specific integration.
+
+**Step 5: Calibrate your confidence.** Kahneman showed that experts are well-calibrated when they receive fast, clear feedback. Slow, flaky tests produce noisy feedback and miscalibrated confidence. Fast, deterministic MCP tests produce the kind of signal that builds genuine expertise.
+
+---
+
+## Full Circle
+
+MCP dissolves the conditions that made the substitution necessary. When business logic is accessible through a text interface, you no longer need to infer deep structure from surface observation. You can examine it directly.
+
+That is System 2 thinking. The slow, deliberate, careful kind. The kind that notices when you are answering the wrong question.

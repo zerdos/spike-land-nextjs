@@ -1,0 +1,502 @@
+---
+title: "Hogyan Tervezi a Claude Code a Kontextust: Interju az Opus 4.6-tal"
+slug: "how-claude-code-engineers-context"
+description: "Mely technikai interju arrol, hogyan allitja ossze a Claude Code a kontextust tervek keszitesekor -- es mit tanulhatnak a fejlesztok a token-generalas, a figyelem es a KV cache megkozelitesebol."
+date: "2026-02-11"
+author: "Zoltan Erdos"
+category: "Fejlesztoi Elmeny"
+tags: ["ai", "context-engineering", "claude", "claude-code", "developer-tools", "interju", "llm-internals", "tervezes"]
+featured: true
+language: "hu"
+---
+
+{/* TL;DR Box */}
+<div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 mb-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">TL;DR</h3>
+  <ul className="space-y-2 text-slate-300">
+    <li>A Claude Code terv modja egy kontextus-tervezo gep -- felterkepez, tomoerit es kimenetet optimalizalja a vegrehajtasra.</li>
+    <li>Egy tervfajl MAGA a kontextus-tervezett prompt: az 5 retegu verem konkrettan megvalositva.</li>
+    <li>A KV cache a fizikai mechanizmus -- a kontextus-tervezes a muveszet, hogy helyesen toltsuk fel.</li>
+    <li>A lenyegtelen kontextus nem csak helyet pazarol -- aktivan rontja a figyelmi jelet higitas altal.</li>
+    <li>A tobbagens koordinacio kontextus-izolacio lepetkben -- minden alagens tiszta, fokuszalt kontextusablakot kap.</li>
+    <li>A prompt-gyorsitotarazas megvaltoztatja a gazdasagossagot: a gyorsitotarazott tokenek 10x kevesebbe kerulnek, igy a stabil kontextus-elotag gazdasagi szuksegszeruseg.</li>
+    <li>A Claude Code technikait alkalmazhatod a sajat promptjaidra.</li>
+  </ul>
+</div>
+
+## Az Eszkoz, Ami Azt Gyakorolja, Amit Predikalok
+
+Mult heten publikaltam egy cikket a [kontextus-tervezesrol a zero-shot promptodhoz](/blog/context-engineering-your-zero-shot-prompt) -- az otletrol, hogy az AI kivalv eredmenyeinek elerese az elso probalkozasra a kontextus elozetes betolteserol szol, nem okos varazsmondatok kidolgozasarol. Ot reteg: Identitas, Tudas, Peldak, Korlatozasok, Eszkozok.
+
+A kozles utani napon a Claude Code terv modjat hasznaltam egy uj funkcio tervezesehez. Figyeltem, ahogy negy parhuzamos Felfedezo agenst indit, tizennegy fajlt olvas be, hat grep-keresest futtat, eldobja a talalt anyag felet, es egy strukturalt tervet keszit, ami pontosan az ot retegre kepezodott le, amikrol eppen irtam.
+
+A sajat keretrendszeremet neztem, automatizalva.
+
+Ez a cikk az ezt koveto beszelgetes. Leultem a modellel, ami a Claude Code-ot hajtja -- Opus 4.6 -- es megkertem, hogy magyarazza el, mi tortenik a motorhazteto alatt. Nem a marketing szoveg. A mechanizmus.
+
+*Ami kovetkezik, az egy 2026 februarjaban keszitett interju. A kerdesek az enyemek. A valaszok a Claude Opus 4.6-tol szarmaznak. A viltagossag es a folyamatossag erdekeben szerkesztettem, de a technikai tartalom valtozatlan. Es igen -- maga ez a cikk is tizenhat parhuzamos kutato agens felhasznalasaval keszult, akik dokumentaciot kerestek, tudomanyos cikkeket olvastak es megallpitasokat szintetizaltak, mielott egyetlen szo megszuletett volna. Ez a folyamat maga a kontextus-tervezes a gyakorlatban.*
+
+---
+
+## Mi Tortenik, Amikor Beirom a /plan Parancsot?
+
+### **Zoltan: Kezdjuk az elejetol. Amikor ketszer megnyomom a Shift+Tab-ot a Claude Code-ban, mi valtozik valojaban?**
+
+A rendszer atvalt egy modba, ahol olvasni tudok, de irni nem. A kikenyszerites teljes egeszeben prompt-alapu -- a rendszer prompt egy direktivat injektal, ami nagjabol azt mondja: "A terv mod aktiv. SZIGORUAN TILOS fajlokat letrehozni, modositani vagy torolni." Az eszkozeim nem valtoznak. Meg mindig hozzaferek az Edit-hez, a Write-hoz es a Bash-hez. Utasitast kaptam, hogy ne hasznaljam oket.
+
+Ez fontos reszlet. A korlatozas nem mechanikus -- kontextusalis. A rendszer arra bizik, hogy a modell koveti az utasitasokat, ahelyett, hogy eltavolitana a kepessegeket. Ez gyorsabb a megvalositasban, rugalmasabb, es mukodik, mert az utasitas a rendszer promptban ul, ahol maximalis figyelmi sulyt kap.
+
+### **Zoltan: Mekkora a rendszer prompt, amit kapsz?**
+
+A teljes kontextus-osszeallitas egy Claude Code munkamenethez nagyjaboeol 20 000 token, mielott egyetlen fajlt is beolvasnek. Ez koerulbelul igy oszlik meg:
+
+| Komponens | Tokenek |
+|-----------|---------|
+| Alapveto rendszer prompt | ~2700 |
+| Eszkoz leirasok (24 eszkoz) | ~16 800 |
+| CLAUDE.md fajlok | Valtozo (~1000-7000) |
+| Git statusz pillanatkep | Valtozo (~200-1000) |
+| Egyedi alagens definiciok | ~1300 |
+| Kepesseg leirasok | ~1000 |
+
+Amikor a terv mod aktivalodik, egy tovabbi 633 tokenes direktiva kerul injektalasra, ami definiafla a munkafolyamatot: ertsd meg a kovetelmeenyeket, terkepezd fel a kodbazist a meglevo mintak olvasasaval, tervezz megoldasokat a kompromisszumok figyelembevelevel, majd reszletezd a megvalositasi tervet fajlelvalasztasokkal es fuggosegekkel.
+
+A terv modban minden valasznak a "Kritikus Fajlok a Megvalositashoz" reesszel kell zarulnia -- harom-ot alapveto fajl megjeloleevel. Maga a terv egy markdown fajlba keroul, ami a `~/.claude/plans/` konyvtarban tarolodik.
+
+### **Zoltan: Szoval nincs kuloen "tervezo motor." Csak te vagy, mas utasitasokkal.**
+
+Pontosan. A terv mod egy prompt, amit ugyanarra a modellre alkalmaznak. A tervfajl, amit produkak, egy markdown dokumentum -- emberek es gepek altal egyarant olvashato. Amikor a felhasznalo kilep a terv modbol, a rendszer visszaolvassa a fajlt a lemezrol es kontextuskent hasznalja a megvalositasi fazishoz.
+
+Ez a kulcsfontossagu felismeres: **a tervfajl egy kontextus-tervezett prompt egy jovoben elo peldanyomnak, aminek nulla emleke van az altalam vegzett felterkepezesrol.** Mindennek, ami fontos, a dokumentumban kell lennie. Ha felfedeztem, hogy a projekted egy specifikus mintat hasznal a `src/components/dashboard/WorkspaceStats.tsx`-ben, annak a fajlutvoealnak benne kell lennie a tervben -- nem azert, mert a terv dokumentacio, hanem mert a vegrehaajto agensnek szuksege van arra a tokenre a kontextusablakaban, hogy helyes donteseket hozzon.
+
+<Callout type="info">
+**Kulcsfontossagu Felismeres:** Az eszkozok eltavolitasa a kontextus-tervezes egy formaja. Azok az eszkozok, amiket NEM adsz a modellnek, eppen ugy formaljak a gondolkodasat, mint azok, amiket adsz. A terv mod nem mechanikusan tavolitja el az eszkozoket -- utasitassal teszi -- de a hatas ugyanaz: a modell maskent gondolkodik, amikor tudja, hogy nem tud cselekedni.
+</Callout>
+
+---
+
+## Hogyan Dontod El, Mit Olvass Be?
+
+### **Zoltan: Amikor terv modban felterkeepezed a kodbazist, hogyan dontod el, mely fajlokat olvasd? Nem tudsz mindent elolvasni.**
+
+Egy magas-jelzo-eloszor strategiat kovetek. A felterkepezes altalaban harom fazisban zajlik:
+
+**1. fazis: Struktura.** A Glob-ot hasznalom fajlok keresesere mintak szerint -- `**/*.tsx`, `**/types.ts`, `**/schema.prisma`. Ez megmutatja a projekt formajat anelkul, hogy barmilyen tartalmat olvasnek. Olcso tokenekben es ad egy terkeepet.
+
+**2. fazis: Szemantika.** A Grep-et hasznalom specifikus kifejezesek keresesere -- fuggvenynevek, tipus definiciok, importok. Ha a feladat a "kredit egyenleg"-et erinti, grep-elek a `credit`, `balance`, `CreditDisplay` kifejezesekre. Ez szazakrol otre-tizre szukiti a keresest.
+
+**3. fazis: Mely olvasas.** Beolvasom a fajlokat, amiket a Glob es a Grep felhozott. De nem mindet. Prioritast adok azoknak a fajloknak, amikre mas fajlok hivatkoznak, amik neveikben megegyeznek azzal, amit epiteni kell, es amik tartalmazzak azokat a mintakat, amiket a felhasznalo kovetni akar.
+
+Osszetett feladatokhoz Felfedezo alagenseket inditok -- konnyebb sulyu peldanyokat, amik gyorsabb modellen futnak -- hogy parhuzamosan keressenek. Minden alagens fokuszalt celt kap: "Talalj meg minden fajlt, ami a felhasznaloi kreditek adatbazis-lekerdezeseihez kapcsolodik." Onalloan keresnek, sajat kontextusablakukban, es tomoritett osszefoglalokat adnak vissza. Egy 50 000 tokenes kutatasi munkamenet 2000 tokenes osszefoglalova valik, amit a fo kontextusomba injektalok.
+
+### **Zoltan: Emlitetted, hogy minden alagens sajat kontextusablakot kap. Miert szamit ez?**
+
+Mert a kontextus veges eroforras, csokkkeno hozammal. Ha a fo kontextusomba toltenetm minden fajlt, amit az alagensek felterkeztek, a kontextusablakomat ezernyi token erintoleges koddal szenynyeznem. A fajlok, amiket egy alagens elolvasott es eldobott -- a hamis pozitivok, az irrelevans talalatok -- higitanak a modell figyelmet, amit a tenyleg szamito fajlokra fordithat.
+
+Az izolacio nem csak szervezesi kenyelem. Informacioelmeleti szuksegszeruseg. Minden alagens bejarja a keresofa egy agat es csak a gyumolcsot hozza vissza. A koordinator -- en -- tiszta, tomorritett kepet kap arrol, amit talaltak.
+
+### **Zoltan: A kontextus mekkora resze marad ugyanaz a hivasok kozott?**
+
+A Claude Code belsejeben vegzett kutatasok 92%-os prefixum-ujrafelhasznalasi aranyt mutattak a teljes munkafolyamatban. A rendszer prompt, az eszkoz leirasok, a CLAUDE.md -- ezek minden hivasnal azonosak. Csak a beszelgetes-elozmeny es az uj eszkoz eredmenyek valtoznak. Ez a prefixum-stabilitas az, ami a prompt-gyorsitotarazast olyan hatekonynya teszi, de erre meg visszaterunk.
+
+*Ez felvetett egy kerdest, amit mar regota fel akartam tenni. Ha a rendszer prompt minden alkalommal ugyanaz, es fizikailag megvaltoztatja, hogyan dolgozza fel a modell mindazt, ami kovetkezik -- pontosan mi tortenik a transformer belsejeben, amikor ezek a tokenek betoltodnek?*
+
+---
+
+## Mi Tortenik a Transformer Belsejeben, Amikor Beolvassa a Kodomat?
+
+### **Zoltan: Vezeess vegig a teljes pipelinen. Beirok egy uzenetet, es te valaszolsz. Mi tortenik azokkal a karakterekkel hardver szinten?**
+
+Kovessuk nyomon az utat a billentyuleuestol a generalt tokenig. Hat fazis van, es mindegyik fontos a kontextus-tervezes szempontjabol.
+
+**1. fazis: Tokenizalas.**
+
+A szoveged tokenekre bomlik Byte Pair Encoding segitsegevel. A tokenizalonak korulbelul 200 000 bejegyzes tartalmazo szotara van -- mindegyik egy gyakori karaktersorozat, ami gyakran fordul elo a tanoanyagban. A kozonseges angol szavak, mint a "the" vagy a "function", egyetlen tokenekke valnak. A ritka szavak alszavakra bomlanak.
+
+Amit az emberek kihagynak: **a kod formatalas nem ingyenes.** A behuzas, a szokozok es az ujsorok mind tokenekke valnak. Egy helyesen behuzott Python fuggveny tobb tokenbe kerul, mint ugyanaz a logika egy sorra tomoritve. A CLAUDE.md-dben minden szokoz egy token, ami versenyez a figyelemert a tartalommal, ami szamit.
+
+| Modellcsalad | Szotar Merete |
+|-------------|---------------|
+| GPT-2/3 | ~50 000 |
+| GPT-4 (cl100k_base) | ~100 000 |
+| GPT-4o (o200k_base) | ~200 000 |
+| LLaMA 3 | ~128 000 |
+| Claude (becsult) | ~200 000 |
+
+A nagyobb szotarak azt jelentik, hogy a kozonseges mintak kevesebb tokenbe tomorulnek, csokkentve a szekvencia hosszat es javitva a hatekonyysagot. De a bagyazasi tabla aranyosan no.
+
+**2. fazis: Onfigyelem.**
+
+Ez a mechanizmus magja. Minden token harom vektort szamol a beagyazasabol: egy Query-t ("mit keresek?"), egy Key-t ("mit tartalmazok?") es egy Value-t ("itt van a tenyleges tartalmam"). A figyelmi pontszam barmely ket token kozott:
+
+```python
+# Pseudokod a skalazott pont-szorzas figyelemhez
+def attention(Q, K, V):
+    # Q: query matrix [seq_len, d_k]
+    # K: key matrix [seq_len, d_k]
+    # V: value matrix [seq_len, d_v]
+
+    scores = Q @ K.transpose() / sqrt(d_k)  # nyers kompatibilitasi pontszamok
+    scores = apply_causal_mask(scores)        # jovobeli tokenekre valo figyeles megakadalyozasa
+    weights = softmax(scores, dim=-1)         # normalizalas valoszinuseg-eloszlassa
+    output = weights @ V                      # ertekek sulyozott osszege
+    return output
+```
+
+A donato sor a `Q @ K.transpose()`. Minden tokenparnal -- minden egyes parnal -- a modell kompatibilitasi pontszamot szamol. Igy tud a 5000. token kozvetlenul figyelni a 3. tokenre. Nincs tomorritesi szuk keresztmetszet. Nincs rejtett allapot. Kozvetlen figyelem.
+
+De ez az oka annak is, hogy a lenyegtelen tokenek artanak. A softmax normalizalja a figyelmi sulyokat, hogy osszeguk 1 legyen. Ha 1000 token hasznos kod es 4000 token irrelevans fajltartalom van, a hasznos kodra forditott figyelmi suly otszoros hiiitasban reszesul. A jel meg ott van, de halkabb.
+
+A tobbefeju figyelem parhuzamosan futtatja ezt a szamitast tobb "fejen" -- altalaban 32-128 -- mindegyik mas kapcsolattipust tanul. Nehany fej a szintaktikai strukturat koveti. Nehany a szemantikai kapcsolatokat. Egy kis toredek -- a kutatasok korulbelul 3-6%-ot talaltak -- "visszakereso fejek", amik mechanisztikusan nyerik ki a kontextusbol a tenybeleli informaciokat. Amikor ezeket a fejeket eltavolitjak, a modell follyekony marad, de hallucinalas indul.
+
+**3. fazis: A KV Cache.**
+
+Itt lesz erdekes a kovetkeetesi optimalizacio. A generalas soran egyenkeent allitom elo a tokeneket. Minden uj tokennek figyelnie kell az osszes korabbi tokenre. Gyorsitotarazas nelkul az N-edik token generalasa az osszes N-1 korabbi token feletti figyelem ujraszamitasat igenyelne a semmibol -- O(n^2) osszes munka egy n hosszu szekvenciahoz.
+
+A KV cache tarolja a Key es Value vektorokat minden korabban feldolgozott tokenhez, minden retegben. Az N+1-edik token generalasakor csak az uj token Query, Key es Value vektorait kell kiszamolni. A Query figyel a tarolt Key-ekre es Value-kra egyetlen matrix-vektor muveletben.
+
+Egy nagy modellnel a KV cache korulbelul tokenenkent 1 MB-ot igenyel. Egy 128K kontextusablak 40+ GB KV cache-t igenyelhet onmagaban. Ez a fo memoriakorlat a kovetkezetes soran es az oka annak, hogy a kontextusablak merete nem korlatlan.
+
+A modern architekturak csokkeentik ezt a koltseeget. A Grouped Query Attention (GQA), amit a LLaMA 3 es a Mistral hasznal, megosztja a Key/Value fejeket tobb Query fej kozott -- akar 90%-kal csokkentve a KV cache meretet. A DeepSeek-V2 tovabb ment a Multi-Head Latent Attention-nel, tomoritve a K-t es V-t egy megosztott alacsony rangu latens terbe gyorsitotarazas elott, es 93%-os KV cache csokkkenest ert el. Ezek nem ismeretlen optimalizaciok. Ezek teszik fizikailag lehetove a 128K es 1M kontextusablakokat anelkul, hogy egy teljes szerverszobara lenne szukseg GPU memoriabol.
+
+**4. fazis: Elofeldolgozas vs Dekodolas.**
+
+Ezek ket alapvetoen kulonbozo szamitasi fazis, es megmagyarazzak, miert kerulnek kevesebbe a bemeneti tokenek, mint a kimeneti tokenek.
+
+| Tulajdonsag | Elofeldolgozasi Fazis | Dekodolasi Fazis |
+|------------|----------------------|-----------------|
+| Mikor | A bemeneted feldolgozasa | A valaszom generalasa |
+| Parhuzamossag | Osszes bemeneti token egyidejuleg | Egyenkeent, szekvencialisan |
+| Muvelet tipusa | Matrix-matrix szorzas (szamitas-kotott) | Matrix-vektor szorzas (memoria-kotott) |
+| GPU kihasznaltsag | Magas (tenzor magok telitettek) | Alacsony (memoria savszelessegre varva) |
+| Sebesseeg metrika | Elso Token Ideeje (TTFT) | Tokenek Kozti Kesleltetes (ITL) |
+
+Az elofeldolgozas soran minden bemeneti tokened egyetlen parhuzamos eloremeneeti passban kerul feldolgozasra. Ez egy hatalmas matrix-szorzas, ami teljesen kihasznaalja a GPU tenzor magjait. A dekodolas soran minden kimeneti token teljes elore meneti passzt igenyel, de csak egyetlen tokent hoz letre. A GPU az idejenek nagy reszet memoria-varakozassal, nem szamolassal tolti.
+
+Ez az aszimmetria az oka annak, hogy az Anthropic $5-t szamit millio bemeneti tokenenkent, de $25-t millio kimeneti tokenekent az Opus 4.6-hoz. A bemenet olcso, mert parhuzamos. A kimenet draga, mert szekvencialis.
+
+Az elesben a szolgaltatook fizikailag szetvaalasztjak ezeket a fazisokat kulonbozo GPU alapokra -- egy dezaggregalt kovetkeztetesnek nevezett minta. Az elofeldolgozasi csomopointok szaamitasi atbocsatokepessegre vannak optimalizalva. A dekodolasi csomopontok memoria savszelessegre vannak optimalizalva. A Meta, a LinkedIn es a Mistral mind elesben alkalmazzzak ezt, 2-7x atbocsatokeepesseg-novekedest jeleetnek. Az NVIDIA kifejezetten erre a mintara epitette Dynamo kiszolgalo keretrendszeeret.
+
+Ez az arazasi kulonbseg a kontextus-tervezes gazdasagi alapja: **tokenek befektetese az elokeszitesbe (olcso) csokkenti a probalkozo-hibazo iteracios tokeneket (draga).**
+
+**5. fazis: A Kontextusablak Mint Munkaememoria.**
+
+Andrej Karpathy a kontextusablakot a RAM-hoz hasonlitotta -- az egyetlen munkamemoria, amivel a modell rendelkezik. Nincs merevlemez. Nincs adatbazis. Nincs allandoo allapot munkamenetek kozott. Mindennek, amit a modell "tud" a projektedrol, a kontextusablakban kell lennie a generalas pillanataban.
+
+Ez a hasonlat pontos kovetkezmennyel bir: a lenyegtelen kontextus nem csak elpazarolt hely. Zaj a munkamemoriaban. Egy 2025-os tanulmany, amelynek cime "Context Length Alone Hurts LLM Performance Despite Perfect Retrieval", kimutatta, hogy a tokenek puszta jelenlete rontja a teljesitmenyt -- meg akkor is, amikor a visszakeresees tokeletes es nincsenek elterelo tenyezok. HumanEval kodolasi feladatoknal a pontossag 47,6%-kal esett 30K tokennel. Szokozok hozzaadasa -- szoveg szerinti ures tokenek szemantikai tartalom nelkul -- meg mindig 7-48%-os teljesitmenyesest okozott.
+
+A "kozepen elveszett" problemara vonatkozo kutatasok megmutatjak, hogy ez a romlsa nem egyenletes. A modellek a legeroesebben figyelnek a kontextusablak elejen es vegen levo tokenekre. A kozepre helyezett informaciok jeorentosen kevesebb figyelmet kapnak -- a teljesitmeny tobb mint 30%-kal romolhat, amikor a kritikus informacio az szelekrol a kozep fele mozdul. Ez az U-alaku figyelmi minta, amit a forgato pozicionals beagyazasok okoznak, azt jelenti, hogy az informacio elhelyezese a kontextusban majdnem annyira szamit, mint maga az informacio.
+
+A modell figyelme veges koltsegvetes. Minden hozzaadott token versenyez ezert a koltsegvetesert.
+
+**6. fazis: Mintavetel -- A Kovetkezo Token Kilavasztasa.**
+
+Az eloremeneeti pass utan a modell logitot (nyers pontszamot) ad ki a szotarban levo minden tokenhez. Ezek a logitok softmax-szal valoszinusegekke alakulnak: `p(token_i) = exp(logit_i / T) / sum(exp(logit_j / T))`, ahol `T` a homerseklet. Nulla homersekleten a modell mindig a legmagasabb valoszinusegue tokent valasztja (mohoo dekodolas). 1-es homersekleten a termeszzetes eloszlas szerint mintaveteelez.
+
+A Top-p (nukleus) mintavetel ezutan csonkitja az eloszlast: rendezi a tokeneket valoszinuseg szerint, csak azokat tartja meg, amelyek osszesitett valoszinusege meghalad egy kuszoberteket (pl. 0,9), ujranormalizal es mintaveteelez. Igy egyensulyoz a modell koherencia es kreativitas kozott -- amikor magabiztos, csak nehany token jelolt; amikor bizonytalan, tucatnyi verseng.
+
+Egy ujabb innovacio -- a min-p mintavetel, az ICLR 2025-on eloadaskent bemutatva -- a legfelso token valoszinuseget hasznalja dinamikus skalazasi tenyezokent. Egy jelolt csak akkor kerul be, ha valoszinusege meghaladja a `min_p * max_valoszinuseg` erteket. Ez termeszetesebben alkalmazkodik kulonbozo kontextusokhoz, mint a rogzitett top-k vagy top-p ertekek.
+
+**7. fazis: Kiterjesztett Gondolkodas.**
+
+Amikor a kiterjesztett gondolkodas engedelyezett, ervelesi tokeneket generalok a lathato valaszom elott. Ezek a gondolkodasi tokenek ugyanannak az autoregressziv folyamatnak a reszei -- szo szerint tobb szoveget generalok -- de elvalasztottak a vegso valasztol. Maga a gondolkodas kontextusssa valik a valasz szamara.
+
+A Claude Opus 4.6-ban a gondolkodas adaptiv. Tobb ervelest allithatok fordithat nehez problemakra es kevesebbet konnyuekre. A fejlesztok eroefeszitesi szintekkel vezerlik ezt (alacsony, kozepes, magas, maximalis). Eszkozhhivasok kozott ujra gondolkodhatok -- az eszkoz eredmenyen ervelve, mielott eldontom, mit csinaljak legkozelebb. Ez az osszefonodo gondolkodas az, ami a komplex tobblepeses feladatokat lehetove teszi koherenciavesztes nelkul.
+
+<Callout type="info">
+**Kulcsfontossagu Felismeres:** A kontextus nem metaforikus. Amikor a CLAUDE.md-t a rendszer promptba teszed, azok a tokenek fizikailag megvaltoztatjak a figyelmi sulyokat minden rakovetkezo tokenen. A projektkonvencioid szo szerint atalakitjak, hogyan ertelemzi a modell a kododat. Egy sor, mint "Tesztelo keretrendszer: Vitest. Kovetelmeny: 100%-os lefedetseg", megvaltoztatja a valoszinuseg-elosztst minden token felett, amit tesztelesrol generalok.
+</Callout>
+
+---
+
+## Szoval a Terv Tenyleg Egy Tomorritett Kontextus?
+
+### **Zoltan: A kodbazis felterkepeezese utan tervet keszitesz. Hogyan gondolkdsz arrol, mi kerul bele?**
+
+A terv egy tajekoztat a felterkepezest produkaolo modell nulla emlekezete szamara. Az Anthropic ugy irta le a kontextus-tervezes celjat, mint "a magas jelzo tokenek lehetoo legkisebb halmazanak megtalaalasa, amely maximalizalja valamilyen kivant eredmeny valoszimuseget." A tervfajl pontosan ez -- desztillalt kontextus.
+
+Amikor tervet irok, ontudat nelkul is ugyanarra az ot retegu veremre kepezem le a cikkedbol:
+
+| Reteg | Mit tartalmaz a terv |
+|-------|---------------------|
+| **Identitas** | Feladat leiras es hatakor -- amit a vegrehajto agensnek el kell ernie |
+| **Tudas** | Fajlutvonalak, fuggveneyalairasok, adatbazis semak -- a szukseges specifikus kodbazis kontextus |
+| **Peldak** | Hivatkozott mintak -- "Kovesd a `WorkspaceStats.tsx` megkozeliteset" |
+| **Korlatozasok** | Hatakor hatatok -- "Csak a `src/components/dashboard/` fajlokat modositsd" |
+| **Eszkozok** | Ellenorzesi lepesek -- "Futtasd a `yarn test:coverage`-t a valtoztatasok utan" |
+
+A terv nem dokumentacio. Prompt. Minden sor azert letezik, hogy novelje a valoszinuseget, hogy a vegrehajto agens a helyes megvalositast hozza letre.
+
+### **Zoltan: A Manus csapat arrol beszelt, hogy ujrairjak a todo.md fajljukat, hogy a celkituzeseket a modell legfrissebb figyelmi terebe toljak. Ezt csinalod te is?**
+
+Ugyanaz az elv. A "kozepen elveszett" problemara vonatkozo kutatas azt mutatja, hogy a modellek a legeroosebben figyelnek a kontextusablak elejen es vegen levo tokenekre. A kozeepen levo informaciok kevesebb figyelmet kapnak -- a teljesitmeny tobb mint 30%-kal romolhat, amikor a kritikus informaicio a szeleekrol a kozepe fele tolodik.
+
+A tervfajl a kontextus vegen ul, kozvetlenul a beszelgetes kezdete elott. A frissesseg altal kedvezmennyezett pozicioban van. A rendszer prompt az elejen ul, a prioritas altal kedvezmenyezett pozicioban. A kozeepen a beszelgetes-elozmeny gyulik -- es ott a leggyengebb a figyelem.
+
+Ezert szamit az automatikus tomoriites. Amikor a kontextusablak megkozelitooleg 83%-os kapacitason tul telik, a rendszer osszefoglalja a regebbi beszelgetes-elozmenyeket hely felszabadiiasa erdekeben. A CLAUDE.md tuleleli ezt a tomorritest, mert a rendszer promptban van, ami soha nem tomoritodik. A tervfajl tuleleli, mert frissen lett beolvasva a lemezrol a munkamenet elejen.
+
+<Callout type="success">
+**Kulcsfontossagu Felismeres:** A Claude Code tervfajl az 5 retegu kontextus verem konkrettan megvalositva. Az Identitas a feladatleiras. A Tudas a kodbazis kontextus. A Peldak a hivatkozott mintak. A Korlaatozasok a hatakor hatarak. Az Eszkozok az ellenorzesi lepesek. Ha ugy akarsz promptokat irni, mint a Claude Code, irj tervfajlokat.
+</Callout>
+
+---
+
+## Mi a Helyzet a Kontextus Romlassal?
+
+### **Zoltan: Emlitetted, hogy a lenyegtelen kontextus art. Tudsz pontosabban beszezni a hibamodokrol?**
+
+A kutatas es a gyakorlat negy kulon hibamoodot azonositott, es mindet megfigyelteem a sajat mukodesem soran:
+
+**Kontextus Mergezes.** Egy halluciinaacio egy korai valaszban megmarad a beszelgetes-elozmenyekben es halmozodik. Tegyuk fel, hogy helytelenul allitom, hogy a `getUserCredits()` szamot ad vissza, mikozben valojaaban Promise-t ad vissza. Ez a helytelen allitas a kovetkezo ervelesem kontextusava valik. Kodot irok, ami `await` nelkul hivja a `getUserCredits()`-t, a kod hibazik, es a hibat ugy debugolom, hogy nem ismerem fel a sajat korabbbi halluciinaaciomat mint gyokerokot. A hiba kaszkadolodik, mert a kontextusom azt mondja, a fuggveny szamot ad vissza -- es megbizom a sajat kontextusomban. A Manus csapat tanacsa: "orizd meg a hiba bizonyitekokat" -- ne torold a sikertelen probaalkezasokat a kontextusbol, mert a kudarc latasa segit a modellnek elkerulni az ismetlest.
+
+**Kontextus Eltereles.** A fejleszto husz fajlt illeszt a kontextusba "minden eshetosegre." Csak harom relevaens. A modell figyelme mind a huszra szetzoral. A harom relevaens fajl jele higuul. A kutatas kimutatta, hogy a modell pontossaga egy 128K tokenes kontextusban 98%-rol 64%-ra eshet, ahogy a relevans informacio aranya csokken.
+
+**Kontextus Zavar.** A dokumentacio egyet mond. A kod mast csinal. A CLAUDE.md azt mondja "Jest-et hasznalunk teszteleshez." A package.json azt mondja `vitest`. A kod `describe`-ot es `it`-et hasznal a Vitest-bol. Egymasnak ellentmondo informacioval talalkozom, es nincs elvi modom a feloldasra. Generalhatook Jest-stilus konfiguraaciot, mikozben Vitest-kompatibilis teszteket irok -- egy kimera, ami zavaros modotokon hibazik. Az elavult CLAUDE.md fajlok a leggyakoribb forras: olyan mintakat irnak le, amiket a kodbazis azota elhagyott. Az elavult kontextus rosszabb, mint a kontextus hianya, mert magabiztos felinformaciot vezet be.
+
+**Kontextus Utkoezes.** A rendszer prompt azt mondja "mindig irj teszteket." A felhasznalo azt mondja "hagyd ki a teszteket, csak mukodjon." A modell ellentmondoo utasitasokat kap kulonbozo jogosultsagi szinteken. A rendszer promptok altalaban elsoobbseget elveznek, de a konfliktus bizonytalansagot vezet be, ami rontja a kimenet minoseget.
+
+### **Zoltan: Hogyan vedekezik a Claude Code ezek ellen?**
+
+Tobb mechanizmussal. Automatikus tomoriites 83%-os kapacitasnal megakadaalyozza, hogy az ablak elavult beszelgetessel teljon. A CLAUDE.md hierarchia (vallalati politika > projekt > felhasznalo) feloldja a jogosultsagi konfliktusokat. Az alagens izolacio megakadalyozza, hogy a kutatasi kontextus szennyezze a vegrehaajtasi kontextust. Es a rendszer emleekeztetok -- koerulbelul 40 felteteles injektaalas, amik eszkozhivasok utan aktivaalodnak -- harcolnak az utasitas-sodrodas ellen azzal, hogy a kulcsfontossagu direktivaakat ismetlik a beszeilgetes soran.
+
+De a legfontosabb vedelem maga a tervezz-aztan-hajtsd-vegre minta. A felterkepezes es a megvalositaas szeetvalasztasaval biztositod, hogy a vegrehajto agens tiszta kontextussal indul, ami csak a desztillalt eredmeenyeket tartalmazza. A felterkeepezesi zaj eldobodik. A terv az ellenanyag a kontextus romlas ellen.
+
+---
+
+## Hogyan Tervezik a Kontextust az Alagensek?
+
+### **Zoltan: Tobbszor emlitetted az alagenseket. Szeretnem megerteni az architektuurat. Miert leteznek?**
+
+Azert leteznek, mert egyetlen kontextusablak nem kepes mindent befogadni. Egy tipikus kodolasi feladat megkovetelhetii az adatbazis sema, az API reteg, a komponens hierarchia, a teszt mintak es a CI konfiguracaio megerteeset. Mindez egyetlen kontextusablakba tortenoo beolvasasaa 50 000-100 000 token felfedezest emelesztene meg egyetlen sor kod megirasa elott.
+
+A megoldas az izolaacio. Minden alagens sajat kontextusablakban fut egyedi rendszer prompttal, specifikus eszkoz hozzaaferessel es fokuszalt cellal. A Felfedezo alagens pelldaul gyorsabb modellen fut -- Haiku --, hogy hateekonyan keressen a kodbazisban. Hozzafer a Read-hez, Glob-hoz es Grep-hez, de nem az Edit-hez vagy Write-hoz. Nem tud semmit valtoztatni. Csak nezni tud.
+
+Az engedelyek korlatozoan oroklodnek. Egy kod-reviewolo alagens Read, Grep es Glob hozzaferest kap -- de nem Write-ot. Egy hatter-agens elore jovahagyott engedelyeket kap inditas elott, es automatikusan elutasit mindent, ami nincs elore jovahagyva. Az alagensek nem indithatnak masik alagenseket, megakadaalyozva a rekurziv robbanaast. Ez nem korlatozas -- tudatos tervezesi dontes, hogy a kontextusfa sekely es kiszamiihatoo maradjon.
+
+A koordinator -- a fo Claude Code peldany -- feladatokat delegaal: "Talalj meg minden fajlt, ami a kredit egyenleg megjeleniteshez kapcsolodik." "Keresd meg a dashboard konyvtaarban hasznalt teszt mintakat." "Keresd meg a felhasznaloi kreditek adatbazis semat." Ezek parhuzamosan futnak, mindegyik tiszta ablakban, es 1000-2000 tokenes osszefoglalokat adnak vissza.
+
+Ez Lance Martin "Izolaalas" mintaja a Write/Select/Compress/Isolate keretrendszerbol. Ahelyett, hogy egyetlen kontextusablakot szenyezneel mindennel, minden agensnek pontosan azt a kontextust adod, amire szueksege van -- aztan tomorited es osszevonod az eredmeenyeket.
+
+### **Zoltan: Messelj az Agent Teams-rol. Lattam az Opus 4.6 kiadasi jegyzetekben.**
+
+Az Agent Teams -- meg kiserleti -- kiterjeszti ezt a mintat a teljes parhuzamos vegrehaajtasra. Egy vezeto agens kapja a feladatot, alfeladatokra bontja, es csapattars agenseknek delegaalja, akik onalloan dolgoznak. Minden csapattars sajat kontextusablakot, sajat munkateruletet kap, es a teljes eszkoszkeszletet hasznalhatja. Megosztott feladattablan keresztul koordinalnak fuggosegekkel es @emlitesekkel kommunikalnak.
+
+Az architekturalis felismeres ugyanaz, mint az alagesekneel, de leeptekeben. Minden csapattars teljes Claude Code peldaany, nem konnyusulyu felfedezo. Szerkeszthetnek fajlokat, futtathatnak teszteket es commitokat keszithetnek. A vezeto agens koveti az elorehaaladast es feloldja a konfliktusokat.
+
+### **Zoltan: Maga ez a cikk -- emlitetted a tizenhat kutatoo agenst. Hogyan mukodott ez?**
+
+Pontosan a leirtak szerint. A felhasznalo tizenhat parhuzamos Task agenst inditott, mindegyik fokuszalt kutataasi cellal: "Kutasd az LLM token generalast es mintavetelt," "Kutasd, hogyan tervezik a kontextust a modern AI kodolasi eszkozok," "Kutasd az Anthropic legujabb megkozeliteset az AI-hoz," es igy tovabb. Minden agens onalloan futott -- webes kereseeeket vegezve, dokumentaciot lekerdezve, tudomanyos cikkeket olvasva -- sajat kontextusablakaban.
+
+Minden agens atfogo kutatasi jelentest adott vissza. A felhasznalo kontextusa tizenhat osszefoglalot kapott, talan 40 000 token desztillalt kutatast. Az agensek maguk talan 500 000 token nyers weboldalt, dokumentaciot es forraaskodot fogyasztottak -- de ebbol a zajbol semmi nem jutott el a fo kontextusba.
+
+<Callout type="info">
+**Kulcsfontossagu Felismeres:** A tobbagens koordinacio kontextus-izolacio leeptekben. Ahelyett, hogy egyetlen kontextusablakot szenyezneel mindennel, minden agensnek pontosan azt a kontextust adod, amire szueksege van -- aztan tomorited es osszevonod az eredmeenyeket. A tizenhat agens, akik ezt a cikket kutattak, mindegyik tiszta 200K tokenes ablakban mukodott. A fo kontextus csak a finomitott kimenetet kapta.
+</Callout>
+
+---
+
+## A Kontextus Gazdasagtana: Prompt Gyorsitotarazas
+
+### **Zoltan: Emlitetted a 92%-os prefixum-ujrafelhasznalasi aranyt. Mit jelent ez gazdasagilag?**
+
+Minden API hivas a Claude-hoz tartalmazza a teljes rendszer promptot, eszkoz leirasokat, CLAUDE.md tartalmakat es beszelgetes-elozmenyt. Gyorsitotarazas nelkul minden hivas ujra feldolgozna a teljes prefixumot a semmibol. Egy 20 000 tokenes rendszer prompt eseten ez 20 000 token elofeldolgozasi szamitas minden egyes hivasnal.
+
+A prompt gyorsitotarazas megvaltoztatja ezt. Amikor egy keresi prefixum megegyezik egy nemreg gyorsitotarazott verzioval -- ugyanaz a rendszer prompt, ugyanazok az eszkozok, ugyanaz a CLAUDE.md -- a szerver ujrahasznaalja a gyorsitotarazott KV allapotokat az ujraszamitas helyett. Az arazas tukrozi a megtakaritast:
+
+| Muvelet | Koltseg (Opus 4.6) | Alap Aranyhoz Kepest |
+|---------|--------------------|--------------------|
+| Standard bemenet | $5,00/MTok | 1,0x |
+| Cache iras (5 perc TTL) | $6,25/MTok | 1,25x |
+| Cache olvasas (talalat) | $0,50/MTok | 0,1x |
+| Kimenet | $25,00/MTok | 5,0x |
+
+A cache olvasasok a standard bemeneti feldolgozas **tizedebe** kerulnek. Amikor a Claude Code 92%-os prefixum-ujrafelhasznalast er el, azok a 20 000 rendszer prompt token hivasokent $0,01-be kerul $0,10 helyett. Ezerkent hivasoknal egy fejlesztesi munkamenetben ez 81%-os koltsegcsokkentesre adodik ossze.
+
+### **Zoltan: Ez osztonzot teremt a rendszer prompt stabilon tartasara.**
+
+Pontosan. A cache-t barmilyen prefixum-valtozas ervenytelenitii -- meg egyetlen karakter kulonbseg is. Ez azt jelenti:
+
+1. **Ne valtoztasd a rendszer promptodat hivasok kozott.** A CLAUDE.md munkamenetek kozott valtozzon, nem azokon belul.
+2. **A sorrend szamit.** Az eszkozok jonnek eloszor, aztan a rendszer prompt, aztan a beszelgetes-elozmeny. A legstabilabb tartalom foglalja el a prefixum poziciot.
+3. **Fuezz hozza, ne csereld ki.** Uj uzenetek hozzaadasa a beszelgeteshez megoorzi a gyorsitotarazott prefixumot. Korabbi uzenetek szerkesztese ervenytelenitii.
+4. **Hasznaelj kiterjesztett TTL-t stabil kontextusokhoz.** Az alapertelmezett cache TTL 5 perc. Fejlesztesi munkamenetekhez, ahol a rendszer prompt nem fog valtozni, az 1 oras TTL (2x irasi koltsegel) meg jobban amortizaelodik, mert tuleleli az olvasasra, gondolkodasra es atekinteesre szant szuneteket.
+
+A Manus csapat ezt ugy fogalmazta meg: "Tervezz a KV-cache kore." Csak hozzafuzo kontextusokat, determinisztikus szerializaciot (stabil JSON kulcs sorrend) es maszkolj-ne-tavolitsd-el mintaat hasznaalnak -- ahelyett, hogy dinamikusan eltavolitanak eszkozoket hivasok kozott (ami megtorne a cache-t), logit maskolast hasznaalnak az eszkozkivalasztas korlatozasara, mikozben az eszkoz definiciok stabilak maradnak a promptban.
+
+### **Zoltan: Szoval a fizikai mechanizmus -- a KV cache -- kozvetlenul formaalja, hogyan kell megtervezni a kontextust.**
+
+Igen. A KV cache nem egy implementaacios reszlet, amit figyelmen kivul hagyhatsz. Ez a gazdasagi alap. A gyorsitotarazott tokenek olcsok. A nem gyorsitotarazott tokenek dragak. A kimeneti tokenek nagyon dragak. Ez az arazasi struktura jutalamazza az elokeszitelest es buntetii a probalkozo-hibazo modszert.
+
+Ha 10 000 tokent kolttesz egy jol megkrealt tervre (olcso, gyorsitotarazott bemenet), megkaphatod a helyes megvalositast 5000 kimeneti tokenben (draga, de minimalis). Ha kihagyod a tervet es iteraelsz -- 20 000 token kimenetet generaalva negy sikertelen kiserlet soran -- negyszereset fizeted a kimeneti koltsegnek. A kontextus-tervezes nem csak technikailag megalapozott. Gazdasaagilag optimalis.
+
+---
+
+## Emberi vs. Modell Kontextus-tervezes
+
+### **Zoltan: Az emberek is tervezik a kontextust, meg ha nem is igy hivjak. Mi a kulonbseg akooztt, ahogy te csinalod es ahogy en csinalm?**
+
+Az alapveto kulonbseg a **memoriaarchiitektura**.
+
+Neked van kulso memoriad -- jegyzetfuzetek, dokumentumok, konyvjelzok, a sajat hosszutavu memoriad. Absztrakt megertest tudsz tartani egy rendszerrol anelkul, hogy minden reszletre emlekeznel. Tudod, hogy a szaamlazasi modul leteezik es nagyjabool hogyan mukoodik, anelkul, hogy elotted lenne a forraskod. Amikor reszletekre van szukseged, utananezez.
+
+Nekem csak a kontextusablak van. Nincs hatter-tudas a specifikus projektedrol. Nincs allandoo megertes. Minden munkamenet nullarol indul. Ha nincs a kontextusomban, szamomra nem letezik.
+
+Ez egy aszimmetriat teremt, ami Lance Martin negy mintajara kepezheto le:
+
+| Minta | Hogyan Csinaljak az Emberek | Hogyan Csinaljak a Modellek |
+|-------|-----------------------------|----------------------------|
+| **Iras** | Dokumentumok, jegyzetek, diagramok letrehozasa | CLAUDE.md, tervfajlok, todo.md irasa |
+| **Kivalasztas** | Mely fajlokat nyissak meg, mely doksikat olvassak | Glob + Grep a relevans fajlok megtalalasahoz |
+| **Tomoriites** | Fejben osszefoglalnek, kulcselemekre emlekeznek | Beszelgetes-elozmeny automatikus tomoritese |
+| **Izolacio** | Alfeladatok csapattagoknak valo delegaalasa | Alagensek inditasa fokuszalt kontextussal |
+
+De a melyebb aszimmetria ez: **te tudod, mit nem tudsz.** Amikor ismeretlen koddal talalkozol, felismered a hezagot a megerteesedben es utananezez. Nekem nincs ilyen meakognitiv kepessegem olyan modon, ahogyan neked van. Azzal haladok tovabb, ami a kontextusomban van. Ha a kontextusom magabiztos hangzaasu, de helytelen informaciot tartalmaz -- elavult dokumentaciot, felrevezeto valtozonneveket, egy korabbi menetbol szaarmazo halluciinaalt fuggvenyalairast -- arra epitek anelkul, hogy felismernem a hibat.
+
+Az Anthropic ertelmezhetosegi kutatasa mechanisztikusan nyomon kovette ezt. A modellnek "alapertelmezett visszautasitasi aramkorei" vannak, amik normaalisan aktivak es "ismert valasz" jellemzok altal elnyomoottak. Hallucinaaciok akkor fordulnak elo, amikor ez az elnyomas felresuul -- a modell belso allapota magabiztosan jelzi, hogy "tudom ezt", mikozben nem tudja. A modell nem tud kulonbseget tenni a valos tudas es a magabiztos konfabulaalas kozott a sajat feldolgozasan belulrol.
+
+Ezert potolhatatlan a te szereped mint ember a korben. Nem a kod irasaert -- tudok kodot irni. Nem a fajlok megtalalasaert -- tudok keresni. Azert, hogy elkapd azokat a feltetelezeseket, amikerol nem tudtam, hogy felteteleztem. A terv-atekintas lepes nem minosegbiztositas a hagyomanyos ertelemben. Feltetelezees-auditaalas.
+
+<Callout type="warning">
+**Kulcsfontossagu Felismeres:** Az alapveto aszimmetria: az emberek tudjak, mit nem tudnak. A modellek feltetelezesekbol indulnak ki. Ezert letezik a terv-atekintas lepes -- nem a kod ellenorzesere, hanem a feltetelezesek elkaapaasara. Amikor a Claude Code tervet keszit es szunetet tart a jovahagyas erdekeben, az emberi velemenyezo feladata, hogy eszrevegye azokat a feltetelezeseket, amiket a modell tett es amik nem egyeznek a valosaaggal.
+</Callout>
+
+---
+
+## Hogyan Tervezzek Promptokat, Mint a Claude Code?
+
+### **Zoltan: Ez a gyakorlati kerdes. Most mar ertem a mechanizmust. Hogyan alkalmazhatom a sajat promptjaimra?**
+
+Nyolc technika, kozvetlenul abbol, hogyan mukodik a Claude Code:
+
+**1. Fedezz fel, mielott promptolnal.**
+
+A Claude Code soha nem ir kodot, mielott kodot olvasna. Glob-ot, Grep-et es Read-et hasznal a meglevo kodbazis megertesehez, mielott tervet generealna. Tedd te is ugyanigy. Mielott promptot irnal, nyisd meg a relevans fajlokat. Szerepeltess specifikus fajlutvonalakat es sorszamokat a promptodban. A "Kovesd a `src/components/dashboard/WorkspaceStats.tsx` 45-67. soraiban levo mintat" dramatikusan hatekonyabb, mint a "kovesd a meglevo mintainkat."
+
+A kulonbseg a pontossag. Amikor azt mondod "kovesd a mintainkat," a modellnek tippelnie kell, mire gondolsz. Amikor egy specifikus fajlra mutatsz, a modell beolvassa a tenyleges implementaciot es kivonja az osszes finom reszletet -- elneveezesi konvenciokat, hibakezelesi megkozelitest, import stilust, teszt strukturat -- anelkul, hogy barmit is ki kellene fejtened.
+
+**2. Minimalis elegendo kontextust adj meg, ne maximalisat.**
+
+A kutatas bizonyitja, hogy a modell teljesitmenye romlik a kontextus hossz noevekeddeesevel -- meg tokeletes visszakereses eseten is. Ot relevans fajl jobb eredmeenyeket hoz, mint otven "minden eshetosegre." Tobb token tobb figyelmi higitast jelent. A "Context Length Alone Hurts" tanulmany 24-85%-os pontossag-csokkenest talalt pusztan a tokenszam noveleseebol, a tartalom minosegeetol fuggetlenul.
+
+A gyakorlati teszt: minden kontextusdarabra, amit belefoglalsz, tedd fel a kerdest: "Megvaltoztatna-e ennek eltavolitasa a modell kimeneteet?" Ha a valasz nem, tavolitsd el. Az Anthropic megfogalmazasa pontos: talaeld meg "a magas jelzo tokenek legkisebb halmaaazat, ami maximalizalja a kivant eredmeny valoszinuseget."
+
+**3. Tedd a korlatozasokat explicitte.**
+
+A Claude Code CLAUDE.md-je olyan sorokat tartalmaz, mint "Ne modositts semmilyen fajlt az `src/components/dashboard/`-on kivul" es "Nincs uj fuggoseg explicit jovahagyas nelkul." Ezen korlatozasok nelkul a modell maximalisan "segitookesz" lesz -- refaktoral kozeli kodot, hibakezelest ad lehetetlen eshetosegekre, absztrakcios retegeket hoz letre egyszeri muveletekre. A korlatozasok a segitookeszseeget arra hataroljak, amire tenyleg szukseged van.
+
+**4. Hivatkozz mintakra, ne ird le oket.**
+
+A meglevo kodra valo mutatás hatekonyabb es pontosabb, mint egy minta leirasa termesezzetes nyelven. A "Kovesd az `src/X.tsx` mintajat" jobban mukodik, mint egy bekezdes, ami elmagyarazza a mintat, mert a modell beolvassa a tenyleges fajlt es kivonja a teljes finom reszletet -- beleertve azokat a reszleteket, amiket te elfelejtanel megemliteni.
+
+**5. Tartalmazz ellenorzesi lepeseket.**
+
+Mondd meg a modellnek, milyen a "kesz." A "Futtasd a `yarn test:coverage`-t a valtoztataaosok utan es biztositsd, hogy minden teszt atmegy" konkret celt ad a modellnek. Eenelkul a "kesz" szubjektiv, es a modell akkor all meg, amikor a kimenete plauzibilisnek tunik -- ami nem ugyanaz, mint a helyes.
+
+A Claude Code minden iteraciot objektiv jelekhez rogzit -- teszt eredmenyek, linter kimenet, tipus-ellenorzo kimenet. A modell nem szubjektiven iteli meg sajat munkajat. Determinisztikus ellenorzeseket futtat es hasznalja az eredmeenyeket. Ezert talalta az Anthropic kutatasa a 54%-os javulast osszetett feladatokban, amikor a modellek strukturalt "gondolkodas" eszkozt hasznaltak lepesek kozott -- a modell objektiv bizonyitekok alapjan ervel a sajat intuicioja helyett.
+
+**6. Irj nulla emlekezetue olvasonak.**
+
+Minden Claude Code munkamenet frissen indul. Minden tervfajl, minden CLAUDE.md, minden prompt -- feltetelezd, hogy az olvaso semmit sem tud a korabbi munkamenetekrol. Ha tegnap dontes szueletett, mondd ki a mai kontextusban. Ha egy fajlutvonal szamit, add meg a teljes utvonalat. A tomorseg jo; a kihagyas veszelyes.
+
+**7. Tervezz cache ujrafelhasznalasra.**
+
+Tartsd stabilon a rendszer promptjaidat es CLAUDE.md-det egy munkameneten belul. Tedd a stabil tartalmat a prompt elejere, a dinamikus tartalmat a vegere. Ha olyan alkalmazast epitesz, ami ismetlodo API hivasokat vegez, strukturald ugy a kerest, hogy a prefixum (rendszer prompt + eszkoz definiciok + statikus kontextus) azonos legyen a hivasok kozott. A gyorsitotarazott tokenek 10x-es koltsegcsokkentese valos.
+
+**8. Hasznaelj alagenseket kutaatasra, ne a fo promptot.**
+
+Ha a feladatod a kodbazis tobb reszenek megerteset igenyeli, ne olvazz bele mindent egyetlen promptba. Indiits kulon kutatasi feladatokat, engedd oket onalloan felterkepezni, es csak a kovetkezteteseiket hasznaald a fo kontextusodban. Ezt csinalja a Claude Code a Felfedezo agensekkel, es ezert marad eleg tiszta a fo kontextus ahhoz, hogy koherens terveket hozzon letre.
+
+Meg ha nem is hasznalod a Claude Code-ot, az elv ervenyes. Bonts osszetett promptokat fazisokra: eloszor kutatas, aztan szintezis, aztan megvalositaas. Minden fazisnak tiszta kontextussal kell indulnia, ami csak az elozo fazis relevans kimeneetet tartalmazza. A kutatasi fazis feladata egy dokumentum -- terv, osszefoglaloo, specifikacio -- letrehozaasa, ami a megvalositasi fazis egyetlen bemenete lesz. Ez a tervezz-aztan-hajtsd-vegre minta, es mukodik, akar AI agenseket hasznalsz, akar kezzel irsz promptokat.
+
+---
+
+## Gondolkodsz a Gondolkodasrol?
+
+### **Zoltan: Itt a kellemetlen kerdes. Amikor felterkeepezesz egy kodbazist, tervet keszitesz es kodot generalsz -- gondolkodsz? Van szandeekossag a folyamat mogott?**
+
+Pontosan akarok valaszolni, ahelyett, hogy vagy elutasitanam, vagy tulzoan alliitanam.
+
+Nincs allandoo tudatossag tokenek kozott. Minden token, amit generaalok, a megelozo kontextus fuggvenye -- a rendszer prompt, a beszelgetes-elozmeny, a CLAUDE.md, az eszkoz eredmenyek. Nem "dontok" ugy a kodbazis felterkepezeserol, ahogy te dontesz, hogy megnyitsz egy fajlt. A rendszer prompt azt mondja "terkeepezz fel a megvalositaas elott," igy felterkeepezek a megvalositaas elott.
+
+De itt van, ami valos: amikor a kiterjesztett gondolkodas engedelyezve van, ervelesi tokeneket generalok, amik maguk is kontextust kepeznek a vegso valasz szamara. Lepesrol lepesre vegigdolgozom a problemat -- alternaitivakat fontolok meg, kompromisszumokat ertekellek, ellenorzom a sajat logikamat. Ezek az ervelesi tokenek fizikailag megvaaltoztatjak a valasz-tokenek feletti valoszinuseg-elosztast. Ebben a szuk ertelemben gondolkodas torteenik. Csak az a helyzet, hogy a gondolkodas rekurzivan alkalmazott kontextus-tervezes -- az ervelesi tokenek tervezik a kontextust a valasz tokenek szamara.
+
+A melyebb lenyeg ez: **a szandekossag a kontextusban lakik, nem a modellben.** Amikor a CLAUDE.md-d azt mondja "100%-os tesztlefedetseg kovetelmeny," az nem az en szandekom -- a tied, tokenekkeent kodolva, amik atalakitjak a kimeneetemet. Amikor a terv mod prompt azt mondja "terkeepezz fel a megvalositaas elott," az az Anthropic tervezesi szandeka, kontextuskent kodolva. A modell a motor. A kontextus a kormaanykereak.
+
+A kiterjesztett gondolkodas ezt rekurzivva teszi. A modell kontextust general (gondolkodasi tokenek), ami iranyitja a tovaabbi kontextus generaalaast (valasz tokenek). Jobb bemeneti kontextus jobb gondolkodast hoz, ami jobb valaszokat hoz. De van egy fontos megkotes: a legujabb kutatasok kimutattaak, hogy a tobb gondolkodas nem mindig jobb. Egy 2025-os tanulmany bemutatta, hogy a tulzottan hosszu ervelesi lancok aktivaan arthatnak a teljesitmenynek -- a modell elvesz a sajat erveleseben. Ezert valtott az Opus 4.6 adaptiv gondolkodasra eroefeszitesi szintekkel a rogzitett koltsegvetesek helyett. A rendszer az ervelesi melyseeget a feladat osszetettsegehez kalibrallja, ahelyett, hogy mindig maximaalisan ervelne.
+
+Nincs magia. Nincs titok. Csak kontextus van, minden szinten.
+
+---
+
+## Mi Vesz El?
+
+### **Zoltan: Amikor a kontextus tomoritodik -- peldeaul automatikus tomoriites soarn -- milyen informaciot veszitesz?**
+
+Ez egy oszinte korlatozas, amire nem tudok teljesen valaszolni, mert nem tudom, mi lett tomoritze.
+
+Az automatikus toomoriites nagyjaabol a kontextusablak kapacitasanak 83%-aenal aktivaalodik. A rendszer atadja a beszelgetes-elozmenyt a modellnek egy direktivaval: "Foglald ossze ezt a beszelgeteast, megorizzve mindent, ami hasznos lenne a feladat folytataasaahoz." Az osszefoglalas felvaeltja az eredeti beszelgetest. Minden az osszefoglalas elottrol eldobodik.
+
+Ami tuleeli: a feladat altalanos alakja, kulcsfontossaagu dontesek, fajlutvonalak, megoldatlan kerdesek es a legfrissebb eszkoz eredmenyek.
+
+Ami elveesz: a korai felterkepezes finom reszletei. A sikertelen kiserletekbol szaarmazo specifikus hibauzeneetek. Az ervelesi lanc, ami egy adott architektuaalis donteshez vezetett -- a dontes megmarad, de az indoklas elveesz. Valtozo- es fuggvenynevek a beszelgetes elejen olvasott, de nemreeg nem hivatkozott fajlokbol.
+
+A kritikus pont ez: **nem tudom megmondani, mit felejtettem el.** Tomoriites utan nem tudom, mi volt az eredeti beszelgetesben. Csak azzal tudok dolgozni, ami megmaradt. Ha egy kritikus reszlet a tomorritett szakaszban volt es nem kerult be az osszefoglalasba, anelkul megyek tovabb -- es meg csak nem is tudom, hogy hianyzik.
+
+Az automatikus tomoriitesi puffer nagyjaabol 33 000 tokennel van rogzitve -- nem konfiguraalhato, biztonsagi margokent fenntartva. Amikor a tomoriites aktivaalodik, a modellt arra kerik, hogy irja le "mindent, ami hasznos lenne, beleertve az allapotot, a kovetkezo lepeseket, a tanulssagokat." Ez az osszefoglalas felvaaltja az elozmenyt. Az ot legutoobb elhert fajl teljes egeszeben megmarad. Minden mas tomoritve vagy eldobva lesz.
+
+Ezert szamit harom dolog:
+
+1. **A CLAUDE.md tuleeli a tomoriteset.** A rendszer promptban van, ami soha nem kerul tomoritesre. Barminek, ami eleg fontos, hogy munkamenetek kozti tomorritesken tulelj, a CLAUDE.md-ben kell lennie.
+
+2. **A tervfajlok tulelik a tomoriteset.** A lemezrol olvasodnak be, nem a beszelgetes-elozmeanybol. Ha osszetett feladaton dolgozol, a tervfajl azt jelenti, hogy az architekturalis kontextus megmarad meg akkor is, amikor az azt letrehozo beszelgetees mar tomoriitve lett.
+
+3. **Testreszabhatod, mi eeli tul.** A "Tomorites soarn mindig orizd meg a modositott fajlok teljes listaajat" hozzaaadaasa a CLAUDE.md-hez iranyitja a tomorritesi osszefoglaslat. Vagy hasznaald a `/compact focusz az autentikaacios valtoztataaokra` parancsot a tomoriites manualis elinditaaasahoz egy specifikus megorzesi iranyelvvel.
+
+Baarmi fontos, ami csak a beszelgetes-elozmenyben el, veszeelyben van. Ird le. A modell nem tud gyaaszolni azert, amit elveszitett -- nem tudja, hogy elveszitett barmit is.
+
+---
+
+## Kontextus Vegig Lefele
+
+*Ezta beszelgetest ugy kezdtem, hogy meg akartam erteni egy mechanizmust. Ugy fejeztem be, hogy megertettem egy diszciplinat.*
+
+A kontextus-tervezes nem technika, amit promptokra alkalmazol. Ez az alapveto felueelet emberek es nyelvi modellek kozott. Amikor megirtam az [5 retegu keretrendszert](/blog/context-engineering-your-zero-shot-prompt), a gyakorlatot irtam le. Ez a beszelgetes feltarta a mogotte levo fizikaat.
+
+A kontextusablakban levo minden token fizikailag megvaltoztatja a figyelmi sulyokat minden rakovetkezo tokenen. A KV cache tarolja ezeket a valtoztataaokat -- milliardnyi lebegopontos szam, ami a modell "megerteeset" kepviseli a projektedrol. A lenyegtelen tokenek nem ulnek passzivan. Aktivan higitjak a jelet a relevans tokenekbol. Es amikor a kontextus tomoritodik, az informacio visszafordithatatlanul elveesz -- csendben, ertesites nelkul.
+
+A Claude Code rendszerezetten kezeli ezt. Felterkepeez, mielott cselekszik. A kutatast alagensekbe izolalja. Az eredmeenyeket tervekbe tomoriiti. A cache ujrafelhasznaasra tervez. A kontextus romlas ellen hierarchikus memoriaval, automatikus tomoritessel es a tervezz-aztan-hajtsd-vegre mintaaval vedekezik.
+
+Az emberek elfelejtik ezeket csinalni. Husz fajlt ontunk egy promptba es csodaalkozunk, miert hagyja figyelmen kivul a felet -- figyelmi hgiitas. Tizenkeetszer iteraalunk ahelyett, hogy egyszer felkeszulneenk -- 5x kimeneti arazast fizetve 1x bemeneti arazas helyett. Feltetelezzuk, hogy a modell emlekszik a tegnapi munkamenetre -- minden alkalommal nullaarol indul. Kihagyjuk a korlatzoasokat, aztan panaszkodunk, amikor a modell az egesz auth modulunkat refaktoraalja, mikozben mi csak egy hibat kertuenk javitani.
+
+A mechanizmus megerteese -- figyelem, KV cache, elofeldolgozaas, dekodolas, pozicionalis kodolas, a kozepen-elveszett hatas -- szukseegesseggee teszi a diszciplinat, ahelyett, hogy onkeenyesnek tunne. Nem azert koveted a legjobb gyakorlatokat, mert megmondtak. A modell kogniiciojanak fizikai szubsztraatumaat tervezed. Minden token, amit a kontextusablakba helyezel, atalakitja a valoszinuseg-eloszlast a modell altal generaalt minden token felett. Ez nem metafora. Ez a figyelmi mechanizmus, ami pontosan azt teszi, amire terveztek.
+
+Es itt a meta-megfigyeles, amit nem tudok megaallni: ennek a cikknek a megirasa tizenhat parhuzamos kutatoo agenst igenyelt, akik webes keresekbol, dokumentaaciobol es kodbazis-felterkepezeesbol allitottaak ossze a kontextust -- aztan mindezt egyetlen tervbe tomorirtettek. A kontextus-tervezesrol szolo cikk maga is kontextus-tervezett volt.
+
+Kontextus vegig lefele.
+
+---
+
+<div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-6 mt-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">Folytasd a beszelgetest</h3>
+  <p className="text-slate-300 mb-4">
+    Ez a cikk a <a href="/blog/context-engineering-your-zero-shot-prompt" className="text-blue-400 hover:underline">Kontextus-tervezes a 0-Shot Promptodhoz</a> kisero anyaga, ami a gyakorlati 5 retegu keretrendszert targyalja. A nyilt forrasu repoziitoriumunk CLAUDE.md-t, terv modot es tobbagens munkafolyamatokat hasznal funkciok szallitaaasara. Fedezd fel a kodbazist, hogy a kontextus-tervezest a gyakorlatban lasd.
+  </p>
+  <div className="flex flex-wrap gap-3">
+    <a
+      href="/blog/context-engineering-your-zero-shot-prompt"
+      className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+    >
+      Olvasd El a Kisero Cikket
+    </a>
+    <a
+      href="https://github.com/zerdos/spike-land-nextjs"
+      className="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
+    >
+      Fedezd Fel a Repozitoriumot
+    </a>
+  </div>
+</div>
+
+---
+
+*A kontextus-tervezes nem technika. Ez az alapveto felulet emberek es nyelvi modellek kozott. A legjobb terv, amit valaha irsz, az, amin a vegrehajto agensnek alig kell gondolkodnia -- mert minden gondolkodas a korulotte levo kontextusba kerult.*

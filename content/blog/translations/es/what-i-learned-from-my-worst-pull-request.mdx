@@ -1,0 +1,149 @@
+---
+title: "Lo que aprendi de mi peor Pull Request"
+slug: "what-i-learned-from-my-worst-pull-request"
+description: "La historia honesta de un desarrollador sobre el mal uso de herramientas de IA en un proyecto nuevo, y el marco de trabajo que lo arreglo todo."
+date: "2026-01-13"
+author: "Zoltan Erdos"
+category: "Experiencia del desarrollador"
+tags: ["ai", "herramientas-de-desarrollo", "claude", "lecciones-aprendidas", "calidad-de-codigo", "pull-requests"]
+featured: true
+language: "es"
+---
+
+Necesito contarte algo. Algo de lo que no estoy orgulloso.
+
+Durante un breve periodo en 2025, cuando comence en un proyecto nuevo, mis pull requests eran pura basura generada por IA. Incluso haciendo mi mejor esfuerzo por evitarlo.
+
+Dejame contarte exactamente lo que paso.
+
+---
+
+## El nuevo proyecto
+
+Me uni a un equipo que trabajaba en dos aplicaciones conectadas. Una app Next.js que gestionaba cancelaciones de clientes. Una app Angular que ejecutaba la tienda principal de comercio electronico. El stack tecnologico parecia interesante. La gente parecia inteligente. Estaba listo para demostrar mi valor.
+
+El codigo base era pragmatico. Se notaba que los desarrolladores anteriores le habian puesto cuidado. Si, habia algo de deuda tecnica -- que codigo base no la tiene? Pero la arquitectura era deliberada. Ciertas cosas tenian que hacerse de cierta manera porque asi estaba disenado el sistema.
+
+Nunca habia construido un sitio de comercio electronico antes. Esto se volveria importante.
+
+Tenia un arma secreta. O eso pensaba.
+
+Las herramientas de codigo con IA se habian vuelto increiblemente poderosas para 2025. Claude Code. Ya no eran simples herramientas de autocompletado. Podian entender codigos base complejos. Podian escribir funcionalidades completas. Podian refactorizar grandes cantidades de codigo.
+
+Las usaba constantemente. Y eran rapidas. Muy rapidas.
+
+Mis primeros PRs se veian increibles. Codigo limpio. Buena estructura. Manejo de errores adecuado. Los tests pasaban. El linter estaba contento. Me sentia como un heroe.
+
+No era un heroe. Estaba construyendo sobre arena.
+
+---
+
+## El incidente de la API del carrito
+
+Fue uno de mis primeros tickets en el proyecto.
+
+La tarea parecia simple. Rastrear analiticas cuando un usuario acepta una oferta de retencion. El flujo era asi: un cliente va a cancelar su cuenta en la app Next.js, ve una oferta de retencion con un ID en la URL, hace clic, es redirigido a la app Angular con ese ID, y completa la compra. Yo necesitaba rastrear ese evento de compra.
+
+Aqui es donde mi inexperiencia me mato.
+
+Nunca habia construido un sitio de comercio electronico. En mi cabeza, el frontend mantiene el carrito en memoria hasta la compra. El usuario agrega cosas a su carrito, el frontend lo almacena, luego envia todo al servidor cuando hace clic en "comprar". Eso tenia sentido para mi.
+
+Asi que le pedi a Claude que me ayudara a implementar el rastreo. Y Claude genero codigo. Codigo hermoso. Llamaba a la API del carrito para obtener los datos del carrito y asi poder rastrear la compra.
+
+Se veia perfecto. Paso los tests. El linter estaba contento.
+
+Envie el PR.
+
+---
+
+## La tormenta perfecta
+
+Esto es algo que no sabia en ese momento. Claude estaba teniendo [problemas tecnicos documentados](https://www.anthropic.com/engineering/a-postmortem-of-three-recent-issues) durante ese periodo. Errores de enrutamiento de la ventana de contexto afectaban al 30% de los usuarios de Claude Code. El modelo estaba produciendo respuestas que se veian bien pero en realidad estaban degradadas.
+
+La herramienta en la que confiaba estaba produciendo resultados que se veian bien pero eran de baja calidad. Y no tenia forma de saberlo.
+
+Cuando la IA alucina con confianza, te hace alucinar a ti tambien. La salida de Claude se veia correcta. Se sentia correcta. Asi que yo me sentia confiado. Envie trabajo que no entendia completamente porque la IA parecia entenderlo.
+
+---
+
+## La revision de codigo
+
+Un companero seguia haciendo preguntas. Preguntas que no podia responder.
+
+"Por que estas llamando a la API del carrito aqui?"
+
+No lo sabia. Pensaba que era necesario para obtener los datos del carrito para el rastreo.
+
+"El carrito ya esta en el servidor. El ID en la URL es solo para verificacion."
+
+No lo entendia.
+
+Luego una desarrolladora mas senior reviso el PR. Fue directa. El PR era esencialmente basura. Solo pequenas partes eran utiles.
+
+El carrito era del lado del servidor. Esa era la arquitectura. El backend era la unica fuente de verdad. El ID de la app de cancelacion era solo para verificar contra lo que ya estaba almacenado en el servidor. No habia necesidad de llamar a la API del carrito en absoluto.
+
+Me quede ahi sentado, mirando mi pantalla. No tenia respuesta para por que escribi ese codigo. Porque no lo escribi yo. Lo escribio Claude. Y yo lo aprobe sin entenderlo.
+
+---
+
+## La causa raiz
+
+La IA no es el problema. Yo era el problema.
+
+No sabia lo que no sabia. Los requisitos del ticket no eran claros, pero yo no sabia lo suficiente para hacer las preguntas correctas. Nunca habia construido comercio electronico antes. No entendia la arquitectura. Asi que no podia verificar lo que la IA asumia.
+
+El codigo base estaba bien disenado. Los desarrolladores anteriores habian pensado en como funcionaba el sistema del carrito. Habia buenas razones para la arquitectura de tres capas. Pero yo no me tome el tiempo para entender esas razones antes de pedirle a Claude que generara codigo.
+
+Estaba usando la IA como un atajo en lugar de una herramienta. Hay una gran diferencia.
+
+Un atajo reemplaza tu trabajo. Una herramienta te ayuda a hacer tu trabajo mejor. Yo estaba tratando la IA como un atajo. Necesitaba tratarla como una herramienta.
+
+---
+
+## Lo que cambio
+
+Despues de ese incidente, todo cambio.
+
+**Primero, cree documentacion exhaustiva.** Reuni todo -- documentos de Confluence, comentarios en el codigo, documentacion de APIs, codigos base de otros equipos. Use NotebookLM para generar tutoriales de aprendizaje, diagramas del sistema, tarjetas de estudio, cuestionarios. En un fin de semana, domine el conocimiento de dominio que me habia estado faltando.
+
+**Segundo, codifique los patrones del proyecto en las instrucciones de Claude.** Habilidades personalizadas. Convenciones del equipo. Estandares de codigo. Como funciona realmente la arquitectura del carrito. Ahora la IA sigue nuestros patrones automaticamente en lugar de adivinar.
+
+**Tercero -- y este es el cambio mas importante -- el agente ahora me entrevista durante la planificacion.** Antes de que se escriba cualquier codigo, el agente me hace preguntas. Sigue preguntando hasta que tengo el panorama completo. Si no puedo responder una pregunta, vuelvo a la documentacion. O ejecuto otro agente para averiguarlo. Esto asegura que entiendo lo que estoy construyendo antes de construirlo.
+
+Si el agente me hubiera entrevistado antes de ese PR del carrito, habria preguntado: "Que datos ya existen en el servidor?" Y yo no habria tenido respuesta. Eso me habria impedido cometer el error.
+
+**Cuarto, ahora pruebo de manera diferente.** El agente abre un navegador. Inicia sesion con credenciales de prueba. Intenta aprobar la funcionalidad como lo haria un tester humano. Toma capturas de pantalla. Las compara con los disenos de Figma. Detecta errores que las pruebas manuales detectarian.
+
+Mi distribucion de esfuerzo es completamente diferente ahora. 30% planificacion. 50% pruebas. 20% mejora de calidad. La codificacion real toma casi nada de tiempo comparado con entender y verificar.
+
+---
+
+## Las consecuencias
+
+Deje de producir basura. Mis PRs ahora son de alta calidad.
+
+Pero mi reputacion en el trabajo sigue danada. Mis PRs todavia tardan mas en revisarse que los de mis companeros. La confianza que rompi toma tiempo en reconstruirse.
+
+Ese es el costo oculto de los malos PRs. No es solo mal codigo. Es confianza rota. Y la confianza se reconstruye lentamente.
+
+A pesar de esto, soy positivo. El sistema funciona. La calidad esta ahi. Cada buen PR agrega un poco de confianza de vuelta.
+
+---
+
+## Mi consejo para ti
+
+Si eres nuevo en un proyecto y usas herramientas de IA, por favor escuchame.
+
+La IA te hara sentir productivo. Enviaras codigo rapido. Tus PRs se veran limpios. Pero podrias estar construyendo sobre suposiciones que no puedes verificar.
+
+Baja la velocidad. Haz preguntas. Entiende la arquitectura. Habla con tus companeros de equipo. Crea documentacion. Haz que la IA te entreviste sobre el problema antes de que escriba cualquier codigo.
+
+El codigo base en el que trabajas probablemente tiene buenas razones para ser como es. Los desarrolladores anteriores tomaron decisiones pensadas. Tomate el tiempo para entender esas decisiones antes de dejar que la IA genere codigo que las ignore.
+
+Las herramientas de codigo con IA son increibles. Han cambiado como trabajo para siempre. Pero no son un reemplazo del entendimiento. Son un multiplicador. Y si multiplicas cero entendimiento por una IA poderosa, sigues obteniendo cero.
+
+Sigo usando IA todos los dias. Mas que nunca. Pero ahora la uso como una companera que me cuestiona, no como un atajo que me permite saltarme el entendimiento.
+
+Mis PRs ya no son basura. Son mi trabajo, potenciado por la IA.
+
+Esa es la diferencia. Y es importante.

@@ -1,0 +1,321 @@
+---
+title: "Kontextus-tervezes a 0-Shot Promptodhoz"
+slug: "context-engineering-your-zero-shot-prompt"
+description: "Hagyd abba az iteralast. Kezdj el elore betolteni. Gyakorlati keretrendszer ahhoz, hogy az AI modelleknek megadd az osszes kontextust, amire szukseguk van, hogy kivaol eredmenyt hozzanak az elso probalkozasra."
+date: "2026-02-10"
+author: "Zoltan Erdos"
+category: "Fejlesztoi Elmeny"
+tags: ["ai", "context-engineering", "prompt-engineering", "claude", "developer-tools", "produktivitas", "mcp"]
+featured: true
+language: "hu"
+---
+
+{/* TL;DR Box */}
+<div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 mb-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">TL;DR</h3>
+  <ul className="space-y-2 text-slate-300">
+    <li>A prompt engineering halott. A kontextus-tervezes valtotta fel.</li>
+    <li>Egy 0-shot prompt nem varazsszavakrol szol -- hanem a kontextus elore betolteserol, hogy az AI elsore eltalaalja.</li>
+    <li>A keretrendszer: Identitas + Tudas + Peldak + Korlatozasok + Eszkozok = 0-shot siker.</li>
+    <li>A CLAUDE.md fajlod a legertekesebb mualkotas, amit az egesz heten irsz.</li>
+  </ul>
+</div>
+
+Mult kedden egyetlen promptot irtam a Claude Code-ba. Tizenegy perccel kesobb egy teljesen tesztelt kredit-egyenleg megjelenitotesz elt a staging kornyezetunkon -- valos ideju frissitesekkel, megfelelo hibaaallapotokkal es atmenoo CI-vel.
+
+Ugyanazon a delutan egy kollegam leult ugyanazon modell ele. Ugyanolyan feladat-osszetettseg. Negyvenot perc es tizenket prompt iteracio utan meg mindig import utvonalakkal kuszkodott.
+
+A kulonbseg nem tehetseg volt. Nem a prompt volt. Meg csak nem is a modell.
+
+**A kulonbseg a kontextus volt.**
+
+O egy kerdest irt be. En egy tajekoztatot adtam. O egy idegent vallatott. En egy uj csapattagot tajekozttattam, akinek mar volt hozzaferese a kodbazisunkhoz, a konvencioinkhoz, a teszt kovetelmeenyeinkhez es a deployment pipeline-unkhoz.
+
+Ez a cikk az a keretrendszer, amit arra hasznalok, hogy ez megtortenjen -- minden egyes alkalommal.
+
+---
+
+## A Prompt Engineering Halott
+
+Legyunk direcktek: a "prompt engineering" kifejezez tulelte a hasznossagat. Azt sugallta, hogy a magia a szavakban rejlik, amiket beiersz -- hogy ha megtalaalod a megfelelo varazsigeet, a modell megteszi, amit akarsz. 2023-ban ez reszben igaz volt. Specifikus megfogalmazasra volt szukseged, hogy jo kimeneteket csikarj ki modelleekbol, amik, oszinteen szolva, kevesbe voltak kepesek.
+
+2026-ban a legfejlettebb modellek megertik a szandekodat meg akkor is, ha rosszul fogalmazod meg. A szuk keresztmetszet atkerult. Toebbe nem arrol szol, *hogyan kerdezel* -- hanem arrol, *mit tud a modell, amikor kerdezel*.
+
+**Gondolj ra ugy, mint egy nyomozoira.** A nyomozok nem azzal oldanak meg ugyeket, hogy egyetlen briliaans kerdest tesznek fel a kihallgatoszobaban. Ugyeket bizonyitekgyuejtessel oldanak meg, tanukikeerdezessel, igazsagugyi vizsgaalatokkal es kontextus-epitessel -- ugy, hogy mire leulnek abban a szobaban, a kerdes alig szamit. A bizonyteok beszelnek.
+
+A promptod a kerdes a kihallgatoszobaban. A kontextus-tervezes minden, ami azelott tortenik, mielott belepnel azon az ajotn.
+
+| | Prompt Engineering (2023) | Kontextus-tervezes (2026) |
+|---|---|---|
+| **Fokusz** | A tokeletes keres megfogalmazasa | A megfelelo informacio osszealliitasa |
+| **Alapveto kepesseg** | Szovegformaazas | Rendszergondolkodas |
+| **Iteracio** | Prompt modositas, ujraprobalas | Kontextus elore betoltese, elsore jol |
+| **Elsosdleges mualkotas** | Maga a prompt | CLAUDE.md, eszkoz konfigok, doksik |
+| **Hibamood** | "Az AI nem ert meg" | "Elfelejtettem belefoglalni X-et" |
+
+Az atvaaltas finom, de minden megvaltozik. Amikor egy prompt kudarcot vall, a regi oszton az volt, hogy ujra kell irni a promptot. Az uj osztonnek annak kellene lennie: *milyen kontextus hiaaanyzott?*
+
+---
+
+## Mit Jelent Valojaban a "0-Shot"
+
+A gepi tanulasban a "zero-shot" azt jelenti, hogy egy modell olyan feladatot hajt vegre, amire soha nem lett kifejezetten kikeepezve. Nincs pelda, nincs finomhangolaas -- csak nyers altalanositas.
+
+A gyakorlatban, amikor "0-shot promptot" mondunk, valami egyszerubbet ertunk: **az elsoo interakciora megkapni a kivaant eredmenyt.** Nincs oda-vissza. Nincs "ez majdnem jo, de vaojaban..." Nincs iteraacios hurok.
+
+Itt a paradoxon, ami megteveszt sokakat:
+
+> A 0-shot promptok igenylik a legtobb elokeszuletet.
+
+Maga a prompt rovid lehet. De a korulotte levo kontextus -- a rendszer prompt, a CLAUDE.md, az eszkoz konfiguracaio, a projekt dokumentaacio -- ott tortent a valos munka. A munkat *azelott* vegezted, mielott a promptot beiirtad.
+
+**Gondolj ra ugy, mint a mise en place-ra.** A professzionaalis szakacsok tobb idot toltenek az alalpanyagok elokeszitesevel, mint a tenyleges fozeessel. Minden kimeerve, felvaagva es elrendezve van, mielott a laang felgyullad. Amikor a szerviz indul, a vegrehajtas gyors, mert az elokeszites alapos volt.
+
+Ha promptokon iteraalsz, elokeszites nelkul fozol. Kozben nyulsz a soert, rajossz, hogy elfelejtetted felkockaaazni a hagymat, es kozben megeg a vaj, amig kapkodsz.
+
+A mise en place az AI szamara azt jelenti, hogy a kontextusod ossze van allitva, mielott felteszed a kerdest.
+
+---
+
+## Az 5 Retegu Kontextus Verem
+
+Ez az alapveto keretrendszer. Minden sikeres 0-shot prompt -- akar felismered, akar nem -- ennek az ot retegnek az egyuttmukodesevel mukodik.
+
+### 1. Reteg: Identitas
+
+**Ki az AI ebben az interakcioban?**
+
+Ez a rendszer promptod vagy szerepdefiniciod. Meghataarozza a modell alapertelmezett viselkedeset, hangulataat es donteshozatali keretrendszeret. Nelkule a modell egy generalista, aki a lehetoo legszeelesebb ertelemben probal segitookesz lenni. Vele a modell specialista.
+
+```
+You are a senior TypeScript developer working on a Next.js 15 application
+with App Router. You follow strict mode TypeScript and write tests for
+every function.
+```
+
+Az identitas nem hizelgesrol szol ("te vagy a vilag legjobb fejlesztoje"). A hatakorrol szol. Megmondod a modellnek, a tudasaenak melyik reszhalmazat helyezze eloterbe.
+
+### 2. Reteg: Tudas
+
+**Mit tud a modell a specifikus helyzetedrol?**
+
+Ez a legelhanyagoltabb reteg, es az, amelyik a legmagasabb megteerulest hozza. A tudas magaban foglalja:
+
+- **CLAUDE.md** -- a projekted allandoo kontextus fajlja
+- **Dokumentaacio** -- architekturalis dontesek, adatbazis semak, API referenciiak
+- **MCP szerver hozzaferes** -- elo adatok, amiket a modell igeney szerint kerdezhet le
+- **Fajl tartalmak** -- a tenlyegesen modositott kod
+
+A modell talan generikusan ismeri a TypeScript-et. De tudja-e, hogy a *te* projekted Zod-ot hasznal validacioohoz, krediteket (nem tokeneket) tarol egy `user_credits` tablaban, es 100%-os tesztlefedettseget koovetel? Ez a tudas reteg.
+
+### 3. Reteg: Peldak
+
+**Hogyan nez ki a "jo"?**
+
+A peldak a leghatekonyabb modja a minosegi szabvaanyok kommunikaalasanak. Ahelyett, hogy absztrakt modon irnad le a kodolasi stilusodat, mutasd meg:
+
+- Hivatkozz meglevo komponensekre, amik kovetik a mintaidat
+- Tarts bele egy mintat a teszt strukturaadbol
+- Mutass ra egy PR-re, ami pelddazza a review szabvaanyaidat
+
+Egy jo pelda tobbet kommunikal, mint egy bekezdes utasitas.
+
+### 4. Reteg: Korlatozasok
+
+**Mit NE tegyen az AI?**
+
+Ez a vedokorrlat reteg. Korlatozaasok nelkul a modell "segitookesz" lesz olyan modokon, amiket nem kertel -- refaktoral kozeli kodot, hibakezelest ad lehetetlen eshetosegekre, absztrakcios retegeket hoz letre egyszeri muveletekre.
+
+Hatekony korlatoasok:
+- "Ne modosits semmilyen fajlt az `src/components/dashboard/`-on kivul"
+- "Ne adj hozza kommenteket vagy docstringeket a nem modositott kodhoz"
+- "Csak a rendszer hatarokon validaalj -- bizz a belso fuggveny-szerzoddesekben"
+- "Nincs uj fuggoseg explicit jovahagyas nelkul"
+
+Valahanyaszor az AI olyat csinal, amit nem akartaal, az egy hianyzo korlatozas. Ird le. Add hozza a CLAUDE.md-dhez.
+
+### 5. Reteg: Eszkozok
+
+**Mit TUD tenni a modell?**
+
+Az eszkozok definialjak a modell cselekvesi teret. A Claude Code kontextusaaban ez magaban foglalja:
+- Fajl olvasas es szerkesztes
+- Tesztek es build parancsok futtatasa
+- Git muveletek
+- MCP szerverek (adatbazisok, API-k, bongeszok)
+- Webes kereses es dokumentacio kereses
+
+Az eszkoz konfiguracaio *implicit kontextus*. Amikor Playwright hozzaferest adsz a modellnek, azt mondod "a vizualis ellenorzes szamit itt." Amikor adatbazis MCP szervver hozzaferest adsz, azt mondod "kozvetlenul ellenorizheted az adatokat." Az altalad biztositott eszkozok formaljak, hogyan kozeliti meg a modell a problemat.
+
+---
+
+## Egy Valos 0-Shot Prompt, Feldarabolva
+
+Ime egy tenyleges prompt, amit arra hasznaltam, hogy kredit-egyenleg megjeleniteet adjak hozza a workspace dashboardunkhoz. Minden szekciot a kontextus retegeevel annotaaltam, amihez tartozik.
+
+```markdown
+## Task                                          <- [IDENTITAS + TUDAS]
+Add a real-time credit balance display to the
+workspace dashboard. The balance should update
+when credits are consumed by AI operations.
+
+## Context                                        <- [TUDAS]
+- Credits are stored in `user_credits` table
+  (see docs/DATABASE_SCHEMA.md)
+- The existing CreditDisplay component at
+  src/components/billing/CreditDisplay.tsx
+  handles the billing page--reuse its data
+  fetching pattern
+- We use server actions for mutations and
+  React Query for client-side cache
+  invalidation
+
+## Reference Implementation                       <- [PELDAK]
+Follow the pattern in
+src/components/dashboard/WorkspaceStats.tsx
+for the card layout and real-time update
+approach (useQuery + 30s polling).
+
+## Constraints                                    <- [KORLATOZASOK]
+- Only modify files in src/components/dashboard/
+  and src/app/dashboard/
+- Do not refactor existing CreditDisplay--just
+  import its query hook
+- No new dependencies
+- Must work with existing Suspense boundaries
+
+## Verification                                   <- [ESZKOZOK]
+- Run yarn test:coverage after changes
+- Ensure all tests pass
+- Run yarn lint
+```
+
+Ez a prompt nulla okos trukkoet tartalmaz. Nincs "gondolkodj lepesrol lepesre." Nincs "te vagy a vilaaag legnagyszeru mernoke." Csak kontextus -- retegekbe szervezve, amik megadnak a modellnek mindent, amire szuksege van az elsoo probalkozasra.
+
+Az eredmeny: mukodo megvalosittas egy passz alatt. Tesztek mellekelve. Nincs iteraaciio.
+
+---
+
+## CLAUDE.md: A Legfontosabb Fajl, Amit az Egesz Heten Irsz
+
+A CLAUDE.md egy fajl, ami a projekted gyokereben ul es allando kontextust biztosit a Claude Code szamara minden munkamenetben. Automatikusan betoltodik. Tuleleli, amikor a beszelgetes kontextusa tomoritve lesz. Ez az egyetlen legjelentosebb kontextus-tervezesi mualkotas, amit letre tudsz hozni.
+
+De itt a kulcsfontossagu felismeres: **a CLAUDE.md dokumentaaacio AI-nak, nem embereknek.**
+
+Az emberi dokumentaaciio elmaagyarazza, *miert* mukodnek a dolgok. Az AI dokumentaaciio elmaagyarazza, *mit kell tenni*. A megkulonboztetes szamit:
+
+- **Embereknek**: "Vitest-et hasznalunk, mert gyorsabb a Jest-nel es nativan tamogatja az ESM-et."
+- **AI-nak**: "Testing framework: Vitest. Test files: `*.test.ts(x)` alongside source. Run: `yarn test:coverage`. Requirement: 100% coverage on business logic."
+
+Az AI-t nem erdekli az indoklasod. A cselekvesre vonatkozokezz tenyek erdeklik.
+
+**Mit tartalmazzon:**
+- Tech stack verziokkal
+- Konyvtar struktura
+- Teszt kovetelmenyyek es parancsok
+- Elnevezesi konvenciok
+- Deployment munkafolyamat
+- Gyeakori buktatok ("Ne hasznaaeld a `git add -A`-t -- hasznaalj specifikus fajlneveket")
+
+**Mit hagyj ki:**
+- Torteneti kontextust ("A Jest-rol migraltunk 2025 Q3-ban")
+- Filozofiai indoklasokat
+- Barmit, ami nem valtoztatja meg a modell viselkeedeset
+
+Gondolj ra ugy, mint **egy uj kollegaal onboardolasa** -- kiveve, hogy ez a kollegaa minden egyes reggel teljesen frissen indul. Briliaans, gyors es lekeees, de nulla emleke van a tegnaprol. Minden helytelen felteeteleezes, amit az AI tesz, egy hianyzo sor a CLAUDE.md-dben.
+
+---
+
+## Az Eszkozok Kontextus, Nem Csak Cselekvesek
+
+A legtobb ember ugy gondol az MCP eszkozokre, mint "dolgok, amiket az AI tud csinalni" -- fajlokat olvas, teszteket futtat, adatbazisokat kerdez le. Ez pontos, de nem teljes. **Az eszkoz konfiguracaaio a kontextus-tervezes egy formaja**, mert az elerheto eszkozok formaljak, hogyan gondolkodik a modell egy problemaarol.
+
+Gondolj ket szcenaariora:
+
+**A szcenario**: A modellnek fajlszerkesztes es terminalparancs hozzaferest adsz.
+A modell a feladatot kodiirasi gyakorlatkeent kozeliti meg. Kodot ir, talan futtat egy build-et, es keszen van.
+
+**B szcenario**: A modellnek fajlszerkesztes, terminaalparancs hozzaferest *es* Playwright bongeszo eszkozoket adsz.
+Most a modell tudja, hogy a vizualis ellenorzes a munkafolyamat resze. Nagyobb valoszinuseggel ellenorzi, hogy egy UI valtoztattas tenyleg rendesen renderlodik. Lehet, hogy elkap egy CSS problemat, amit a tiszta logika nem fedne fel.
+
+Egyetlen szot sem irtal a "kerlek vizualisan ellenorizd" temaban. Az eszkoz konfiguracaaio implicit modon kommunikaalta.
+
+Ugyanez vonatkozik:
+- **Adatbazis MCP**: "Az adat integritaas szamit -- ellenorizd a migraacioidat"
+- **GitHub MCP**: "Ez a munka PR-ek es issue-k kontextusaaban tortenik"
+- **Webes kereses**: "Utana nezhetsz a dokumentacioonak, amiben nem vagy biztos, ahelyett, hogy tippelnel"
+
+Minden eszkoz, amit engedelyezel, egy mondat a kontextusodban, amit soha nem kellett megiirnod. Minden eszkoz, amit *nem* engedelyezel, egy kepesseg, amit a modell nem fog megfontolni. Vaalassz tudatosan.
+
+---
+
+## Mi Romolhat El (Es Hogyan Javitsd Ki)
+
+<Callout type="warning">
+**1. Hiba: Tul sok prompt, tul keves kontextus.** 500 szavas promptot irsz, ami pontosan leirja, hogyan kell megvalositani egy funkciot, lepesrol lepesre. Az AI koveti a lepeseidet -- beleertve a belejuk sult helytelen feltetelezeseket. Ehelyett: ird le az *eredmenyt*, add meg a *kontextust*, es hagyd, hogy a modell kidolgozza a megvalositast. Jobban ert a kodhoz, mint gondolnad. Rosszabbul olvas a gondolataidban, mint remelned.
+</Callout>
+
+<Callout type="warning">
+**2. Hiba: Feltetelezed, hogy az AI emlekezik.** Tegnap fantasztikus munkameneeted volt, ahol a modell megtanulta a mintaidat. Ma frissen indulsz es csodalkozol, miert koevetkezetes hibakat. Minden munkamenet nullaarol indul. Az allando kontextus a CLAUDE.md-ben el, nem a modell memoriajaaban. Ha valami fontos volt tegnap, eleg fontos ahhoz, hogy leiird.
+</Callout>
+
+<Callout type="warning">
+**3. Hiba: Korlatozaasok kihagyasa.** Megkered a modellt, "javitsd ki a bejelentkezesi hibat" es az javitja a hibat, refaktoraalja az auth modult, hozzaad error boundary-kat, frissiti a tipusokat es ujraformaazza a fajlt. Segitookesz? Technikailag igen. Amit akartaal? Nem. Az AI alapertelmezetten a maximalis segitookessegre torekszik. A korlatozaasok azok, amikkel erre a segitookessegre raaalitod, amire tenyleg szukseged van.
+</Callout>
+
+<Callout type="warning">
+**4. Hiba: Generikus promptok masolasa az internetrol.** "Viselkedj ugy, mint egy 10x fejleszto 20 ev tapasztalattal." Ezek a promptok cargo cult programozas az AI korszakra. Nem kontextust biztositanak -- hangulatot. Egy modell nem lesz jobb attol, hogy megmondtad neki, legyen szakerto. Attol lesz jobb, hogy megadtad neki az informaciot, amivel egy szakerto rendelkezne.
+</Callout>
+
+---
+
+## Az Erofeszites-inverzioo
+
+Ime a mentalis modell vaaltas, ami mindent megvaltoztatott szamomra.
+
+**Regi vilag (2023-2024):**
+- Az eroofeszites 20%-a kontextusra es beallitasra
+- Az eroofeszites 80%-a iteraciora es javitasra
+- Beiirtal egy promptot, kozeepes eredmeenyt kaptal, modositottad a promptot, kicsit jobb eredmenyt kaptal, megint modositottaal, es vegul 8-12 kor utan elfoagdhatora konvergaaltal.
+
+**Uj vilag (2026):**
+- Az eroofeszites 80%-a kontextusra es beallitasra
+- Az eroofeszites 20%-a vegrehajtasra es kisebb modositasokra
+- Elore befektetsz CLAUDE.md-be, dokumentaaciiooba, eszkoz konfiguraaciiooba es vilagos kovetelmenyekbe. Aztan a prompt elsore mukodik -- vagy eleg kozel ahhoz, hogy egyetlen kis modositas befejezze.
+
+**Gondolj ra ugy, mint boeorond pakolasra.** Vagy gondosan pakolsz az ut elott -- megnezed az idoojaarast, megtervezed az outfiteket, hatekonyaen tekered a ruhaaakat -- vagy bedobaalsz random cuccot egy taaskaaaba es megveszed, amit elfelejettel a cellallomason. Mindketto biztositja, hogy legyen ruhaaad a nyaralaason. Az egyik haromszor annyiba kerul es a felnap a repteri boltokban veesz el.
+
+Az elokeszites MAGA a munka. A prompt csak az "elkuldes" gomb megnyomasa.
+
+---
+
+## Kezdd Itt
+
+Nem kell a teljes munkafolyamatodat aatalakitanod. Kezdd harom dologgal:
+
+**1. Hozz letre egy CLAUDE.md-t ma.** Nyisd meg a projekted gyokeret es ird le az alapokat: tech stack, tesztelesi kovetelmenyeek, konyvtar struktura, elnevezesi konvenciok es barmilyen szaabalyt, amit azon kapod magad, hogy ismetelsz az AI-nak. 15 percet vesz igenybe. Orakat takarit meg.
+
+**2. A kovetkezo AI feladatod elott tolts 10 percet kontextus osszeallitaasal.** Mielott beirod a promptot, kerdezd meg magad: Tudja-e a modell a projekt strukturaamat? Ismeri a konvenciooimat? Ramutattam relevaaans peldakodra? Megmondtam neki, mit NE tegyen? Ha baarmelyik valasz "nem," javitsd ki, mielott megnyomod az entert.
+
+**3. Miutaan az AI valaszol, ne iteraalj -- diagnosztizaalj.** Amikor a kimenet nem megfelelo, allj ellen a kesztetesnek, hogy ujraiird a promptodat. Ehelyett kerdezd meg: "Milyen kontextus hiaaanyzott?" Aztan add hozza azt a kontextust a CLAUDE.md-dhez, hogy kovetkezo alkalommal ott legyen. Minden sikertelen interakcioo egy dokumentaacioos lehetoseg.
+
+A cel nem a tokeletes prompt megirasa. A cel egy olyan kornyezet epitese, ahol meg egy kozeepes prompt is kivaloo eredmenyt hoz -- mert a kontextus vegzi a nehez munkat.
+
+---
+
+<div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-6 mt-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">Lasd a kontextus-tervezest a gyakorlatban</h3>
+  <p className="text-slate-300 mb-4">
+    A nyilt forrasu repozitoriumunk CLAUDE.md-t, MCP eszkozoket es strukturalt munkafolyamatokat hasznal funkciok szallitaasahoz AI agensekkel. Fedezd fel a kodbazist, hogy lasd, hogyan mukodik a kontextus-tervezes projekt szinten.
+  </p>
+  <a
+    href="https://github.com/zerdos/spike-land-nextjs"
+    className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+  >
+    Fedezd Fel a Repozitoriumot
+  </a>
+</div>
+
+---
+
+*A kontextus-tervezes nem technika. Diszciplina. A legjobb prompt, amit valaha irsz, az, amin alig kellett gondolkodnod -- mert minden gondolkodas a korulotte levo kontextusba kerult.*

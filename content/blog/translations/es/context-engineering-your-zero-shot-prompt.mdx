@@ -1,0 +1,321 @@
+---
+title: "Ingenieria de contexto para tu prompt 0-shot"
+slug: "context-engineering-your-zero-shot-prompt"
+description: "Deja de iterar. Empieza a cargar contexto de antemano. Un framework practico para darle a los modelos de IA todo el contexto que necesitan para producir resultados excelentes en el primer intento."
+date: "2026-02-10"
+author: "Zoltan Erdos"
+category: "Experiencia del desarrollador"
+tags: ["ai", "context-engineering", "prompt-engineering", "claude", "herramientas-de-desarrollo", "productividad", "mcp"]
+featured: true
+language: "es"
+---
+
+{/* TL;DR Box */}
+<div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 mb-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">TL;DR</h3>
+  <ul className="space-y-2 text-slate-300">
+    <li>La ingenieria de prompts ha muerto. La ingenieria de contexto la reemplazo.</li>
+    <li>Un prompt 0-shot no se trata de palabras magicas -- se trata de cargar contexto de antemano para que la IA acierte a la primera.</li>
+    <li>El framework: Identidad + Conocimiento + Ejemplos + Restricciones + Herramientas = exito 0-shot.</li>
+    <li>Tu archivo CLAUDE.md es el artefacto mas valioso que escribes en toda la semana.</li>
+  </ul>
+</div>
+
+El martes pasado, escribi un solo prompt en Claude Code. Once minutos despues, una visualizacion de saldo de creditos completamente testeada estaba en vivo en nuestro entorno de staging -- con actualizaciones en tiempo real, estados de error adecuados y CI pasando.
+
+Esa misma tarde, un colega se sento con el mismo modelo. Misma complejidad de tarea. Cuarenta y cinco minutos y doce iteraciones de prompts despues, todavia estaba luchando con las rutas de importacion.
+
+La diferencia no era talento. No era el prompt. Ni siquiera era el modelo.
+
+**La diferencia era el contexto.**
+
+El escribio una pregunta. Yo entregue un informe. El estaba interrogando a un desconocido. Yo estaba informando a un nuevo miembro del equipo que ya tenia acceso a nuestro codigo, nuestras convenciones, nuestros requisitos de testing y nuestro pipeline de despliegue.
+
+Este articulo es el framework que uso para que eso suceda -- cada vez.
+
+---
+
+## La ingenieria de prompts ha muerto
+
+Seamos directos: el termino "ingenieria de prompts" ha sobrevivido a su utilidad. Implicaba que la magia esta en las palabras que escribes -- que si encontrabas el encantamiento correcto, el modelo haria lo que querias. En 2023, eso era parcialmente cierto. Necesitabas frases especificas para sacar buenos resultados de modelos que, francamente, eran menos capaces.
+
+En 2026, los modelos de frontera entienden tu intencion incluso cuando la expresas mal. El cuello de botella se movio. Ya no se trata de *como preguntas* -- se trata de *lo que el modelo sabe cuando preguntas*.
+
+**Piensalo como una historia de detectives.** Los detectives no resuelven casos haciendo una pregunta brillante en la sala de interrogatorios. Resuelven casos reuniendo evidencia, entrevistando testigos, revisando forenses y construyendo contexto -- para que, cuando se sientan en esa sala, la pregunta apenas importe. La evidencia habla.
+
+Tu prompt es la pregunta en la sala de interrogatorios. La ingenieria de contexto es todo lo que sucede antes de cruzar esa puerta.
+
+| | Ingenieria de prompts (2023) | Ingenieria de contexto (2026) |
+|---|---|---|
+| **Enfoque** | Elaborar la peticion perfecta | Ensamblar la informacion correcta |
+| **Habilidad central** | Artesania de palabras | Pensamiento de sistemas |
+| **Iteracion** | Ajustar el prompt, intentar de nuevo | Cargar contexto de antemano, acertar |
+| **Artefacto principal** | El prompt en si | CLAUDE.md, configs de herramientas, docs |
+| **Modo de fallo** | "La IA no me entiende" | "Olvide incluir X" |
+
+El cambio es sutil pero todo cambia. Cuando un prompt falla, el viejo instinto era reescribir el prompt. El nuevo instinto deberia ser: *que contexto faltaba?*
+
+---
+
+## Lo que "0-shot" realmente significa
+
+En aprendizaje automatico, "zero-shot" significa que un modelo realiza una tarea para la que nunca fue explicitamente entrenado. Sin ejemplos, sin ajuste fino -- solo generalizacion pura.
+
+En la practica, cuando decimos "prompt 0-shot," queremos decir algo mas simple: **obtener el resultado que quieres en la primera interaccion.** Sin ida y vuelta. Sin "esta cerca, pero en realidad..." Sin bucle de iteracion.
+
+Aqui esta la paradoja que confunde a la gente:
+
+> Los prompts 0-shot requieren la mayor preparacion.
+
+El prompt en si puede ser corto. Pero el contexto que lo rodea -- el prompt del sistema, el CLAUDE.md, la configuracion de herramientas, la documentacion del proyecto -- ahi es donde ocurrio el verdadero trabajo. Hiciste el trabajo *antes* de escribir el prompt.
+
+**Piensalo como mise en place.** Los chefs profesionales pasan mas tiempo preparando ingredientes que cocinando. Todo esta medido, cortado y organizado antes de encender el fuego. Cuando comienza el servicio, la ejecucion es rapida porque la preparacion fue exhaustiva.
+
+Si estas iterando en prompts, estas cocinando sin preparacion. Estas buscando la sal a mitad de la coccion, darte cuenta de que olvidaste picar la cebolla y quemando la mantequilla mientras improvisas.
+
+Mise en place para la IA significa que tu contexto esta ensamblado antes de hacer la pregunta.
+
+---
+
+## La pila de contexto de 5 capas
+
+Este es el framework central. Cada prompt 0-shot exitoso -- te des cuenta o no -- tiene estas cinco capas trabajando juntas.
+
+### Capa 1: Identidad
+
+**Quien es la IA en esta interaccion?**
+
+Este es tu prompt del sistema o definicion de rol. Moldea el comportamiento predeterminado, tono y marco de toma de decisiones del modelo. Sin el, el modelo es un generalista intentando ser util en el sentido mas amplio posible. Con el, el modelo es un especialista.
+
+```
+You are a senior TypeScript developer working on a Next.js 15 application
+with App Router. You follow strict mode TypeScript and write tests for
+every function.
+```
+
+La identidad no se trata de halagos ("eres el mejor desarrollador del mundo"). Se trata de alcance. Le estas diciendo al modelo que subconjunto de su conocimiento priorizar.
+
+### Capa 2: Conocimiento
+
+**Que sabe el modelo sobre tu situacion especifica?**
+
+Esta es la capa mas descuidada, y la que tiene el mayor retorno de inversion. El conocimiento incluye:
+
+- **CLAUDE.md** -- el archivo de contexto persistente de tu proyecto
+- **Documentacion** -- decisiones de arquitectura, esquemas de base de datos, referencias de API
+- **Acceso a servidores MCP** -- datos en vivo que el modelo puede consultar bajo demanda
+- **Contenido de archivos** -- el codigo real que se esta modificando
+
+El modelo puede conocer TypeScript de forma generica. Pero sabe que *tu* proyecto usa Zod para validacion, almacena creditos (no tokens) en una tabla `user_credits` y requiere 100% de cobertura de tests? Esa es la capa de conocimiento.
+
+### Capa 3: Ejemplos
+
+**Como se ve "bueno"?**
+
+Los ejemplos son la forma mas eficiente de comunicar estandares de calidad. En lugar de describir tu estilo de codigo en terminos abstractos, muestralo:
+
+- Referencia componentes existentes que siguen tus patrones
+- Incluye una muestra de tu estructura de tests
+- Senala un PR que ejemplifique tus estandares de revision
+
+Un buen ejemplo comunica mas que un parrafo de instrucciones.
+
+### Capa 4: Restricciones
+
+**Que NO debe hacer la IA?**
+
+Esta es la capa de proteccion. Sin restricciones, el modelo sera "util" de maneras que no pediste -- refactorizando codigo cercano, agregando manejo de errores para escenarios imposibles, creando capas de abstraccion para operaciones de una sola vez.
+
+Restricciones efectivas:
+- "No modificar ningun archivo fuera de `src/components/dashboard/`"
+- "No agregar comentarios ni docstrings a codigo sin cambios"
+- "Solo validar en los limites del sistema -- confiar en los contratos de funciones internas"
+- "Sin nuevas dependencias sin aprobacion explicita"
+
+Cada vez que una IA hace algo que no querias, esa es una restriccion faltante. Escribela. Agregala a tu CLAUDE.md.
+
+### Capa 5: Herramientas
+
+**Que PUEDE hacer el modelo?**
+
+Las herramientas definen el espacio de accion del modelo. En el contexto de Claude Code, esto incluye:
+- Lectura y edicion de archivos
+- Ejecucion de tests y comandos de build
+- Operaciones de Git
+- Servidores MCP (bases de datos, APIs, navegadores)
+- Busqueda web y consulta de documentacion
+
+La configuracion de herramientas es *contexto implicito*. Cuando le das al modelo acceso a Playwright, estas diciendo "la verificacion visual importa aqui." Cuando le das acceso a un servidor MCP de base de datos, estas diciendo "puedes verificar datos directamente." Las herramientas que proporcionas moldean como el modelo aborda el problema.
+
+---
+
+## Un prompt 0-shot real, diseccionado
+
+Aqui hay un prompt real que use para agregar una visualizacion de saldo de creditos a nuestro dashboard de workspace. He anotado cada seccion con la capa de contexto a la que pertenece.
+
+```markdown
+## Task                                          <- [IDENTIDAD + CONOCIMIENTO]
+Add a real-time credit balance display to the
+workspace dashboard. The balance should update
+when credits are consumed by AI operations.
+
+## Context                                        <- [CONOCIMIENTO]
+- Credits are stored in `user_credits` table
+  (see docs/DATABASE_SCHEMA.md)
+- The existing CreditDisplay component at
+  src/components/billing/CreditDisplay.tsx
+  handles the billing page--reuse its data
+  fetching pattern
+- We use server actions for mutations and
+  React Query for client-side cache
+  invalidation
+
+## Reference Implementation                       <- [EJEMPLOS]
+Follow the pattern in
+src/components/dashboard/WorkspaceStats.tsx
+for the card layout and real-time update
+approach (useQuery + 30s polling).
+
+## Constraints                                    <- [RESTRICCIONES]
+- Only modify files in src/components/dashboard/
+  and src/app/dashboard/
+- Do not refactor existing CreditDisplay--just
+  import its query hook
+- No new dependencies
+- Must work with existing Suspense boundaries
+
+## Verification                                   <- [HERRAMIENTAS]
+- Run yarn test:coverage after changes
+- Ensure all tests pass
+- Run yarn lint
+```
+
+Este prompt contiene cero trucos ingeniosos. Nada de "piensa paso a paso." Nada de "eres el mejor ingeniero del mundo." Solo contexto -- organizado en capas que le dan al modelo todo lo que necesita para acertar en el primer intento.
+
+El resultado: una implementacion funcional en un solo pase. Tests incluidos. Sin iteracion.
+
+---
+
+## CLAUDE.md: El archivo mas importante que escribes en la semana
+
+CLAUDE.md es un archivo que se situa en la raiz de tu proyecto y proporciona contexto persistente a Claude Code en cada sesion. Se carga automaticamente. Sobrevive cuando el contexto de la conversacion se comprime. Es el artefacto de ingenieria de contexto mas impactante que puedes crear.
+
+Pero aqui esta la clave: **CLAUDE.md es documentacion para IA, no para humanos.**
+
+La documentacion humana explica *por que* las cosas funcionan. La documentacion para IA explica *que hacer*. La distincion importa:
+
+- **Para humanos**: "Usamos Vitest porque es mas rapido que Jest y soporta ESM nativamente."
+- **Para IA**: "Framework de testing: Vitest. Archivos de test: `*.test.ts(x)` junto al codigo fuente. Ejecutar: `yarn test:coverage`. Requisito: 100% de cobertura en logica de negocio."
+
+A la IA no le importa tu justificacion. Le importan los hechos accionables.
+
+**Que incluir:**
+- Stack tecnologico con versiones
+- Estructura de directorios
+- Requisitos de testing y comandos
+- Convenciones de nombres
+- Flujo de trabajo de despliegue
+- Errores comunes ("NO uses `git add -A` -- usa nombres de archivos especificos")
+
+**Que omitir:**
+- Contexto historico ("Migramos de Jest en Q3 2025")
+- Justificaciones filosoficas
+- Cualquier cosa que no cambie el comportamiento del modelo
+
+Piensalo como **incorporar a un nuevo empleado** -- excepto que este empleado empieza completamente de cero cada manana. Es brillante, rapido y entusiasta, pero tiene cero memoria del dia anterior. Cada suposicion erronea que la IA hace es una linea faltante en tu CLAUDE.md.
+
+---
+
+## Las herramientas son contexto, no solo acciones
+
+La mayoria de la gente piensa en las herramientas MCP como "cosas que la IA puede hacer" -- leer archivos, ejecutar tests, consultar bases de datos. Eso es correcto pero incompleto. **La configuracion de herramientas es una forma de ingenieria de contexto** porque las herramientas disponibles moldean como el modelo razona sobre un problema.
+
+Considera dos escenarios:
+
+**Escenario A**: Le das al modelo acceso a edicion de archivos y comandos de terminal.
+El modelo aborda la tarea como un ejercicio de escritura de codigo. Escribe codigo, quiza ejecuta un build, y lo da por terminado.
+
+**Escenario B**: Le das al modelo acceso a edicion de archivos, comandos de terminal, *y* herramientas de navegador Playwright.
+Ahora el modelo sabe que la verificacion visual es parte del flujo de trabajo. Es mas probable que verifique que un cambio de UI realmente se renderiza correctamente. Podria detectar un problema de CSS que la logica pura no revelaria.
+
+No escribiste una sola palabra sobre "por favor verifica visualmente." La configuracion de herramientas comunico eso implicitamente.
+
+Lo mismo aplica a:
+- **MCP de base de datos**: "La integridad de datos importa -- verifica tus migraciones"
+- **MCP de GitHub**: "Este trabajo sucede en el contexto de PRs e issues"
+- **Busqueda web**: "Puedes buscar documentacion de la que no estas seguro en lugar de adivinar"
+
+Cada herramienta que habilitas es una oracion en tu contexto que nunca tuviste que escribir. Cada herramienta que *no* habilitas es una capacidad que el modelo no considerara. Elige deliberadamente.
+
+---
+
+## Que sale mal (y como arreglarlo)
+
+<Callout type="warning">
+**Error 1: Sobre-prompt, sub-contexto.** Escribes un prompt de 500 palabras describiendo exactamente como implementar una funcionalidad, paso a paso. La IA sigue tus pasos -- incluyendo las suposiciones erroneas incorporadas en ellos. En su lugar: describe el *resultado*, proporciona el *contexto* y deja que el modelo descubra la implementacion. Es mejor en codigo de lo que crees. Es peor leyendo tu mente de lo que esperas.
+</Callout>
+
+<Callout type="warning">
+**Error 2: Asumir que la IA recuerda.** Tuviste una gran sesion ayer donde el modelo aprendio tus patrones. Hoy, empiezas de cero y te preguntas por que esta cometiendo errores de principiante. Cada sesion empieza desde cero. El contexto persistente vive en CLAUDE.md, no en la memoria del modelo. Si algo fue importante ayer, es lo suficientemente importante para anotarlo.
+</Callout>
+
+<Callout type="warning">
+**Error 3: Saltarse las restricciones.** Le pides al modelo que "arregle el bug de login" y arregla el bug, refactoriza el modulo de autenticacion, agrega error boundaries, actualiza los tipos y reformatea el archivo. Util? Tecnicamente. Lo que querias? No. La IA por defecto maximiza la utilidad. Las restricciones son como enfocas esa utilidad a lo que realmente necesitas.
+</Callout>
+
+<Callout type="warning">
+**Error 4: Copiar prompts genericos de internet.** "Actua como un desarrollador 10x con 20 anos de experiencia." Estos prompts son programacion de culto cargo para la era de la IA. No proporcionan contexto -- proporcionan vibras. Un modelo no se vuelve mejor porque le dijiste que sea experto. Se vuelve mejor porque le diste la informacion que un experto tendria.
+</Callout>
+
+---
+
+## La inversion del esfuerzo
+
+Aqui esta el cambio de modelo mental que lo cambio todo para mi.
+
+**Mundo antiguo (2023-2024):**
+- 20% del esfuerzo en contexto y configuracion
+- 80% del esfuerzo en iteracion y correccion
+- Escribias un prompt, obtenias un resultado mediocre, ajustabas el prompt, obtenias un resultado ligeramente mejor, ajustabas de nuevo, y eventualmente convergiabas en algo aceptable despues de 8-12 rondas.
+
+**Mundo nuevo (2026):**
+- 80% del esfuerzo en contexto y configuracion
+- 20% del esfuerzo en ejecucion y ajustes menores
+- Inviertes de antemano en CLAUDE.md, documentacion, configuracion de herramientas y requisitos claros. Luego el prompt funciona en el primer intento -- o lo suficientemente cerca para que un pequeno ajuste lo termine.
+
+**Piensalo como hacer una maleta.** Puedes empacar cuidadosamente antes del viaje -- revisando el clima, planeando outfits, enrollando la ropa eficientemente -- o puedes lanzar cosas al azar en una bolsa y comprar lo que olvidaste en el destino. Ambos te visten en vacaciones. Uno cuesta tres veces mas y desperdicia medio dia en tiendas del aeropuerto.
+
+La preparacion ES el trabajo. El prompt es solo presionar "enviar."
+
+---
+
+## Empieza aqui
+
+No necesitas renovar todo tu flujo de trabajo. Empieza con tres cosas:
+
+**1. Crea un CLAUDE.md hoy.** Abre la raiz de tu proyecto y escribe lo basico: stack tecnologico, requisitos de testing, estructura de directorios, convenciones de nombres y cualquier regla que te encuentres repitiendo a la IA. Toma 15 minutos. Ahorra horas.
+
+**2. Antes de tu proxima tarea con IA, dedica 10 minutos a ensamblar contexto.** Antes de escribir el prompt, preguntate: El modelo conoce la estructura de mi proyecto? Conoce mis convenciones? Le he senalado codigo de ejemplo relevante? Le he dicho que NO hacer? Si alguna respuesta es "no," arreglalo antes de presionar enter.
+
+**3. Despues de que la IA responda, no iteres -- diagnostica.** Cuando la salida no es correcta, resiste el impulso de reescribir tu prompt. En su lugar, pregunta: "Que contexto faltaba?" Luego agrega ese contexto a tu CLAUDE.md para que este ahi la proxima vez. Cada interaccion fallida es una oportunidad de documentacion.
+
+El objetivo no es escribir el prompt perfecto. El objetivo es construir un entorno donde incluso un prompt mediocre produzca resultados excelentes -- porque el contexto hace el trabajo pesado.
+
+---
+
+<div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-6 mt-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">Mira la ingenieria de contexto en practica</h3>
+  <p className="text-slate-300 mb-4">
+    Nuestro repositorio de codigo abierto usa CLAUDE.md, herramientas MCP y flujos de trabajo estructurados para entregar funcionalidades con agentes de IA. Explora el codigo para ver como funciona la ingenieria de contexto a nivel de proyecto.
+  </p>
+  <a
+    href="https://github.com/zerdos/spike-land-nextjs"
+    className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+  >
+    Explorar el repositorio →
+  </a>
+</div>
+
+---
+
+*La ingenieria de contexto no es una tecnica. Es una disciplina. El mejor prompt que jamas escribiras es aquel en el que apenas tuviste que pensar -- porque todo el pensamiento fue invertido en el contexto que lo rodea.*

@@ -1,0 +1,321 @@
+---
+title: "Context Engineering fuer deinen 0-Shot-Prompt"
+slug: "context-engineering-your-zero-shot-prompt"
+description: "Hoer auf zu iterieren. Fang an, Kontext vorzuladen. Ein praktisches Framework, um KI-Modellen allen Kontext zu geben, den sie brauchen, um beim ersten Versuch hervorragende Ergebnisse zu liefern."
+date: "2026-02-10"
+author: "Zoltan Erdos"
+category: "Entwicklererfahrung"
+tags: ["ai", "context-engineering", "prompt-engineering", "claude", "developer-tools", "produktivitaet", "mcp"]
+featured: true
+language: "de"
+---
+
+{/* TL;DR Box */}
+<div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 mb-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">TL;DR</h3>
+  <ul className="space-y-2 text-slate-300">
+    <li>Prompt Engineering ist tot. Context Engineering hat es ersetzt.</li>
+    <li>Ein 0-Shot-Prompt funktioniert nicht durch Zaubersaetze -- er funktioniert durch vorgeladenen Kontext, damit die KI beim ersten Mal richtig liegt.</li>
+    <li>Das Framework: Identitaet + Wissen + Beispiele + Einschraenkungen + Tools = 0-Shot-Erfolg.</li>
+    <li>Deine CLAUDE.md-Datei ist das wertvollste Artefakt, das du die ganze Woche schreibst.</li>
+  </ul>
+</div>
+
+Letzten Dienstag tippte ich einen einzigen Prompt in Claude Code. Elf Minuten spaeter war eine vollstaendig getestete Guthaben-Anzeige auf unserer Staging-Umgebung live -- komplett mit Echtzeit-Updates, korrekten Fehlerzustaenden und bestandener CI.
+
+Am selben Nachmittag setzte sich ein Kollege vor dasselbe Modell. Gleiche Aufgabenkomplexitaet. Fuenfundvierzig Minuten und zwoelf Prompt-Iterationen spaeter kaempfte er immer noch mit Import-Pfaden.
+
+Der Unterschied war nicht Talent. Es war nicht der Prompt. Es war nicht einmal das Modell.
+
+**Der Unterschied war Kontext.**
+
+Er tippte eine Frage. Ich lieferte ein Briefing. Er verhörte einen Fremden. Ich briefte ein neues Teammitglied, das bereits Zugang zu unserer Codebasis, unseren Konventionen, unseren Testanforderungen und unserer Deployment-Pipeline hatte.
+
+Dieser Artikel ist das Framework, das ich verwende, damit das -- jedes einzelne Mal -- funktioniert.
+
+---
+
+## Prompt Engineering ist tot
+
+Seien wir direkt: Der Begriff "Prompt Engineering" hat seine Nuetzlichkeit ueberlebt. Er implizierte, dass die Magie in den Worten liegt, die du tippst -- dass wenn du nur die richtige Beschwörungsformel faendest, das Modell tun wuerde, was du willst. 2023 war das teilweise wahr. Man brauchte bestimmte Formulierungen, um gute Ergebnisse aus Modellen herauszulocken, die, ehrlich gesagt, weniger faehig waren.
+
+2026 verstehen Frontier-Modelle deine Absicht, selbst wenn du sie schlecht formulierst. Der Flaschenhals hat sich verschoben. Es geht nicht mehr darum, *wie du fragst* -- es geht darum, *was das Modell weiss, wenn du fragst*.
+
+**Denk an eine Kriminalgeschichte.** Detektive loesen Faelle nicht durch eine einzige brillante Frage im Verhoerraum. Sie loesen Faelle, indem sie Beweise zusammentragen, Zeugen befragen, Forensik auswerten und Kontext aufbauen -- sodass bis zu dem Moment, in dem sie in dem Raum sitzen, die Frage kaum noch eine Rolle spielt. Die Beweise sprechen fuer sich.
+
+Dein Prompt ist die Frage im Verhoerraum. Context Engineering ist alles, was passiert, bevor du durch diese Tuer gehst.
+
+| | Prompt Engineering (2023) | Context Engineering (2026) |
+|---|---|---|
+| **Fokus** | Die perfekte Anfrage formulieren | Die richtigen Informationen zusammenstellen |
+| **Kernkompetenz** | Wortakrobatik | Systemdenken |
+| **Iteration** | Prompt anpassen, nochmal versuchen | Kontext vorladen, gleich richtig machen |
+| **Primaeres Artefakt** | Der Prompt selbst | CLAUDE.md, Tool-Konfigurationen, Docs |
+| **Fehlermodus** | "Die KI versteht mich nicht" | "Ich habe vergessen, X einzufuegen" |
+
+Der Wandel ist subtil, aber alles aendert sich. Wenn ein Prompt fehlschlaegt, war der alte Instinkt, den Prompt umzuschreiben. Der neue Instinkt sollte sein: *Welcher Kontext hat gefehlt?*
+
+---
+
+## Was "0-Shot" wirklich bedeutet
+
+Im maschinellen Lernen bedeutet "Zero-Shot", dass ein Modell eine Aufgabe ausfuehrt, fuer die es nie explizit trainiert wurde. Keine Beispiele, kein Fine-Tuning -- nur reine Generalisierung.
+
+In der Praxis meinen wir mit "0-Shot-Prompt" etwas Einfacheres: **Das gewuenschte Ergebnis bei der ersten Interaktion zu bekommen.** Kein Hin und Her. Kein "fast, aber eigentlich..." Kein Iterationszyklus.
+
+Hier ist das Paradoxon, das viele verwirrt:
+
+> 0-Shot-Prompts erfordern die meiste Vorbereitung.
+
+Der Prompt selbst kann kurz sein. Aber der Kontext, der ihn umgibt -- der System-Prompt, die CLAUDE.md, die Tool-Konfiguration, die Projektdokumentation -- dort steckt die eigentliche Arbeit. Du hast die Arbeit *vor* dem Eintippen des Prompts erledigt.
+
+**Denk an Mise en Place.** Profikoeche verbringen mehr Zeit mit der Vorbereitung der Zutaten als mit dem eigentlichen Kochen. Alles ist abgemessen, geschnitten und angerichtet, bevor der Herd angeht. Wenn der Service beginnt, geht die Ausfuehrung schnell, weil die Vorbereitung gruendlich war.
+
+Wenn du an Prompts iterierst, kochst du ohne Vorbereitung. Du greifst mitten beim Anbraten nach dem Salz, merkst, dass du die Zwiebel nicht gewuerfelt hast, und laesst die Butter anbrennen, waehrend du hektisch herumwirbelst.
+
+Mise en Place fuer KI bedeutet: Dein Kontext ist zusammengestellt, bevor du die Frage stellst.
+
+---
+
+## Der 5-Schichten-Kontext-Stack
+
+Das ist das Kern-Framework. Jeder erfolgreiche 0-Shot-Prompt -- ob du es merkst oder nicht -- hat diese fuenf Schichten, die zusammenwirken.
+
+### Schicht 1: Identitaet
+
+**Wer ist die KI in dieser Interaktion?**
+
+Das ist dein System-Prompt oder deine Rollendefinition. Sie praegt das Standardverhalten, den Ton und das Entscheidungs-Framework des Modells. Ohne sie ist das Modell ein Generalist, der versucht, im breitest moeglichen Sinne hilfreich zu sein. Mit ihr ist das Modell ein Spezialist.
+
+```
+You are a senior TypeScript developer working on a Next.js 15 application
+with App Router. You follow strict mode TypeScript and write tests for
+every function.
+```
+
+Identitaet ist keine Schmeichelei ("du bist der beste Entwickler der Welt"). Es geht um Abgrenzung. Du sagst dem Modell, welche Teilmenge seines Wissens priorisiert werden soll.
+
+### Schicht 2: Wissen
+
+**Was weiss das Modell ueber deine spezifische Situation?**
+
+Das ist die am meisten vernachlaessigte Schicht und die mit dem hoechsten ROI. Wissen umfasst:
+
+- **CLAUDE.md** -- die persistente Kontextdatei deines Projekts
+- **Dokumentation** -- Architekturentscheidungen, Datenbankschemata, API-Referenzen
+- **MCP-Server-Zugriff** -- Live-Daten, die das Modell bei Bedarf abfragen kann
+- **Dateiinhalte** -- der tatsaechliche Code, der geaendert wird
+
+Das Modell kennt TypeScript vielleicht allgemein. Aber weiss es, dass *dein* Projekt Zod fuer Validierung verwendet, Credits (nicht Tokens) in einer `user_credits`-Tabelle speichert und 100% Testabdeckung erfordert? Das ist die Wissensschicht.
+
+### Schicht 3: Beispiele
+
+**Wie sieht "gut" aus?**
+
+Beispiele sind der effizienteste Weg, Qualitaetsstandards zu kommunizieren. Statt deinen Coding-Stil abstrakt zu beschreiben, zeig ihn:
+
+- Referenziere bestehende Komponenten, die deinen Mustern folgen
+- Fuege ein Beispiel deiner Teststruktur ein
+- Zeige auf einen PR, der deine Review-Standards veranschaulicht
+
+Ein gutes Beispiel kommuniziert mehr als ein ganzer Absatz mit Anweisungen.
+
+### Schicht 4: Einschraenkungen
+
+**Was darf die KI NICHT tun?**
+
+Das ist die Leitplanken-Schicht. Ohne Einschraenkungen wird das Modell auf Weisen "hilfreich" sein, die du nicht angefragt hast -- nahegelegenen Code refactoren, Fehlerbehandlung fuer unmoegliche Szenarien hinzufuegen, Abstraktionsschichten fuer einmalige Operationen erstellen.
+
+Effektive Einschraenkungen:
+- "Aendere keine Dateien ausserhalb von `src/components/dashboard/`"
+- "Fuege keine Kommentare oder Docstrings zu unveraendertem Code hinzu"
+- "Validiere nur an Systemgrenzen -- vertraue internen Funktionskontrakten"
+- "Keine neuen Abhaengigkeiten ohne explizite Genehmigung"
+
+Jedes Mal, wenn eine KI etwas tut, das du nicht wolltest, ist das eine fehlende Einschraenkung. Schreib sie auf. Fuege sie deiner CLAUDE.md hinzu.
+
+### Schicht 5: Tools
+
+**Was kann das Modell TUN?**
+
+Tools definieren den Aktionsraum des Modells. Im Kontext von Claude Code umfasst das:
+- Dateien lesen und bearbeiten
+- Tests und Build-Befehle ausfuehren
+- Git-Operationen
+- MCP-Server (Datenbanken, APIs, Browser)
+- Websuche und Dokumentations-Lookup
+
+Die Tool-Konfiguration ist *impliziter Kontext*. Wenn du dem Modell Zugriff auf Playwright gibst, sagst du "visuelle Verifizierung ist hier wichtig." Wenn du ihm Zugriff auf einen Datenbank-MCP-Server gibst, sagst du "du kannst Daten direkt verifizieren." Die Tools, die du bereitstellst, formen die Herangehensweise des Modells an das Problem.
+
+---
+
+## Ein echter 0-Shot-Prompt, analysiert
+
+Hier ist ein tatsaechlicher Prompt, den ich verwendet habe, um eine Guthaben-Anzeige zu unserem Workspace-Dashboard hinzuzufuegen. Ich habe jeden Abschnitt mit der zugehoerigen Kontextschicht annotiert.
+
+```markdown
+## Task                                          <- [IDENTITAET + WISSEN]
+Add a real-time credit balance display to the
+workspace dashboard. The balance should update
+when credits are consumed by AI operations.
+
+## Context                                        <- [WISSEN]
+- Credits are stored in `user_credits` table
+  (see docs/DATABASE_SCHEMA.md)
+- The existing CreditDisplay component at
+  src/components/billing/CreditDisplay.tsx
+  handles the billing page—reuse its data
+  fetching pattern
+- We use server actions for mutations and
+  React Query for client-side cache
+  invalidation
+
+## Reference Implementation                       <- [BEISPIELE]
+Follow the pattern in
+src/components/dashboard/WorkspaceStats.tsx
+for the card layout and real-time update
+approach (useQuery + 30s polling).
+
+## Constraints                                    <- [EINSCHRAENKUNGEN]
+- Only modify files in src/components/dashboard/
+  and src/app/dashboard/
+- Do not refactor existing CreditDisplay—just
+  import its query hook
+- No new dependencies
+- Must work with existing Suspense boundaries
+
+## Verification                                   <- [TOOLS]
+- Run yarn test:coverage after changes
+- Ensure all tests pass
+- Run yarn lint
+```
+
+Dieser Prompt enthaelt null clevere Tricks. Kein "denke Schritt fuer Schritt." Kein "du bist der grossartigste Ingenieur der Welt." Nur Kontext -- organisiert in Schichten, die dem Modell alles geben, was es braucht, um beim ersten Versuch erfolgreich zu sein.
+
+Das Ergebnis: Eine funktionierende Implementierung in einem Durchgang. Tests inklusive. Keine Iteration.
+
+---
+
+## CLAUDE.md: Die wichtigste Datei, die du die ganze Woche schreibst
+
+CLAUDE.md ist eine Datei, die im Stammverzeichnis deines Projekts liegt und Claude Code ueber jede Sitzung hinweg persistenten Kontext bietet. Sie wird automatisch geladen. Sie ueberlebt, wenn der Konversationskontext komprimiert wird. Sie ist das einzelne wirkungsvollste Context-Engineering-Artefakt, das du erstellen kannst.
+
+Aber hier ist die Kernerkenntniss: **CLAUDE.md ist Dokumentation fuer KI, nicht fuer Menschen.**
+
+Menschliche Dokumentation erklaert *warum* Dinge funktionieren. KI-Dokumentation erklaert *was zu tun ist*. Der Unterschied ist wichtig:
+
+- **Fuer Menschen**: "Wir verwenden Vitest, weil es schneller als Jest ist und ESM nativ unterstuetzt."
+- **Fuer KI**: "Testing Framework: Vitest. Testdateien: `*.test.ts(x)` neben dem Quellcode. Ausfuehren: `yarn test:coverage`. Anforderung: 100% Abdeckung bei Geschaeftslogik."
+
+Die KI interessiert sich nicht fuer deine Begruendung. Sie interessiert sich fuer umsetzbare Fakten.
+
+**Was reingehoert:**
+- Tech-Stack mit Versionen
+- Verzeichnisstruktur
+- Testanforderungen und Befehle
+- Benennungskonventionen
+- Deployment-Workflow
+- Haeufige Fallstricke ("Verwende NICHT `git add -A` -- nutze spezifische Dateinamen")
+
+**Was du weglassen kannst:**
+- Historischer Kontext ("Wir sind in Q3 2025 von Jest migriert")
+- Philosophische Begruendungen
+- Alles, was das Verhalten des Modells nicht aendert
+
+Denk daran wie **das Onboarding eines neuen Mitarbeiters** -- nur dass dieser Mitarbeiter jeden einzelnen Morgen komplett von vorne anfaengt. Er ist brillant, schnell und motiviert, aber er hat null Erinnerung an gestern. Jede falsche Annahme, die die KI macht, ist eine fehlende Zeile in deiner CLAUDE.md.
+
+---
+
+## Tools sind Kontext, nicht nur Aktionen
+
+Die meisten Menschen denken bei MCP-Tools an "Dinge, die die KI tun kann" -- Dateien lesen, Tests ausfuehren, Datenbanken abfragen. Das ist richtig, aber unvollstaendig. **Tool-Konfiguration ist eine Form des Context Engineering**, weil die verfuegbaren Tools formen, wie das Modell ueber ein Problem nachdenkt.
+
+Betrachte zwei Szenarien:
+
+**Szenario A**: Du gibst dem Modell Zugriff auf Dateibearbeitung und Terminal-Befehle.
+Das Modell betrachtet die Aufgabe als Code-Schreib-Uebung. Es schreibt Code, fuehrt vielleicht einen Build aus und erklaert es fuer fertig.
+
+**Szenario B**: Du gibst dem Modell Zugriff auf Dateibearbeitung, Terminal-Befehle *und* Playwright-Browser-Tools.
+Jetzt weiss das Modell, dass visuelle Verifizierung Teil des Workflows ist. Es ist wahrscheinlicher, dass es prueft, ob eine UI-Aenderung tatsaechlich korrekt gerendert wird. Es koennte ein CSS-Problem entdecken, das reine Logik nicht offenbaren wuerde.
+
+Du hast kein einziges Wort ueber "bitte visuell verifizieren" geschrieben. Die Tool-Konfiguration hat das implizit kommuniziert.
+
+Dasselbe gilt fuer:
+- **Datenbank-MCP**: "Datenintegritaet ist wichtig -- verifiziere deine Migrationen"
+- **GitHub-MCP**: "Diese Arbeit findet im Kontext von PRs und Issues statt"
+- **Websuche**: "Du kannst Dokumentation nachschlagen, bei der du unsicher bist, statt zu raten"
+
+Jedes Tool, das du aktivierst, ist ein Satz in deinem Kontext, den du nie schreiben musstest. Jedes Tool, das du *nicht* aktivierst, ist eine Faehigkeit, die das Modell nicht in Betracht ziehen wird. Waehle bewusst.
+
+---
+
+## Was schiefgeht (und wie du es behebst)
+
+<Callout type="warning">
+**Fehler 1: Ueber-Prompting, unter-Kontextualisierung.** Du schreibst einen 500-Wörter-Prompt, der genau beschreibt, wie ein Feature Schritt fuer Schritt implementiert werden soll. Die KI folgt deinen Schritten -- einschliesslich der falschen Annahmen, die darin stecken. Stattdessen: Beschreibe das *Ergebnis*, liefere den *Kontext* und lass das Modell die Implementierung herausfinden. Es ist besser im Coden als du denkst. Es ist schlechter im Gedankenlesen als du hoffst.
+</Callout>
+
+<Callout type="warning">
+**Fehler 2: Annehmen, dass die KI sich erinnert.** Du hattest gestern eine tolle Sitzung, in der das Modell deine Muster gelernt hat. Heute faengst du neu an und wunderst dich, warum es Anfaengerfehler macht. Jede Sitzung beginnt bei null. Persistenter Kontext lebt in der CLAUDE.md, nicht im Gedaechtnis des Modells. Wenn etwas gestern wichtig war, ist es wichtig genug, um es aufzuschreiben.
+</Callout>
+
+<Callout type="warning">
+**Fehler 3: Einschraenkungen ueberspringen.** Du bittest das Modell, "den Login-Bug zu fixen", und es fixt den Bug, refactored das Auth-Modul, fuegt Error Boundaries hinzu, aktualisiert die Typen und formatiert die Datei neu. Hilfreich? Technisch gesehen. Was du wolltest? Nein. Die KI tendiert zur maximalen Hilfsbereitschaft. Einschraenkungen sind die Art, wie du diese Hilfsbereitschaft auf das begrenzt, was du tatsaechlich brauchst.
+</Callout>
+
+<Callout type="warning">
+**Fehler 4: Generische Prompts aus dem Internet kopieren.** "Handle als 10x-Entwickler mit 20 Jahren Erfahrung." Diese Prompts sind Cargo-Cult-Programmierung fuer das KI-Zeitalter. Sie liefern keinen Kontext -- sie liefern Vibes. Ein Modell wird nicht besser, weil du ihm sagst, es sei ein Experte. Es wird besser, weil du ihm die Informationen gibst, die ein Experte haette.
+</Callout>
+
+---
+
+## Die Aufwands-Umkehr
+
+Hier ist der Denkwandel, der alles fuer mich veraendert hat.
+
+**Alte Welt (2023-2024):**
+- 20% des Aufwands fuer Kontext und Setup
+- 80% des Aufwands fuer Iteration und Korrektur
+- Du tippst einen Prompt, bekommst ein mittelmässiges Ergebnis, passt den Prompt an, bekommst ein etwas besseres Ergebnis, passt wieder an und konvergierst schliesslich nach 8-12 Runden auf etwas Akzeptables.
+
+**Neue Welt (2026):**
+- 80% des Aufwands fuer Kontext und Setup
+- 20% des Aufwands fuer Ausfuehrung und kleine Anpassungen
+- Du investierst vorab in CLAUDE.md, Dokumentation, Tool-Konfiguration und klare Anforderungen. Dann funktioniert der Prompt beim ersten Versuch -- oder nah genug dran, dass eine kleine Anpassung reicht.
+
+**Denk an Kofferpacken.** Du kannst entweder sorgfaeltig vor der Reise packen -- das Wetter pruefen, Outfits planen, Kleidung effizient rollen -- oder du wirfst zufaellige Sachen in eine Tasche und kaufst, was du vergessen hast, am Zielort. Beides bringt dich angezogen in den Urlaub. Eines kostet dreimal so viel und verschwendet einen halben Tag in Flughafenlaeden.
+
+Die Vorbereitung IST die Arbeit. Der Prompt ist nur das Druecken von "Senden."
+
+---
+
+## Fang hier an
+
+Du musst nicht deinen gesamten Workflow umstellen. Fang mit drei Dingen an:
+
+**1. Erstelle heute eine CLAUDE.md.** Oeffne das Stammverzeichnis deines Projekts und schreibe die Grundlagen auf: Tech-Stack, Testanforderungen, Verzeichnisstruktur, Benennungskonventionen und alle Regeln, die du dich immer wieder dabei ertappst, der KI zu wiederholen. Das dauert 15 Minuten. Es spart Stunden.
+
+**2. Verbringe vor deiner naechsten KI-Aufgabe 10 Minuten mit dem Zusammenstellen von Kontext.** Bevor du den Prompt tippst, frag dich: Kennt das Modell meine Projektstruktur? Kennt es meine Konventionen? Habe ich es auf relevanten Beispielcode hingewiesen? Habe ich ihm gesagt, was es NICHT tun soll? Wenn eine Antwort "nein" ist, behebe es, bevor du auf Enter drueckst.
+
+**3. Wenn die KI antwortet, iteriere nicht -- diagnostiziere.** Wenn die Ausgabe nicht stimmt, widerstehe dem Drang, deinen Prompt umzuschreiben. Frag stattdessen: "Welcher Kontext hat gefehlt?" Fuege dann diesen Kontext deiner CLAUDE.md hinzu, damit er naechstes Mal da ist. Jede gescheiterte Interaktion ist eine Dokumentationsgelegenheit.
+
+Das Ziel ist nicht, den perfekten Prompt zu schreiben. Das Ziel ist, eine Umgebung aufzubauen, in der selbst ein mittelmässiger Prompt hervorragende Ergebnisse produziert -- weil der Kontext die schwere Arbeit leistet.
+
+---
+
+<div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-6 mt-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">Sieh Context Engineering in der Praxis</h3>
+  <p className="text-slate-300 mb-4">
+    Unser Open-Source-Repository verwendet CLAUDE.md, MCP-Tools und strukturierte Workflows, um Features mit KI-Agenten auszuliefern. Erkunde die Codebasis, um zu sehen, wie Context Engineering auf Projektebene funktioniert.
+  </p>
+  <a
+    href="https://github.com/zerdos/spike-land-nextjs"
+    className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+  >
+    Das Repository erkunden
+  </a>
+</div>
+
+---
+
+*Context Engineering ist keine Technik. Es ist eine Disziplin. Der beste Prompt, den du je schreiben wirst, ist der, ueber den du kaum nachdenken musstest -- weil das gesamte Denken in den Kontext drumherum geflossen ist.*

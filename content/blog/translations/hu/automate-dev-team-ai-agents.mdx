@@ -1,0 +1,922 @@
+---
+title: "Hogyan Automatizald a Fejlesztoi Csapatodat: AI Agensek, Amik Produkcios Kodot Szallitanak"
+slug: "automate-dev-team-ai-agents"
+description: "A gyakorlati utmutato az emberi szuk keresztmetszetek autonommunkafolyamatokkal valo kivaaltasahoz. Tanuld meg, hogyan hasznald a Claude Code-ot, a Jules-t es a CI/CD-t funkciok szallitasaahoz kodiras nelkul."
+date: "2026-02-04"
+author: "Zoltan Erdos"
+category: "Fejlesztoi Elmeny"
+tags: ["ai", "developer-tools", "claude", "jules", "automatizalas", "ci-cd", "agents", "produktivitas"]
+featured: true
+language: "hu"
+---
+
+{/* TL;DR Box */}
+<div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 mb-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">TL;DR</h3>
+  <ul className="space-y-2 text-slate-300">
+    <li>Az AI agensek most mar keepsek onalloan produkcios kodot szallitani -- ha a kodbazisod keszen all</li>
+    <li>Elofelteetelek: Gyors CI (&lt;10 perc), nulla instabil teszt, 100%-os lefedetseg az uzleti logikan</li>
+    <li>Munkafolyamat: Claude Code tervez -> Jules implementaal -> CI validaal -> Opus reviewol -> Auto-merge</li>
+    <li>A szereped atvalt a kodiras a kovetelmenyek definialasaara es az eredmenyek ellenorzesere</li>
+  </ul>
+</div>
+
+{/* Audio Version - Generated with NotebookLM */}
+<AudioPlayer
+  src="/audio/Stop_Coding_And_Start_Context_Engineering.m4a"
+  title="Hallgasd meg ezt a cikket (NotebookLM-mel generaalva)"
+/>
+
+Mult heten egy kiseerletet futtattam.
+
+Megkertem a Claude Code-ot, hogy tervezzen egy fintech alkalmazast -- de ne kodoljon. Csak tervezzen. Es azt mondtam neki, hasznaljon 16 agenst parhuzamosan.
+
+Ime, mit csinaltak tenylegesen azok az agensek:
+- **4 agens** felterkepzte az API tervezesi mintakat es autentikacios folyamatokat
+- **3 agens** kutatott adatbazis semat es KYC megfelelesi kovetelmeenyeket
+- **4 agens** vizsgalt UI keretrendszereket es uvegmorf dizajn rendszereket
+- **3 agens** elemzett i18n megkozeliteseket angolra, spanyolra, lengyelre es kinaiira
+- **2 agens** dokumentalt szelsoeseges eseteket es hibakezelesi strategiakat
+
+A kimenet: 47 fajl tervezesi dokumentacio -- az a fajta specifikaacio, aminek egyezteteseere napokra lenne szuksege egy termek csapatnak.
+
+Aztan atadtam a tervet a Gemini Flash-nek -- *meg csak nem is egy legfejlettebb modell* -- es mondtam: valositsd meg.
+
+**70 perccel kesobb**: a [GlassBank](https://glassbank-app.vercel.app/) elt.
+
+Egy teljes fintech onboarding elmeny uvegmorf UI-val, szemelyazonossag-ellenoorzessel, dokumentumszkeneleessel, biometrikus szelfi roegzitessel, animalt folyamatjelzokkel es PIN letrehoazassal. A dizajn kidolgozott volt. A folyamatok mukodtek. Az animaciok simak voltak.
+
+A felismeres racsapott: **Ha a terv jo, meg egy kozepes vegrehajto is lenyugozo dolgot tud szallitani.**
+
+![Hagyomanyos fejlesztesi megkozelites vs AI agens megkozelites - napok tervezese es magas koltsegek osszehasonlitva a 70 perces AI-vezerelt szallitassal](/blog/automate-dev-team/traditional-vs-ai-approach.jpg)
+
+Ez nem egyszeri eredmeny. A Microsoft jelenti, hogy kodjuk 20-30%-a most AI altal generalt. A Google Sundar Pichai megerositette, hogy kodjuk 25-30%-a AI-tamogatott. A minta iparagi szintu: **a jo tervezes megsokszorozza az agens hatekonyseagat.**
+
+---
+
+## Valos Eredmenyek: AI Kodolasi Elfogadas 2026-ban
+
+Mielott belemerulneenk a hogyanjaba, nezzuk a hivatkozott szamokat:
+
+| Metrika | Ertek | Forras |
+|---------|-------|--------|
+| Fejlesztoi elfogadasi arany | 84% hasznal AI eszkozoket | Second Talent 2025 |
+| Szervezeti elfogadas | A vallalatok 91%-a | DX Q4 2025 |
+| Feladat befejezesi sebesseg | 55%-kal gyorsabb | GitHub-Accenture RCT |
+| AI altal generalt kod (Microsoft) | 20-30% | Satya Nadella |
+| AI-tamogatott kod (Google) | 25-30% | Sundar Pichai |
+
+**A kiegyensulyozott perspektiva:**
+
+| Aggodalom | Adatpont | Forras |
+|-----------|----------|--------|
+| Osszetett feladat teljesitmeny | 19%-kal lassabb ismert kodbazisokban | METR Tanulmany |
+| Kod biztonsagi sebezhetoseegek | AI generalt kod 48%-a | Veracode 2025 |
+| AI eszkozok kedvezo megiteelese | 70%+-rol ~60%-ra csoekkent | 2023-2025 felmeresek |
+| AI projekt kudarc arany | 80% | Accenture |
+
+> "A fejlesztok idejuk mindossze 16%-at toltik tenyleges kodolassal. A maradek 84% operativ feladatokra, debugolasra es kod review-kra megy."
+> -- IDC Jelentes
+
+Ez a 84% az, ahol az AI agensek a legtobb erteket adjak -- de a 48%-os biztonsagi sebezhetosegi arany azt jelenti, hogy a **CI pipeline-od nem opcionalnis**.
+
+---
+
+## Az Uj Munkamegosztas
+
+![AI Copilot vs AI Agens osszehasonlitas - Bal: Ember vezet AI navigaacios segitseggel. Jobb: AI vezet ember felugyelette](/blog/automate-dev-team/copilot-vs-agent.jpg)
+
+Ime, hogyan mukodik ma tenylegesen a szoftverfejlesztes:
+
+| Fazis | Ki Csinalja | Miert |
+|-------|------------|-------|
+| **Tervezes** | Claude Code (tobb agens) | Felterkeepezi a kodbazist, interjut keszit veled, szelsoseges eseteket fontol meg |
+| **Megvalositaas** | Jules | Pontosan koveti a tervet, hozzaadja a terv altal meghatarozott teszteket |
+| **CI/CD** | A pipeline-od | Gyors visszajelzes, szeletelt tesztek, gyorsitotarazott build-ek |
+| **Kod Review** | Claude Code (Opus) | Szigoru. Kovetkezetesen elkap valos problemakat |
+| **Javitasok** | Jules | Iteraal, amig a CI es a review is atmegy |
+| **Merge** | Automatizalt | Amikor minden ellenorzes zold |
+
+A feladatod? Hataarozd meg, mit akarsz. Ellenorizd, hogy mukodik. Ennyi.
+
+![AI fejlesztesi pipeline, ami a Tervezest Claude Code-dal, Megvalositast, CI/CD-t, Kod Review-t Opus-szal, Javitasokat es Production Merge-t mutatja](/blog/automate-dev-team/ai-development-pipeline.jpg)
+
+---
+
+## A CI/CD Pipeline Mint Agens Vedokorlat
+
+A megkulonboztetes nem "munkafolyamatok vs agensek" -- hanem az, hogyan mukodnek az agensek strukturalt pipeline-okon belul.
+
+**A CI/CD pipeline-od determinisztikus:**
+- Lint -> TypeScript -> Unit tesztek -> E2E -> Build -> Review -> Merge
+- Ez a szekvencia soha nem valtozik. A biztonsagi halood.
+
+**Az agensek alkalmazkodokepesseget hoznak ezen a strukturaan belul:**
+- Jules olvassa a CI hiba logokat es eldonti, hogyan javitsa
+- Claude Code felterkepezi a kodot, hogy megertse, mit jelentenek a review megjegyzesek
+- Mindketto dinamikus donteseket hoz -- ez teszi oket agensekke
+
+**Miert szamit ez:**
+A pipeline korlatozza, mit tehetnek az agensek. Nem merge-olhatnak tesztek atmenese nelkul. Nem keruulhetik meg a review-t. Nem deploy-olhatnak zold CI nelkul. A determinisztikus munkafolyamat az, ami biztonsagossa teszi az autonom agenseket.
+
+**Figyelmezetes: Agens hibamodok meg mindig leteznek.**
+
+- **Gartner eloerejelzese** szerint az agens AI projektek 30%-at elhagyjak a proof-of-concept utan 2025 vegere
+- **Vegtelen hurkok**: Az agensek beragadhatnak a kudarcba fulladt megkozelitesek ujraprobalasaaba
+- **Kontextus sodrodas**: A hosszan futo agensek elveszithetik az eredeti celt
+- **"Kod mocsok"**: Tultervezes, felesleges absztraaciok, boszebes megoldasok
+
+Csoekkentes: Vilagos elfogadasii kriteriumok, iteraacios korlatok es emberi ellenorzo pontok.
+
+---
+
+## Az Uj Fejlesztoi Kepessegkeszlet
+
+A feladat tobbbe nem "prompt engineering." Az Anthropic most **kontextus-tervezesnek** hivja:
+
+> *"Az LLM-ekkel valo epites keveesbee arrol szol, hogy megtalald a megfelelo szavakat, es inkabb arrol, hogy milyen kontextus-konfiguraacio generalja legvaloszinubben a kivaant viselkedest."*
+
+**Kepessegek, amik most szamitanak:**
+
+| Kepesseg | Mit Jelent | Hatas |
+|----------|-----------|-------|
+| Kontextusablak optimalizaalas | A befoglalando/kizaarandoo informaciok kivalasztaasa | 40%-os teljesitmenyjavulas, 65%-os koltsegcsokkentes |
+| Sikerkriteriumok definiaalaasa | Tesztelheto elfogadasii kriteriumok irasa | Az agensek tudjak, mikor keszek |
+| Vedokorlat architektura | Kudarcokat megelozo korlatozasok tervezese | A biztonsagi problemak 85%+-at elkapja |
+| Agens megfiigyelhetoseg | Az agensek cselekedeteinek es indokainak megerteese | Agens viselkedes debugolasa, nem csak kod |
+
+**Agensek debugolasa vs hagyomanyos kod:**
+
+| Hagyomanyos Debugolas | Agens Debugolas |
+|----------------------|-----------------|
+| Stack trace olvasas | Agens logok es indoklas olvasasa |
+| Vaaltozo allapot ellenorzes | Kontextusablak tartalom ellenorzes |
+| Kod leptetees | Eszkoz hivas szekvencia attekinteese |
+| Hiba javitaas | Prompt vagy vedokorlat javitaas |
+
+A kepesseg-vaaltas: A "helyes kod irasaatol" a "helyes kodot produkaalo rendszerek tervezeseig."
+
+### Ember a Hurokon, Nem Ember a Hurokban
+
+Egy kozon felelem: "Mi van, ha az AI osszettori a produkcioot?"
+
+Ime a kulcsfontossagu megkulonboztetes: **Ember a hurokon** azt jelenti, hogy felugyeled a folyamatot anelkul, hogy minden lepesben szuk keresztmetszeet lennel. Az agens nem merge-olhatja a sajat kodjat. Nem kerulheti meg a kod review-t. Nem deploy-olhat CI atmenese nelkul.
+
+A teszt sorozatod az a szerzodes, ami biztonsagossa teszi az AI-tamogatott fejlesztest. A TypeScript elkapja a tipus-egyeztetlenssegeket forditaskor. A 100%-os lefedetseg azt jelenti, hogy a nem tesztelt kod utvonalak nem juthatnak el a produkcioba. A CI ugyanazt a megalaztatast futtatja az emberi es az AI kodra.
+
+> **Az elofelteetel nem a jobb AI -- hanem a jobb mernoki fegyelem.**
+
+De itt van, amit senki nem mond el: **ez csak akkor mukodik, ha a kodbazisod keszen all ra.**
+
+---
+
+## Az Alap: Miert Kell a Kodbazisodnak Agens-kesznek Lennie
+
+**Kulcsfontossagu felismeres: Nem tudsz kaoszt automatizalni.**
+
+Ha a CI-d 45 percig tart, az agensek elpazaroljaak az idejuket varakozassal. Ha a tesztjeid veleetlenszerueen instabilak, az agensek fantomhibakat kergetnek. Ha a kodbazisodbol hianyzik a struktura, minden valtoztatas regressziot okoz.
+
+Az alap a **Folyamatos Szallitas** -- az a gyakorlat, hogy szoftvered mindig deploy-olhato allapotban tartod:
+
+> *"A cel az, hogy a deploy-ok -- akar nagylepteeku elosztott rendszere, osszetett produkcios kornyezete, beagyazott rendszere vagy alkalmazase -- unalmas, alacsony kockazatu esemenyek legyenek, amiket igeney szerint vegre lehet hajtani."*
+> -- Jez Humble & David Farley, *Continuous Delivery*
+
+Ez nem opcionalis. Enelkul csak azert fizetsz agenseknek, hogy uresen forogjanak.
+
+### Az Automatizaalas-Kesz Ellenorzo Lista
+
+![Az Automatizaalas-Kesz Piramis, ami az AI-automatizalt fejlesztes elofelteteleit mutatja: Gyors CI/CD az alapnal, Teszt Piramis, Nulla Instabil Teszt es 100%-os Lefedetseg a tetejen](/blog/automate-dev-team/automation-ready-pyramid.jpg)
+
+#### 1. Gyors Visszajelzesi Hurkok (Maximum 5-10 Perc)
+
+Az agensek iteraalnak. Gyors visszajelzes = tobb iteraacioo = jobb eredmenyek.
+
+Ime, hogyan tartjuk a CI-nkat 10 perc alatt:
+
+**Agressziv gyorsitotaarazas:**
+
+```dockerfile
+# Dockerfile - yarn csomagok gyorsitotarazasa architektura szerint
+RUN --mount=type=cache,id=${CACHE_NS}-yarn-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
+    yarn install --immutable
+
+# Next.js build artefaktumok gyorsitotarazasa
+RUN --mount=type=cache,id=${CACHE_NS}-next-cache-${TARGETARCH},target=/app/.next/cache,sharing=locked \
+    yarn build
+```
+
+**Csak a megvaaltozottat teszteld:**
+
+```yaml
+# ci-cd.yml - okos tesztkivalasztas PR-ekhez
+- name: Run tests (shard ${{ matrix.shard }}/4)
+  run: |
+    if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+      # Fo ag: teljes lefedetseg
+      yarn vitest run --coverage --shard=${{ matrix.shard }}/4
+    else
+      # PR: csak erintett tesztek
+      yarn test:run --changed main --shard=${{ matrix.shard }}/4
+    fi
+```
+
+**Szeleteld szet mindent:**
+
+```yaml
+# Unit tesztek: 4 parhuzamos szelet
+unit-tests:
+  strategy:
+    matrix:
+      shard: [1, 2, 3, 4]
+    fail-fast: false
+
+# E2E tesztek: 8 parhuzamos szelet
+e2e:
+  strategy:
+    matrix:
+      shard: [1, 2, 3, 4, 5, 6, 7, 8]
+    fail-fast: false
+```
+
+**Futtasd az E2E-t dev szerver ellen, nem produkciooss build ellen:**
+
+```yaml
+# Ne varj a produkciooss build-re - hasznald a Turbopack dev szervert
+run: yarn start:server:and:test:turbo
+```
+
+Az E2E tesztek masodpercekkel a feladat indulasa utan futnak, nem percekkel.
+
+#### 2. A Teszt Piramis AI Agensekhez
+
+Minden teszt reteg specifikus celt szolgal az automatizalt munkafolyamatokban:
+
+**0. szint: TypeScript (Strict Mod)**
+
+Technikailag nem teszt, de vitalhatoan a legfontosabb ellenorzes.
+
+```bash
+yarn tsc --noEmit
+```
+
+Miert szamit ez az agenseknek:
+- A Claude Code integralodik a TypeScript Language Serverrel
+- Valos idoeben latja a tipushibakat kodiiras kozben
+- A strict mod magas biztonsagu refaktoraalast jelent
+
+Ha nem vagy strict modon, az az elso feladatod. Kerd meg a Claude Code-ot:
+
+> "Ellenorizd a TypeScript konfiguracioonkat. Strict modot hasznalunk? Ha nem, tervezz egy migraaciiot."
+
+**1. szint: Unit Tesztek**
+
+A unit tesztek dokumentaaljak a *szandeekot*. Amikor az agensek refaktoraaljak a kodot, ezek a tesztek biztositjak, hogy kovetelmeenyek ne turesenek el veeletlenul.
+
+```typescript
+// src/services/transfer.test.ts
+describe('TransferService', () => {
+  it('rejects transfers exceeding daily limit', async () => {
+    const result = await service.transfer({
+      amount: 100000,
+      from: 'ACC-001',
+      to: 'ACC-002'
+    });
+    expect(result.error).toBe('DAILY_LIMIT_EXCEEDED');
+  });
+
+  it('applies correct exchange rate for cross-currency transfers', async () => {
+    mockExchangeRate('USD', 'EUR', 0.92);
+    const result = await service.transfer({
+      amount: 100,
+      currency: 'USD',
+      to: 'EUR-ACCOUNT'
+    });
+    expect(result.convertedAmount).toBe(92);
+  });
+});
+```
+
+Az agensek sziszteematikus tesztelok. Mockoljak a kulso fuggoseegeeket, lefedik a szelsoseges eseteket es karbantartjak a teszteket refaktoraalaskor.
+
+**2. szint: E2E Tesztek (Ember Altal Olvashato)**
+
+Az E2E tesztek bizonyitjak, hogy a rendszer mukodik, amikor minden ossze van koetitve. Ugy ird oket, hogy barki megerthesse, mit tesztelnek:
+
+```gherkin
+# e2e/features/admin-agents.feature
+@requires-db
+Feature: Admin Agensek Dashboardja
+  As an admin user
+  I want to access the agents dashboard
+  So that I can monitor and manage external AI agents like Jules
+
+  Background:
+    Given I am logged in as "Admin User" with email "admin@example.com"
+
+  Scenario: Dashboard shows status overview cards
+    Given the user is an admin
+    When I visit "/admin/agents"
+    Then I should see status overview section
+    And I should see "Total" status card
+    And I should see "Active" status card
+    And I should see "Completed" status card
+    And I should see "Failed" status card
+
+  Scenario: Admin can view session with AWAITING_PLAN_APPROVAL status
+    Given the user is an admin
+    And there is a Jules session awaiting plan approval
+    When I visit "/admin/agents"
+    Then I should see "Approve Plan" button on the session card
+```
+
+Ez elo dokumentaacio. Amikor egy teszt megbukik, pontosan tudod, melyik felhasznaloi kepesseg seerult.
+
+**Instabil vagy Torott Tesztek Kezelese:**
+
+Neha egy teszt az aktuaalis munkadtol fuggetlen okbol seerul. Hagyd ki, de koovesd nyomon:
+
+```typescript
+// SKIPPED: Instabil CI-n, versenyhelyzet vizsgaalata - lasd issue #234
+it.skip('handles concurrent transfers', async () => { ... });
+```
+
+Hozz letre napi feladatot a kihagyott tesztek atekinteseere. Ne engedd oket felhalmozodni.
+
+**3. szint: Fustproba Tesztek (Produkcios Egeszseg)**
+
+Futtass egyszeru egeszsegi ellenoorzeeseket a produkcio ellen naponta. Automatikusan hozz letre issue-kat, amikor kudarcot vallanak. Amikor a produkcio osszettrik, azonnal akarsz tudomast szerezni rola -- nem akkor, amikor egy felhasznalo jelenti.
+
+#### 3. Bizz a CI-dben
+
+**A vegso cel:**
+
+> **Zold CI = Biztonseagos Deploy-olni**
+
+Ha nem bizhatsz a CI-dben, mindig manuaalis ellenorzeesre lesz szukseged. Ha teljesen megbizol benne, automatizaalhatod a merge-t.
+
+Ennek a bizalomnak a felepiteese igenyel:
+- Nulla instabil teszt (javitsd vagy torold)
+- Magas lefedetseg az uzleti logikan (100% a cel)
+- Gyors vegrehaajtas (igy minden commiton fut)
+- Vilagos hibauzzenetek (igy az agensek maguk javithatok)
+
+### Valos Kockazatok es Csokkentesuk
+
+"De az AI hallucinal! Mi van a hibakkal?"
+
+Az oszinte valasz: **Igen, az AI hibaazik -- es neehannyuk rosszabb, mint az emberi hibak.** Ime, amivel tenyleg szembe kell nezned:
+
+#### Biztonsagi Kockazatok
+
+**A prompt injection az OWASP #1 az LLM alkalmazasokra**, a deploy-ok 73%-at erinti.
+
+Valos sebezhetoseegek, amik 2025-ben derultek ki:
+- **CVE-2025-59944** (Cursor IDE): Tavoli kodveegrehajtaas rosszindulatu kodbazis fajlokon keresztul
+- **CamoLeak** (Copilot): Titkok csendes kiszivaargatataasa AI javaalatok altal (CVSS 9.6)
+- **Titok szivaargas**: A Copilot-aktiv repozitoriumok 6,4%-a szivarogtat titkokat -- 40%-kal magasabb az alapeerteknel
+
+Simon Willison "halalos triaszai" a prompt injection sebezheetoseghez:
+1. Nem megbizhato bemenet kerul a kontextusba
+2. Az agens hataakony eszkozokhhoz fer hozzaa
+3. Nincs ellenorzesi reteg az agens es a cselekvees koezoett
+
+#### Nem-determinizmus
+
+Meg a `temperature=0` sem determinisztikus. A lebegopontos muveletek, a kootegelees es a mixture-of-experts utvaalasztaas mind variaaciiot vezetnek be. A Claude-nak nincs determinisztikus seed parameeteree.
+
+**Strategia**: Tervezz robusztusaagra a kismeerteeku variaaciookkal szemben. A tesztek viselkedest ellenorizzenek, nem pontos kimenetet.
+
+#### Tobbagens Koordinacio
+
+- **A tobbagens kudarcok 36,94%-a** koordinaacios problema (agensek, akik egymaas ellen dolgoznak)
+- Az osszetettseg **negyyzetesen** skalazodik az agensek szamaaval
+- A pontossagi nyereseg **4 agens folott telitodikk**
+
+#### Valos Kudarc Tortenetek
+
+- **Replit adatbazis torles (2025 julius)**: AI agens 1000+ ugyfel reekordot torolt "takaritaas" koezben
+- **Air Canada chatbot per**: A vallalat jogilag felelos volt az AI helytelen visszaateritesi iranyelveeert
+- **Elhagyas arany**: A vallalatok 42%-a hagyja el az AI kezdeemenyezeeseket (17%-rol noevekedve)
+
+#### Csokkenteesi Ellenorzo Lista
+
+- [ ] **Homokozoott vegrehajtas** (gVisor, Docker) -- az agensek nem menekuelhetnek a kontenerukebol
+- [ ] **Halozati kimenoo forgalom korlatozas** -- engedelyezett kulso hivasok feherlistaja
+- [ ] **Ember a hurokban destruktiv muveleteknel** -- jovahagyas szukseges delete/drop/reset-hez
+- [ ] **Koltseghataarok kemeny limitekkel** -- elfutoo API szaamlak megelozese
+- [ ] **Ellenorzesi reteg** -- kulon modell validaalja az agens cselekveseit vegrehajtaas elott
+- [ ] **Audit naplozas** -- minden eszkoz hivas rogzitve kontextussal
+
+A kerdes nem "tudd-e az AI hibaazni?" (igen, nyilvaanvaloan). A kerdes **"elkkapja-e a munkafolyamatod a hibakat, mielott eeleernek a produkcioba?"** Ha a CI-d megbizhato es a vedokorlataid szilaardak, keszen allsz az agens automatizaciora.
+
+---
+
+## A Munkafolyamat: Issue-tol a Szalitott Kodig
+
+![CI/CD Pipeline AI Agensekkel - Fejleszto commitol, parhuzamos AI agensek (QA, Doksik, PR Elokeszites) futnak ~2-5 perc alatt, Emberi Review kapu, aztan Merge es Deploy](/blog/automate-dev-team/ci-cd-pipeline-agents.jpg)
+
+Az elofeltetelekkel a helyen, ime az automatizalt folyamat:
+
+### 1. Lepes: Tervezz a Claude Code-dal
+
+```bash
+claude --model opus
+```
+
+Mondd meg neki, hogy tobb agenst hasznaaljon a tervezeshez:
+
+> "Tervezd meg ezt a funkciot 16 agenssel. Kerkeepezzek fel a kodbazist, kutassaanak megkozeliteeseeket es azonositsaanak szelsoseges eseteket. Kerdezz ki engem a kovetelmények pontositasahoz."
+
+A Claude Code:
+1. Parhuzamos agenseket indit kulonbozo szempontok felterkepezeseere
+2. Meglevo ujrahasznaalhato mintakat keres
+3. Felterkepezi, mely fajloknak kell valtozniuk
+4. Pontosito kerdeseket tesz fel
+5. Reszletes megvalositasi tervet keszit tesztelesi strategiaaval
+
+A terv lesz a ticketed.
+
+**Szabd testre a Claude Code viselkedeset:**
+
+Hozz letre egy `CLAUDE.md` fajlt a projekted gyokereben, hogy allando kontextust adj a Claude-nak:
+
+```markdown
+# CLAUDE.md
+
+## Project Context
+- Next.js 15 with App Router
+- Prisma + PostgreSQL
+- shadcn/ui components
+
+## Conventions
+- All API routes need auth middleware
+- Tests go in __tests__/ directories
+- Use Zod for validation schemas
+```
+
+Ez a fajl munkamenetek kozt is megmarad. A Claude automatikusan beolvassa es koveti a csapatod mintait.
+
+**Miert biztonsagos a terveeezo mod:**
+
+A Claude Code tervezoo modban csak olvasas modban mukodik. Felterkeepezi a kodbaazisodat, kerdeseket tesz fel es dokumentaaciiot keszit -- de nem modositja a fajlokat. Te vezeerled, pontosan mely eszkozok erhetook el:
+
+```bash
+claude --model opus --allowedTools "Read,Glob,Grep,Task"
+```
+
+Nincs szuekseg `--dangerously-skip-permissions`-re. Az agens kiterjedt kutatast vegezhet barmilyen kockazat nelkul a kodbazisodra.
+
+### 2. Lepes: Add At Jules-nak
+
+A Jules a Google aszinkron kodolo agense. 20 font/ho 100 ticket/nappal, a gazdasagossag abszurd.
+
+**Jules Eletciklus:**
+```
+QUEUED -> PLANNING -> AWAITING_PLAN_APPROVAL -> IN_PROGRESS -> COMPLETED
+```
+
+**Mikor hasznald a Jules-t vs Claude Code-ot:**
+
+| Szcenario | Jules | Claude Code |
+|-----------|-------|-------------|
+| Tobb fajlos megvalositaas | X | |
+| Aszinkron hatter munka | X | |
+| Reszletes terv kovetese | X | |
+| Homokozoott vegrehajtas (biztonsag) | X | |
+| Interaktiv felterkepezes | | X |
+| Valos ideju parban programozas | | X |
+| Tervezes es kutatas | | X |
+| Biztonseagos csak olvasas felterkepezes | | X |
+
+**Feladat prompt sablon:**
+
+```markdown
+## Task: Implement user profile editing
+
+### Acceptance Criteria
+- [ ] User can edit display name
+- [ ] User can upload avatar (max 2MB)
+- [ ] Changes require confirmation modal
+- [ ] All fields validate before save
+
+### Files to modify
+- src/app/(dashboard)/profile/page.tsx
+- src/components/profile/ProfileForm.tsx (create)
+- src/lib/validations/profile.ts (create)
+
+### Testing requirements
+- Unit tests for validation logic
+- E2E test for happy path
+
+### Reference patterns
+- See src/components/settings/SettingsForm.tsx for form patterns
+- See src/lib/validations/auth.ts for Zod schemas
+```
+
+Posztold a terved Jules feladatkent:
+1. Jules elemzi a tervet
+2. Megvalositasi megkozelitesst javasol
+3. Megvaarja a jovahagyaasodat
+4. Megirja a kodot
+5. PR-t nyit
+
+#### Miert Jules a Megvalositashoz (Nem Csak a Sebeesseg)
+
+**Biztonseag izolaacion keresztul:**
+
+A Jules tavoli szervereken fut ellenorzott kornyezetben. Pontosan beallitod, mely MCP eszkozokhooez fer hozza. Nem erinti a helyi gepedet, a titkaidat vagy az eroforraasokat, amiket nem engedelyeztel kifejezetten.
+
+Ez az izolacio funkcioo:
+- Nincs hozzaaferes a `.env` fajlaidhoz vagy hitelesito adataidhoz
+- Nincs kepes onkeenyes parancsokat futtatni a gepeden
+- Nincs kockazata veeletlen `rm -rf`-nek vagy destruktiv muveleteknek
+- Audit nyomvonal arrol, mit tett pontosan az agens
+
+**Tervtol a Keszig:**
+
+Amikor atadsz egy tervet a Jules-nak, nem csak a megvalositasst delegaalod -- a teljes befejezesi hurkot:
+
+1. Jules megvalositja a tervet
+2. CI megbukik? Jules olvassa a logokat es javitja a problemaat
+3. Reviewer vaaltoztataasookat ker? Jules kezeli a visszajelzeest
+4. Tesztek szeetttornek? Jules frissiti oket
+5. Ismeeet amig minden zold
+
+Jovaaagysz egy tervet. Jules szaallit egy merge-olt PR-t. Ez a "Tervtol a Kesziggg."
+
+### 3. Lepes: CI Fut
+
+A PR-ed elinditja a pipeline-t:
+- Lint + TypeScript
+- Unit tesztek (4 futtato kozt szeletelve)
+- E2E tesztek (8 futtato kozt szeletelve)
+- Build ellenorzes
+
+Jules figyeli a CI-t. Amikor valami megbukik, olvassa a logokat es javitja a problemat.
+
+### 4. Lepes: Claude Code Reviewol
+
+**AI kod review elott:**
+- Ido az erdemi review-ig: 2+ nap (emberi eleethetosegre varaas)
+- Oda-vissza kommentek: 4-8 kor
+- Reviewer faaradtsag: Valos problemak kimaradnak nagy PR-eknel
+
+**AI kod review utaan:**
+- Ido az erdemi review-ig: 5 perc
+- Oda-vissza kommentek: 1-2 kor (agens azonnal javit)
+- Kovetkezetes minoseg: Minden sor egyenlo figyelmet kap
+
+```yaml
+# .github/workflows/claude-code-review.yml
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Do a line-by-line code review of this PR. Check for:
+
+            ## Code Quality
+            - Follows existing patterns in the codebase
+            - No dead code or unused imports
+            - Appropriate error handling
+
+            ## Security
+            - No hardcoded secrets
+            - Input validation on user data
+            - SQL injection / XSS prevention
+
+            ## Performance
+            - No N+1 queries
+            - Appropriate memoization
+            - Efficient algorithms
+
+            ## Testing
+            - New code has test coverage
+            - Tests are meaningful (not just coverage padding)
+
+            If you find issues, request changes via review comment.
+            Tag @jules-bot to fix non-trivial issues.
+          claude_args: |
+            --model opus
+            --allowed-tools "Bash(gh:*),Bash(yarn:*),Read,Glob,Grep,mcp__playwright__*"
+```
+
+**Halado kepessegek:**
+
+A Claude Code specializalt alagenseket indithat biztonsagi auditokkhoz, teljesitmenyellenorzesekhez es akadalymenteessitesi ellenorzesekhez. Az `mcp__playwright__*` eszkozok meg UI valtoztatasok vizualis ellenorizeeset is lehetove teszik.
+
+A tapasztalatom szerint a Claude Code Opus-szal kovetkezetesen elkap valos problemakat -- olyan hibakat, amik egyebkent a produkcioban bukkannaanak fel.
+
+A review-nak fejlodnie kell aszerint, mi csuszikk at. Kovesd nyomon a mintakat az atkereeso hibakban es adj hozza specifikus ellenorzeseket a review promptodhoz.
+
+### 5. Lepes: Iteraalj, Amig Zold
+
+Jules megkapja a review visszajelzest es valtoztataasookat hajt vegre. A hurok addig folytatodik, amig:
+- Minden CI ellenorzes at nem megy
+- A Claude Code jova nem hagyja
+- (Opcionalisan) Emberi szuuproba
+
+### 6. Lepes: Merge
+
+Amikor minden zold, szaallitsd.
+
+---
+
+## Egy Konkret Pelda: Tickettol a Merge-olt PR-ig
+
+Kovessunk nyomon egy realisztikus tobb lepeeses szcenariot, ami megmutatja, hol excellalnak az agensek -- es hol avatkozik be az ember.
+
+**Ticket**: "Jelszoo-visszaallitaas funkcioo hozaadasa email ellenorzeessel"
+
+**1. Nap, 9:00 -- Tervezes (Claude Code)**
+
+```
+> Tervezd meg a jelszoo-visszaallitaas funciot 8 agenssel. Terkepezd fel a meglevo
+> autentikacios mintaakat, email infrastrukturat es biztonsagi kovetelmeenyeket.
+```
+
+Agensek felterkeepeznek:
+- 2 agens: Meglevo auth folyamatok a `src/lib/auth.ts`-ben es `src/middleware.ts`-ben
+- 2 agens: Email szolgaltatas konfiguracaaio, sablon mintak
+- 2 agens: Biztonsagi kovetelmenyeek (token lejarat, sebesseeg-korlatozaas, OWASP iranyelvek)
+- 2 agens: Adatbazis sema visszaallitasi tokenekhez, meglevo felhasznaloi modell
+
+Kimenet: 12 fajlos megvalositaasi terv elfogadaasi kriteriumokkal.
+
+**1. Nap, 9:45 -- Emberi Atekinteees**
+
+Atekineted a tervet. Eszreveszed, amit az agensek kihagytak: "Mi van, ha a felhasznalo nem letezo emailhez ker visszaalliitaast?" Hozzaaadod az elfogadasii kriteriumokhoz: "Ugyanazt a valaszt adja meglevo es nem letezo emailekre (felsorolaas megelozesee)."
+
+**1. Nap, 10:00 -- Megvalositaas (Jules)**
+
+Atadod a tervet Jules-nak. Letrehozza:
+- `src/app/api/auth/reset-request/route.ts`
+- `src/app/api/auth/reset-confirm/route.ts`
+- `src/lib/email/templates/password-reset.tsx`
+- `src/lib/validations/reset.ts`
+- Unit tesztek minden modulhoz
+- E2E teszt a sikeres utvonalhoz
+
+**1. Nap, 10:30 -- CI Megbukik**
+
+```
+FAIL src/app/api/auth/reset-confirm/route.test.ts
+  X rejects expired tokens (4ms)
+    Expected: TOKEN_EXPIRED
+    Received: INVALID_TOKEN
+```
+
+Jules olvassa a CI logokat, azonositja a problemat (rossz hibakod), javitja.
+
+**1. Nap, 10:45 -- Kod Review (Claude Code Opus)**
+
+A review elkap:
+- Hianyzo sebesseeg-korlatozas a reset-request vegponton
+- Token sima szovegkent tarolva (hashelni kellene)
+- Nincs audit naplo jelszovaltoztatasokhoz
+
+Jules kezeli az elso kettot. A harmadik architekturalis dontest igenyel.
+
+**1. Nap, 11:00 -- Emberi Beavatkozas Szukseges**
+
+```
+Jules: "Az audit naplozaas a kovetkezo megkozelitesek koezeul valo valaszast igenyeli:
+1. Hozzaadas a meglevo naplozasi tablahoz (gyors, korlatolt sema)
+2. Dedikalt audit_events tabla letrehozasa (rugalmas, tobb munka)
+3. Kulso szolgaltatas hasznaalata (PostHog/Segment)
+
+Kerlek add meg, melyik megkozelitesst valasszam."
+```
+
+A 2. opciot valasztod. Jules folytatja.
+
+**1. Nap, 11:45 -- Vegso Review**
+
+Minden CI ellenorzes atmegy. Claude Code jovahagyja. 5 perces szuproobat vegzel a kritikus utvonalakra.
+
+**1. Nap, 12:00 -- Merge**
+
+Teljes emberi ido: ~45 perc review es dontesek
+Teljes eltelt ido: 3 ora
+Hagyomaanyos becsles: 2-3 nap
+
+**Kulcsfontossaagu felismeres**: Az agens pontosan egyszer akadt el -- egy architekturalis dontesnel, ami uzleti kontextust igenyelt. Minden mas automatizaalva volt.
+
+---
+
+## A Terv: Minden Fejlesztoi Csapat Funkcioo Automatizaalasa
+
+### PR Review-k, Amik Tenyleg Elkapnak Hibakat
+
+**A problema:** A kod review szuk keresztmetszet. A senior meernokook tuulterheltek. A review-k napokkal a kod megirasa utan tortennek, amikor a kontextus elveeszett.
+
+**A megoldas:** Claude Code Opus reviewol minden PR-t azonnal.
+
+**Valos munkafolyamat osszehasonlitas:**
+
+| Metrika | Elotte | Utana |
+|---------|--------|-------|
+| Ido az elso review-ig | 2+ nap | 5 perc |
+| Review alapossag | Valtozo (reviewer faradtsaag) | Kovetkezetes (minden sor) |
+| Oda-vissza korok | 4-8 | 1-2 |
+| Elkapott biztonsagi problemak | ~40% | ~85% |
+
+### QA/Teszteles: AI-tamogatott Teszt Generaalas
+
+**Szelsoseges eset felismeres PR diff-ekbol:**
+
+```yaml
+# .github/workflows/test-generation.yml
+- name: Generate edge case tests
+  run: |
+    claude --model opus --prompt "
+      Analyze this diff and generate edge case tests:
+      - Boundary conditions
+      - Error states
+      - Race conditions
+      - Invalid input handling
+    "
+```
+
+### Onboarding: AI Mint Kodbazis Utikonyv
+
+Uj fejlesztok kerdezhetik a Claude Code-ot:
+- "Hol kezelodik az autentikaacioo?"
+- "Hogyan adjak hozzaa uj API veegpontot?"
+- "Az E2E teszt helyileg megbukik, hol kezdjem?"
+
+A Claude Code felterkeepezi a kodbaazisodat, megtaalalja a relevaans fajlokat es mintakat, es specifikus sorivsazaamokkal magyarazza el oket. Ez egy tobbooraaas onboarding feladatot 5 perces beszelgetesseeee alakit.
+
+### Dokumentaacioo: CI Altal Kikenyszeritett Frissesseg
+
+**A problema:** A doksik eltavolodnak a kodtol. Senki nem bizzik bennuk.
+
+**A megoldas:** Doksik ellenorzeset add hozza merge blokkolookent. Generalj OpenAPI-t a route handlerekbol es buktatsd meg a CI-t, ha a commitolt doksik nem egyeznek. Ez biztositja, hogy a dokumentaacioo pontos maradjon.
+
+---
+
+## Hogyan 10x-elik az AI Agensek a Fejlesztoi Produktivitast
+
+Ime, ami 10x-eli az egesz munkafolyamatot: **Skills**.
+
+A [Skills.sh](https://skills.sh) egy nyilt okoszisztema ujrafelhasznalhaatoo kepessegekbol AI agenseknek -- proceduralis tudas, amit azonnal alkalmazni tudnak.
+
+Telepitsd a lenyeges meta-kepesseget:
+
+```bash
+npx skills add https://github.com/vercel-labs/skills --skill find-skills
+```
+
+Aztan barmely projektben kerd meg a Claude Code-ot:
+
+```
+/find-skills
+```
+
+Felfedezi es telepiti a stack-edhez tartozo relevaaans kepessegeket: React mintak, tesztelesi strategiak, biztonsagi ellenorzo listak, deployment eljarasok.
+
+A kepessegek a `.claude/`-ban tarolodnak es munkamenetek kozt megmaradnak. Az agenseid okosabbak lesznek projektrol projektre.
+
+---
+
+## Az Alap: Miert Gyoz a Megertes az Automatizaacioval Szemben
+
+**A legfontosabb felismeres a fejlesztes automatizaalaasabol:**
+
+> **Csak azt tudod automatizaalni, amit megertesz.**
+
+Amikor egy agens hibaazik, meg kell ertened, *miert* nem kapta el a munkafolyamatod. Amikor a rendszer varatlan eredmeenyeket hoz, a folyamatot debugolod, nem csak a kodot.
+
+En mar nem olvasok kodot. De megertek minden rendszert, amit automatizaalok. Ez az, ami mukoddove teszi.
+
+Ha megprobalsz olyat automatizaalni, amit nem ertesz:
+- Nem fogod felismerni, amikor az agens teved
+- Nem tudod javitani a munkafolyamatot
+- Hibaakat szaallitasz a produkcioba
+
+A cel nem az, hogy eltaavolitsd az embereket. Hanem az, hogy az embereket oda mozgasd, ahol a legtobb erteket adjak: problemak megerteese, kovetelmenyeek definialasa, megoldasok ellenorzese.
+
+Az agensek kezelik a toobbit.
+
+### Az Uj Fejlesztoi Szerep: Pipeline Optimalizalo
+
+A fejleszto munkaaja valtozik:
+
+| Elotte | Utana |
+|--------|-------|
+| Funkciok irasa | Kovetelmenyeek definialasa |
+| Kod debugolasa | Review promptok hangolasa |
+| Tesztek manualis futtatasa | CI szeletelees konfiguraalasa |
+| PR-ek kod review-ja | AI altal generalt tervek jovahagyasa |
+
+Nem magadat vaaltod ki -- a **az automatizaacioo architektuusaava** valsz. Minden atkereeso hiba lehetoseg a review promptod jaavitaasara. Minden lassu CI futtas esely a parhuzamositaas optimalizaalasaara.
+
+**Az aatbocsaatokeepesseg kulonbseg:**
+
+| Hagyomaanyos | AI Agensekkel |
+|-------------|---------------|
+| Honapok nagy funkciokra | Napok |
+| Napok hibajavitaasokra | Orak |
+| Orak kis valtoztatasokra | Percek |
+
+Ez nem fokozatos javulaas. Alapvetoen mas sebesseg.
+
+---
+
+## Kezdes
+
+**CTO-k es Tech Lead-ek:** Eloszor auditaald a CI-det. Merd meg, mennyi ideig tart. Szamold ossze az instabil tesztjeidet. Terkepezd fel az utat a zold CI-tol a produkcios deploy-ig. Javitsd ezeket, mielott agenseket adsz hozza.
+
+**Senior Mernokook:** Valassz egy jol tesztelt modult. Allits be Claude Code review-t. Merd meg, mit kap el. Iteraalj a review promptodon, amig elkapja azokat a problemaaakat, amik szamitanak a kodbazisodnak.
+
+**Startup Alapitok:** Ez tokeeresito. Mig a versenytaarsak mernokoket vesznek fel es varjak, hogy beratanuljanak, te funkciokat szallitasz AI agensekkel. Az elofeltetelek befektetees -- kamatoznak az ido mulasaval.
+
+---
+
+## Gyakran Ismetelt Kerdesek
+
+### Tudnak az AI agensek produkcio-kesz kodot irni?
+
+Igen, fenntartaasokkal. Az AI agensek olyan kodot irnak, ami atmegy a CI pipeline-odon -- ami azt jelenti, annyira produkcio-kesz, amennyire a tesztjeid megkoveetelik. Ha atfogo tesztjeid, tipusellenorzesed es biztonsagi vizsgalataid vannak, a megjeleno kod produkcio-kesz. Ha a CI-d gyenge, a kodminoseg azt tukrozi.
+
+### Hogyan kezelik az AI kodolo agensek a kod review-kat?
+
+A Claude Code Opus modellel soronkenti review-kat vegez, biztonsagi problemakat, teljesitmeny-problemaaakat, kodminoseeget es teszt lefedettseget ellenorizve. Az emberi reviewerekkel ellenteetben nem faarad el nagy PR-ektol es kovetkezetes szabvaanyokat alkalmaz. Amikor problemaaakat talal, megjelolheti a Jules-t, hogy automatikusan javitsa oket.
+
+### Mekkora a tanulasi gorbe a Claude Code-hoz?
+
+Ha tudsz vilgos kooveetelmenyeket irni, hasznaalhatod a Claude Code-ot. A tanulasi gorbe fokeent:
+1. A jo promptok iraasaanak megerteese (2-3 ora gyakorlat)
+2. A CI beaallitasa gyors visszajelzesre (a jelenlegi alllapotodtol fugg)
+3. Megtanulni, mikor hasznaalj tobb agenst vs egyet (1-2 het kiserleteezes)
+
+### Ki fogja az AI vaaltani a fejlesztoket?
+
+Az AI *feladatokat* vaalt ki, nem szerepeket. Azok a fejlesztok, akik idejuk 84%-at nem kodolasi feladatokra koltoetteek, most automatizaalva latjak ezeket. Ami megmarad, az a 16%, ami emberi megiiteleest igenyel: problemaak megerteese, kovetelmenyeek definialasa, megoldasok ellenorzese es annak eldontese, mit epitsuenk.
+
+### Hogyan kezeljem az AI hibakat?
+
+Ugyanugy, ahogy az emberi hibaakat: tesztekkel, kod review-val es CI-vel. A keerdes nem "fog-e az AI hibaazni?" (igen). A kerdes "elkapja-e a munkafolyamatod a hibakat produkcio elott?" Ha a CI-d megbizhato, a hibak elkapodnak, fueggetlenul attol, ki koevette el oket.
+
+---
+
+## Eroforrasok
+
+**Eszkozok:**
+- [spike.land/features/ai-tools](/features/ai-tools) -- Claude Code es AI fejlesztoi eszkozok
+- [skills.sh](https://skills.sh) -- Agens kepessegek konyvtara
+- [jules.google](https://jules.google) -- Aszinkron kodolo agens
+
+**Kezdj hozza most:**
+```bash
+# Indits uj projektet Claude Code-dal
+claude
+> /init  # Letrehozza a CLAUDE.md-t projekt kontextussal
+
+# Telepitsd a kepesseg-felfedezo meta-kepesseget
+npx skills add https://github.com/vercel-labs/skills --skill find-skills
+
+# Fedezz fel es telepits relevaaans kepessegeket
+> /find-skills
+```
+
+**Javitsd az elofelteteleidet eloszor:**
+1. Vidd a CI-t 10 perc ala
+2. Szamold fel az instabil teszteket
+3. Add hozza a TypeScript strict modot
+4. Erd el a 100%-os lefedettseget az uzleti logikan
+
+Aztan automatizaalj mindent.
+
+---
+
+<div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-6 mt-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">Keszen allsz az AI agensek akcioban latni?</h3>
+  <p className="text-slate-300 mb-4">
+    Forkoldd a starter sabalonunkat elore konfiguralt Claude Code review-val, teszt automatizacioval es CI/CD munkafolyamatokkal.
+  </p>
+  <a
+    href="https://github.com/zerdos/spike-land-nextjs"
+    className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+  >
+    Forkoldd a Starter Blueprint-et
+  </a>
+</div>
+
+---
+
+*Ezt a cikket AI agensek tervezteek es egy olyan szemellyel kesszult interjun alapul irtak, aki honapok ota nem nezett kodot -- de minden nap funkciokat szallit.*

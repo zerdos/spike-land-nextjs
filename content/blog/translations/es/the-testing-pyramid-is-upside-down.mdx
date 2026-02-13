@@ -1,0 +1,302 @@
+---
+title: "La piramide de testing esta al reves"
+slug: "the-testing-pyramid-is-upside-down"
+description: "Y si la peor parte de tu suite de tests -- los tests E2E lentos e inestables -- pudieran ejecutarse a la velocidad de tests unitarios? Los MCP podrian ser la respuesta que nadie esperaba."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Experiencia del desarrollador"
+tags: ["testing", "mcp", "unit-testing", "e2e", "arquitectura", "agents"]
+featured: true
+language: "es"
+---
+
+*Dedicado a la memoria de Laszlo Merklik (1975-2018), que nos dejo demasiado pronto. Estaba en sus cuarenta y pocos cuando el cancer se lo llevo. Como cofundador y CPO de Emarsys -- posteriormente adquirida por SAP -- construyo una de las culturas de ingenieria mas respetadas de Hungria. Incluso dio una charla llamada "Mejor calidad sin testers", que se siente como un ancestro directo de las ideas en este articulo.*
+
+*Laszlo fue la persona que me hizo preocuparme por la programacion. No solo hacerla -- preocuparme por ella. Me enseno que hay una relacion especial entre un test unitario y el codigo que testea: cuando ambos estan escritos correctamente, uno especifica al otro. El test te dice lo que el codigo deberia hacer. El codigo te dice lo que el test deberia verificar. Son dos vistas de la misma verdad.*
+
+*Era el tipo de desarrollador que hacia mejor a todos a su alrededor. El tipo que se quedaba despues de las charlas para ayudar a un junior a arreglar su build. El tipo que creia que escribir software bien es una forma de respeto -- hacia tus companeros de equipo, tus usuarios y ti mismo. Este articulo trata de llevar el oficio adelante. Eso era lo suyo tambien.*
+
+---
+
+## La conferencia
+
+Hace unos quince anos, fui a una conferencia de desarrolladores en Budapest. El tema era Jasmine -- que se ejecutaba en el navegador, ya que Node.js todavia no era ampliamente adoptado. Esto fue antes de que Jest se comiera el mundo, antes de que el testing fuera un hecho en cada proyecto. El testing era algo por lo que todavia tenias que argumentar.
+
+El presentador era joven. Energia nerviosa. Claramente se habia convertido recientemente -- se podia ver en sus ojos. Nos guio a traves de como unas pocas docenas de tests unitarios habian detectado una regresion que se habria enviado a produccion. Mostro como funcionaba el mocking. Mostro lo rapido que era el ciclo de retroalimentacion. Practicamente vibraba.
+
+Entonces alguien en la audiencia levanto la mano.
+
+"Es hogy teszteljuk le az UI-t?" pregunto la persona -- *"Y como testeamos la UI?"*
+
+El presentador se detuvo. Luego se encogio de hombros.
+
+"Az UI-t? Azt teszteljek a hulyek!" -- *"La UI? Que la testeen los tontos!"*
+
+Unas pocas personas rieron. La mayoria asintio. Parecia razonable en ese momento. Los tests unitarios cubrian la logica de negocio. La UI era solo HTML y CSS. La miras, o se ve bien o no. Que hay que automatizar?
+
+Esa respuesta se quedo conmigo durante mucho tiempo. No porque fuera incorrecta. Porque era casi correcta -- y la brecha entre casi correcto y realmente correcto le costaria a nuestra industria una decada de dolor.
+
+---
+
+## Lo que paso despues
+
+Si empezamos a testear la UI. Por supuesto que si.
+
+Primero vino Selenium. Luego Protractor. Luego Cypress. Luego Playwright. Cada uno mejor que el anterior. Cada uno prometiendo finalmente hacer las pruebas de navegador confiables.
+
+Y si mejoraron. Playwright en particular es una herramienta genuinamente excelente. Pero el problema fundamental nunca desaparecio: estas controlando un navegador real, renderizando DOM real, esperando peticiones de red reales, y esperando que el timing funcione. Estas testeando a traves de la capa mas gruesa e impredecible de todo tu stack.
+
+Estos tests se convirtieron en la peor parte de cada suite de tests en la que he trabajado.
+
+Son lentos. Una suite rapida de tests unitarios se ejecuta en segundos. Una suite comprehensiva de E2E se ejecuta en minutos -- a veces decenas de minutos. En CI, con paralelizacion y reintentos, estas viendo tiempos de pipeline que hacen que los desarrolladores cambien de contexto a otra cosa mientras esperan.
+
+Son inestables. No porque las herramientas sean malas, sino porque los navegadores son maquinas de estado complejas. Un test que pasa localmente falla en CI porque la animacion tardo 50ms mas. Un test que funciono bien ayer falla hoy porque un script de terceros cargo mas lento. Agregas `waitForSelector`. Agregas `waitForTimeout`. Agregas logica de reintento. Ya no estas testeando tu aplicacion -- estas testeando tu capacidad de sincronizarte con el caos.
+
+Son fragiles. Cambias una clase CSS? Los tests se rompen. Mueves un boton de la barra lateral izquierda a la navegacion superior? Los tests se rompen. Refactorizas un componente que se comporta identicamente pero renderiza diferente? Los tests se rompen. Los tests estan acoplados a la implementacion exactamente de la manera en que le decimos a los desarrolladores junior que no escriban tests unitarios.
+
+Esta es la piramide de testing. Tests unitarios en la base: rapidos, baratos, muchos. Tests de integracion en el medio: velocidad moderada, costo moderado, cantidad moderada. Tests E2E en la cima: lentos, caros, pocos.
+
+Todos saben que la cima de la piramide es dolorosa. Lo aceptamos como el costo de hacer negocios. Necesitas *algunos* tests E2E porque esa es la unica manera de verificar el flujo completo del usuario. Los tests de API no son suficientes -- testean endpoints, no los flujos de logica de negocio que encadenan esos endpoints en algo que un usuario realmente hace.
+
+O eso pensabamos.
+
+---
+
+## La revelacion
+
+Aqui esta lo que nadie dice con suficiente claridad sobre los tests E2E: la mayoria de ellos no estan realmente testeando el navegador. Estan testeando logica de negocio *a traves* del navegador.
+
+Piensa en lo que un test E2E tipico realmente verifica. "El usuario inicia sesion, navega a configuracion, cambia su email, confirma el cambio, ve el email actualizado en la pagina de perfil." Que estas realmente testeando aqui? Estas testeando que el flujo de cambio de email funciona. El login, la navegacion, el envio del formulario, la confirmacion, la actualizacion del estado -- todo eso es logica de negocio. El navegador es solo el mecanismo de entrega.
+
+Esta no es una observacion nueva. La arquitectura hexagonal de Alistair Cockburn (2005) argumentaba que las aplicaciones deberian ser igualmente conducibles por usuarios, programas y scripts de test. Martin Fowler nombro al patron "testing subcutaneo" -- testeando justo debajo de la UI. La Clean Architecture de Robert C. Martin insistia en que las reglas de negocio deben ser testeables sin ninguna UI en absoluto. La revelacion siempre estuvo ahi. Lo que faltaba era una interfaz estandarizada que lo hiciera practico a escala.
+
+MCP -- Model Context Protocol -- es esa interfaz. Es un estandar para exponer las capacidades de tu aplicacion como herramientas estructuradas. Texto entra, texto sale. Un agente envia una solicitud describiendo lo que quiere hacer, tu servidor MCP ejecuta la accion y devuelve el resultado. Sin navegador. Sin DOM. Sin selectores CSS. Sin problemas de timing. Si escribes tus historias de usuario como herramientas MCP, has creado un contrato testeable para tu logica de negocio.
+
+Dejame mostrarte lo que quiero decir.
+
+Digamos que tienes una historia de usuario: "Un usuario puede actualizar su direccion de email." En el mundo E2E, el test se ve algo asi:
+
+```typescript
+// Cypress E2E test
+describe('Email update flow', () => {
+  it('should allow user to change their email', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+Este test tarda 5-15 segundos en ejecutarse. Depende de selectores CSS, estructura del DOM, timing de animaciones y latencia de red. Cambias el dialogo de confirmacion a un modal? El test se rompe. Mueves el mensaje de exito de un toast a una alerta en linea? El test se rompe.
+
+Ahora aqui esta la misma logica de negocio expuesta como una herramienta MCP:
+
+```typescript
+// MCP tool definition
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+
+    if (!confirmChange) {
+      return {
+        status: 'confirmation_required',
+        message: `Confirm email change from ${user.email} to ${newEmail}?`,
+      };
+    }
+
+    await context.userService.updateEmail(user.id, newEmail);
+    return {
+      status: 'success',
+      message: `Email updated to ${newEmail}`,
+      updatedEmail: newEmail,
+    };
+  },
+};
+```
+
+Y el test unitario:
+
+```typescript
+// Unit test for the MCP tool
+describe('update_user_email', () => {
+  it('should update email when confirmed', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+    expect(context.userService.updateEmail).toHaveBeenCalledWith(
+      '1',
+      'new@example.com',
+    );
+  });
+
+  it('should require confirmation before updating', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: false },
+      context,
+    );
+
+    expect(result.status).toBe('confirmation_required');
+    expect(context.userService.updateEmail).not.toHaveBeenCalled();
+  });
+
+  it('should reject unauthenticated requests', async () => {
+    const context = createMockContext({ user: null });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+
+    expect(result.error).toBe('Not authenticated');
+  });
+});
+```
+
+Este test se ejecuta en milisegundos. No depende de ninguna estructura del DOM. No le importa como se ve la UI. Testea la misma logica de negocio exacta -- el flujo de actualizacion de email con confirmacion -- pero a velocidad de test unitario, con confiabilidad de test unitario.
+
+No has perdido ninguna cobertura. Has perdido el navegador.
+
+---
+
+## El argumento arquitectonico
+
+Esto no es solo un truco de testing. Es un cambio arquitectonico.
+
+Cuando expones tus historias de usuario como herramientas MCP, creas una cadena:
+
+**Historias de usuario -> Herramientas MCP -> Logica de negocio testeable unitariamente**
+
+La misma especificacion sirve tres propositos simultaneamente:
+
+1. **Documentacion de usuario.** Las descripciones de herramientas MCP *son* tu documentacion de funcionalidades. "Actualizar la direccion de email del usuario autenticado" -- esa es la especificacion, escrita en lenguaje natural, viviendo en el codigo.
+
+2. **Interfaz de agentes.** Cualquier agente de IA que se conecte via MCP ahora puede ejecutar tus historias de usuario. Tu app esta lista para agentes no porque atornillaste una funcionalidad de IA, sino porque tu logica de negocio es accesible a traves de una interfaz de texto estructurada.
+
+3. **Contrato de testing.** El esquema de entrada define lo que la herramienta acepta. El handler define el comportamiento esperado. La respuesta define la salida esperada. Eso es un contrato. Puedes testearlo de la misma manera que testeas cualquier funcion -- porque *es* una funcion.
+
+Podrias obtener testeabilidad similar de una capa de servicio simple -- una funcion `updateUserEmail()` bien estructurada es tan testeable como un handler MCP. Pero una funcion de servicio sirve a un amo: tu aplicacion. Una herramienta MCP sirve a tres. El mismo artefacto es tu contrato de testing, tu interfaz de agentes y tu documentacion de funcionalidades. Lo escribes una vez; se gana su lugar de tres maneras. Eso no es un truco de testing. Es un multiplicador de fuerza arquitectonico.
+
+Esta es la revelacion clave que me tomo anos ver: la razon por la que los tests E2E son dolorosos no es que la automatizacion del navegador sea dificil (aunque lo es). Es que eramos forzados a pasar por el navegador porque no habia otra manera de ejercitar los flujos completos de usuario. El navegador era la unica interfaz que conectaba todas las piezas.
+
+Los MCP te dan una segunda interfaz. Una basada en texto con esquemas autodescriptivos que las maquinas pueden descubrir, invocar y verificar. Una que conecta las mismas piezas pero sin la capa de renderizado, sin los problemas de timing, sin los selectores CSS.
+
+---
+
+## El tercer jugador
+
+Laszlo me enseno la dualidad: un test unitario y su codigo, cuando estan escritos correctamente, se especifican mutuamente. Dos jugadores, una verdad.
+
+Pero creo que hay un tercer jugador: el nombre.
+
+Considera la herramienta MCP de antes: `update_user_email`. Ese nombre no es solo una etiqueta. Es una restriccion. Te dice lo que la herramienta debe hacer y lo que no debe hacer. No envia notificaciones. No actualiza la contrasena. Actualiza el email del usuario.
+
+Los buenos nombres siempre han importado. Una funcion bien nombrada restringe lo que un desarrollador escribe. Pero un nombre de herramienta MCP restringe lo que una *maquina* puede descubrir, invocar y testear. Un agente de IA navegando tu servidor MCP no lee tu codigo fuente -- lee nombres de herramientas, descripciones y esquemas. Si `update_user_email` esta nombrada correctamente, un agente sabe para que llamarla sin leer la implementacion. El nombre se convierte en un contrato descubrible.
+
+Test. Codigo. Nombre. Tres jugadores, una verdad. El nombre, el esquema de entrada y el handler forman un triangulo donde cada vertice restringe a los otros dos. Teniamos los dos primeros durante decadas. MCP formalizo el tercero en algo sobre lo que las maquinas pueden razonar -- y resulta que, cuando le das al nombre suficiente estructura para ser legible por maquinas, se vuelve testeable por maquinas tambien.
+
+---
+
+## Pasos practicos
+
+Si estas mirando una suite E2E inestable ahora mismo, asi es como empezar.
+
+**Paso 1: Encuentra tus tests E2E mas dolorosos.** Sabes cuales son. Los que re-ejecutas tres veces antes de que pasen. Los que tienen comentarios `// TODO: figure out why this is flaky`. Los que tardan 30 segundos cada uno.
+
+**Paso 2: Pregunta que logica de negocio verifican realmente.** Elimina los clics, las esperas y los selectores. Que esta verificando realmente el test? "El usuario puede cancelar su suscripcion." "El admin puede banear a un usuario." "El flujo de pago maneja tarjetas rechazadas." Esa es la logica de negocio.
+
+**Paso 3: Expone esa logica como herramientas MCP.** Escribe una herramienta MCP para cada flujo de negocio. Define el esquema de entrada, implementa el handler usando tus servicios existentes, devuelve resultados estructurados. No estas reescribiendo nada -- estas envolviendo tu logica de negocio existente en una interfaz estructurada.
+
+**Paso 4: Escribe tests unitarios para las herramientas MCP.** Mockea las dependencias. Testea el camino feliz. Testea los casos de error. Testea los casos extremos. Estos tests se ejecutaran en milisegundos y nunca seran inestables.
+
+**Paso 5: Mira como tu suite E2E se reduce.** Todavia necesitaras algunos tests E2E -- para regresiones visuales, para comportamiento especifico del navegador, para cableado de integracion que solo aparece en un entorno real (CORS, middleware de autenticacion, hidratacion). Pero la cantidad caera dramaticamente. Los que queden seran mas simples y mas estables porque ya no llevan el peso de la verificacion de logica de negocio.
+
+No estas reemplazando tests E2E. Estas sacando la logica de negocio de ellos. Lo que queda es una capa fina de smoke tests visuales -- que es todo lo que los tests E2E deberian haber sido en primer lugar.
+
+---
+
+## El dividendo del CI
+
+Una vez que tu logica de negocio vive en herramientas MCP, fuertemente acopladas a tu frontend a traves de TypeScript, algo notable le pasa a tu pipeline de CI.
+
+Ejecuta esto:
+
+```bash
+yarn vitest run --changed main
+```
+
+Vitest sabe que archivos cambiaron desde `main`. Sabe que tests importan esos archivos. Ejecuta solo esos tests. Un cambio a `update_user_email` ejecuta los tests de email, no la suite completa. Esto tarda segundos, no minutos.
+
+Pero el verdadero truco es lo que viene despues.
+
+Tu CI tiene logs de cobertura. Tiene historial de git. Sabe que herramientas MCP cambiaron, que tests unitarios las cubren, y que escenarios E2E ejercitan esos flujos. Un agente de revision de IA puede leer este grafo y tomar una decision: que tests E2E realmente necesitan ejecutarse?
+
+Actualizaste la descripcion en un archivo fixture de test? No se necesitan tests E2E. Cambiaste la logica de validacion de email en una herramienta MCP? Ejecuta los escenarios E2E de email, salta el resto. Refactorizaste una utilidad compartida? El agente traza el grafo de dependencias y ejecuta exactamente los tests afectados -- nada mas, nada menos.
+
+Esta es revision incremental, impulsada por el mismo acoplamiento que hizo tus tests unitarios rapidos. Los nombres de herramientas MCP le dan al agente suficiente contexto semantico para razonar sobre el radio de impacto. `update_user_email` cambio? El agente sabe que debe ejecutar los tests E2E de email. `list_user_notifications` sin cambios? Los salta.
+
+Los ahorros se acumulan. En un codigo base grande, un PR tipico toca una fraccion de la logica de negocio. Ejecutar la suite completa de E2E para cada PR es como reconstruir toda la casa porque cambiaste una perilla de puerta. Con logica de negocio estructurada con MCP y un revisor de IA, tu CI ejecuta solo lo que importa.
+
+Menos computo. Feedback mas rapido. Menos fallos inestables de tests que no tenian nada que ver con tu cambio. La piramide no solo se remodela -- se vuelve inteligente.
+
+---
+
+## La piramide, reconsiderada
+
+La piramide de testing siempre fue un compromiso. Pusimos los tests E2E en la cima no porque quisieramos que fueran lentos y pocos, sino porque esa era la restriccion. La verificacion de flujos completos de usuario requeria un navegador. Los navegadores son lentos. Por lo tanto, los tests de flujo completo de usuario son lentos. Por lo tanto, escribe menos de ellos.
+
+Los MCP rompen esa restriccion.
+
+Si tu logica de negocio es accesible a traves de una interfaz de texto, la verificacion de flujos completos de usuario no requiere un navegador. Requiere una llamada a funcion. Las llamadas a funcion son rapidas. Por lo tanto, los tests de flujo completo de usuario son rapidos. Por lo tanto, escribe tantos como quieras.
+
+La piramide no se voltea al reves. Se remodela. La dolorosa capa superior -- la capa E2E -- se adelgaza. La logica de negocio que la inflaba baja a la capa de tests unitarios. No porque encontraste una manera ingeniosa de mockear el navegador, sino porque eliminaste la necesidad del navegador por completo.
+
+Los tests E2E restantes hacen lo que siempre deberian haber hecho: verificar que la pagina renderiza, que el cableado de integracion se mantiene, que el diseno visual es correcto. "Que la testeen los tontos" -- excepto que ahora los "tontos" son Playwright ejecutando un punado de verificaciones dirigidas, no cien simulaciones lentas de logica de negocio.
+
+---
+
+## Circulo completo
+
+Todavia pienso en esa conferencia a veces. El joven presentador, vibrando de emocion por los tests unitarios. La persona en la audiencia preguntando sobre testing de UI. La respuesta despectiva.
+
+"Az UI-t? Azt teszteljek a hulyek!" -- *"La UI? Que la testeen los tontos!"*
+
+No estaba equivocado. Estaba adelantado.
+
+La verdadera respuesta a la pregunta de testing de UI nunca fue "automatiza el navegador." La verdadera respuesta fue: haz que la logica de negocio sea accesible sin uno. Simplemente no teniamos la interfaz para ello todavia.
+
+Ahora si la tenemos.
+
+A Laszlo le habria encantado esto. No la tecnologia en si -- nunca fue del tipo que se emociona por un protocolo o una especificacion. Le habria encantado lo que significa para el oficio. Menos tiempo luchando con tests inestables. Mas tiempo construyendo cosas que importan. Mas tiempo ayudando al desarrollador junior despues de las charlas.
+
+Asi se ve impulsar el oficio hacia adelante. No herramientas nuevas y llamativas. Ciclos de retroalimentacion mas silenciosos. Menos friccion entre intencion y verificacion. El tipo aburrido de progreso que hace posible todo lo demas.
+
+Pienso en el cada vez que elimino un test inestable. Creo que estaria de acuerdo.

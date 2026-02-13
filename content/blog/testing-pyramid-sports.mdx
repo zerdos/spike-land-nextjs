@@ -1,0 +1,172 @@
+---
+title: "The Testing Pyramid Is Upside Down"
+slug: "five-hundred-reps-per-hour"
+description: "Winning teams are built on repetition. E2E tests give you 5 reps per hour. MCP gives you 500. Volume does not just improve quality -- it makes mastery possible. The testing pyramid was never a technical constraint. It was a practice schedule begging for a better drill."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Developer Experience"
+tags: ["testing", "mcp", "sports-coaching", "repetition", "game-film"]
+featured: false
+listed: false
+---
+
+## Fundamentals
+
+Vince Lombardi opened every training camp the same way. He held up a football and said: "Gentlemen, this is a football." The greatest players in the world, and he started with the most basic object in the game. Because fundamentals are not something you learn once. They are something you drill until they become reflexive.
+
+Mastery is not a talent problem. It is a repetition problem. The team that runs the sweep five hundred times beats the team that runs it fifty -- not because the play is better, but because the execution is automatic. Jerry Rice was not the fastest receiver. He ran the most routes. Repetition is not practice. Repetition *is* the thing.
+
+This is what went wrong with E2E testing. Not the tools. Not the strategy. The rep count.
+
+We did start testing UI. Selenium. Protractor. Cypress. Playwright. Each generation better. And each one operating under the same constraint: you are running a full scrimmage every time you want to practice a single play.
+
+A Cypress test fires up a browser, renders the DOM, waits for network requests, clicks through elements, checks timing-dependent results. This is not a drill. This is full-contact, eleven-on-eleven, referees and a game clock. It takes 5 to 15 seconds per test. On CI, you are looking at minutes.
+
+Five reps per hour. Maybe ten on a good day.
+
+No coach in history has built a championship team on five reps per hour.
+
+---
+
+## Game Film vs. Scrimmage
+
+Championship teams spend far more time studying film than they spend hitting each other. Film lets you isolate a single play, rewind it, diagnose exactly what went wrong. Scrimmages give you a general sense of whether things are working. Film gives you precision.
+
+E2E tests are scrimmages. When one fails, you cannot always tell *why*. Was it the business logic? The network timing? The CSS animation that took 50ms too long? You stare at the failure the way a coach stares at a pile of bodies after a broken play -- everything is entangled.
+
+They are slow -- minutes for a full suite. Flaky -- an animation taking longer on CI produces a false negative, the way a lineman slipping on wet turf tells you nothing about his technique. Brittle -- change a CSS class and tests break, the way changing the snap count rattles the whole offense even though the play is identical.
+
+This is the testing pyramid. Unit tests at the base: individual drills. Integration tests in the middle: position group work. E2E tests at the top: full scrimmages. We accepted it. But we were scrimmaging when we should have been watching film.
+
+---
+
+## Five Hundred Reps Per Hour
+
+MCP -- Model Context Protocol -- is not a better scrimmage. It is a fundamentally different kind of practice.
+
+MCP exposes your application's capabilities as structured tools. Text in, text out. No browser. No DOM. No timing. No eleven-on-eleven chaos. It is game film -- isolate a single play, study it from every angle, run it again in milliseconds.
+
+Here is the scrimmage version -- a Cypress E2E test for an email update flow:
+
+```typescript
+// Cypress E2E test -- full scrimmage
+describe('Email update flow', () => {
+  it('should allow user to change their email', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+Every line depends on the whole team showing up. One player out of position and the play breaks down. Five reps per hour -- if nobody gets hurt.
+
+Now here is the game film version -- an MCP tool with a unit test:
+
+```typescript
+// MCP tool -- isolate the play
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+    if (!confirmChange) {
+      return {
+        status: 'confirmation_required',
+        message: `Confirm change from ${user.email} to ${newEmail}?`,
+      };
+    }
+    await context.userService.updateEmail(user.id, newEmail);
+    return { status: 'success', updatedEmail: newEmail };
+  },
+};
+
+// Unit test -- game film: isolate, rewind, repeat
+describe('update_user_email', () => {
+  it('should update email when confirmed', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+  });
+
+  it('should reject unauthenticated requests', async () => {
+    const context = createMockContext({ user: null });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+    expect(result.error).toBe('Not authenticated');
+  });
+});
+```
+
+This test runs in milliseconds. You have not lost any coverage. You have lost the scrimmage.
+
+Five hundred reps per hour. Edge cases nobody would burn a 15-second scrimmage on -- the declined card with an expired session, the concurrent update, the Unicode display name -- suddenly become cheap enough to drill. Volume creates quality. The team that gets five hundred reps beats the team that gets five, every single time.
+
+---
+
+## The Forward Pass
+
+In early football, the forward pass was considered reckless. You could lose possession. Respectable teams ran the ball. The pass was a gamble.
+
+Then someone realized the pass was not a risky version of running. It was a fundamentally different play. It did not improve the ground game. It made the ground game obsolete for an entire category of situations. Within a generation, the teams that refused to pass were the ones losing.
+
+MCP is the forward pass of testing. Not a faster way to run browser tests. A fundamentally different play that makes browser tests unnecessary for business logic verification. You still need the running game -- E2E tests for visual regressions, hydration bugs, CORS, integration wiring. But business logic? That is a passing play now. Throw the ball.
+
+---
+
+## Three Players, One Truth
+
+A unit test and its code, when both are written properly, specify each other. Two players, one truth.
+
+But I think there is a third player: the name.
+
+Consider `update_user_email`. That name is a play call. It tells every player on the field their assignment and what is out of bounds. An AI agent reads tool names, descriptions, and schemas the way a quarterback reads the play sheet. The name becomes a discoverable contract.
+
+Test. Code. Name. Three players, one truth. Each vertex constrains the other two. Like a well-designed play, every player knows their assignment and can be held accountable to it.
+
+---
+
+## The Practice Schedule
+
+If you are staring at a flaky E2E suite right now, here is how to fix your practice schedule.
+
+**Watch the film.** Identify your most painful E2E tests -- the ones with retry logic, the ones that flake on CI, the ones you re-run three times hoping they pass. These are scrimmages masquerading as drills.
+
+**Isolate the fundamentals.** Strip away the clicks and the selectors. What business logic does each test actually verify? "User can cancel subscription." "Payment handles declined cards." That is the play. Everything else is the scrimmage noise around it.
+
+**Build the drills.** Expose that logic as MCP tools. Write unit tests. Watch your reps per hour go from five to five hundred.
+
+**Keep a few scrimmages.** You still need E2E tests for rendering, visual design, browser-specific integration. Few. Targeted. The way a good team scrimmages once a week but drills every day.
+
+Your CI becomes the practice schedule of a championship team. `yarn vitest run --changed main` runs only drills touching changed plays. An AI reviewer traces the dependency graph and decides which scrimmages a given PR actually requires. Less compute. Faster feedback. More reps.
+
+---
+
+## Full Circle
+
+The real answer to the UI testing question was never "automate the browser harder" -- the way the answer to winning football was never "run harder." The answer was a fundamentally different play. A forward pass. A drill that gives you five hundred reps instead of five.
+
+Now we have the playbook. Better practice. More reps. The boring kind of progress that turns a good team into a great one.

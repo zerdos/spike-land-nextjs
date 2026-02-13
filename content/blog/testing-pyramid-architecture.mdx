@@ -1,0 +1,173 @@
+---
+title: "The Testing Pyramid Is Upside Down"
+slug: "load-bearing-walls-and-curtain-walls"
+description: "The steel frame freed architecture from load-bearing walls. MCP performs the same liberation for software testing: decouple the structure from the skin, and test each at its own rate of change."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Developer Experience"
+tags: ["testing", "mcp", "architecture", "structural-engineering", "shearing-layers"]
+featured: false
+listed: false
+---
+
+## Load-Bearing Walls and the Steel Frame Revolution
+
+For most of human history, the walls of a building *were* the building. A Roman insula, a medieval townhouse, a Georgian terrace -- remove a wall and the structure collapses. The wall carried the roof. The wall defined the rooms. The wall was simultaneously structure, enclosure, and ornament. Everything was coupled to everything.
+
+Then, in the 1880s, the steel frame arrived.
+
+The Home Insurance Building in Chicago (1885) was the first to demonstrate the principle: a skeleton of steel columns and beams carries all the loads. The walls carry nothing. They hang from the frame like curtains -- which is exactly what architects call them. *Curtain walls.* They keep out the rain and let in the light, but they bear no structural weight whatsoever.
+
+This was not an incremental improvement. It was a decoupling so complete that it changed what buildings could be. The facade could now be glass, or terracotta, or aluminum panels. It could change every decade without touching the structure. You could gut the interior of a skyscraper and rebuild it for a different tenant without moving a single column. Structure and skin became independent systems with independent lifecycles.
+
+Our E2E test suites are load-bearing walls.
+
+Every Cypress test, every Playwright scenario that exercises a business flow through the browser -- it fuses structure to skin. The test clicks a button (skin), waits for a toast notification (skin), checks that the email was updated (structure). If you change the toast to an inline message, the test collapses. Not because the structure failed. Because the wall was bearing the load, and you moved the window.
+
+---
+
+## Shearing Layers
+
+The architect Stewart Brand, in *How Buildings Learn* (1994), described six layers of a building that change at different rates:
+
+- **Site** -- the geographic setting. Changes on a geological timescale.
+- **Structure** -- the foundation and frame. Lasts 30 to 300 years.
+- **Skin** -- the exterior facade. Changes every 20 years or so.
+- **Services** -- wiring, plumbing, HVAC. Every 7 to 15 years.
+- **Space plan** -- interior walls and layout. Every 3 to 30 years.
+- **Stuff** -- furniture, personal items. Daily to monthly.
+
+Brand's insight was that these layers *shear* against each other -- they change at different rates, and a well-designed building allows each layer to change without disrupting the others. A poorly designed building couples fast-changing layers to slow-changing ones, and then every small change becomes a renovation.
+
+Software has the same layers. Business rules (structure) change slowly. UI components (skin) change frequently. CSS classes (stuff) change constantly. A browser-based E2E test welds all these layers together into a single brittle artifact. When the stuff moves, the test for the structure breaks. You are renovating the steel frame because someone rearranged the furniture.
+
+MCP -- Model Context Protocol -- is the steel frame made visible and testable on its own terms.
+
+When you expose your business logic as MCP tools, you are separating the structural layer from every layer above it. The tool has an input schema, a handler, and a structured response. No DOM. No CSS selectors. No animation timing. Each layer can now be tested at its own rate of change, by tests that match that rate.
+
+---
+
+## Seismic Isolation
+
+There is a technique in earthquake engineering called *base isolation*. You place rubber-and-steel pads between the foundation and the superstructure. When the ground shakes, the pads absorb the vibration. The building barely moves.
+
+Browser-based tests have no base isolators. Every tremor in the rendering layer -- a slow animation, a third-party script, a 50ms network delay -- propagates directly into your test results. You add `waitForSelector`. You add `waitForTimeout`. You add retry logic. You are not testing your application. You are trying to isolate the signal from the seismic noise of the browser.
+
+MCP tools are base isolators. They decouple your business logic tests from browser vibrations entirely. The ground can shake all it wants. Your structural tests do not care.
+
+Let me show you the difference. Here is an E2E test for an email update flow:
+
+```typescript
+// Cypress E2E test -- structure tested through the skin
+describe('Email update flow', () => {
+  it('should allow user to change their email', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+Every `data-testid` is a coupling point between the structural test and the skin. Change the confirm dialog to a bottom sheet? Test breaks. Move the success message from a toast to a banner? Test breaks. The test runs in 5-15 seconds and is sensitive to every tremor in the rendering stack.
+
+Now, the same structural logic as an MCP tool and a unit test:
+
+```typescript
+// MCP tool -- the steel frame, exposed directly
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+    if (!confirmChange) {
+      return {
+        status: 'confirmation_required',
+        message: `Confirm change from ${user.email} to ${newEmail}?`,
+      };
+    }
+    await context.userService.updateEmail(user.id, newEmail);
+    return { status: 'success', updatedEmail: newEmail };
+  },
+};
+
+// Unit test -- testing the structure, not the skin
+describe('update_user_email', () => {
+  it('updates email when confirmed', async () => {
+    const ctx = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      ctx,
+    );
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+    expect(ctx.userService.updateEmail).toHaveBeenCalledWith('1', 'new@example.com');
+  });
+
+  it('requires confirmation before changing', async () => {
+    const ctx = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: false },
+      ctx,
+    );
+    expect(result.status).toBe('confirmation_required');
+    expect(ctx.userService.updateEmail).not.toHaveBeenCalled();
+  });
+});
+```
+
+This test runs in milliseconds. It will never flake. Change the UI to any design you want -- modal, bottom sheet, inline form, voice interface -- and this test still passes, because it tests the steel frame, not the curtain wall.
+
+---
+
+## Three Players, One Truth
+
+A unit test and its code, when written properly, specify each other. Two drawings of the same building.
+
+MCP introduces a third drawing: the name.
+
+Consider `update_user_email`. That name is not a label. It is a structural constraint. It tells you what the tool must do and what it must not do. It does not send notifications. It does not reset the password. It updates the email. In architectural terms, the name is the program -- the brief that says "this column carries the third floor, and nothing else."
+
+A well-named function has always constrained what a developer writes. But an MCP tool name constrains what a *machine* can discover, invoke, and verify. An AI agent reading your MCP server does not look at source code. It reads tool names, descriptions, and schemas. The name becomes a discoverable structural specification.
+
+Test. Code. Name. Three players, one truth. Like the three drawings an architect produces -- the structural plan, the facade elevation, the specification schedule -- each constrains the other two. We had the first two for decades. MCP formalized the third into something machines can reason about.
+
+---
+
+## The Pyramid Reshaped
+
+The testing pyramid was always a concession to a coupling problem. We tested business logic through the browser because the browser was the only interface that connected all the pieces. The browser was the load-bearing wall -- it carried the structural tests because there was no frame.
+
+MCP is the steel frame.
+
+Once the structure is independently testable, the pyramid reshapes. The painful E2E layer thins to what it should have always been: a visual smoke check. Does the curtain wall hang correctly? Does the skin keep out the rain? Playwright handles that in a handful of targeted scenarios. The hundreds of business logic simulations that bloated the E2E layer move down to the unit test base, where they run in milliseconds and never flake.
+
+You are not replacing E2E tests. You are giving the building a frame, so the walls no longer have to carry the roof.
+
+Brand would recognize this immediately. You are allowing each shearing layer to be tested at its own rate of change. Structure with structural tests. Skin with visual tests. Stuff with snapshot tests. Each at the speed appropriate to its lifecycle.
+
+---
+
+## Full Circle
+
+The real answer was never "automate the browser better." The real answer was: give the building a steel frame, and stop making the walls carry the load.
+
+Now we have the frame. Less time fighting flaky tests. More time building things that matter. That is what structural honesty looks like in practice. Not flashy new facades. Quieter force paths. Less friction between intent and verification.

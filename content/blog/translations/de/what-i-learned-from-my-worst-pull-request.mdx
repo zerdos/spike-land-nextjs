@@ -1,0 +1,149 @@
+---
+title: "Was ich von meinem schlechtesten Pull Request gelernt habe"
+slug: "what-i-learned-from-my-worst-pull-request"
+description: "Die ehrliche Geschichte eines Entwicklers ueber den falschen Umgang mit KI-Tools in einem neuen Projekt und das Framework, das alles behoben hat."
+date: "2026-01-13"
+author: "Zoltan Erdos"
+category: "Entwicklererfahrung"
+tags: ["ai", "developer-tools", "claude", "lektionen", "code-qualitaet", "pull-requests"]
+featured: true
+language: "de"
+---
+
+Ich muss euch etwas erzaehlen. Etwas, worauf ich nicht stolz bin.
+
+Fuer eine kurze Zeit im Jahr 2025, als ich an einem neuen Projekt anfing, waren meine Pull Requests reiner KI-Muell. Trotz meiner allergroessten Bemuehungen, das zu vermeiden.
+
+Lasst mich genau erzaehlen, was passiert ist.
+
+---
+
+## Das neue Projekt
+
+Ich kam in ein Team, das an zwei verbundenen Anwendungen arbeitete. Eine Next.js-App fuer Kundenkuendigungen. Eine Angular-App fuer den Haupt-Onlineshop. Der Tech-Stack sah interessant aus. Die Leute wirkten kompetent. Ich war bereit, mich zu beweisen.
+
+Die Codebasis war pragmatisch. Man konnte erkennen, dass fruehere Entwickler sich Muehe gegeben hatten. Ja, es gab technische Schulden -- welche Codebasis hat das nicht? Aber die Architektur war durchdacht. Bestimmte Dinge mussten auf bestimmte Weise gemacht werden, weil das System so konzipiert war.
+
+Ich hatte noch nie eine E-Commerce-Seite gebaut. Das sollte noch wichtig werden.
+
+Ich hatte eine Geheimwaffe. Oder so dachte ich.
+
+KI-Coding-Tools waren bis 2025 unglaublich leistungsfaehig geworden. Claude Code. Das waren keine einfachen Autovervollstaendigungs-Tools mehr. Sie konnten komplexe Codebasen verstehen. Sie konnten ganze Features schreiben. Sie konnten grosse Mengen Code refactoren.
+
+Ich benutzte sie staendig. Und sie waren schnell. So schnell.
+
+Meine ersten PRs sahen grossartig aus. Sauberer Code. Gute Struktur. Ordentliche Fehlerbehandlung. Die Tests liefen durch. Der Linter war zufrieden. Ich fuehlte mich wie ein Held.
+
+Ich war kein Held. Ich baute auf Sand.
+
+---
+
+## Der Warenkorb-API-Vorfall
+
+Es war eines meiner ersten Tickets im Projekt.
+
+Die Aufgabe schien einfach. Analytics tracken, wenn ein Benutzer ein Bindungsangebot annimmt. Der Ablauf war folgender: Ein Kunde will sein Konto in der Next.js-App kuendigen, sieht ein Bindungsangebot mit einer ID in der URL, klickt darauf, wird zur Angular-App mit dieser ID weitergeleitet und schliesst den Kauf ab. Ich sollte dieses Checkout-Event tracken.
+
+Hier hat mich meine Unerfahrenheit umgehauen.
+
+Ich hatte noch nie eine E-Commerce-Seite gebaut. In meinem Kopf haelt das Frontend den Warenkorb im Speicher bis zum Checkout. Der Benutzer legt Dinge in den Warenkorb, das Frontend speichert sie, und dann sendet es alles an den Server, wenn er auf "Kaufen" klickt. Das ergab fuer mich Sinn.
+
+Also bat ich Claude, mir bei der Implementierung des Trackings zu helfen. Und Claude generierte Code. Wunderschoenen Code. Er rief die Warenkorb-API auf, um die Warenkorb-Daten abzurufen, damit wir den Checkout tracken konnten.
+
+Es sah perfekt aus. Es bestand die Tests. Der Linter war zufrieden.
+
+Ich reichte den PR ein.
+
+---
+
+## Der perfekte Sturm
+
+Etwas, das ich damals nicht wusste. Claude hatte in dieser Zeit [dokumentierte technische Probleme](https://www.anthropic.com/engineering/a-postmortem-of-three-recent-issues). Kontextfenster-Routing-Fehler betrafen 30% der Claude-Code-Nutzer. Das Modell produzierte Antworten, die gut aussahen, aber tatsaechlich von verminderter Qualitaet waren.
+
+Das Tool, dem ich vertraute, produzierte gut aussehende, aber qualitativ minderwertige Ausgaben. Und ich hatte keine Moeglichkeit, das zu erkennen.
+
+Wenn KI selbstbewusst halluziniert, laesst sie dich mithalluzinieren. Claudes Ausgabe sah richtig aus. Sie fuehlte sich richtig an. Also fuehlte ich mich sicher. Ich reichte Arbeit ein, die ich nicht vollstaendig verstand, weil die KI sie zu verstehen schien.
+
+---
+
+## Das Code Review
+
+Ein Kollege stellte staendig Fragen. Fragen, die ich nicht beantworten konnte.
+
+"Warum rufst du hier die Warenkorb-API auf?"
+
+Ich wusste es nicht. Ich dachte, es waere noetig, um die Warenkorb-Daten fuer das Tracking zu bekommen.
+
+"Der Warenkorb liegt bereits auf dem Server. Die ID in der URL dient nur zur Verifizierung."
+
+Ich verstand es nicht.
+
+Dann prufte eine erfahrenere Entwicklerin den PR. Sie war direkt. Der PR war im Grunde Muell. Nur winzige Teile waren brauchbar.
+
+Der Warenkorb war serverseitig. Das war die Architektur. Das Backend war die einzige Quelle der Wahrheit. Die ID aus der Kuendigungs-App diente nur zur Gegenpruefung mit dem, was bereits auf dem Server gespeichert war. Es gab ueberhaupt keinen Grund, die Warenkorb-API aufzurufen.
+
+Ich sass da und starrte auf meinen Bildschirm. Ich hatte keine Erklaerung dafuer, warum ich diesen Code geschrieben hatte. Weil ich ihn nicht geschrieben hatte. Claude hat ihn geschrieben. Und ich habe ihn abgenickt, ohne ihn zu verstehen.
+
+---
+
+## Die eigentliche Ursache
+
+Die KI ist nicht das Problem. Ich war das Problem.
+
+Ich wusste nicht, was ich nicht wusste. Die Ticket-Anforderungen waren nicht klar, aber ich wusste nicht genug, um die richtigen Fragen zu stellen. Ich hatte noch nie E-Commerce gebaut. Ich verstand die Architektur nicht. Also konnte ich nicht ueberpruefen, was die KI annahm.
+
+Die Codebasis war gut konzipiert. Die frueheren Entwickler hatten sich Gedanken darueber gemacht, wie das Warenkorb-System funktioniert. Es gab gute Gruende fuer die dreischichtige Architektur. Aber ich habe mir nicht die Zeit genommen, diese Gruende zu verstehen, bevor ich Claude bat, Code zu generieren.
+
+Ich benutzte KI als Abkuerzung statt als Werkzeug. Das ist ein grosser Unterschied.
+
+Eine Abkuerzung ersetzt deine Arbeit. Ein Werkzeug hilft dir, deine Arbeit besser zu machen. Ich behandelte KI wie eine Abkuerzung. Ich musste sie wie ein Werkzeug behandeln.
+
+---
+
+## Was sich geaendert hat
+
+Nach diesem Vorfall aenderte sich alles.
+
+**Erstens erstellte ich umfassende Dokumentation.** Ich sammelte alles -- Confluence-Docs, Code-Kommentare, API-Dokumentation, Codebasen anderer Teams. Ich nutzte NotebookLM, um Lern-Tutorials, Systemdiagramme, Karteikarten und Quiz zu generieren. An einem Wochenende eignete ich mir das Domaenwissen an, das mir gefehlt hatte.
+
+**Zweitens kodierte ich Projektmuster in Claudes Anweisungen.** Benutzerdefinierte Skills. Team-Konventionen. Coding-Standards. Wie die Warenkorb-Architektur tatsaechlich funktioniert. Jetzt folgt die KI automatisch unseren Mustern, anstatt zu raten.
+
+**Drittens -- und das ist die wichtigste Aenderung -- der Agent interviewt mich jetzt waehrend der Planung.** Bevor Code geschrieben wird, stellt mir der Agent Fragen. Er fragt so lange, bis ich ein vollstaendiges Bild habe. Wenn ich eine Frage nicht beantworten kann, gehe ich zurueck zur Dokumentation. Oder ich starte einen anderen Agenten, um es herauszufinden. Das stellt sicher, dass ich verstehe, was ich baue, bevor ich es baue.
+
+Wenn der Agent mich vor dem Warenkorb-PR interviewt haette, haette er gefragt: "Welche Daten existieren bereits auf dem Server?" Und ich haette keine Antwort gehabt. Das haette mich davon abgehalten, den Fehler zu machen.
+
+**Viertens teste ich jetzt anders.** Der Agent startet einen Browser. Loggt sich mit Test-Anmeldedaten ein. Versucht das Feature wie ein menschlicher Tester zu durchlaufen. Macht Screenshots. Vergleicht sie mit Figma-Designs. Er findet Bugs, die manuelles Testen finden wuerde.
+
+Meine Aufwandsverteilung ist jetzt voellig anders. 30% Planung. 50% Tests. 20% Qualitaetsverbesserung. Das eigentliche Programmieren braucht fast keine Zeit im Vergleich zum Verstehen und Verifizieren.
+
+---
+
+## Die Nachwirkungen
+
+Ich hoerte auf, Muell zu produzieren. Meine PRs haben jetzt hohe Qualitaet.
+
+Aber mein Ruf bei der Arbeit ist immer noch beschaedigt. Meine PRs brauchen immer noch laenger zur Ueberpruefung als die meiner Kollegen. Das Vertrauen, das ich zerstoert habe, braucht Zeit, um wieder aufgebaut zu werden.
+
+Das sind die versteckten Kosten schlechter PRs. Es ist nicht nur schlechter Code. Es ist zerbrochenes Vertrauen. Und Vertrauen baut sich langsam wieder auf.
+
+Trotzdem bin ich positiv eingestellt. Das System funktioniert. Die Qualitaet stimmt. Jeder gute PR fuegt ein bisschen Vertrauen zurueck.
+
+---
+
+## Mein Rat an dich
+
+Wenn du neu in einem Projekt bist und KI-Tools nutzt, hoer mir bitte zu.
+
+Die KI wird dir das Gefuehl geben, produktiv zu sein. Du wirst schnell Code liefern. Deine PRs werden sauber aussehen. Aber du baust vielleicht auf Annahmen, die du nicht ueberpruefen kannst.
+
+Mach langsamer. Stell Fragen. Verstehe die Architektur. Sprich mit deinen Teamkollegen. Erstelle Dokumentation. Lass die KI dich ueber das Problem interviewen, bevor sie Code schreibt.
+
+Die Codebasis, an der du arbeitest, hat wahrscheinlich gute Gruende dafuer, so zu sein, wie sie ist. Fruehere Entwickler haben durchdachte Entscheidungen getroffen. Nimm dir Zeit, diese Entscheidungen zu verstehen, bevor du KI Code generieren laesst, der sie ignoriert.
+
+KI-Coding-Tools sind unglaublich. Sie haben meine Arbeitsweise fuer immer veraendert. Aber sie sind kein Ersatz fuer Verstaendnis. Sie sind ein Multiplikator. Und wenn du null Verstaendnis mit einer leistungsstarken KI multiplizierst, bekommst du immer noch null.
+
+Ich benutze KI immer noch jeden Tag. Mehr als je zuvor. Aber jetzt nutze ich sie als Partner, der mich hinterfragt, nicht als Abkuerzung, die mir erlaubt, das Verstehen zu ueberspringen.
+
+Meine PRs sind kein Muell mehr. Sie sind meine Arbeit, verstaerkt durch KI.
+
+Das ist der Unterschied. Und er ist wichtig.

@@ -1,0 +1,165 @@
+---
+title: "The Testing Pyramid Is Upside Down"
+slug: "figured-bass-and-the-art-of-testing"
+description: "What J.S. Bach's figured bass notation reveals about the architecture of software testing — and why MCP tools restore a discipline the Baroque masters understood three centuries ago."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Developer Experience"
+tags: ["testing", "mcp", "music-theory", "counterpoint", "figured-bass"]
+featured: false
+listed: false
+---
+
+## The Continuo Player
+
+In any Baroque ensemble, there is a figure most audiences barely notice: the continuo player. Seated at the harpsichord, they read from a bass line annotated with small numbers — a "6" here, a "4/3" there. These numbers, called *figured bass*, do not specify which notes to play. They specify harmonic relationships. A "6" beneath a C means "play a sixth above this bass" — but which voicing, which register, which ornament? That is left to the performer. The figures define the contract. The realization is improvised.
+
+Bach could sight-read a figured bass part and produce flawless four-voice harmony in real time. The notation trusted the performer. It specified only what was structurally essential and left the beauty to emerge from realization.
+
+---
+
+## The Wrong Orchestration
+
+We did start testing UI. Selenium, Protractor, Cypress, Playwright. Each one a more sophisticated orchestration of the same problem: driving a real browser, rendering real DOM, praying the timing holds.
+
+In music, the *score* is the truth. The *orchestration* — which instruments play which lines, in which registers — is a realization of that truth. Necessary for performance, but not the thing you verify when checking counterpoint. Browser E2E tests verify the orchestration: does the oboe enter on beat three, does the trill land correctly. Real concerns — but not the harmonic structure. Not the business logic.
+
+Orchestration-level verification is expensive. Slow, because browsers are complex state machines. Flaky, because a 50ms animation delay cascades into failure. Brittle, because changing a CSS class breaks the test like transposing a clarinet part by a semitone forces the copyist to redo every page.
+
+This is the testing pyramid. Unit tests at the base: fast, cheap, many. E2E at the top: slow, expensive, few. Everyone accepted the pyramid because the browser was the only interface connecting all the pieces.
+
+The Baroque continuo players would have found this absurd. Why verify the realization when you can verify the figures?
+
+---
+
+## Figured Bass for Software
+
+Most E2E tests are not really testing the browser. They are testing business logic *through* the browser. "User logs in, changes their email, confirms the change, sees the updated email." That is a harmonic progression — a sequence of functional relationships. The browser is just one possible realization.
+
+Cockburn's hexagonal architecture (2005) argued that applications should be equally drivable by users, programs, and test scripts. Fowler called it "subcutaneous testing." Clean Architecture insisted that business rules must be testable without any UI. The harmonic structure was always there. What was missing was a figured bass notation — a standardized way to specify the essential relationships and trust competent realization.
+
+MCP — Model Context Protocol — is that figured bass. It exposes your application's capabilities as structured tools. Text in, text out. The figures specify the harmonic contract. The realization — browser, agent, test runner — is left to the performer.
+
+Here is a Cypress E2E test. This is orchestration-level verification:
+
+```typescript
+// Cypress E2E test — verifying the orchestration
+describe('Email update flow', () => {
+  it('should allow user to change their email', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+Every `cy.get` is a stage direction — enter stage left, pick up the prop, wait for the cue. Change the blocking and the whole test collapses. Now here is the same business logic as figured bass — the harmonic contract, nothing more:
+
+```typescript
+// MCP tool — the figured bass
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+
+    if (!confirmChange) {
+      return {
+        status: 'confirmation_required',
+        message: `Confirm email change from ${user.email} to ${newEmail}?`,
+      };
+    }
+
+    await context.userService.updateEmail(user.id, newEmail);
+    return {
+      status: 'success',
+      message: `Email updated to ${newEmail}`,
+      updatedEmail: newEmail,
+    };
+  },
+};
+
+// Unit test — verifying the harmonic structure
+describe('update_user_email', () => {
+  it('should update email when confirmed', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+  });
+
+  it('should require confirmation before updating', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: false },
+      context,
+    );
+    expect(result.status).toBe('confirmation_required');
+    expect(context.userService.updateEmail).not.toHaveBeenCalled();
+  });
+});
+```
+
+This test runs in milliseconds. It does not depend on DOM structure, animation timing, or CSS selectors. It verifies the harmonic progression — authentication, confirmation, state change — without specifying a single detail of the orchestration.
+
+You have not lost any coverage. You have lost the browser.
+
+---
+
+## Invertible Counterpoint
+
+In Bach's fugues, voices can be swapped — soprano to bass, bass to soprano — and the harmony still works. This is *invertible counterpoint*: composition so structurally sound that it survives transposition across registers.
+
+MCP tools are invertible in exactly this way. The same contract works whether invoked by a human through a form, an agent through text, or a test through assertion. The counterpoint is sound because the rules are structural, not positional.
+
+The relationship between test and code is not coincidence. It is structural. MCP adds a third voice — the tool name, the schema, the description — and the three-part counterpoint is richer than either two-part version.
+
+---
+
+## Three Players, One Truth
+
+Test. Code. Name. Three voices, one harmony.
+
+The tool name `update_user_email` is not a label. It is a *cantus firmus* — the fixed melody against which all other voices are composed. It constrains what the handler must do and must not do. The input schema constrains what arguments are valid. The test constrains what behaviors are correct. Each voice constrains the other two.
+
+In a well-written fugue, you can reconstruct any voice from the other two plus the rules of counterpoint. In a well-structured MCP tool, you can reconstruct the test, the handler, or the schema from the other two plus the rules of the domain. Specify enough to constrain the harmony. Trust the realization.
+
+---
+
+## The Pyramid, Reconsidered
+
+The testing pyramid was a compromise forced by instrumentation. We put E2E tests at the top because browser automation was the only instrument that could play the full score. As if Bach had been forced to verify his counterpoint by hiring an orchestra for every draft — listening to the full realization because he had no way to check the figures on paper.
+
+MCP restores the figured bass. Business logic moves down to the unit test layer — not through clever mocking, but because the need for the browser is removed. What remains at the E2E level is what belongs there: visual smoke tests, integration wiring, browser-specific behavior. A thin layer that verifies the performance sounds right, not that the harmony is correct.
+
+The harmony you verify at the score level. Where it has always belonged.
+
+---
+
+## Full Circle
+
+The real answer to the UI testing question was never "automate the browser." The real answer was: make the business logic accessible without one. Write the figured bass. Trust the realization. Verify the harmony.
+
+That is what pushing the craft forward looks like. Not louder instruments. Cleaner counterpoint. The kind of quiet structural progress Bach would have recognized — not the flashy cadenza, but the figured bass that makes everything else possible.

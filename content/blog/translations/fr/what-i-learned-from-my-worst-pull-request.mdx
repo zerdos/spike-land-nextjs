@@ -1,0 +1,149 @@
+---
+title: "Ce que j'ai appris de ma pire Pull Request"
+slug: "what-i-learned-from-my-worst-pull-request"
+description: "L'histoire honnête d'un développeur qui a mal utilisé les outils d'IA sur un nouveau projet, et le cadre méthodologique qui a tout corrigé."
+date: "2026-01-13"
+author: "Zoltan Erdos"
+category: "Expérience développeur"
+tags: ["ai", "developer-tools", "claude", "leçons-apprises", "qualité-du-code", "pull-requests"]
+featured: true
+language: "fr"
+---
+
+Il faut que je vous dise quelque chose. Quelque chose dont je ne suis pas fier.
+
+Pendant une brève période en 2025, quand j'ai commencé un nouveau projet, mes pull requests étaient du pur contenu généré par l'IA sans valeur ajoutée. Même en faisant de mon mieux pour l'éviter.
+
+Laissez-moi vous raconter exactement ce qui s'est passé.
+
+---
+
+## Le nouveau projet
+
+J'ai rejoint une équipe travaillant sur deux applications connectées. Une application Next.js gérant les annulations clients. Une application Angular faisant tourner la boutique e-commerce principale. La stack technique semblait intéressante. Les gens avaient l'air compétents. J'étais prêt à faire mes preuves.
+
+La base de code était pragmatique. On pouvait voir que les développeurs précédents y avaient mis du soin. Oui, il y avait de la dette technique — quelle base de code n'en a pas ? Mais l'architecture était intentionnelle. Certaines choses devaient être faites d'une certaine manière parce que c'est ainsi que le système avait été conçu pour fonctionner.
+
+Je n'avais jamais construit de site e-commerce auparavant. Ce détail allait devenir important.
+
+J'avais une arme secrète. Du moins je le croyais.
+
+Les outils de codage IA étaient devenus incroyablement puissants en 2025. Claude Code. Ce n'étaient plus de simples outils d'autocomplétion. Ils pouvaient comprendre des bases de code complexes. Ils pouvaient écrire des fonctionnalités entières. Ils pouvaient refactorer de grandes quantités de code.
+
+Je les utilisais constamment. Et ils étaient rapides. Tellement rapides.
+
+Mes premières PR avaient fière allure. Code propre. Bonne structure. Gestion des erreurs correcte. Les tests passaient. Le linter était satisfait. Je me sentais héroïque.
+
+Je n'étais pas un héros. Je construisais sur du sable.
+
+---
+
+## L'incident de l'API Panier
+
+C'était l'un de mes premiers tickets sur le projet.
+
+La tâche semblait simple. Suivre les analytics quand un utilisateur accepte une offre de rétention. Le flux se déroulait ainsi : un client va annuler son compte dans l'application Next.js, voit une offre de rétention avec un identifiant dans l'URL, clique dessus, est redirigé vers l'application Angular avec cet identifiant, et finalise l'achat. Je devais suivre cet événement de finalisation.
+
+C'est là que mon inexpérience m'a tué.
+
+Je n'avais jamais construit de site e-commerce. Dans ma tête, le frontend conserve le panier en mémoire jusqu'au paiement. L'utilisateur ajoute des articles à son panier, le frontend les stocke, puis envoie tout au serveur quand il clique sur "acheter". Ça me semblait logique.
+
+Alors j'ai demandé à Claude de m'aider à implémenter le tracking. Et Claude a généré du code. Du beau code. Il appelait l'API Panier pour récupérer les données du panier afin de suivre la finalisation de l'achat.
+
+Ça avait l'air parfait. Les tests passaient. Le linter était satisfait.
+
+J'ai soumis la PR.
+
+---
+
+## La tempête parfaite
+
+Voici quelque chose que j'ignorais à l'époque. Claude avait des [problèmes techniques documentés](https://www.anthropic.com/engineering/a-postmortem-of-three-recent-issues) pendant cette période. Des erreurs de routage de la fenêtre de contexte affectaient 30% des utilisateurs de Claude Code. Le modèle produisait des réponses qui semblaient correctes mais étaient en réalité dégradées.
+
+L'outil en qui j'avais confiance produisait du contenu d'apparence correcte mais de mauvaise qualité. Et je n'avais aucun moyen de le savoir.
+
+Quand l'IA hallucine avec assurance, elle vous fait halluciner aussi. Le résultat de Claude semblait juste. Ça sonnait juste. Alors je me sentais confiant. J'ai soumis du travail que je ne comprenais pas pleinement parce que l'IA semblait le comprendre.
+
+---
+
+## La revue de code
+
+Un collègue n'arrêtait pas de poser des questions. Des questions auxquelles je ne pouvais pas répondre.
+
+"Pourquoi appelles-tu l'API Panier ici ?"
+
+Je ne savais pas. Je pensais que c'était nécessaire pour obtenir les données du panier pour le tracking.
+
+"Le panier est déjà sur le serveur. L'identifiant dans l'URL sert juste à la vérification."
+
+Je ne comprenais pas.
+
+Puis une développeuse plus senior a revu la PR. Elle a été directe. La PR était essentiellement inutile. Seuls de minuscules fragments étaient exploitables.
+
+Le panier était côté serveur. C'était l'architecture. Le backend était la seule source de vérité. L'identifiant de l'application d'annulation servait uniquement à vérifier ce qui était déjà stocké sur le serveur. Il n'y avait aucun besoin d'appeler l'API Panier.
+
+Je suis resté assis, fixant mon écran. Je n'avais aucune explication pour justifier ce code. Parce que ce n'est pas moi qui l'avais écrit. C'est Claude qui l'avait fait. Et je l'avais approuvé sans comprendre.
+
+---
+
+## La cause racine
+
+L'IA n'est pas le problème. C'est moi qui étais le problème.
+
+Je ne savais pas ce que je ne savais pas. Les exigences du ticket n'étaient pas claires, mais je n'en savais pas assez pour poser les bonnes questions. Je n'avais jamais fait d'e-commerce. Je ne comprenais pas l'architecture. Je ne pouvais donc pas vérifier les hypothèses de l'IA.
+
+La base de code était bien conçue. Les développeurs précédents avaient réfléchi au fonctionnement du système de panier. L'architecture à trois couches avait de bonnes raisons d'exister. Mais je n'avais pas pris le temps de comprendre ces raisons avant de demander à Claude de générer du code.
+
+J'utilisais l'IA comme un raccourci au lieu d'un outil. La différence est considérable.
+
+Un raccourci remplace votre travail. Un outil vous aide à mieux faire votre travail. Je traitais l'IA comme un raccourci. J'avais besoin de la traiter comme un outil.
+
+---
+
+## Ce qui a changé
+
+Après cet incident, tout a changé.
+
+**Premièrement, j'ai créé une documentation exhaustive.** J'ai rassemblé tout — docs Confluence, commentaires du code, documentation API, bases de code des autres équipes. J'ai utilisé NotebookLM pour générer des tutoriels d'apprentissage, des diagrammes systèmes, des fiches mémo, des quiz. En un week-end, j'ai maîtrisé les connaissances métier qui me manquaient.
+
+**Deuxièmement, j'ai encodé les patterns du projet dans les instructions de Claude.** Compétences personnalisées. Conventions de l'équipe. Standards de codage. Comment l'architecture du panier fonctionne réellement. Maintenant l'IA suit nos patterns automatiquement au lieu de deviner.
+
+**Troisièmement — et c'est le changement le plus important — l'agent m'interviewe maintenant pendant la planification.** Avant que le moindre code soit écrit, l'agent me pose des questions. Il continue de poser des questions jusqu'à ce que j'aie une vision complète. Si je ne peux pas répondre à une question, je retourne à la documentation. Ou je lance un autre agent pour trouver la réponse. Cela garantit que je comprends ce que je construis avant de le construire.
+
+Si l'agent m'avait interviewé avant cette PR du panier, il aurait demandé : "Quelles données existent déjà sur le serveur ?" Et je n'aurais eu aucune réponse. Cela m'aurait empêché de commettre cette erreur.
+
+**Quatrièmement, je teste différemment maintenant.** L'agent lance un navigateur. Se connecte avec des identifiants de test. Essaie de valider la fonctionnalité comme le ferait un testeur humain. Prend des captures d'écran. Les compare avec les maquettes Figma. Il détecte des bugs que les tests manuels détecteraient.
+
+Ma répartition de l'effort est complètement différente maintenant. 30% planification. 50% tests. 20% amélioration de la qualité. Le codage proprement dit ne prend presque pas de temps comparé à la compréhension et à la vérification.
+
+---
+
+## Les conséquences
+
+J'ai arrêté de produire du contenu médiocre. Mes PR sont maintenant de haute qualité.
+
+Mais ma réputation au travail est encore entachée. Mes PR prennent encore plus de temps à être revues que celles de mes collègues. La confiance que j'ai brisée met du temps à se reconstruire.
+
+C'est le coût caché des mauvaises PR. Ce n'est pas seulement du mauvais code. C'est de la confiance brisée. Et la confiance se reconstruit lentement.
+
+Malgré cela, je suis positif. Le système fonctionne. La qualité est là. Chaque bonne PR rajoute un peu de confiance.
+
+---
+
+## Mon conseil pour vous
+
+Si vous êtes nouveau sur un projet et que vous utilisez des outils d'IA, écoutez-moi.
+
+L'IA va vous donner l'impression d'être productif. Vous allez livrer du code rapidement. Vos PR auront l'air propres. Mais vous construisez peut-être sur des hypothèses que vous ne pouvez pas vérifier.
+
+Ralentissez. Posez des questions. Comprenez l'architecture. Parlez à vos coéquipiers. Créez de la documentation. Faites en sorte que l'IA vous interviewe sur le problème avant qu'elle n'écrive le moindre code.
+
+La base de code sur laquelle vous travaillez a probablement de bonnes raisons d'être telle qu'elle est. Les développeurs précédents ont pris des décisions réfléchies. Prenez le temps de comprendre ces décisions avant de laisser l'IA générer du code qui les ignore.
+
+Les outils de codage IA sont incroyables. Ils ont changé ma façon de travailler pour toujours. Mais ils ne remplacent pas la compréhension. Ce sont des multiplicateurs. Et si vous multipliez zéro compréhension par une IA puissante, vous obtenez toujours zéro.
+
+J'utilise encore l'IA tous les jours. Plus que jamais. Mais maintenant je l'utilise comme un partenaire qui me questionne, pas comme un raccourci qui me permet de sauter l'étape de la compréhension.
+
+Mes PR ne sont plus médiocres. Ce sont mon travail, amélioré par l'IA.
+
+C'est ça la différence. Et elle compte.

@@ -1,0 +1,178 @@
+---
+title: "The Testing Pyramid Is Upside Down"
+slug: "mother-sauces-and-the-tasting-spoon"
+description: "What Escoffier's brigade system, mother sauces, and the chef's tasting spoon reveal about why we test software through the wrong layer — and how MCP tools give us back mise en place."
+date: "2026-02-13"
+author: "Zoltan Erdos"
+category: "Developer Experience"
+tags: ["testing", "mcp", "culinary-arts", "mother-sauces", "mise-en-place"]
+featured: false
+listed: false
+---
+
+## Mise en Place
+
+Every professional kitchen begins the same way, hours before a single plate leaves the pass: *mise en place*. Everything in its place. Onions brunoise'd. Stocks reduced. Herbs picked. Every ingredient measured, prepped, and arranged within arm's reach so that when service begins, the cook never stops to hunt.
+
+This is not ritual. It is survival. A service that hits two hundred covers does not tolerate a cook who pauses to dice a shallot mid-rush. The quality of the execution depends entirely on the quality of the preparation.
+
+---
+
+## Cooking Without Tasting
+
+We did start testing the UI. Selenium, Protractor, Cypress, Playwright. Each one a more sophisticated way to do the same thing: drive a real browser, render real DOM, wait for real network requests, and hope the timing holds.
+
+In a kitchen, this is the equivalent of never tasting during preparation. You make the bechamel, pour it over the gratin, bake it, plate it, garnish it. And *then* you taste it. Only to discover the sauce broke twenty minutes ago.
+
+No chef works this way. The tasting spoon is the most important tool in any kitchen. A chef tastes constantly — after the roux, after the milk, after the seasoning. Problems caught early are cheap to fix: add salt, lower the heat, whisk harder. Problems caught at the plate mean you throw it away and start over.
+
+E2E tests taste only the final dish. They are the customer sending the plate back. They are slow — you wait for the full gratin to bake before you know whether the sauce holds. They are flaky — a test passes locally, fails on CI because an animation took 50ms longer, and suddenly you are synchronizing with an oven that has a mind of its own. They are brittle — change a CSS class and the tests break, the way a recipe fails because you used a different brand of saucepan.
+
+This is the testing pyramid. Unit tests at the base: fast, cheap, many. E2E tests at the painful top: slow, expensive, few. Everyone accepted the pain because the browser was the only way to taste the full dish.
+
+---
+
+## The Mother Sauces
+
+In classical French cuisine, there are five *sauces mères* — mother sauces: bechamel, velouté, espagnole, hollandaise, and tomato. From these five foundations, a trained chef derives hundreds of variations. Mornay is bechamel with cheese. Bordelaise is espagnole with wine and bone marrow. Supreme is velouté with cream.
+
+The mother sauces exist because they encode *fundamental techniques and flavor principles*. Master the bechamel — the roux, the milk, the heat control — and you can make any cream-based sauce. The technique transfers. The principle is general. The derivatives are specific.
+
+Business logic is the mother sauce of software.
+
+The email update flow. The payment processing. The user authentication. These are your bechamel, your velouté, your espagnole. Every UI interaction — the button click, the form submission, the success toast — is a derivative. A specific plating of a general technique.
+
+When you test business logic through the browser, you are judging your bechamel by tasting the finished gratin. You cannot tell whether the problem is the sauce, the pasta, the cheese, the oven temperature, or the baking time. You have lost the ability to isolate the mother sauce from its derivatives.
+
+MCP — Model Context Protocol — gives you back the tasting spoon. It exposes your business logic as structured tools. Text in, text out. You taste the mother sauce directly, during preparation, when problems are cheap to fix. The plating can come later.
+
+Here is a Cypress E2E test. This is tasting the finished dish:
+
+```typescript
+// Cypress E2E test — tasting the finished gratin
+describe('Email update flow', () => {
+  it('should allow user to change their email', () => {
+    cy.login('test@example.com', 'password123');
+    cy.visit('/settings');
+    cy.get('[data-testid="email-input"]').clear().type('new@example.com');
+    cy.get('[data-testid="save-button"]').click();
+    cy.get('[data-testid="confirm-dialog"]').should('be.visible');
+    cy.get('[data-testid="confirm-button"]').click();
+    cy.get('[data-testid="success-toast"]').should('contain', 'Email updated');
+    cy.visit('/profile');
+    cy.get('[data-testid="user-email"]').should('contain', 'new@example.com');
+  });
+});
+```
+
+Every `cy.get` is a stage direction in an elaborate plating sequence. Change the garnish and the whole test collapses. Now here is the same business logic as a mother sauce — the fundamental technique, tasted directly:
+
+```typescript
+// MCP tool — the mother sauce
+const updateEmailTool = {
+  name: 'update_user_email',
+  description: 'Update the authenticated user\'s email address',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      newEmail: { type: 'string', format: 'email' },
+      confirmChange: { type: 'boolean' },
+    },
+    required: ['newEmail', 'confirmChange'],
+  },
+  handler: async ({ newEmail, confirmChange }, context) => {
+    const user = await context.getAuthenticatedUser();
+    if (!user) return { error: 'Not authenticated' };
+
+    if (!confirmChange) {
+      return {
+        status: 'confirmation_required',
+        message: `Confirm email change from ${user.email} to ${newEmail}?`,
+      };
+    }
+
+    await context.userService.updateEmail(user.id, newEmail);
+    return {
+      status: 'success',
+      message: `Email updated to ${newEmail}`,
+      updatedEmail: newEmail,
+    };
+  },
+};
+
+// Unit test — the tasting spoon
+describe('update_user_email', () => {
+  it('should update email when confirmed', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: true },
+      context,
+    );
+
+    expect(result.status).toBe('success');
+    expect(result.updatedEmail).toBe('new@example.com');
+    expect(context.userService.updateEmail).toHaveBeenCalledWith(
+      '1', 'new@example.com',
+    );
+  });
+
+  it('should require confirmation before updating', async () => {
+    const context = createMockContext({
+      user: { id: '1', email: 'old@example.com' },
+    });
+
+    const result = await updateEmailTool.handler(
+      { newEmail: 'new@example.com', confirmChange: false },
+      context,
+    );
+
+    expect(result.status).toBe('confirmation_required');
+    expect(context.userService.updateEmail).not.toHaveBeenCalled();
+  });
+});
+```
+
+This test runs in milliseconds. It does not depend on DOM structure, animation timing, or CSS selectors. It tastes the mother sauce directly — authentication, confirmation, state change — without plating a single dish.
+
+You have not lost any coverage. You have lost the browser.
+
+---
+
+## The Brigade System
+
+Escoffier did not just codify the mother sauces. He reorganized the entire kitchen. His *brigade de cuisine* divided labor into specialized stations: saucier, poissonnier, pâtissier, garde manger. Each station has clear inputs, clear outputs, and a defined contract with the stations around it. The saucier does not plate desserts. The boundaries are sharp because ambiguity during service kills speed.
+
+MCP tools are a brigade system for your business logic. The name is the station: `update_user_email`. The schema is the mise en place: structured inputs, typed constraints. The handler is the technique. When every station has its mise en place, the kitchen runs smoothly. Browser tests are cooking without a brigade — one cook doing everything, grabbing ingredients mid-recipe, hoping they have what they need.
+
+---
+
+## Three Players, One Truth
+
+A unit test and its code, when written properly, specify each other. Two ingredients, one dish.
+
+But I think there is a third ingredient: the name.
+
+Consider the MCP tool: `update_user_email`. That name is not a label on a container. It is a *recipe title* — and a good recipe title constrains everything that follows. It tells you what the dish must contain and what it must not. It does not send notifications. It does not reset the password. It updates the user's email. A chef who reads "Bechamel" on a recipe does not reach for tomatoes.
+
+Test. Code. Name. Three ingredients, one truth. The name constrains what the handler must do. The schema constrains what inputs are valid. The test constrains what outcomes are correct. Each element constrains the other two — the way flour, butter, and milk constrain a roux. Change any one and the others must adapt, or the sauce breaks.
+
+---
+
+## The Pyramid, Reconsidered
+
+The testing pyramid was always a compromise forced by equipment. We put E2E tests at the top because the browser was the only way to taste the complete dish. As if Escoffier had no tasting spoon — as if the only way to judge a sauce was to plate the entire dish, serve it to the dining room, and wait for the customer's reaction.
+
+MCP restores the tasting spoon. Business logic moves down to the unit test layer — not through clever mocking, but because the need for the browser is removed. What remains at the E2E level is what belongs there: visual smoke tests, integration wiring, browser-specific behavior. A thin layer that verifies the plating looks right, not that the mother sauce holds.
+
+The sauce you taste at the stove. Where it has always belonged.
+
+---
+
+## Full Circle
+
+The real answer to the UI testing question was never "automate the browser." The real answer was: make the business logic accessible without one. Taste the mother sauce before you plate the dish. Keep your mise en place sharp. Trust the brigade.
+
+That is what pushing the craft forward looks like. Not fancier ovens. A cleaner station. A sharper knife. The boring kind of discipline that makes everything else possible.

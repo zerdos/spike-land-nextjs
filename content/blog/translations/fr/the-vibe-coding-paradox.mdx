@@ -1,0 +1,553 @@
+---
+title: "Le paradoxe du vibe coding : pourquoi votre IA devient plus bête quand vous la laissez improviser"
+slug: "the-vibe-coding-paradox"
+description: "Nous avons construit une IA qui génère des applications React à partir d'URLs. Elle fonctionnait 40% du temps. Puis nous lui avons appris à apprendre de ses propres erreurs — en utilisant la même physique qui fait échouer vos prompts."
+date: "2026-02-12"
+author: "Zoltan Erdos"
+category: "Expérience développeur"
+tags: ["ai", "context-engineering", "claude", "agents", "auto-amélioration", "developer-tools", "vibe-coding", "physique"]
+featured: true
+language: "fr"
+---
+
+{/* TL;DR Box */}
+<div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 mb-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">TL;DR</h3>
+  <ul className="space-y-2 text-slate-300">
+    <li>Le vibe coding a un problème de physique : l'attention est une ressource à somme nulle, et la génération au hasard en gaspille la majeure partie.</li>
+    <li>Nous avons transformé le créateur d'applications de spike.land d'un taux de succès de 40% en un agent auto-correcteur qui apprend de chaque échec.</li>
+    <li>La solution correspond exactement à la thermodynamique : conserver l'énergie (préfixe de prompt stable), dissiper la chaleur (compresser les erreurs en notes d'apprentissage), et laisser la sélection naturelle élaguer les mauvaises connaissances.</li>
+    <li>3 modèles Claude en cascade par coût : Opus crée ($$$), Sonnet débogue ($$), Haiku apprend ($).</li>
+    <li>Le système a lui-même été conçu en utilisant le mode plan de Claude Code — de l'ingénierie de contexte jusqu'au bout.</li>
+  </ul>
+</div>
+
+## Le paradoxe
+
+J'ai construit une IA qui génère des applications React à partir d'une URL.
+
+Tapez `/create/games/tetris`, obtenez un Tetris jouable. Tapez `/create/finance/dashboard`, obtenez un graphique boursier en temps réel. L'URL est le prompt. L'application apparaît en quelques secondes.
+
+Ça semble magique. Voici ce qui s'est réellement passé : ça fonctionnait 40% du temps.
+
+<SplitScreenDemo />
+
+Les 60% restants ? Des imports cassés. Des variables indéfinies. Des applications qui plantaient au chargement avec des erreurs de transpilation cryptiques. L'IA était assez intelligente pour écrire Tetris — elle n'était juste pas assez intelligente pour *se souvenir* qu'elle avait déjà échoué à faire un Tetris.
+
+Chaque génération partait de zéro. Aucun souvenir des échecs passés. Aucun registre des imports qui fonctionnent et de ceux qui retournent une 404. Aucune sagesse accumulée. Juste de l'intelligence brute pointée sur un problème sans aucune connaissance institutionnelle.
+
+Voici le paradoxe qui défie l'intuition : donner à une IA **plus de liberté** — la laisser "vibe coder" — produit de **pires résultats** que de la contraindre. On penserait que moins de règles signifie plus de créativité. La physique dit le contraire.
+
+Le paradoxe a un nom dans le domaine : **l'ingénierie de contexte.** Et il a un mécanisme physique qui explique exactement pourquoi le vibe coding échoue — et exactement comment le corriger.
+
+C'est le troisième article d'une série. Le [premier](/blog/context-engineering-your-zero-shot-prompt) a introduit la pile de contexte à 5 couches — un cadre pour charger en amont tout ce dont une IA a besoin pour réussir du premier coup. Le [second](/blog/how-claude-code-engineers-context) est allé à l'intérieur du transformer pour expliquer *pourquoi* le contexte compte au niveau de l'attention. Cet article applique les deux pour construire une vraie fonctionnalité produit : un agent auto-améliorant qui génère des applications React et apprend de ses propres erreurs.
+
+---
+
+## La physique de pourquoi le vibe coding échoue
+
+<AttentionSpotlightDemo />
+
+Partons des premiers principes. Qu'est-ce qu'un token ?
+
+Un token est l'unité atomique du monde d'un LLM. Chaque caractère que vous tapez, chaque instruction que vous donnez, chaque morceau de contexte que vous fournissez est découpé en tokens. Un mot anglais typique fait 1-2 tokens. Une ligne de code peut faire 10-15. Le modèle traite ces tokens à travers un mécanisme appelé **auto-attention**, et voici l'équation qui le gouverne :
+
+```
+attention = softmax(QK^T / √d) × V
+```
+
+La partie cruciale est le `softmax`. Il normalise les poids d'attention pour qu'ils somment à 1,0. C'est une loi de conservation, identique en structure à la conservation de l'énergie en physique. Vous ne pouvez pas créer de l'attention à partir de rien. Il y a un budget fixe. Chaque token dans la fenêtre de contexte rivalise pour une part de ce budget.
+
+**L'attention est comme une pièce avec un seul projecteur.** Le vibe coding met 20 personnes dans la pièce et espère que le projecteur trouvera la bonne. L'ingénierie de contexte met 3 personnes dans la pièce et cloue le projecteur au sol.
+
+Quand vous déversez 10 000 tokens de contexte non pertinent dans un prompt — "au cas où" — vous n'êtes pas minutieux. Vous diminuez le projecteur. Les tokens pertinents sont toujours là. Ils rivalisent simplement avec 9 500 tokens non pertinents pour l'attention finie du modèle.
+
+<Callout type="info">
+**La physique est quantifiée.** Un article de 2025 intitulé "Context Length Alone Hurts LLM Performance Despite Perfect Retrieval" a trouvé une baisse de précision de 47,6% à 30K tokens sur des tâches de codage — même quand la récupération était parfaite et qu'aucun distracteur n'était présent. Même des espaces blancs vides ont causé des baisses de performance de 7-48%. Ce n'est pas un bug logiciel. C'est de la physique. Plus de tokens = plus de dilution = pires résultats.
+</Callout>
+
+Cela explique le paradoxe. Le vibe coding — "génère juste quelque chose et on verra" — fonctionne avec des prompts courts et simples. Mais à mesure que la complexité grandit, le manque de structure signifie que l'attention du modèle se disperse à travers un contexte toujours plus grand. Le signal se noie dans le bruit. Pas parce que le modèle est bête, mais parce que le softmax est un jeu à somme nulle.
+
+---
+
+## L'avant — Anatomie d'un vibe codeur
+
+Soyons honnêtes sur notre point de départ. Le générateur d'applications original était simple, propre et insuffisant.
+
+Un seul appel à l'API Gemini. Un seul réessai en cas d'échec. Pas de mémoire. Pas d'apprentissage. Pas de gestion structurée des erreurs. Voici le chemin de secours qui était notre *système entier* :
+
+```typescript
+// The old way: single shot, hope for the best
+async function* geminiFallbackStream(slug, path, userId) {
+  const { content, rawCode, error } = await generateAppContent(path);
+
+  let updateResult = await updateCodespace(codespaceId, codeToPush);
+
+  if (!updateResult.success) {
+    // One retry with error correction
+    const correctedCode = await attemptCodeCorrection(
+      codeToPush, updateResult.error, slug
+    );
+    if (correctedCode) {
+      updateResult = await updateCodespace(codespaceId, correctedCode);
+    }
+  }
+
+  if (!updateResult.success) {
+    throw new Error(updateResult.error || "Failed to update codespace");
+  }
+}
+```
+
+Comme un étudiant qui passe l'examen sans réviser : parfois brillant, généralement médiocre. Et surtout — un étudiant qui **oublie tout** entre les examens.
+
+| | Avant (vibe coding) | Après (agent à contexte ingénié) |
+|---|---|---|
+| **Modèle** | Gemini Flash (appel unique) | Claude Opus → Sonnet → Haiku (cascade) |
+| **Réessais** | 1 réessai aveugle | Jusqu'à 3 corrections ciblées avec diagnostic d'erreur |
+| **Mémoire** | Aucune | Notes d'apprentissage bayésiennes, persistées en BDD |
+| **Gestion d'erreurs** | Chaîne d'erreur brute → réessai | Parsing structuré → prompts de correction catégorisés |
+| **Compétences** | Prompt générique | 14 définitions de compétences associées par mots-clés |
+| **Cache de prompt** | Aucun | Cache KV en blocs séparés (économies 10x sur le coût) |
+| **Repli** | Aucun | Proxy agent → Claude direct → Gemini |
+
+---
+
+## Conservation du contexte — La correction en 5 couches
+
+Voici le truc : la correction n'est pas plus d'IA. C'est une meilleure physique.
+
+<FiveLayerStackDemo />
+
+La [pile de contexte à 5 couches](/blog/context-engineering-your-zero-shot-prompt) — Identité, Connaissance, Exemples, Contraintes, Outils — n'est pas juste un cadre. C'est une stratégie de conservation. Les couches qui ne changent pas sont cachées (bon marché). Les couches qui changent sont ajoutées (fraîches). Le budget d'attention du modèle va aux bonnes choses parce que le prompt est structuré pour que cela arrive.
+
+Voici comment ça correspond au code :
+
+| Couche du cadre | Analogie physique | Implémentation dans le code |
+|---|---|---|
+| **Identité** (Couche 1) | Loi de conservation — référentiel stable | `AGENT_IDENTITY` — caché, ne change jamais |
+| **Connaissance** (Couche 2) | Mesure fraîche — dynamique par expérience | Notes d'apprentissage — reconstruites par requête |
+| **Exemples** (Couche 3) | Données de calibration — réglages d'instruments stables | Prompts de compétences — cachés par catégorie |
+| **Contraintes** (Couche 4) | Conditions aux limites — fixées par configuration | Spéc de sortie, règles de correction — cachées |
+| **Outils** (Couche 5) | Appareil de mesure — définit ce qui est observable | Transpileur, API codespace — implicite |
+
+La fonction clé est `buildAgentSystemPrompt`. Elle retourne des *blocs séparés* — un préfixe stable pour le cache et un suffixe dynamique pour la fraîcheur :
+
+```typescript
+export function buildAgentSystemPrompt(
+  topic: string,
+  notes: LearningNote[],
+): SplitPrompt {
+  // Stable prefix: identity + core skills + output spec → cached
+  const coreWithSkills = buildSkillSystemPrompt(topic);
+  const stablePrefix = `${AGENT_IDENTITY}\n\n${coreWithSkills}\n\n${OUTPUT_SPEC}`;
+
+  // Dynamic suffix: learning notes → NOT cached, changes per request
+  const noteBlock = formatNotes(notes);
+
+  return {
+    stablePrefix,
+    dynamicSuffix: noteBlock,
+    full: noteBlock ? `${stablePrefix}\n\n${noteBlock}` : stablePrefix,
+  };
+}
+```
+
+Le préfixe stable reçoit `cache_control: { type: "ephemeral" }` dans l'appel API. Sur les requêtes suivantes avec le même sujet, ces tokens sont servis depuis le cache KV à un **coût 10 fois inférieur**. Le suffixe dynamique — les notes d'apprentissage — change par requête et n'invalide pas le cache.
+
+<Callout type="success">
+**Insight sur le cache KV :** L'identité, les compétences et la spéc de sortie font ~2 000 tokens qui ne changent jamais entre les générations de la même catégorie. Les cacher économise 0,009 $ par requête. Sur des milliers de générations, c'est la différence entre un service rentable et un gouffre financier. L'ingénierie de contexte n'est pas seulement techniquement solide — elle est économiquement optimale.
+</Callout>
+
+C'est la conservation du contexte en action. Le référentiel stable (identité + compétences + spéc de sortie) est comme les quantités conservées en physique — énergie, quantité de mouvement, charge. Elles persistent entre les interactions. Les observations dynamiques (notes d'apprentissage) sont comme les mesures expérimentales — fraîches à chaque fois, construisant sur ce que le cadre conservé rend possible.
+
+---
+
+## La boucle de correction — Sélection naturelle pour le code
+
+<DarwinianTreeDemo />
+
+La boucle de l'agent est la sélection darwinienne pour le code. Générer (mutation) → Transpiler (test environnemental) → Corriger (adaptation) → Apprendre (mémoire héréditaire). Jusqu'à 3 itérations — 3 générations d'évolution par requête.
+
+<AgentLoopDemo />
+
+```typescript
+export async function* agentGenerateApp(
+  slug: string,
+  path: string[],
+  userId: string | undefined,
+): AsyncGenerator<StreamEvent> {
+  const maxIterations = Math.min(
+    parseInt(process.env["AGENT_MAX_ITERATIONS"] || "3", 10),
+    MAX_ITERATIONS_CAP,
+  );
+  // ...
+
+  // === GENERATING: Call Claude Opus ===
+  const genResponse = await callClaude({
+    systemPrompt: systemPrompt.full,
+    stablePrefix: systemPrompt.stablePrefix,
+    dynamicSuffix: systemPrompt.dynamicSuffix || undefined,
+    userPrompt,
+    model: "opus",
+    maxTokens: 32768,
+    temperature: 0.5,
+  });
+```
+
+Le premier appel utilise **Opus** à température **0,5** — exploration créative. Une haute température signifie une haute entropie, plus d'échantillonnage aléatoire de la distribution de probabilité. Bon pour générer des solutions nouvelles. Mauvais pour la chirurgie précise.
+
+Quand le code échoue à la transpilation, le modèle de correction passe à **Sonnet** à température **0,2** — précis, déterministe, ciblé :
+
+```typescript
+      // === FIXING: Ask Claude Sonnet to fix the error ===
+      const fixResponse = await callClaude({
+        systemPrompt: fixSystemPrompt.full,
+        stablePrefix: fixSystemPrompt.stablePrefix,
+        dynamicSuffix: fixSystemPrompt.dynamicSuffix || undefined,
+        userPrompt: fixUserPrompt,
+        model: "sonnet",
+        maxTokens: FIX_MAX_TOKENS,
+        temperature: 0.2,
+      });
+```
+
+Mais voici le point important... **le modèle de correction est un modèle différent du générateur.** C'est comme avoir un correcteur qui n'est pas l'auteur. Il détecte des erreurs auxquelles l'auteur est aveugle. Le générateur (Opus) a un élan créatif — il est investi dans ses choix architecturaux. Le correcteur (Sonnet) ne voit que l'erreur et le code, sans ego attaché au design.
+
+La température comme paramètre physique se traduit clairement : température plus haute = entropie plus haute = plus d'exploration de l'espace de probabilité. Température plus basse = plus déterministe = plus susceptible de converger vers la correction précise. Opus à 0,5 est un chercheur explorant les possibilités. Sonnet à 0,2 est un chirurgien faisant une seule coupe précise.
+
+La cascade de modèles a aussi un argument économique :
+
+| Modèle | Rôle | Coût (sortie/MTok) | Température | Pourquoi ce modèle |
+|---|---|---|---|---|
+| **Opus** | Générer | 25,00 $ | 0,5 | Créatif, haute capacité pour des apps nouvelles |
+| **Sonnet** | Corriger | 25,00 $ | 0,2 | Précis, rapide pour des réparations ciblées |
+| **Haiku** | Apprendre | 5,00 $ | 0,2 | Le modèle capable le moins cher pour l'extraction |
+
+<ModelCascadeDemo />
+
+Utilisez le modèle le plus cher là où la créativité compte. Utilisez le modèle capable le moins cher pour les tâches mécaniques. C'est le même principe que la construction d'une maison : vous engagez un architecte pour le design et un ouvrier pour le plâtre. Les deux sont essentiels. L'un n'a pas besoin d'être l'autre.
+
+<Callout type="warning">
+**Idée : Débogueur visuel d'erreurs** — *"Imaginez si votre compilateur vous montrait un time-lapse du bug naissant, diagnostiqué et corrigé."* Le système d'événements en streaming émet déjà chaque phase : `GENERATING → TRANSPILING → FIXING → LEARNING → PUBLISHED`. Un débogueur visuel pourrait rejouer le parcours de l'agent — montrant aux utilisateurs ce qui a cassé et comment c'a été réparé. Transforme une génération opaque en une session de débogage transparente. Chaque type de `StreamEvent` correspond à un temps visuel.
+</Callout>
+
+---
+
+## La mémoire — Comment l'agent évolue
+
+<BayesianConfidenceDemo />
+
+La boucle de l'agent corrige les erreurs individuelles. Mais le *système de mémoire* empêche ces erreurs de se reproduire dans toutes les générations futures. C'est la différence entre déboguer et apprendre.
+
+Chaque fois qu'une erreur survient et est corrigée (ou non), Haiku extrait une note d'apprentissage :
+
+```typescript
+export async function extractAndSaveNote(
+  failingCode: string,
+  error: string,
+  fixedCode: string | null,
+  path: string[],
+): Promise<void> {
+  const response = await callClaude({
+    systemPrompt: NOTE_EXTRACTION_PROMPT,
+    userPrompt:
+      `Error: ${error}\n\nFailing code (excerpt):\n${failingCode.slice(0, 2000)}\n\nFixed code (excerpt):\n${fixedCode?.slice(0, 2000) || "N/A"}`,
+    model: "haiku",
+    maxTokens: 1024,
+    temperature: 0.2,
+  });
+  // ... parse, deduplicate, store in DB
+}
+```
+
+Chaque note commence sa vie en tant que `CANDIDATE` avec un score de confiance de 0,5 — une hypothèse non prouvée. Le système de confiance bayésien agit ensuite comme sélection naturelle :
+
+```typescript
+async function recalculateConfidence(noteId: string): Promise<void> {
+  const note = await prisma.agentLearningNote.findUnique({
+    where: { id: noteId },
+  });
+
+  const alpha = 1; // Prior successes
+  const beta = 1;  // Prior failures
+  const score =
+    (note.helpCount + alpha) / (note.helpCount + note.failCount + alpha + beta);
+
+  // Promote CANDIDATE → ACTIVE after 3+ helps with >0.6 confidence
+  if (status === "CANDIDATE" && note.helpCount >= 3 && score > 0.6) {
+    status = "ACTIVE";
+  }
+
+  // Demote to DEPRECATED if confidence drops below 0.3
+  if (score < 0.3 && note.helpCount + note.failCount >= 5) {
+    status = "DEPRECATED";
+  }
+}
+```
+
+La formule — `(helps + 1) / (helps + fails + 2)` — est une postérieure Beta-binomiale avec un prior uniforme. C'est les mêmes mathématiques derrière les tests A/B, l'échantillonnage de Thompson et les bandits manchots. Ce n'est pas sophistiqué. C'est robuste. Les termes `+1` et `+2` sont un lissage de Laplace — ils préviennent les cas limites d'observations nulles et expriment une légère incertitude a priori.
+
+Le cycle de vie :
+
+1. Une erreur survient → Haiku extrait une note → stockée comme **CANDIDATE** (confiance 0,5)
+2. La note est incluse dans les prompts futurs pour les slugs correspondants
+3. Si la note aide (la génération réussit après l'avoir appliquée) → **helpCount** s'incrémente → la confiance monte
+4. Après 3+ aides avec >0,6 de confiance → promue à **ACTIVE**
+5. Si la note n'aide pas (les générations échouent toujours) → **failCount** s'incrémente → la confiance baisse
+6. En dessous de 0,3 de confiance après 5+ observations → **DEPRECATED** (éteint)
+
+| Exemple de note | Déclencheur | Leçon | Statut |
+|---|---|---|---|
+| Imports Three.js | `three.js scene setup` | `Import THREE from 'three' not '@three'` | ACTIVE (0,82) |
+| Exit framer motion | `AnimatePresence children` | `Wrap exit animations in motion.div with key prop` | ACTIVE (0,71) |
+| Tooltip Recharts | `custom recharts tooltip` | `CustomTooltip must accept payload as array, not object` | CANDIDATE (0,55) |
+| Ancienne syntaxe tailwind | `tailwind v3 classes` | `Use bg-red-500 not bg-red` | DEPRECATED (0,22) |
+
+Les notes sélectionnées pour chaque prompt sont contraintes par budget. Pas par nombre, mais par tokens :
+
+```typescript
+function formatNotes(notes: LearningNote[]): string {
+  const sorted = [...notes].sort((a, b) => b.confidenceScore - a.confidenceScore);
+
+  const selected: LearningNote[] = [];
+  let totalTokens = 0;
+  for (const note of sorted) {
+    const noteText = `- **${note.trigger}**: ${note.lesson}`;
+    const tokens = estimateTokens(noteText);
+    if (totalTokens + tokens > NOTE_TOKEN_BUDGET) break;
+    selected.push(note);
+    totalTokens += tokens;
+  }
+  // ...
+}
+```
+
+Le budget de 800 tokens est serré par conception. Rappelez-vous la physique de l'attention : chaque token de note rivalise avec le contexte de génération de code pour l'attention du modèle. Les notes à haute confiance méritent leur place. Les notes à basse confiance sont élaguées. Sélection naturelle, tournant sur softmax.
+
+<Callout type="warning">
+**Idée : Apprentissage inter-locataires** — *"En écologie, les monocultures sont fragiles. Les pools d'apprentissage indifférenciés aussi."* Actuellement, toutes les notes d'apprentissage vont dans un seul pool. Mais les leçons spécifiques aux jeux ("toujours ajouter des props key aux enfants d'AnimatePresence") pourraient diluer les prompts de tableaux de bord où elles ne sont pas pertinentes — exactement le problème de dilution d'attention, mais à la couche données. Partitionner les notes par catégorie permettrait à l'agent de jeux d'accumuler une expertise en jeux sans pollinisation croisée avec l'agent de tableaux de bord.
+</Callout>
+
+<Callout type="warning">
+**Idée : Tableau de bord des notes d'apprentissage** — *"On ne peut pas gérer ce qu'on ne peut pas mesurer."* Construisez une page `/admin/agent-notes` montrant les trajectoires de confiance dans le temps, quels slugs ont bénéficié de quelles notes, et quelles notes approchent du seuil de dépréciation à 0,3. Les systèmes observables battent les boîtes noires. Les données vivent déjà dans Prisma — elles ont juste besoin d'une interface.
+</Callout>
+
+---
+
+## Correspondance de compétences — Le bon outil pour le bon travail
+
+Quand quelqu'un demande `/create/games/tetris`, l'extracteur de mots-clés analyse le chemin et trouve "games" et "tetris." Ceux-ci déclenchent des compétences spécifiques aux jeux : canvas-confetti pour les effets de célébration, howler.js pour l'audio du jeu. Quand `/create/finance/dashboard` arrive, d'autres compétences s'activent : recharts pour les graphiques, chart-ui pour les composants de données shadcn/ui.
+
+<Callout type="info">
+**Analogie physique : adaptation d'impédance.** En électronique, vous obtenez un transfert de puissance maximum quand l'impédance de source correspond à l'impédance de charge. En prompting, vous obtenez une qualité de génération maximale quand le contexte de compétence du prompt correspond aux exigences de la tâche. Un prompt de jeu chargé de docs de bibliothèque de graphiques est un désaccord d'impédance — de l'énergie gaspillée à pousser le mauvais contexte dans un modèle qui a besoin d'un contexte différent. Faire correspondre les compétences aux requêtes est l'adaptation d'impédance pour l'attention.
+</Callout>
+
+La correspondance est pilotée par mots-clés, pas par IA — délibérément simple :
+
+| Catégorie | Compétences | Mots-clés déclencheurs |
+|---|---|---|
+| **3D** | Three.js, 3D Performance | three, 3d, globe, scene, planet, webgl |
+| **Visualisation de données** | Recharts, Chart UI | chart, dashboard, analytics, stock, metrics |
+| **Jeu** | Confetti, Game Audio | game, puzzle, tetris, snake, arcade |
+| **Formulaire** | React Hook Form, Form Components | form, survey, checkout, calculator |
+| **DnD** | DnD Kit | kanban, drag, sortable, planner, todo |
+| **Dessin** | Rough.js | draw, paint, sketch, whiteboard, doodle |
+| **Contenu** | React Markdown, Content UI | blog, story, notes, recipe, portfolio |
+| **Audio** | Howler.js, Web Audio | music, audio, drum, piano, synth |
+
+Chaque compétence associée injecte sa propre section de prompt avec des instructions spécifiques à la bibliothèque, des patterns d'import et des pièges courants. Le prompt total ne grandit que des compétences qui correspondent — pas du catalogue entier de compétences. Contexte minimum viable. Densité de signal maximale.
+
+<Callout type="warning">
+**Idée : Compétences apprises** — *"L'évolution ne sélectionne pas juste les plus aptes. Elle génère de nouvelles espèces."* Si Haiku continue d'extraire des notes d'apprentissage sur une bibliothèque qui n'est dans aucune définition de compétence — disons que `@tanstack/query` continue d'apparaître dans les apps de récupération de données — ce pattern pourrait être signalé pour promotion en une définition de compétence complète. Les compétences grandiraient organiquement à partir de l'expérience propre de l'agent, plutôt que d'être codées à la main. Sélection naturelle appliquée au catalogue de compétences lui-même.
+</Callout>
+
+---
+
+## Le proxy — Dégradation gracieuse
+
+L'architecture de production a trois niveaux, comme un réseau électrique : générateur principal, générateur de secours, diesel d'urgence.
+
+```
+Agent Proxy (localhost) → Direct Claude API → Gemini Fallback
+```
+
+La fonction `isAgentAvailable()` fait une vérification de santé de 3 secondes :
+
+```typescript
+export async function isAgentAvailable(): Promise<boolean> {
+  if (!CREATE_AGENT_URL || !CREATE_AGENT_SECRET) return false;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), AGENT_TIMEOUT_MS);
+    const res = await fetch(`${CREATE_AGENT_URL}/health`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+```
+
+Si le serveur agent local fonctionne (avec sa base de données de notes d'apprentissage et sa cascade complète de modèles), le trafic y est dirigé. S'il est en panne, le système se rabat sur la boucle d'agent Claude intégrée. Si l'API de Claude est indisponible, il se dégrade vers le chemin Gemini original.
+
+L'utilisateur ne voit jamais le basculement. Il obtient une application. La qualité se dégrade gracieusement plutôt que d'échouer catastrophiquement.
+
+<Callout type="warning">
+**Idée : Flotte d'agents** — *"Pourquoi avoir un généraliste quand on pourrait avoir des spécialistes ?"* Le pattern de proxy rend trivial le routage des requêtes vers des instances d'agents spécialisées. Un "agent de jeux" tournant sur un serveur GPU avec des notes d'apprentissage optimisées pour les jeux. Un "agent de tableaux de bord" avec une expertise en visualisation de données. Chaque instance accumule des connaissances spécifiques au domaine, et le proxy route selon la catégorie classifiée. Coordination multi-agents au niveau de l'infrastructure.
+</Callout>
+
+---
+
+## Intelligence des erreurs
+
+Toutes les erreurs ne se valent pas. Un import manquant est un problème différent d'une incompatibilité de type, et les deux sont différents d'une erreur de syntaxe. L'agent ne voit pas juste "quelque chose a mal tourné" — il diagnostique :
+
+```typescript
+export function parseTranspileError(rawError: string): StructuredError {
+  const error: StructuredError = {
+    type: "unknown",
+    message: rawError.slice(0, 500),
+  };
+
+  // Missing import / module not found
+  if (/Cannot find module|Could not resolve|Module not found/i.test(rawError)) {
+    error.type = "import";
+    const moduleMatch = rawError.match(/['"]([^'"]+)['"]/);
+    if (moduleMatch) error.library = moduleMatch[1];
+  }
+  // Type errors
+  else if (/Type '.*' is not assignable|Property '.*' does not exist/i.test(rawError)) {
+    error.type = "type";
+  }
+  // JSX/syntax errors
+  else if (/Unexpected token|Unterminated|Parse error/i.test(rawError)) {
+    error.type = "transpile";
+  }
+  // Runtime errors
+  else if (/is not defined|Cannot read propert/i.test(rawError)) {
+    error.type = "runtime";
+  }
+  // ... extract line number, component name, suggestion
+  return error;
+}
+```
+
+Quatre types d'erreurs — import, type, transpile, runtime — chacun alimentant une stratégie de correction différente. L'erreur structurée est injectée dans le prompt de correction comme contexte explicite :
+
+```
+ERROR TYPE: import
+LIBRARY: @react-three/fiber
+LINE: 3
+SUGGESTION: Did you mean 'three'?
+```
+
+Un médecin ne dit pas "quelque chose ne va pas." Il diagnostique. Les erreurs structurées sont un diagnostic. Les chaînes d'erreur brutes sont "quelque chose ne va pas." Le modèle de correction (Sonnet) performe dramatiquement mieux quand il connaît le type d'erreur, la bibliothèque spécifique et le numéro de ligne — parce que c'est moins de tokens de travail de détective et plus de tokens de correction réelle.
+
+<Callout type="info">
+**Cela alimente l'apprentissage.** La fonction `categorizeErrorForNote` associe les erreurs structurées aux types de notes. Les erreurs d'import génèrent des notes `triggerType: "library"` taguées avec le package spécifique. Les erreurs de type génèrent des notes `triggerType: "pattern"` taguées avec TypeScript. La structure de l'erreur détermine comment la note est stockée, associée et sélectionnée pour les prompts futurs. Structuré en entrée, structuré en sortie.
+</Callout>
+
+---
+
+## La méta-construction
+
+<RecursiveZoomDemo />
+
+Voici la partie qui m'a fait buguer le cerveau.
+
+L'agent auto-améliorant entier a été conçu en utilisant le mode plan de Claude Code — la technique exacte que l'agent utilise maintenant en interne. Je n'ai pas écrit le code à la main puis théorisé pourquoi ça marche. J'ai utilisé l'outil, puis étudié ce que l'outil a fait, puis construit un système qui fait ce que l'outil fait.
+
+Le mode plan a forcé Claude à **explorer avant d'agir.** Avant qu'une seule ligne de code ne soit écrite, le modèle a lu la base de code existante, trouvé les patterns du générateur de contenu, identifié l'API du service codespace, cartographié les types d'événements de streaming, et produit un plan structuré. Ce fichier de plan est devenu un prompt à contexte ingénié pour la phase d'implémentation.
+
+Le cadre à 5 couches a structuré l'exploration :
+- **Identité** : "Tu construis un agent auto-améliorant pour le créateur d'applications de spike.land"
+- **Connaissance** : Chemins de fichiers, patterns existants, contrats API de l'exploration de la base de code
+- **Exemples** : Le fallback Gemini existant comme implémentation de référence
+- **Contraintes** : "Ne pas casser le contrat de streaming existant. Maintenir le fallback."
+- **Outils** : "Exécuter `yarn test:coverage` après les modifications. Vérifier la transpilation."
+
+Et la sortie du plan — l'architecture de l'agent — utilise ces mêmes 5 couches pour ses propres prompts. La fonction `buildAgentSystemPrompt` structure le contexte exactement comme le plan qui l'a conçue. Couche Identité (AGENT_IDENTITY). Couche Connaissance (notes d'apprentissage). Couche Exemple (prompts de compétences). Couche Contrainte (OUTPUT_SPEC). Couche Outil (transpileur + API codespace).
+
+C'est récursif : l'ingénierie de contexte a été utilisée pour construire un système qui fait de l'ingénierie de contexte.
+
+<Callout type="success">
+**L'insight récursif :** Le fichier de plan était un prompt. Le prompt a construit un système qui construit des prompts. Les notes d'apprentissage sont des prompts affinés par la sélection naturelle. À chaque niveau — humain vers Claude Code, Claude Code vers agent, agent vers modèle — le même pattern se répète : assembler le contexte, contraindre l'attention, mesurer les résultats, apprendre. De l'ingénierie de contexte jusqu'au bout.
+</Callout>
+
+<AudioPlayer src="/audio/physics-of-attention.m4a" title="Plongée en profondeur : La physique de l'attention (audio compagnon de l'article 2)" />
+
+---
+
+## Ce que nous avons mesuré
+
+La fonction `recordGenerationAttempt` suit chaque génération avec une observabilité complète : slug, succès/échec, nombre d'itérations, durée, notes appliquées, erreurs rencontrées, modèle utilisé, nombre de tokens et hits de cache.
+
+| Métrique | Avant (Gemini Flash) | Après (boucle d'agent) |
+|---|---|---|
+| **Taux de succès au premier essai** | ~40% | ~65% |
+| **Succès après réessais** | ~55% (1 réessai) | ~85% (jusqu'à 3 itérations) |
+| **Itérations moyennes pour le succès** | 1,6 | 1,4 |
+| **Coût par génération** | ~0,005 $ | ~0,08-0,12 $ |
+| **Latence médiane** | 8s | 15-25s |
+| **Notes d'apprentissage appliquées** | 0 | 3-7 par génération |
+
+<Callout type="info">
+**Le compromis est réel.** L'agent est plus lent et 15-20x plus cher par requête. Mais considérez l'économie du point de vue de l'utilisateur : une génération à 0,10 $ qui fonctionne a infiniment plus de valeur qu'une génération à 0,005 $ qui produit une application cassée. Le coût d'une génération échouée n'est pas 0,005 $ — c'est le temps de l'utilisateur, sa frustration, et sa probabilité de revenir. La qualité se compose. Les échecs non.
+</Callout>
+
+Les métriques montrent aussi quelque chose d'inattendu : les notes d'apprentissage ont des rendements décroissants. Les 3-5 premières notes à haute confiance améliorent significativement le taux de succès. Après, le budget d'attention commence à être en compétition. Plus de notes ne signifie pas de meilleurs résultats — la même physique qui motive le budget de 800 tokens pour les notes.
+
+<Callout type="warning">
+**Idée : Tests A/B** — *"La science nécessite un groupe contrôle."* L'architecture de fallback rend les tests A/B triviaux. Router aléatoirement 50% des requêtes à travers la boucle complète d'agent et 50% à travers le fallback Gemini. Suivre le taux de succès, la rétention utilisateur et le coût par génération réussie. Laissez les données décider si la complexité et le coût sont justifiés. Le proxy gère déjà le routage — il a juste besoin d'un pile ou face.
+</Callout>
+
+---
+
+## Commencez à construire
+
+Trois enseignements, ancrés dans la physique :
+
+**1. Conservez votre budget d'attention.** Chaque token dans votre prompt rivalise pour l'attention finie du modèle. Avant d'ajouter du contexte, demandez-vous : "Est-ce que retirer ceci changerait le résultat ?" Si non, retirez-le. La pile à 5 couches n'est pas une question d'ajouter plus de contexte — c'est d'ajouter le *bon* contexte et rien d'autre. Conservation, pas accumulation.
+
+**2. Construisez des boucles de feedback, pas des prompts plus gros.** L'agent ne réussit pas parce qu'il a un meilleur prompt que Gemini. Il réussit parce qu'il peut échouer, diagnostiquer, corriger et apprendre. Un prompt médiocre avec une boucle de feedback surpasse un prompt brillant sans mémoire. L'évolution bat le design intelligent — avec suffisamment d'itérations.
+
+**3. Faites correspondre vos outils à votre tâche.** Opus pour la création, Sonnet pour la correction, Haiku pour l'apprentissage. Haute température pour l'exploration, basse température pour la précision. Des modèles chers là où la créativité compte, des modèles bon marché là où l'extraction compte. Le bon outil au bon coût pour le bon travail — adaptation d'impédance jusqu'au bout.
+
+<CTAButton href="/create">Essayer le créateur d'applications</CTAButton>
+
+---
+
+<div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-6 mt-8">
+  <h3 className="text-lg font-semibold mb-3 text-slate-200">La trilogie de l'ingénierie de contexte</h3>
+  <p className="text-slate-300 mb-4">
+    Cet article est la pièce finale d'une série en trois parties. Commencez par la théorie, comprenez le mécanisme, puis voyez-le appliqué à un vrai produit.
+  </p>
+  <div className="flex flex-wrap gap-3">
+    <a
+      href="/blog/context-engineering-your-zero-shot-prompt"
+      className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+    >
+      Partie 1 : Le cadre à 5 couches
+    </a>
+    <a
+      href="/blog/how-claude-code-engineers-context"
+      className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+    >
+      Partie 2 : À l'intérieur du transformer
+    </a>
+    <a
+      href="https://github.com/zerdos/spike-land-nextjs"
+      className="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
+    >
+      Explorer le code source
+    </a>
+  </div>
+</div>
+
+---
+
+*La meilleure IA n'est pas celle qui essaie le plus fort. C'est celle qui se souvient de ce qui a mal tourné. Le vibe coding est de l'entropie — de l'énergie sans direction. L'ingénierie de contexte est la seconde loi : l'univers tend vers l'ordre, mais seulement si vous faites le travail.*

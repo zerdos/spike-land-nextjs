@@ -8,6 +8,11 @@ const {
   mockGetPostSlugs,
   mockSerialize,
   mockNotFound,
+  mockGetAvailableLanguages,
+  mockGetTranslatedPost,
+  mockResolveLanguage,
+  mockCookies,
+  mockHeaders,
 } = vi.hoisted(() => ({
   mockGetPostBySlug: vi.fn(),
   mockGetAllPosts: vi.fn(),
@@ -16,12 +21,26 @@ const {
   mockNotFound: vi.fn().mockImplementation(() => {
     throw new Error("NEXT_NOT_FOUND");
   }),
+  mockGetAvailableLanguages: vi.fn(),
+  mockGetTranslatedPost: vi.fn(),
+  mockResolveLanguage: vi.fn(),
+  mockCookies: vi.fn(),
+  mockHeaders: vi.fn(),
 }));
 
 vi.mock("@/lib/blog/get-posts", () => ({
   getPostBySlug: mockGetPostBySlug,
   getAllPosts: mockGetAllPosts,
   getPostSlugs: mockGetPostSlugs,
+}));
+
+vi.mock("@/lib/blog/get-translations", () => ({
+  getAvailableLanguages: mockGetAvailableLanguages,
+  getTranslatedPost: mockGetTranslatedPost,
+}));
+
+vi.mock("@/lib/blog/language-detection", () => ({
+  resolveLanguage: mockResolveLanguage,
 }));
 
 vi.mock("next-mdx-remote/serialize", () => ({
@@ -32,11 +51,21 @@ vi.mock("next/navigation", () => ({
   notFound: mockNotFound,
 }));
 
+vi.mock("next/headers", () => ({
+  cookies: mockCookies,
+  headers: mockHeaders,
+}));
+
 // Mock the MDXContent component to avoid serialization issues in tests
 vi.mock("@/components/blog/MDXContent", () => ({
-  MDXContent: ({ source }: { source: unknown; }) => (
+  MDXContent: ({ source }: { source: unknown }) => (
     <div data-testid="mdx-content">{JSON.stringify(source)}</div>
   ),
+}));
+
+// Mock LanguageBanner
+vi.mock("@/components/blog/LanguageBanner", () => ({
+  LanguageBanner: () => <div data-testid="language-banner" />,
 }));
 
 // Import after mocks are set up
@@ -90,9 +119,16 @@ describe("BlogPostPage", () => {
     },
   ];
 
+  const defaultSearchParams = Promise.resolve({});
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockSerialize.mockResolvedValue({ compiledSource: "compiled" });
+    mockGetAvailableLanguages.mockReturnValue([]);
+    mockGetTranslatedPost.mockReturnValue(null);
+    mockResolveLanguage.mockReturnValue("en");
+    mockCookies.mockResolvedValue({ get: () => undefined });
+    mockHeaders.mockResolvedValue({ get: () => null });
   });
 
   describe("generateStaticParams", () => {
@@ -122,7 +158,8 @@ describe("BlogPostPage", () => {
       mockGetPostBySlug.mockReturnValue(mockPost);
 
       const params = Promise.resolve({ slug: "test-post" });
-      const metadata = await generateMetadata({ params });
+      const searchParams = defaultSearchParams;
+      const metadata = await generateMetadata({ params, searchParams });
 
       expect(metadata.title).toBe("Test Blog Post | Spike Land Blog");
       expect(metadata.description).toBe("This is a test blog post description");
@@ -131,7 +168,7 @@ describe("BlogPostPage", () => {
       expect(metadata.openGraph?.title).toBe("Test Blog Post");
       expect(metadata.openGraph?.images).toEqual([{ url: "/images/test.jpg" }]);
       expect(
-        (metadata.twitter as { card?: string; } | undefined)?.card,
+        (metadata.twitter as { card?: string } | undefined)?.card,
       ).toBe("summary_large_image");
     });
 
@@ -139,7 +176,8 @@ describe("BlogPostPage", () => {
       mockGetPostBySlug.mockReturnValue(null);
 
       const params = Promise.resolve({ slug: "non-existent" });
-      const metadata = await generateMetadata({ params });
+      const searchParams = defaultSearchParams;
+      const metadata = await generateMetadata({ params, searchParams });
 
       expect(metadata.title).toBe("Post Not Found | Spike Land Blog");
     });
@@ -152,10 +190,27 @@ describe("BlogPostPage", () => {
       mockGetPostBySlug.mockReturnValue(postWithoutImage);
 
       const params = Promise.resolve({ slug: "test-post" });
-      const metadata = await generateMetadata({ params });
+      const searchParams = defaultSearchParams;
+      const metadata = await generateMetadata({ params, searchParams });
 
       expect(metadata.openGraph?.images).toBeUndefined();
       expect(metadata.twitter?.images).toBeUndefined();
+    });
+
+    it("includes hreflang alternates when translations exist", async () => {
+      mockGetPostBySlug.mockReturnValue(mockPost);
+      mockGetAvailableLanguages.mockReturnValue(["hu", "es"]);
+
+      const params = Promise.resolve({ slug: "test-post" });
+      const searchParams = defaultSearchParams;
+      const metadata = await generateMetadata({ params, searchParams });
+
+      expect(metadata.alternates?.languages).toEqual({
+        "x-default": "https://spike.land/blog/test-post",
+        en: "https://spike.land/blog/test-post",
+        hu: "https://spike.land/blog/test-post?lang=hu",
+        es: "https://spike.land/blog/test-post?lang=es",
+      });
     });
   });
 
@@ -165,7 +220,8 @@ describe("BlogPostPage", () => {
       mockGetAllPosts.mockReturnValue(mockAllPosts);
 
       const params = Promise.resolve({ slug: "test-post" });
-      render(await BlogPostPage({ params }));
+      const searchParams = defaultSearchParams;
+      render(await BlogPostPage({ params, searchParams }));
 
       expect(screen.getByText("Test Blog Post")).toBeInTheDocument();
       expect(screen.getByText("Tutorial")).toBeInTheDocument();
@@ -177,7 +233,8 @@ describe("BlogPostPage", () => {
       mockGetPostBySlug.mockReturnValue(null);
 
       const params = Promise.resolve({ slug: "non-existent" });
-      await expect(BlogPostPage({ params })).rejects.toThrow("NEXT_NOT_FOUND");
+      const searchParams = defaultSearchParams;
+      await expect(BlogPostPage({ params, searchParams })).rejects.toThrow("NEXT_NOT_FOUND");
 
       expect(mockNotFound).toHaveBeenCalled();
     });
@@ -187,7 +244,8 @@ describe("BlogPostPage", () => {
       mockGetAllPosts.mockReturnValue(mockAllPosts);
 
       const params = Promise.resolve({ slug: "test-post" });
-      render(await BlogPostPage({ params }));
+      const searchParams = defaultSearchParams;
+      render(await BlogPostPage({ params, searchParams }));
 
       const backLink = screen.getByRole("link", { name: /back to blog/i });
       expect(backLink).toHaveAttribute("href", "/blog");
@@ -198,7 +256,8 @@ describe("BlogPostPage", () => {
       mockGetAllPosts.mockReturnValue(mockAllPosts);
 
       const params = Promise.resolve({ slug: "test-post" });
-      render(await BlogPostPage({ params }));
+      const searchParams = defaultSearchParams;
+      render(await BlogPostPage({ params, searchParams }));
 
       // Check for previous post link (older post)
       expect(screen.getByText("Previous")).toBeInTheDocument();
@@ -214,7 +273,8 @@ describe("BlogPostPage", () => {
       mockGetAllPosts.mockReturnValue([mockPost]);
 
       const params = Promise.resolve({ slug: "test-post" });
-      render(await BlogPostPage({ params }));
+      const searchParams = defaultSearchParams;
+      render(await BlogPostPage({ params, searchParams }));
 
       expect(screen.queryByText("Previous")).not.toBeInTheDocument();
       expect(screen.queryByText("Next")).not.toBeInTheDocument();
@@ -225,7 +285,8 @@ describe("BlogPostPage", () => {
       mockGetAllPosts.mockReturnValue(mockAllPosts);
 
       const params = Promise.resolve({ slug: "test-post" });
-      render(await BlogPostPage({ params }));
+      const searchParams = defaultSearchParams;
+      render(await BlogPostPage({ params, searchParams }));
 
       expect(screen.getByText("Ready to try Pixel?")).toBeInTheDocument();
       expect(screen.getByText(/Transform your photos/i)).toBeInTheDocument();
@@ -239,7 +300,8 @@ describe("BlogPostPage", () => {
       mockGetAllPosts.mockReturnValue(mockAllPosts);
 
       const params = Promise.resolve({ slug: "test-post" });
-      render(await BlogPostPage({ params }));
+      const searchParams = defaultSearchParams;
+      render(await BlogPostPage({ params, searchParams }));
 
       expect(screen.getByText("Test Author")).toBeInTheDocument();
     });
@@ -249,11 +311,60 @@ describe("BlogPostPage", () => {
       mockGetAllPosts.mockReturnValue(mockAllPosts);
 
       const params = Promise.resolve({ slug: "test-post" });
-      render(await BlogPostPage({ params }));
+      const searchParams = defaultSearchParams;
+      render(await BlogPostPage({ params, searchParams }));
 
       // Tags are rendered with "#" prefix in BlogHeader component
       expect(screen.getByText("#test")).toBeInTheDocument();
       expect(screen.getByText("#blog")).toBeInTheDocument();
+    });
+
+    it("shows language banner when translations exist", async () => {
+      mockGetPostBySlug.mockReturnValue(mockPost);
+      mockGetAllPosts.mockReturnValue(mockAllPosts);
+      mockGetAvailableLanguages.mockReturnValue(["hu", "es"]);
+
+      const params = Promise.resolve({ slug: "test-post" });
+      const searchParams = defaultSearchParams;
+      render(await BlogPostPage({ params, searchParams }));
+
+      expect(screen.getByTestId("language-banner")).toBeInTheDocument();
+    });
+
+    it("does not show language banner when no translations exist", async () => {
+      mockGetPostBySlug.mockReturnValue(mockPost);
+      mockGetAllPosts.mockReturnValue(mockAllPosts);
+      mockGetAvailableLanguages.mockReturnValue([]);
+
+      const params = Promise.resolve({ slug: "test-post" });
+      const searchParams = defaultSearchParams;
+      render(await BlogPostPage({ params, searchParams }));
+
+      expect(screen.queryByTestId("language-banner")).not.toBeInTheDocument();
+    });
+
+    it("displays translated content when language is not English", async () => {
+      const translatedPost = {
+        ...mockPost,
+        frontmatter: {
+          ...mockPost.frontmatter,
+          title: "Teszt Blogbejegyzés",
+          description: "Ez egy teszt blogbejegyzés leírás",
+        },
+        content: "# Teszt Tartalom",
+      };
+
+      mockGetPostBySlug.mockReturnValue(mockPost);
+      mockGetAllPosts.mockReturnValue(mockAllPosts);
+      mockGetAvailableLanguages.mockReturnValue(["hu"]);
+      mockResolveLanguage.mockReturnValue("hu");
+      mockGetTranslatedPost.mockReturnValue(translatedPost);
+
+      const params = Promise.resolve({ slug: "test-post" });
+      const searchParams = Promise.resolve({ lang: "hu" });
+      render(await BlogPostPage({ params, searchParams }));
+
+      expect(screen.getByText("Teszt Blogbejegyzés")).toBeInTheDocument();
     });
   });
 });

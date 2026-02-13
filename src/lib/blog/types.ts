@@ -1,5 +1,16 @@
 import { z } from "zod";
 
+export const SUPPORTED_LANGUAGES = ["en", "hu", "es", "de", "fr"] as const;
+export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+
+export const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
+  en: "English",
+  hu: "Magyar",
+  es: "Español",
+  de: "Deutsch",
+  fr: "Français",
+};
+
 /**
  * Zod schema for blog post frontmatter validation.
  * Used for runtime validation of MDX file frontmatter.
@@ -28,6 +39,8 @@ export const blogPostFrontmatterSchema = z.object({
   featured: z.boolean().optional(),
   /** Whether to list this post in blog listings (default: true). Unlisted posts are still accessible via direct URL. */
   listed: z.boolean().optional().default(true),
+  /** Language code for translated posts */
+  language: z.enum(SUPPORTED_LANGUAGES).optional().default("en"),
 });
 
 /**

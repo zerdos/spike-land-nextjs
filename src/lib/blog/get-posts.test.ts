@@ -45,6 +45,7 @@ describe("get-posts", () => {
     tags: ["test", "vitest"],
     featured: false,
     listed: true,
+    language: "en",
   };
 
   const mockContent = "This is the content of the test post.";
