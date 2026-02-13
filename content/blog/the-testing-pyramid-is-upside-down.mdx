@@ -19,17 +19,17 @@ featured: true
 
 ## The Conference
 
-About fifteen years ago, I went to a developer conference in Budapest. The topic was Mocha and unit testing. This was before Jest had eaten the world, before testing was a given on every project. Testing was still something you had to argue for.
+About fifteen years ago, I went to a developer conference in Budapest. The topic was Jasmine — which ran in the browser, since Node.js itself wasn't widely adopted yet. This was before Jest had eaten the world, before testing was a given on every project. Testing was still something you had to argue for.
 
 The presenter was young. Nervous energy. He had clearly been converted recently — you could see it in his eyes. He walked us through how a few dozen unit tests had caught a regression that would have shipped to production. He showed how mocking worked. He showed how fast the feedback loop was. He was practically vibrating.
 
 Then someone in the audience raised their hand.
 
-"This is great for logic," the person said. "But what about the UI? How do you test what the user actually sees?"
+"Es hogy teszteljük le az UI-t?" the person asked — *"And how do we test the UI?"*
 
 The presenter paused. Then he shrugged.
 
-"We don't test UI. Your eyes are enough."
+"Az UI-t? Azt teszteljék a hülyék!" — *"The UI? Let the idiots test that!"*
 
 A few people laughed. Most nodded. It seemed reasonable at the time. The unit tests covered the business logic. The UI was just HTML and CSS. You look at it, it either looks right or it does not. What is there to automate?
 
@@ -282,7 +282,7 @@ If your business logic is accessible through a text interface, full user flow ve
 
 The pyramid does not flip upside down. It collapses. The painful top layer — the E2E layer — gets thin. Almost everything that was in it moves down to the unit test layer. Not because you found a clever way to mock the browser, but because you removed the need for the browser entirely.
 
-The remaining E2E tests do what they should have always done: verify that the page renders, that the buttons are clickable, that the visual design is correct. Pure UI concerns. "Your eyes are enough" — except now your eyes are Playwright running a handful of fast visual checks, not a hundred slow business logic simulations.
+The remaining E2E tests do what they should have always done: verify that the page renders, that the buttons are clickable, that the visual design is correct. Pure UI concerns. "Let the idiots test that" — except now the "idiots" are Playwright running a handful of fast visual checks, not a hundred slow business logic simulations.
 
 ---
 
@@ -290,7 +290,7 @@ The remaining E2E tests do what they should have always done: verify that the pa
 
 I still think about that conference sometimes. The young presenter, vibrating with excitement about unit tests. The person in the audience asking about UI testing. The dismissive answer.
 
-"We don't test UI. Your eyes are enough."
+"Az UI-t? Azt teszteljék a hülyék!" — *"The UI? Let the idiots test that!"*
 
 He was not wrong. He was early.
 
