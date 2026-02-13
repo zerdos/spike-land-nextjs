@@ -5,7 +5,7 @@ const D = ESM_DEPS_PARAM;
 export const HTML_TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
   <head>
-    <base href="https://testing.spike.land/" />
+    <base href="${ESM_CDN}/" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>spike.land</title>
@@ -163,11 +163,33 @@ export const IMPORT_MAP = {
 };
 
 /**
+ * Rewrite relative CDN import paths to absolute esm.sh URLs.
+ *
+ * The transpiler generates imports like:
+ *   from "/lucide-react?bundle=true&external=...&exports=..."
+ *
+ * These are relative paths that would resolve via the <base> tag. By rewriting
+ * them to absolute esm.sh URLs, we ensure they work regardless of the base href
+ * and avoid CORS issues with cross-origin module loading.
+ *
+ * Paths starting with /@/ are local component paths and are left unchanged.
+ */
+function rewriteCdnImports(code: string): string {
+  // Match static imports: from "/pkg?..." or import "/pkg?..."
+  // but NOT /@/ paths (local component paths from testing.spike.land)
+  return code.replace(
+    /((?:from|import)\s*["'])(\/(?!@\/))([^"']+)(["'])/g,
+    `$1${ESM_CDN}/$3$4`,
+  );
+}
+
+/**
  * Build a self-contained embed HTML page.
  *
  * All module imports use absolute esm.sh CDN URLs via the import map,
- * so no URL rewriting is needed. Transpiled code from js.spike.land uses
- * bare specifiers (e.g. `from "react"`) that the import map resolves.
+ * so no URL rewriting is needed for bare specifiers. Transpiled code that
+ * contains CDN-relative paths (e.g. "/lucide-react?bundle=true&...") is
+ * rewritten to use absolute esm.sh URLs to avoid CORS issues.
  */
 export function buildEmbedHtml(opts: {
   transpiled: string;
@@ -186,6 +208,9 @@ export function buildEmbedHtml(opts: {
     `const {createRoot} = await import("react-dom/client");
 createRoot(document.getElementById("embed")).render(jsx($1, {}));`,
   );
+
+  // Rewrite relative CDN imports to absolute esm.sh URLs
+  code = rewriteCdnImports(code);
 
   return HTML_TEMPLATE
     .replace("// IMPORTMAP", importMapJson)
