@@ -14,7 +14,7 @@ Feature: Smoke Tests
   Scenario: Pricing page loads
     When I visit "/pricing"
     Then the page should load successfully
-    And I should see "Pricing" heading
+    And I should see "Most of spike.land is free." heading
 
   @fast
   Scenario: Terms page loads
