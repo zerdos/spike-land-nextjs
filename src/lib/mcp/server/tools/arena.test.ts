@@ -28,13 +28,18 @@ vi.mock("@/lib/arena/review", () => ({
 
 import { registerArenaTools } from "./arena";
 
+interface ToolResult {
+  content: Array<{ text: string }>;
+  isError?: boolean;
+}
+
 // Create a mock registry that captures tool registrations
 function createMockRegistry() {
-  const tools = new Map<string, { handler: (...args: unknown[]) => unknown; inputSchema: Record<string, unknown> }>();
+  const tools = new Map<string, { handler: (...args: unknown[]) => Promise<ToolResult>; inputSchema: Record<string, unknown> }>();
 
   return {
     tools,
-    register: vi.fn(({ name, handler, inputSchema }) => {
+    register: vi.fn(({ name, handler, inputSchema }: { name: string; handler: (...args: unknown[]) => Promise<ToolResult>; inputSchema: Record<string, unknown> }) => {
       tools.set(name, { handler, inputSchema });
     }),
   };

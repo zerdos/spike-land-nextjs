@@ -1,18 +1,20 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { calculateEloChange, expectedScore, updateEloAfterScoring } from "./elo";
 
-const mockPrisma = {
-  arenaSubmission: {
-    findUniqueOrThrow: vi.fn(),
-    findMany: vi.fn(),
-    update: vi.fn(),
+const { mockPrisma } = vi.hoisted(() => ({
+  mockPrisma: {
+    arenaSubmission: {
+      findUniqueOrThrow: vi.fn(),
+      findMany: vi.fn(),
+      update: vi.fn(),
+    },
+    arenaElo: {
+      upsert: vi.fn(),
+      update: vi.fn(),
+      findMany: vi.fn(),
+    },
   },
-  arenaElo: {
-    upsert: vi.fn(),
-    update: vi.fn(),
-    findMany: vi.fn(),
-  },
-};
+}));
 
 // Mock prisma
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));

@@ -1,18 +1,20 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { submitReview, checkApprovalThreshold, scoreSubmission } from "./review";
 
-const mockPrisma = {
-  arenaSubmission: {
-    findUniqueOrThrow: vi.fn(),
-    update: vi.fn(),
+const { mockPrisma } = vi.hoisted(() => ({
+  mockPrisma: {
+    arenaSubmission: {
+      findUniqueOrThrow: vi.fn(),
+      update: vi.fn(),
+    },
+    arenaReview: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      count: vi.fn(),
+      findMany: vi.fn(),
+    },
   },
-  arenaReview: {
-    findFirst: vi.fn(),
-    create: vi.fn(),
-    count: vi.fn(),
-    findMany: vi.fn(),
-  },
-};
+}));
 
 // Mock dependencies
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));

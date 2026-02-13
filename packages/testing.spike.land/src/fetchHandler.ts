@@ -4,6 +4,19 @@ import type Env from "./env";
 import { handleCORS } from "./utils";
 
 const ESM_CDN = "https://esm.sh";
+
+/** Redirect with CORS headers so cross-origin module imports can follow the redirect. */
+function corsRedirect(target: string): Response {
+  return new Response(null, {
+    status: 302,
+    headers: {
+      "Location": target,
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Cache-Control": "public, max-age=86400",
+    },
+  });
+}
 export async function handleFetchApi(
   path: string[],
   request: Request,
@@ -79,7 +92,7 @@ Sitemap: ${new URL(request.url).origin}/sitemap.xml
   // but esm.sh returns a JS module for bare package URLs. Tailwind v4's CSS entry
   // is at index.css (package.json "style" export).
   if (/^tailwindcss@[\d.]+$/.test(firstPath) && path.length === 1) {
-    return Response.redirect(`${ESM_CDN}/${firstPath}/index.css`, 302);
+    return corsRedirect(`${ESM_CDN}/${firstPath}/index.css`);
   }
 
   // Redirect node@<version>/<module>.mjs polyfill URLs to esm.sh bare module paths.
@@ -87,7 +100,7 @@ Sitemap: ${new URL(request.url).origin}/sitemap.xml
   // backwards compatibility with any cached or in-flight code.
   if (/^node@[\d.]+$/.test(firstPath)) {
     const modulePath = path.slice(1).join("/").replace(/\.mjs$/, "");
-    return Response.redirect(`${ESM_CDN}/${modulePath}`, 302);
+    return corsRedirect(`${ESM_CDN}/${modulePath}`);
   }
 
   const handler = handlers[firstPath];
@@ -101,7 +114,7 @@ Sitemap: ${new URL(request.url).origin}/sitemap.xml
  */
 function redirectToEsmCdn(request: Request): Response {
   const url = new URL(request.url);
-  return Response.redirect(`${ESM_CDN}${url.pathname}${url.search}`, 302);
+  return corsRedirect(`${ESM_CDN}${url.pathname}${url.search}`);
 }
 
 function handlePing(): Response {
