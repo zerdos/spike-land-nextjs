@@ -67,11 +67,9 @@ Here is the thing about E2E tests that nobody talks about clearly enough: most o
 
 Think about what a typical E2E test actually verifies. "User logs in, navigates to settings, changes their email, confirms the change, sees the updated email on the profile page." What are you really testing here? You are testing that the email change flow works. The login, the navigation, the form submission, the confirmation, the state update — that is all business logic. The browser is just the delivery mechanism.
 
-This is where MCPs change everything.
+This is not a new observation. Alistair Cockburn's hexagonal architecture (2005) argued that applications should be equally drivable by users, programs, and test scripts. Martin Fowler named the pattern "subcutaneous testing" — testing just below the UI. Robert C. Martin's Clean Architecture insisted that business rules must be testable without any UI at all. The insight was always there. What was missing was a standardized interface that made it practical at scale.
 
-MCP — Model Context Protocol — is a standard for exposing your application's capabilities as structured tools. Text in, text out. An agent sends a request describing what it wants to do, your MCP server executes the action and returns the result. No browser. No DOM. No CSS selectors. No timing issues.
-
-If you write your user stories as MCP tools, you have created a testable contract for your business logic.
+MCP — Model Context Protocol — is that interface. It is a standard for exposing your application's capabilities as structured tools. Text in, text out. An agent sends a request describing what it wants to do, your MCP server executes the action and returns the result. No browser. No DOM. No CSS selectors. No timing issues. If you write your user stories as MCP tools, you have created a testable contract for your business logic.
 
 Let me show you what I mean.
 
@@ -204,11 +202,11 @@ The same spec serves three purposes simultaneously:
 
 3. **Test contract.** The input schema defines what the tool accepts. The handler defines the expected behavior. The response defines the expected output. That is a contract. You can test it the same way you test any function — because it *is* a function.
 
-You are not adding test infrastructure. You are adding agent capability that *happens* to be testable. The testing is a side effect of good architecture.
+You could get similar testability from a plain service layer — a well-structured `updateUserEmail()` function is just as testable as an MCP handler. But a service function serves one master: your application. An MCP tool serves three. The same artifact is your test contract, your agent interface, and your feature documentation. You write it once; it earns its keep three ways. That is not a testing trick. That is an architectural force multiplier.
 
 This is the key insight that took me years to see: the reason E2E tests are painful is not that browser automation is hard (though it is). It is that we were forced to go through the browser because there was no other way to exercise full user flows. The browser was the only interface that connected all the pieces.
 
-MCPs give you a second interface. A text-based one. One that connects the same pieces but without the rendering layer, without the timing issues, without the CSS selectors.
+MCPs give you a second interface. A text-based one with self-describing schemas that machines can discover, invoke, and verify. One that connects the same pieces but without the rendering layer, without the timing issues, without the CSS selectors.
 
 ---
 
@@ -218,13 +216,11 @@ László taught me the duality: a unit test and its code, when written properly,
 
 But I think there is a third player: the name.
 
-Consider the MCP tool from earlier: `update_user_email`. That name is not just a label. It is a constraint. It tells you what the tool must do and what it must not do. It does not send notifications. It does not update the password. It updates the user's email. The name *is* the spec.
+Consider the MCP tool from earlier: `update_user_email`. That name is not just a label. It is a constraint. It tells you what the tool must do and what it must not do. It does not send notifications. It does not update the password. It updates the user's email.
 
-This is not a new idea — good naming has always mattered. But MCP makes it structural. The tool name is the address, and if the address is written properly, the building instructions are encoded in it. You do not need a separate document explaining what `update_user_email` does. The name, the input schema, and the handler form a triangle where each vertex constrains the other two.
+Good naming has always mattered. A well-named function constrains what a developer writes. But an MCP tool name constrains what a *machine* can discover, invoke, and test. An AI agent browsing your MCP server does not read your source code — it reads tool names, descriptions, and schemas. If `update_user_email` is named properly, an agent knows what to call it for without reading the implementation. The name becomes a discoverable contract.
 
-Test. Code. Name. Three players, one truth.
-
-We had the first two for decades. We just never formalized the third into something a machine could reason about. MCP does that. And it turns out, when you give the name enough structure to be machine-readable, it becomes machine-testable too.
+Test. Code. Name. Three players, one truth. The name, the input schema, and the handler form a triangle where each vertex constrains the other two. We had the first two for decades. MCP formalized the third into something machines can reason about — and it turns out, when you give the name enough structure to be machine-readable, it becomes machine-testable too.
 
 ---
 
@@ -240,7 +236,7 @@ If you are staring at a flaky E2E suite right now, here is how to start.
 
 **Step 4: Write unit tests for the MCP tools.** Mock the dependencies. Test the happy path. Test the error cases. Test the edge cases. These tests will run in milliseconds and they will never flake.
 
-**Step 5: Watch your E2E suite shrink.** You will still need some E2E tests — for visual regressions, for browser-specific behavior, for the final "does the page actually render" check. But the number will drop dramatically. The ones you keep will be simpler and more stable because they are not carrying the weight of business logic verification anymore.
+**Step 5: Watch your E2E suite shrink.** You will still need some E2E tests — for visual regressions, for browser-specific behavior, for integration wiring that only shows up in a real environment (CORS, auth middleware, hydration). But the number will drop dramatically. The ones you keep will be simpler and more stable because they are not carrying the weight of business logic verification anymore.
 
 You are not replacing E2E tests. You are moving the business logic out of them. What remains is a thin layer of visual smoke tests — which is all E2E tests should have been in the first place.
 
@@ -268,7 +264,7 @@ This is incremental review, powered by the same coupling that made your unit tes
 
 The savings compound. On a large codebase, a typical PR touches a fraction of the business logic. Running the full E2E suite for every PR is like rebuilding the entire house because you changed a doorknob. With MCP-structured business logic and an AI reviewer, your CI runs only what matters.
 
-Less compute. Faster feedback. Fewer flaky failures from tests that had nothing to do with your change. The testing pyramid does not just collapse — it gets smart.
+Less compute. Faster feedback. Fewer flaky failures from tests that had nothing to do with your change. The pyramid does not just reshape — it gets smart.
 
 ---
 
@@ -280,9 +276,9 @@ MCPs break that constraint.
 
 If your business logic is accessible through a text interface, full user flow verification does not require a browser. It requires a function call. Function calls are fast. Therefore, full user flow tests are fast. Therefore, write as many as you want.
 
-The pyramid does not flip upside down. It collapses. The painful top layer — the E2E layer — gets thin. Almost everything that was in it moves down to the unit test layer. Not because you found a clever way to mock the browser, but because you removed the need for the browser entirely.
+The pyramid does not flip upside down. It reshapes. The painful top layer — the E2E layer — gets thin. The business logic that bloated it moves down to the unit test layer. Not because you found a clever way to mock the browser, but because you removed the need for the browser entirely.
 
-The remaining E2E tests do what they should have always done: verify that the page renders, that the buttons are clickable, that the visual design is correct. Pure UI concerns. "Let the idiots test that" — except now the "idiots" are Playwright running a handful of fast visual checks, not a hundred slow business logic simulations.
+The remaining E2E tests do what they should have always done: verify that the page renders, that the integration wiring holds, that the visual design is correct. "Let the idiots test that" — except now the "idiots" are Playwright running a handful of targeted checks, not a hundred slow business logic simulations.
 
 ---
 
