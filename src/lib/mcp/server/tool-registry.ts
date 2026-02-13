@@ -59,6 +59,12 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   "orbit-inbox": "Social media inbox: list, analyze, reply, escalate, and batch reply across platforms",
   "orbit-relay": "AI response drafts: generate, review, approve/reject, and performance metrics",
   arena: "AI Prompt Arena: submit prompts, review code, compete on ELO leaderboard",
+  "album-images": "Album image management: add, remove, reorder, list, and move images between albums",
+  "album-management": "Album CRUD: create, list, get, update, delete albums with privacy and sharing controls",
+  "batch-enhance": "Batch image enhancement: enhance multiple images, preview costs, and track batch progress",
+  "enhancement-jobs": "Enhancement job lifecycle: start, cancel with refund, status, and history",
+  create: "Public /create app generator: search apps, classify ideas, check status, and manage created apps",
+  learnit: "AI wiki knowledge base: search topics, explore relationships, and navigate the topic graph",
 };
 
 export class ToolRegistry {

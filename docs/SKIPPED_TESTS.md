@@ -65,7 +65,7 @@ These scenarios navigate to pages that call Prisma directly in server components
 
 | Feature File | Skipped | Running | Reason |
 |-------------|---------|---------|--------|
-| `image-enhancement.feature` | 19 | 4 | `[imageId]` page is a server component calling Prisma directly |
+| ~~`image-enhancement.feature`~~ | — | — | **Removed**: migrated to MCP unit tests (`enhancement-jobs.test.ts`) |
 | `pixel-image-detail.feature` | 17 | 2 | Server component Prisma queries |
 | `job-cancellation.feature` | 6 | 2 | Server component Prisma queries |
 | `orbit-social-integration.feature` | 3 | 9 | Settings pages use server-side Prisma |
@@ -78,7 +78,7 @@ These scenarios reference UI elements that don't exist yet or have been removed.
 
 | Feature File | Skipped | Running | Reason |
 |-------------|---------|---------|--------|
-| `batch-enhancement.feature` | 18 | 0 | Album page needs "Enhance All" button wired to API |
+| ~~`batch-enhancement.feature`~~ | — | — | **Removed**: migrated to MCP unit tests (`batch-enhance.test.ts`) |
 | `batch-operations.feature` | 23 | 0 | Upload/selection lives in different pages than tested |
 | `orbit-social-integration.feature` | 4 | 9 | 2 post creation + 1 OAuth flow + 1 org selection (missing infrastructure) |
 | `pricing-verification.feature` | 1 | 9 | "Coming Soon" text removed from pricing page |
@@ -91,7 +91,7 @@ These scenarios fail with timeouts, element-not-found errors, or race conditions
 | Feature File | Skipped | Running | Reason |
 |-------------|---------|---------|--------|
 | `admin-sitemap.feature` | 21 | 6 | Dynamic content/iframe loading timeouts |
-| `album-management.feature` | 20 | 6 | Input selectors not found |
+| ~~`album-management.feature`~~ | — | — | **Removed**: migrated to MCP unit tests (`album-management.test.ts`) |
 | `boxes-management.feature` | 17 | 3 | Element not found / timeouts |
 | `orbit-calendar.feature` | 22 | 10 | Complex scheduling workflows, cron jobs |
 | `pixel-pipelines.feature` | 17 | 8 | Step definitions need fixes |
@@ -114,7 +114,7 @@ Entire features skipped due to infrastructure issues or removed features.
 | `referral-system.feature` | 19 | Feature-level skip (referrals feature changes) |
 | `tokens.feature` | 15 | Feature-level skip |
 | `agent-polling-e2e.feature` | 13 | All scenarios failing with timeout |
-| `album-drag-drop.feature` | 10 | All scenarios failing with timeout / missing element |
+| ~~`album-drag-drop.feature`~~ | — | **Removed**: migrated to MCP unit tests (`album-images.test.ts`) |
 | `allocator-autopilot.feature` | 7 | All failing - needs investigation |
 | `album-photo-addition.feature` | 6 | All failing - needs investigation |
 | `allocator-audit.feature` | 2 | All failing - needs investigation |

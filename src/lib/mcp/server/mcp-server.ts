@@ -20,6 +20,12 @@ import { registerOrbitWorkspaceTools } from "./tools/orbit-workspace";
 import { registerOrbitInboxTools } from "./tools/orbit-inbox";
 import { registerOrbitRelayTools } from "./tools/orbit-relay";
 import { registerArenaTools } from "./tools/arena";
+import { registerAlbumImagesTools } from "./tools/album-images";
+import { registerAlbumManagementTools } from "./tools/album-management";
+import { registerBatchEnhanceTools } from "./tools/batch-enhance";
+import { registerEnhancementJobsTools } from "./tools/enhancement-jobs";
+import { registerCreateTools } from "./tools/create";
+import { registerLearnItTools } from "./tools/learnit";
 
 /**
  * Create a fully configured MCP server for a specific user.
@@ -82,6 +88,24 @@ export function createMcpServer(userId: string): McpServer {
 
   // Arena tools (discoverable)
   registerArenaTools(registry, userId);
+
+  // Album image tools (discoverable)
+  registerAlbumImagesTools(registry, userId);
+
+  // Album management tools (discoverable)
+  registerAlbumManagementTools(registry, userId);
+
+  // Batch enhance tools (discoverable)
+  registerBatchEnhanceTools(registry, userId);
+
+  // Enhancement jobs tools (discoverable)
+  registerEnhancementJobsTools(registry, userId);
+
+  // /create app generator tools (discoverable)
+  registerCreateTools(registry, userId);
+
+  // LearnIt wiki tools (discoverable)
+  registerLearnItTools(registry, userId);
 
   return mcpServer;
 }
