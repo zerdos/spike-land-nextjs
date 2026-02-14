@@ -5,6 +5,9 @@ const mockPrisma = {
   workspace: {
     findFirst: vi.fn(),
   },
+  toolInvocation: {
+    create: vi.fn(),
+  },
 };
 
 vi.mock("@/lib/prisma", () => ({
@@ -13,6 +16,18 @@ vi.mock("@/lib/prisma", () => ({
 
 import { safeToolCall, resolveWorkspace, apiRequest, textResult } from "./tool-helpers";
 import { McpError, McpErrorCode } from "../../errors";
+
+interface InvocationData {
+  userId: string;
+  sessionId?: string;
+  tool: string;
+  input: unknown;
+  output: unknown;
+  durationMs: number;
+  isError: boolean;
+  error?: string;
+  parentInvocationId?: string;
+}
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -155,6 +170,149 @@ describe("tool-helpers", () => {
       expect(result.isError).toBe(true);
       const text = (result.content[0] as { text: string }).text;
       expect(text).toContain("Unknown error");
+    });
+
+    it("should record successful invocation when userId is provided", async () => {
+      mockPrisma.toolInvocation.create.mockResolvedValue({ id: "inv-1" });
+
+      const result = await safeToolCall(
+        "test_tool",
+        async () => ({ content: [{ type: "text" as const, text: "ok" }] }),
+        { userId: "user-1", sessionId: "sess-1", input: { key: "value" } },
+      );
+
+      expect(result.content[0]).toEqual(expect.objectContaining({ text: "ok" }));
+
+      // Wait for fire-and-forget recording
+      await vi.waitFor(() => {
+        expect(mockPrisma.toolInvocation.create).toHaveBeenCalledTimes(1);
+      });
+
+      const call = mockPrisma.toolInvocation.create.mock.calls[0]![0] as { data: InvocationData };
+      expect(call.data.userId).toBe("user-1");
+      expect(call.data.sessionId).toBe("sess-1");
+      expect(call.data.tool).toBe("test_tool");
+      expect(call.data.input).toEqual({ key: "value" });
+      expect(call.data.isError).toBe(false);
+      expect(call.data.durationMs).toBeGreaterThanOrEqual(0);
+    });
+
+    it("should record failed invocation when userId is provided", async () => {
+      mockPrisma.toolInvocation.create.mockResolvedValue({ id: "inv-2" });
+
+      const result = await safeToolCall(
+        "test_tool",
+        async () => { throw new Error("something broke"); },
+        { userId: "user-1", input: { query: "test" } },
+      );
+
+      expect(result.isError).toBe(true);
+
+      // Wait for fire-and-forget recording
+      await vi.waitFor(() => {
+        expect(mockPrisma.toolInvocation.create).toHaveBeenCalledTimes(1);
+      });
+
+      const call = mockPrisma.toolInvocation.create.mock.calls[0]![0] as { data: InvocationData };
+      expect(call.data.userId).toBe("user-1");
+      expect(call.data.tool).toBe("test_tool");
+      expect(call.data.isError).toBe(true);
+      expect(call.data.error).toBe("something broke");
+      expect(call.data.output).toBeUndefined();
+    });
+
+    it("should not break tool execution when recording fails", async () => {
+      mockPrisma.toolInvocation.create.mockRejectedValue(new Error("DB down"));
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      const result = await safeToolCall(
+        "test_tool",
+        async () => ({ content: [{ type: "text" as const, text: "ok" }] }),
+        { userId: "user-1" },
+      );
+
+      expect(result.content[0]).toEqual(expect.objectContaining({ text: "ok" }));
+      expect(result.isError).toBeUndefined();
+
+      // Wait for fire-and-forget to settle
+      await vi.waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Failed to record tool invocation:",
+          expect.objectContaining({ message: "DB down" }),
+        );
+      });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("should not break tool error handling when recording of failure itself fails", async () => {
+      mockPrisma.toolInvocation.create.mockRejectedValue(new Error("DB down"));
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      const result = await safeToolCall(
+        "test_tool",
+        async () => { throw new Error("tool failed"); },
+        { userId: "user-1" },
+      );
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("UNKNOWN");
+
+      await vi.waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Failed to record tool invocation:",
+          expect.objectContaining({ message: "DB down" }),
+        );
+      });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("should not record invocation when userId is not provided", async () => {
+      await safeToolCall(
+        "test_tool",
+        async () => ({ content: [{ type: "text" as const, text: "ok" }] }),
+      );
+
+      expect(mockPrisma.toolInvocation.create).not.toHaveBeenCalled();
+    });
+
+    it("should calculate duration correctly", async () => {
+      mockPrisma.toolInvocation.create.mockResolvedValue({ id: "inv-3" });
+
+      await safeToolCall(
+        "slow_tool",
+        async () => {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          return { content: [{ type: "text" as const, text: "done" }] };
+        },
+        { userId: "user-1" },
+      );
+
+      await vi.waitFor(() => {
+        expect(mockPrisma.toolInvocation.create).toHaveBeenCalledTimes(1);
+      });
+
+      const call = mockPrisma.toolInvocation.create.mock.calls[0]![0] as { data: InvocationData };
+      expect(call.data.durationMs).toBeGreaterThanOrEqual(40);
+    });
+
+    it("should pass parentInvocationId when provided", async () => {
+      mockPrisma.toolInvocation.create.mockResolvedValue({ id: "inv-4" });
+
+      await safeToolCall(
+        "child_tool",
+        async () => ({ content: [{ type: "text" as const, text: "child" }] }),
+        { userId: "user-1", parentInvocationId: "parent-inv-1" },
+      );
+
+      await vi.waitFor(() => {
+        expect(mockPrisma.toolInvocation.create).toHaveBeenCalledTimes(1);
+      });
+
+      const call = mockPrisma.toolInvocation.create.mock.calls[0]![0] as { data: InvocationData };
+      expect(call.data.parentInvocationId).toBe("parent-inv-1");
     });
   });
 

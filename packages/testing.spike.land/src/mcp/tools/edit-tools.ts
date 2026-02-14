@@ -2,8 +2,8 @@ import type { ICodeSession } from "@spike-npm-land/code";
 import type {
   EditCodeResult,
   LineEdit,
-  McpTool,
   SearchReplaceResult,
+  Tool,
   UpdateCodeResult,
 } from "../types";
 
@@ -35,7 +35,7 @@ async function transpileCode(code: string, origin: string): Promise<string> {
   return transpiled;
 }
 
-export const updateCodeTool: McpTool = {
+export const updateCodeTool: Tool = {
   name: "update_code",
   description:
     "Replace ALL code with new content. For smaller changes, use edit_code or search_and_replace instead.",
@@ -55,7 +55,7 @@ export const updateCodeTool: McpTool = {
   },
 };
 
-export const searchAndReplaceTool: McpTool = {
+export const searchAndReplaceTool: Tool = {
   name: "search_and_replace",
   description:
     "MOST EFFICIENT: Replace patterns without needing line numbers. Best for simple text replacements.",
@@ -87,7 +87,7 @@ export const searchAndReplaceTool: McpTool = {
   },
 };
 
-export const editCodeTool: McpTool = {
+export const editCodeTool: Tool = {
   name: "edit_code",
   description:
     "Make precise line-based edits. More efficient than update_code for targeted changes.",
@@ -125,7 +125,7 @@ export const editCodeTool: McpTool = {
   },
 };
 
-export const editTools: McpTool[] = [
+export const editTools: Tool[] = [
   updateCodeTool,
   searchAndReplaceTool,
   editCodeTool,

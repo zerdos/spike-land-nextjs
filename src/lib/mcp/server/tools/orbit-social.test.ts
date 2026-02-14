@@ -3,6 +3,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const mockPrisma = {
   socialAccount: { findMany: vi.fn(), create: vi.fn(), update: vi.fn(), findUnique: vi.fn() },
   socialPost: { create: vi.fn() },
+  socialPostAccount: { create: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -36,7 +37,7 @@ describe("orbit-social tools", () => {
   describe("social_list_connections", () => {
     it("should list connections", async () => {
       mockPrisma.socialAccount.findMany.mockResolvedValue([
-        { id: "c1", platform: "twitter", handle: "spike_land", status: "ACTIVE", connectedAt: new Date() },
+        { id: "c1", platform: "twitter", accountName: "spike_land", status: "ACTIVE", connectedAt: new Date() },
       ]);
       const handler = registry.handlers.get("social_list_connections")!;
       const result = await handler({});
@@ -88,8 +89,9 @@ describe("orbit-social tools", () => {
 
   describe("social_post_content", () => {
     it("should post content", async () => {
-      mockPrisma.socialAccount.findUnique.mockResolvedValue({ platform: "twitter", handle: "spike_land" });
+      mockPrisma.socialAccount.findUnique.mockResolvedValue({ id: "c1", platform: "twitter", accountName: "spike_land" });
       mockPrisma.socialPost.create.mockResolvedValue({ id: "p1" });
+      mockPrisma.socialPostAccount.create.mockResolvedValue({ id: "spa1" });
       const handler = registry.handlers.get("social_post_content")!;
       const result = await handler({ connection_id: "c1", content: "Hello world!" });
       expect(getText(result)).toContain("Posted");

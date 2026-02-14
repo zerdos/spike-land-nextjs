@@ -88,6 +88,9 @@ model User {
   arenaSubmissions         ArenaSubmission[]         @relation("ArenaSubmissions")
   arenaReviews             ArenaReview[]             @relation("ArenaReviews")
   arenaElo                 ArenaElo?                 @relation("ArenaElo")
+  toolInvocations          ToolInvocation[]
+  createdSkills            Skill[]                   @relation("SkillCreator")
+  skillInstallations       SkillInstallation[]       @relation("SkillInstallations")
 
   @@map("users")
 }
@@ -4883,4 +4886,110 @@ model ArenaElo {
 
   @@index([elo(sort: Desc)])
   @@map("arena_elos")
+}
+
+model ToolInvocation {
+  id                 String   @id @default(cuid())
+  userId             String
+  sessionId          String?
+  tool               String
+  input              Json
+  output             Json?
+  durationMs         Int
+  tokensConsumed     Int      @default(0)
+  error              String?
+  isError            Boolean  @default(false)
+  parentInvocationId String?
+  createdAt          DateTime @default(now())
+
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent             ToolInvocation?  @relation("InvocationTree", fields: [parentInvocationId], references: [id])
+  children           ToolInvocation[] @relation("InvocationTree")
+
+  @@index([userId, createdAt])
+  @@index([tool, createdAt])
+  @@index([sessionId])
+  @@index([parentInvocationId])
+  @@map("tool_invocations")
+}
+
+// ─── Skill Store ─────────────────────────────────────────────────────────────
+
+enum SkillCategory {
+  QUALITY
+  TESTING
+  WORKFLOW
+  SECURITY
+  PERFORMANCE
+  OTHER
+}
+
+enum SkillStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Skill {
+  id              String        @id @default(cuid())
+  name            String        @unique
+  slug            String        @unique
+  displayName     String
+  description     String
+  longDescription String?       @db.Text
+  category        SkillCategory @default(OTHER)
+  status          SkillStatus   @default(DRAFT)
+  version         String        @default("1.0.0")
+  author          String
+  authorUrl       String?
+  repoUrl         String?
+  iconUrl         String?
+  color           String?
+  tags            String[]      @default([])
+  installCount    Int           @default(0)
+  sortOrder       Int           @default(0)
+  isActive        Boolean       @default(true)
+  isFeatured      Boolean       @default(false)
+  createdBy       String?
+  creator         User?         @relation("SkillCreator", fields: [createdBy], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  installations SkillInstallation[]
+  features      SkillFeature[]
+
+  @@index([isActive, sortOrder])
+  @@index([isActive, category, sortOrder])
+  @@index([slug])
+  @@map("skills")
+}
+
+model SkillFeature {
+  id          String   @id @default(cuid())
+  skillId     String
+  skill       Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  icon        String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([skillId, sortOrder])
+  @@map("skill_features")
+}
+
+model SkillInstallation {
+  id        String   @id @default(cuid())
+  skillId   String
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation("SkillInstallations", fields: [userId], references: [id])
+  ipHash    String?
+  createdAt DateTime @default(now())
+
+  @@unique([skillId, userId])
+  @@index([skillId])
+  @@index([userId])
+  @@map("skill_installations")
 }

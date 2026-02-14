@@ -14,7 +14,19 @@ import {
   executeReadSession,
   readTools,
 } from "./tools/read-tools";
-import type { LineEdit, McpRequest, McpResponse, McpTool } from "./types";
+import type {
+  CallToolResult,
+  LineEdit,
+  McpRequest,
+  McpResponse,
+  Resource,
+  ResourceTemplate,
+  Tool,
+} from "./types";
+
+const PROTOCOL_VERSION = "2024-11-05";
+const SERVER_NAME = "spike.land-mcp-server";
+const SERVER_VERSION = "1.0.1";
 
 const RESPONSE_HEADERS = {
   "Content-Type": "application/json",
@@ -24,7 +36,28 @@ const RESPONSE_HEADERS = {
 };
 
 export class McpHandler {
-  tools: McpTool[] = [...readTools, ...editTools, ...findTools];
+  tools: Tool[] = [...readTools, ...editTools, ...findTools];
+
+  private resourceTemplates: ResourceTemplate[] = [
+    {
+      uriTemplate: "codespace://{codeSpace}/code",
+      name: "CodeSpace Source Code",
+      description: "Current source code for a codespace session",
+      mimeType: "text/plain",
+    },
+    {
+      uriTemplate: "codespace://{codeSpace}/html",
+      name: "CodeSpace HTML Output",
+      description: "Current HTML rendering output for a codespace session",
+      mimeType: "text/html",
+    },
+    {
+      uriTemplate: "codespace://{codeSpace}/session",
+      name: "CodeSpace Full Session",
+      description: "Full session data (code, html, css) for a codespace",
+      mimeType: "application/json",
+    },
+  ];
 
   constructor(private durableObject: Code) {}
 
@@ -55,6 +88,29 @@ export class McpHandler {
     return currentSession;
   }
 
+  private getResourcesForCodeSpace(codeSpace: string): Resource[] {
+    return [
+      {
+        uri: `codespace://${codeSpace}/code`,
+        name: `${codeSpace} - Source Code`,
+        description: `Current source code for codespace '${codeSpace}'`,
+        mimeType: "text/plain",
+      },
+      {
+        uri: `codespace://${codeSpace}/html`,
+        name: `${codeSpace} - HTML Output`,
+        description: `Current HTML rendering for codespace '${codeSpace}'`,
+        mimeType: "text/html",
+      },
+      {
+        uri: `codespace://${codeSpace}/session`,
+        name: `${codeSpace} - Full Session`,
+        description: `Full session data for codespace '${codeSpace}'`,
+        mimeType: "application/json",
+      },
+    ];
+  }
+
   async handleRequest(
     request: Request,
     _url: URL,
@@ -71,10 +127,11 @@ export class McpHandler {
           result: {
             capabilities: {
               tools: { listChanged: true },
+              resources: { subscribe: false, listChanged: true },
             },
             serverInfo: {
-              name: "spike.land-mcp-server",
-              version: "1.0.1",
+              name: SERVER_NAME,
+              version: SERVER_VERSION,
             },
           },
         }),
@@ -122,13 +179,14 @@ export class McpHandler {
             jsonrpc: "2.0",
             id,
             result: {
-              protocolVersion: "2024-11-05",
+              protocolVersion: PROTOCOL_VERSION,
               capabilities: {
                 tools: { listChanged: true },
+                resources: { subscribe: false, listChanged: true },
               },
               serverInfo: {
-                name: "spike.land-mcp-server",
-                version: "1.0.1",
+                name: SERVER_NAME,
+                version: SERVER_VERSION,
               },
             },
           };
@@ -153,15 +211,41 @@ export class McpHandler {
           return {
             jsonrpc: "2.0",
             id,
+            result: result as unknown as Record<string, unknown>,
+          };
+        }
+
+        case "resources/list": {
+          const currentSession = this.durableObject.getSession();
+          const codeSpace = currentSession.codeSpace;
+          return {
+            jsonrpc: "2.0",
+            id,
             result: {
-              content: [
-                {
-                  type: "text",
-                  text: typeof result === "string"
-                    ? result
-                    : JSON.stringify(result, null, 2),
-                },
-              ],
+              resources: this.getResourcesForCodeSpace(codeSpace),
+            },
+          };
+        }
+
+        case "resources/templates/list":
+          return {
+            jsonrpc: "2.0",
+            id,
+            result: {
+              resourceTemplates: this.resourceTemplates,
+            },
+          };
+
+        case "resources/read": {
+          if (!params?.uri || typeof params.uri !== "string") {
+            throw new Error("Resource URI is required and must be a string");
+          }
+          const resourceContents = await this.readResource(params.uri);
+          return {
+            jsonrpc: "2.0",
+            id,
+            result: {
+              contents: resourceContents,
             },
           };
         }
@@ -182,10 +266,59 @@ export class McpHandler {
     }
   }
 
+  private async readResource(
+    uri: string,
+  ): Promise<Array<{ uri: string; mimeType: string; text: string; }>> {
+    const match = uri.match(/^codespace:\/\/([^/]+)\/(.+)$/);
+    if (!match) {
+      throw new Error(`Invalid resource URI: ${uri}`);
+    }
+
+    const codeSpace = match[1];
+    const resourceType = match[2];
+
+    if (!codeSpace) {
+      throw new Error(`Missing codeSpace in resource URI: ${uri}`);
+    }
+
+    const session = await this.getSessionForCodeSpace(codeSpace);
+
+    switch (resourceType) {
+      case "code":
+        return [{
+          uri,
+          mimeType: "text/plain",
+          text: session.code || "",
+        }];
+
+      case "html":
+        return [{
+          uri,
+          mimeType: "text/html",
+          text: session.html || "",
+        }];
+
+      case "session":
+        return [{
+          uri,
+          mimeType: "application/json",
+          text: JSON.stringify({
+            code: session.code || "",
+            html: session.html || "",
+            css: session.css || "",
+            codeSpace,
+          }, null, 2),
+        }];
+
+      default:
+        throw new Error(`Unknown resource type: ${resourceType}`);
+    }
+  }
+
   public async executeTool(
     toolName: string,
     args: Record<string, unknown>,
-  ): Promise<Record<string, unknown>> {
+  ): Promise<CallToolResult> {
     const requestedCodeSpace = args.codeSpace as string;
     if (!requestedCodeSpace) {
       throw new Error(`codeSpace parameter is required for tool '${toolName}'`);
@@ -207,28 +340,34 @@ export class McpHandler {
       await this.durableObject.updateAndBroadcastSession(updatedSession);
     };
 
+    let result: Record<string, unknown>;
+
     switch (toolName) {
       case "read_code":
-        return executeReadCode(session, requestedCodeSpace);
+        result = executeReadCode(session, requestedCodeSpace);
+        break;
 
       case "read_html":
-        return executeReadHtml(session, requestedCodeSpace);
+        result = executeReadHtml(session, requestedCodeSpace);
+        break;
 
       case "read_session":
-        return executeReadSession(session, requestedCodeSpace);
+        result = executeReadSession(session, requestedCodeSpace);
+        break;
 
       case "update_code": {
         if (!args.code || typeof args.code !== "string") {
           throw new Error("Code parameter is required and must be a string");
         }
         const origin = this.durableObject.getOrigin();
-        return executeUpdateCode(
+        result = await executeUpdateCode(
           session,
           requestedCodeSpace,
           args.code,
           updateSession,
           origin,
         );
+        break;
       }
 
       case "edit_code": {
@@ -236,25 +375,27 @@ export class McpHandler {
           throw new Error("Edits parameter is required and must be an array");
         }
         const editOrigin = this.durableObject.getOrigin();
-        return executeEditCode(
+        result = await executeEditCode(
           session,
           requestedCodeSpace,
           args.edits as LineEdit[],
           updateSession,
           editOrigin,
         );
+        break;
       }
 
       case "find_lines": {
         if (!args.pattern || typeof args.pattern !== "string") {
           throw new Error("Pattern parameter is required and must be a string");
         }
-        return executeFindLines(
+        result = executeFindLines(
           session,
           requestedCodeSpace,
           args.pattern,
           args.isRegex === true,
         );
+        break;
       }
 
       case "search_and_replace": {
@@ -265,7 +406,7 @@ export class McpHandler {
           throw new Error("Replace parameter is required and must be a string");
         }
         const replaceOrigin = this.durableObject.getOrigin();
-        return executeSearchAndReplace(
+        result = await executeSearchAndReplace(
           session,
           requestedCodeSpace,
           args.search,
@@ -275,14 +416,26 @@ export class McpHandler {
           updateSession,
           replaceOrigin,
         );
+        break;
       }
 
       default:
         throw new Error(`Unknown tool: ${toolName}`);
     }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: typeof result === "string"
+            ? result
+            : JSON.stringify(result, null, 2),
+        },
+      ],
+    };
   }
 
-  addTool(tool: McpTool): void {
+  addTool(tool: Tool): void {
     this.tools.push(tool);
   }
 
@@ -295,7 +448,7 @@ export class McpHandler {
     return false;
   }
 
-  getTools(): McpTool[] {
+  getTools(): Tool[] {
     return [...this.tools];
   }
 

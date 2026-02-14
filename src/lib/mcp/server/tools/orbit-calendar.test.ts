@@ -35,7 +35,7 @@ describe("orbit-calendar tools", () => {
   describe("calendar_list_events", () => {
     it("should list events", async () => {
       mockPrisma.calendarContentSuggestion.findMany.mockResolvedValue([
-        { id: "ev1", title: "Launch Post", channel: "twitter", status: "SCHEDULED", scheduledAt: new Date() },
+        { id: "ev1", content: "Launch Post", platform: "TWITTER", status: "PENDING", suggestedFor: new Date("2025-07-01T10:00:00Z"), reason: "Product launch" },
       ]);
       const handler = registry.handlers.get("calendar_list_events")!;
       const result = await handler({});
@@ -54,16 +54,16 @@ describe("orbit-calendar tools", () => {
     it("should create event", async () => {
       mockPrisma.calendarContentSuggestion.create.mockResolvedValue({ id: "ev2" });
       const handler = registry.handlers.get("calendar_create_event")!;
-      const result = await handler({ title: "New Post", content: "Hello!", scheduled_at: "2025-07-01T10:00:00Z", channel: "twitter" });
+      const result = await handler({ content: "Hello!", suggested_for: "2025-07-01T10:00:00Z", platform: "TWITTER", reason: "Engagement boost" });
       expect(getText(result)).toContain("Event Created");
     });
   });
 
   describe("calendar_update_event", () => {
     it("should update event", async () => {
-      mockPrisma.calendarContentSuggestion.update.mockResolvedValue({ id: "ev1", status: "CANCELLED" });
+      mockPrisma.calendarContentSuggestion.update.mockResolvedValue({ id: "ev1", status: "REJECTED" });
       const handler = registry.handlers.get("calendar_update_event")!;
-      const result = await handler({ event_id: "ev1", status: "CANCELLED" });
+      const result = await handler({ event_id: "ev1", status: "REJECTED" });
       expect(getText(result)).toContain("Event Updated");
     });
   });
@@ -80,9 +80,9 @@ describe("orbit-calendar tools", () => {
   describe("calendar_overview", () => {
     it("should return monthly overview", async () => {
       mockPrisma.calendarContentSuggestion.findMany.mockResolvedValue([
-        { channel: "twitter", status: "SCHEDULED" },
-        { channel: "twitter", status: "PUBLISHED" },
-        { channel: "instagram", status: "SCHEDULED" },
+        { platform: "TWITTER", status: "PENDING" },
+        { platform: "TWITTER", status: "ACCEPTED" },
+        { platform: "INSTAGRAM", status: "PENDING" },
       ]);
       const handler = registry.handlers.get("calendar_overview")!;
       const result = await handler({ month: 7, year: 2025 });

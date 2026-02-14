@@ -1,9 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockPrisma = {
-  allocatorDailyBudgetMove: { findMany: vi.fn(), update: vi.fn(), create: vi.fn() },
-  auditLog: { findMany: vi.fn() },
-  allocatorAutopilotConfig: { upsert: vi.fn(), findUnique: vi.fn() },
+  allocatorDailyBudgetMove: { findMany: vi.fn() },
+  allocatorAuditLog: { findMany: vi.fn() },
+  allocatorAutopilotConfig: { upsert: vi.fn(), findMany: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -35,67 +35,78 @@ describe("orbit-allocator tools", () => {
   });
 
   describe("allocator_get_allocations", () => {
-    it("should return allocations", async () => {
-      mockPrisma.allocatorDailyBudgetMove.findMany.mockResolvedValue([
-        { id: "a1", channel: "social", amount: 1000, spent: 500, period: "current" },
-      ]);
+    it("should return not-yet-available message", async () => {
       const handler = registry.handlers.get("allocator_get_allocations")!;
       const result = await handler({});
-      expect(getText(result)).toContain("social");
-      expect(getText(result)).toContain("$500.00");
+      expect(getText(result)).toContain("Per-channel budget allocation tracking is not yet available");
     });
 
-    it("should return message when no allocations", async () => {
-      mockPrisma.allocatorDailyBudgetMove.findMany.mockResolvedValue([]);
+    it("should suggest using allocator_dashboard", async () => {
       const handler = registry.handlers.get("allocator_get_allocations")!;
       const result = await handler({});
-      expect(getText(result)).toContain("No allocations found");
+      expect(getText(result)).toContain("allocator_dashboard");
     });
   });
 
   describe("allocator_update_allocation", () => {
-    it("should update allocation", async () => {
-      mockPrisma.allocatorDailyBudgetMove.update.mockResolvedValue({ id: "a1", channel: "social", amount: 2000 });
+    it("should return not-yet-available message", async () => {
       const handler = registry.handlers.get("allocator_update_allocation")!;
       const result = await handler({ allocation_id: "a1", amount: 2000 });
-      expect(getText(result)).toContain("Allocation Updated");
+      expect(getText(result)).toContain("Direct per-channel allocation updates are not yet available");
     });
   });
 
   describe("allocator_create_allocation", () => {
-    it("should create allocation", async () => {
-      mockPrisma.allocatorDailyBudgetMove.create.mockResolvedValue({ id: "a2" });
+    it("should return not-yet-available message", async () => {
       const handler = registry.handlers.get("allocator_create_allocation")!;
       const result = await handler({ channel: "email", amount: 500 });
-      expect(getText(result)).toContain("Allocation Created");
+      expect(getText(result)).toContain("Per-channel budget allocation creation is not yet available");
     });
   });
 
   describe("allocator_dashboard", () => {
     it("should return dashboard stats", async () => {
       mockPrisma.allocatorDailyBudgetMove.findMany.mockResolvedValue([
-        { channel: "social", amount: 1000, spent: 500 },
-        { channel: "email", amount: 500, spent: 200 },
+        { id: "m1", campaignId: "c1", totalMoved: 1000, netChange: 200, executionCount: 3, date: new Date() },
+        { id: "m2", campaignId: "c2", totalMoved: 500, netChange: -100, executionCount: 2, date: new Date() },
       ]);
       const handler = registry.handlers.get("allocator_dashboard")!;
       const result = await handler({});
       expect(getText(result)).toContain("Allocator Dashboard");
       expect(getText(result)).toContain("$1500.00");
+      expect(getText(result)).toContain("Net Change");
+      expect(getText(result)).toContain("**Campaigns:** 2");
+    });
+
+    it("should return no moves message when empty", async () => {
+      mockPrisma.allocatorDailyBudgetMove.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("allocator_dashboard")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("No budget moves found");
     });
   });
 
   describe("allocator_audit_trail", () => {
     it("should return audit entries", async () => {
-      mockPrisma.auditLog.findMany.mockResolvedValue([
-        { id: "log1", action: "UPDATE", details: "Changed budget", createdAt: new Date() },
+      mockPrisma.allocatorAuditLog.findMany.mockResolvedValue([
+        {
+          id: "log1",
+          decisionType: "BUDGET_INCREASE",
+          decisionOutcome: "APPROVED",
+          aiReasoning: "Performance metrics improved",
+          triggeredBy: "autopilot",
+          createdAt: new Date("2025-01-15T10:00:00Z"),
+        },
       ]);
       const handler = registry.handlers.get("allocator_audit_trail")!;
       const result = await handler({});
-      expect(getText(result)).toContain("UPDATE");
+      expect(getText(result)).toContain("BUDGET_INCREASE");
+      expect(getText(result)).toContain("APPROVED");
+      expect(getText(result)).toContain("autopilot");
     });
 
     it("should return message when no entries", async () => {
-      mockPrisma.auditLog.findMany.mockResolvedValue([]);
+      mockPrisma.allocatorAuditLog.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("allocator_audit_trail")!;
       const result = await handler({});
       expect(getText(result)).toContain("No audit entries found");
@@ -106,23 +117,44 @@ describe("orbit-allocator tools", () => {
     it("should enable autopilot", async () => {
       mockPrisma.allocatorAutopilotConfig.upsert.mockResolvedValue({});
       const handler = registry.handlers.get("allocator_set_autopilot")!;
-      const result = await handler({ enabled: true, max_daily_spend: 100 });
+      const result = await handler({ enabled: true, workspace_id: "ws-1" });
       expect(getText(result)).toContain("Autopilot Enabled");
+      expect(getText(result)).toContain("ws-1");
+    });
+
+    it("should disable autopilot", async () => {
+      mockPrisma.allocatorAutopilotConfig.upsert.mockResolvedValue({});
+      const handler = registry.handlers.get("allocator_set_autopilot")!;
+      const result = await handler({ enabled: false, workspace_id: "ws-1" });
+      expect(getText(result)).toContain("Autopilot Disabled");
     });
   });
 
   describe("allocator_autopilot_status", () => {
     it("should return autopilot config", async () => {
-      mockPrisma.allocatorAutopilotConfig.findUnique.mockResolvedValue({ enabled: true, maxDailySpend: 100, channels: ["social"] });
+      mockPrisma.allocatorAutopilotConfig.findMany.mockResolvedValue([
+        {
+          id: "cfg-1",
+          campaignId: "c1",
+          isEnabled: true,
+          mode: "CONSERVATIVE",
+          maxDailyBudgetChange: 100,
+          maxSingleChange: 50,
+          isEmergencyStopped: false,
+          createdAt: new Date(),
+        },
+      ]);
       const handler = registry.handlers.get("allocator_autopilot_status")!;
-      const result = await handler({});
+      const result = await handler({ workspace_id: "ws-1" });
       expect(getText(result)).toContain("Autopilot Status");
+      expect(getText(result)).toContain("CONSERVATIVE");
+      expect(getText(result)).toContain("$100.00");
     });
 
     it("should return not configured message", async () => {
-      mockPrisma.allocatorAutopilotConfig.findUnique.mockResolvedValue(null);
+      mockPrisma.allocatorAutopilotConfig.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("allocator_autopilot_status")!;
-      const result = await handler({});
+      const result = await handler({ workspace_id: "ws-1" });
       expect(getText(result)).toContain("Not configured");
     });
   });

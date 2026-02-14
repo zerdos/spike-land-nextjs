@@ -6,6 +6,7 @@
  */
 
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { Prisma } from "@/generated/prisma";
 import { McpError, McpErrorCode, MCP_ERROR_MESSAGES, MCP_ERROR_RETRYABLE } from "../../errors";
 
 const SPIKE_LAND_BASE_URL =
@@ -119,19 +120,93 @@ function formatErrorResult(classified: ClassifiedToolError): CallToolResult {
 }
 
 /**
+ * Options for tool invocation recording.
+ */
+export interface SafeToolCallOptions {
+  userId?: string;
+  sessionId?: string;
+  input?: Record<string, unknown>;
+  parentInvocationId?: string;
+}
+
+/**
  * Wrap a tool handler with error classification and structured error responses.
  * Every tool should use this wrapper.
+ *
+ * When `options.userId` is provided, the invocation is recorded to the database
+ * for replay/debugging. Recording is fire-and-forget and never blocks the response.
  */
 export async function safeToolCall(
   toolName: string,
   handler: () => Promise<CallToolResult>,
+  options?: SafeToolCallOptions,
 ): Promise<CallToolResult> {
+  const startTime = Date.now();
   try {
-    return await handler();
+    const result = await handler();
+
+    // Record successful invocation (fire-and-forget)
+    if (options?.userId) {
+      recordInvocation({
+        userId: options.userId,
+        sessionId: options.sessionId,
+        tool: toolName,
+        input: options.input ?? {},
+        output: result.content,
+        durationMs: Date.now() - startTime,
+        isError: false,
+        parentInvocationId: options.parentInvocationId,
+      }).catch((err: unknown) => console.error("Failed to record tool invocation:", err));
+    }
+
+    return result;
   } catch (error) {
     const classified = classifyError(error, toolName);
+
+    // Record failed invocation (fire-and-forget)
+    if (options?.userId) {
+      recordInvocation({
+        userId: options.userId,
+        sessionId: options.sessionId,
+        tool: toolName,
+        input: options.input ?? {},
+        output: null,
+        durationMs: Date.now() - startTime,
+        isError: true,
+        error: classified.message,
+        parentInvocationId: options.parentInvocationId,
+      }).catch((err: unknown) => console.error("Failed to record tool invocation:", err));
+    }
+
     return formatErrorResult(classified);
   }
+}
+
+async function recordInvocation(data: {
+  userId: string;
+  sessionId?: string;
+  tool: string;
+  input: Record<string, unknown> | unknown;
+  output: unknown;
+  durationMs: number;
+  isError: boolean;
+  error?: string;
+  parentInvocationId?: string;
+}): Promise<void> {
+  const prisma = (await import("@/lib/prisma")).default;
+  await prisma.toolInvocation.create({
+    data: {
+      userId: data.userId,
+      sessionId: data.sessionId,
+      tool: data.tool,
+      input: data.input as Prisma.InputJsonValue,
+      output: (data.output ?? undefined) as Prisma.InputJsonValue | undefined,
+      durationMs: data.durationMs,
+      isError: data.isError,
+      error: data.error,
+      parentInvocationId: data.parentInvocationId,
+    },
+  });
 }
 
 /**

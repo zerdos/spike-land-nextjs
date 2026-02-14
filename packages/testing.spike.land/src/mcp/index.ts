@@ -1,16 +1,21 @@
 export { McpHandler as McpServer } from "./handler";
 export type {
+  CallToolResult,
   EditCodeResult,
   FindLinesResult,
   LineEdit,
   LineMatch,
   McpRequest,
   McpResponse,
-  McpTool,
   ReadCodeResult,
   ReadHtmlResult,
   ReadSessionResult,
+  Resource,
+  ResourceTemplate,
   SearchReplaceResult,
+  TextContent,
+  McpTool,
+  Tool,
   ToolExecutionContext,
   UpdateCodeResult,
 } from "./types";

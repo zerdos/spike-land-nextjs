@@ -1,7 +1,7 @@
 import type { ICodeSession } from "@spike-npm-land/code";
-import type { McpTool, ReadCodeResult, ReadHtmlResult, ReadSessionResult } from "../types";
+import type { ReadCodeResult, ReadHtmlResult, ReadSessionResult, Tool } from "../types";
 
-export const readCodeTool: McpTool = {
+export const readCodeTool: Tool = {
   name: "read_code",
   description: "Read current code only. Use before making changes to understand the codebase.",
   inputSchema: {
@@ -16,7 +16,7 @@ export const readCodeTool: McpTool = {
   },
 };
 
-export const readHtmlTool: McpTool = {
+export const readHtmlTool: Tool = {
   name: "read_html",
   description: "Read current HTML output only. Lightweight way to check rendering results.",
   inputSchema: {
@@ -31,7 +31,7 @@ export const readHtmlTool: McpTool = {
   },
 };
 
-export const readSessionTool: McpTool = {
+export const readSessionTool: Tool = {
   name: "read_session",
   description: "Read ALL session data (code+html+css). Use sparingly - prefer specific read tools.",
   inputSchema: {
@@ -46,7 +46,7 @@ export const readSessionTool: McpTool = {
   },
 };
 
-export const readTools: McpTool[] = [
+export const readTools: Tool[] = [
   readCodeTool,
   readHtmlTool,
   readSessionTool,
