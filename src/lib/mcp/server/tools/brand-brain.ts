@@ -1,0 +1,333 @@
+/**
+ * Brand Brain MCP Tools
+ *
+ * Brand profile management, content scoring, policy checks,
+ * content rewriting, and guardrail enforcement.
+ */
+
+import { z } from "zod";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { ToolRegistry } from "../tool-registry";
+import { safeToolCall, textResult, resolveWorkspace } from "./tool-helpers";
+
+const ScoreContentSchema = z.object({
+  workspace_slug: z.string().min(1).describe("Workspace slug."),
+  content: z.string().min(1).describe("Content text to score against brand guidelines."),
+  platform: z.string().optional().describe("Target platform for scoring context."),
+});
+
+const RewriteContentSchema = z.object({
+  workspace_slug: z.string().min(1).describe("Workspace slug."),
+  content: z.string().min(1).describe("Content text to rewrite."),
+  platform: z.string().optional().default("GENERAL").describe("Target platform (default: GENERAL)."),
+  character_limit: z.number().optional().describe("Maximum character count for rewrite."),
+});
+
+const GetProfileSchema = z.object({
+  workspace_slug: z.string().min(1).describe("Workspace slug."),
+});
+
+const CheckPolicySchema = z.object({
+  workspace_slug: z.string().min(1).describe("Workspace slug."),
+  content: z.string().min(1).describe("Content text to check against policies."),
+  content_type: z.string().optional().default("POST").describe("Content type (default: POST)."),
+  platform: z.string().optional().describe("Target platform for context."),
+});
+
+const ListViolationsSchema = z.object({
+  workspace_slug: z.string().min(1).describe("Workspace slug."),
+  severity: z.string().optional().describe("Filter by severity: LOW, MEDIUM, HIGH, CRITICAL."),
+  limit: z.number().optional().default(20).describe("Max entries to return (default 20)."),
+});
+
+const GetGuardrailsSchema = z.object({
+  workspace_slug: z.string().min(1).describe("Workspace slug."),
+});
+
+export function registerBrandBrainTools(
+  registry: ToolRegistry,
+  userId: string,
+): void {
+  registry.register({
+    name: "brand_score_content",
+    description: "Score content against brand vocabulary and guardrails. Returns a score (0-100) with violations.",
+    category: "brand-brain",
+    tier: "free",
+    inputSchema: ScoreContentSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: async (args: z.infer<typeof ScoreContentSchema>): Promise<CallToolResult> =>
+      safeToolCall("brand_score_content", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
+        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        const profile = await prisma.brandProfile.findUnique({
+          where: { workspaceId: workspace.id },
+          include: {
+            vocabulary: true,
+            guardrails: { where: { isActive: true } },
+          },
+        });
+        if (!profile) {
+          return textResult("**Error: NOT_FOUND**\nNo brand profile found for this workspace.\n**Retryable:** false");
+        }
+        const contentLower = args.content.toLowerCase();
+        const violations: Array<{ term: string; type: string }> = [];
+
+        for (const vocab of profile.vocabulary) {
+          if (vocab.category === "BANNED" && contentLower.includes(vocab.term.toLowerCase())) {
+            violations.push({ term: vocab.term, type: "BANNED_TERM" });
+          }
+        }
+
+        for (const guardrail of profile.guardrails) {
+          if (guardrail.type === "KEYWORD_BLOCK") {
+            const keywords = (guardrail.config as Record<string, unknown>)?.["keywords"];
+            if (Array.isArray(keywords)) {
+              for (const kw of keywords) {
+                if (typeof kw === "string" && contentLower.includes(kw.toLowerCase())) {
+                  violations.push({ term: kw, type: `GUARDRAIL:${guardrail.name}` });
+                }
+              }
+            }
+          }
+        }
+
+        const score = Math.max(0, 100 - violations.length * 15);
+        let text = `**Brand Score: ${score}/100**\n\n`;
+        if (args.platform) text += `**Platform:** ${args.platform}\n`;
+        text += `**Violations:** ${violations.length}\n\n`;
+        if (violations.length > 0) {
+          text += `| Term | Type |\n|------|------|\n`;
+          for (const v of violations) {
+            text += `| ${v.term} | ${v.type} |\n`;
+          }
+        } else {
+          text += "Content passes all brand checks.";
+        }
+        return textResult(text);
+      }, { timeoutMs: 30_000 }),
+  });
+
+  registry.register({
+    name: "brand_rewrite_content",
+    description: "Submit content for brand-aligned rewriting. Creates a rewrite job.",
+    category: "brand-brain",
+    tier: "free",
+    inputSchema: RewriteContentSchema.shape,
+    handler: async (args: z.infer<typeof RewriteContentSchema>): Promise<CallToolResult> =>
+      safeToolCall("brand_rewrite_content", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
+        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        const profile = await prisma.brandProfile.findUnique({
+          where: { workspaceId: workspace.id },
+          select: { id: true },
+        });
+        if (!profile) {
+          return textResult("**Error: NOT_FOUND**\nNo brand profile found for this workspace.\n**Retryable:** false");
+        }
+        const rewrite = await prisma.contentRewrite.create({
+          data: {
+            brandProfileId: profile.id,
+            originalContent: args.content,
+            platform: args.platform ?? "GENERAL",
+            characterLimit: args.character_limit ?? null,
+            status: "PENDING",
+          },
+        });
+        return textResult(
+          `**Rewrite Submitted**\n\n` +
+          `**ID:** \`${rewrite.id}\`\n` +
+          `**Status:** PENDING\n` +
+          `**Platform:** ${args.platform ?? "GENERAL"}\n` +
+          `**Character Limit:** ${args.character_limit ?? "None"}`,
+        );
+      }, { timeoutMs: 30_000 }),
+  });
+
+  registry.register({
+    name: "brand_get_profile",
+    description: "Get the brand profile for a workspace including guardrails and vocabulary stats.",
+    category: "brand-brain",
+    tier: "free",
+    inputSchema: GetProfileSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: async (args: z.infer<typeof GetProfileSchema>): Promise<CallToolResult> =>
+      safeToolCall("brand_get_profile", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
+        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        const profile = await prisma.brandProfile.findUnique({
+          where: { workspaceId: workspace.id },
+          include: {
+            guardrails: true,
+            vocabulary: true,
+          },
+        });
+        if (!profile) {
+          return textResult("**Error: NOT_FOUND**\nNo brand profile found for this workspace.\n**Retryable:** false");
+        }
+        let text = `**Brand Profile**\n\n`;
+        text += `**Name:** ${profile.name ?? "Unnamed"}\n`;
+        text += `**Mission:** ${profile.mission ?? "(none)"}\n`;
+        text += `**Values:** ${profile.values ?? "(none)"}\n`;
+        text += `**Tone:** ${profile.toneDescriptors ?? "(none)"}\n`;
+        text += `**Guardrails:** ${profile.guardrails.length}\n`;
+        text += `**Vocabulary Terms:** ${profile.vocabulary.length}\n`;
+        const bannedCount = profile.vocabulary.filter((v) => v.category === "BANNED").length;
+        const preferredCount = profile.vocabulary.filter((v) => v.category === "PREFERRED").length;
+        text += `  - Banned: ${bannedCount}\n`;
+        text += `  - Preferred: ${preferredCount}\n`;
+        return textResult(text);
+      }, { timeoutMs: 30_000 }),
+  });
+
+  registry.register({
+    name: "brand_check_policy",
+    description: "Check content against active policy rules. Returns PASSED, PASSED_WITH_WARNINGS, or FAILED.",
+    category: "brand-brain",
+    tier: "free",
+    inputSchema: CheckPolicySchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: async (args: z.infer<typeof CheckPolicySchema>): Promise<CallToolResult> =>
+      safeToolCall("brand_check_policy", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
+        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        const rules = await prisma.policyRule.findMany({
+          where: { workspaceId: workspace.id, isActive: true },
+        });
+        if (rules.length === 0) {
+          return textResult("**Policy Check: PASSED**\n\nNo active policy rules configured.");
+        }
+        const contentLower = args.content.toLowerCase();
+        const violations: Array<{ rule: string; severity: string; matched: string }> = [];
+
+        for (const rule of rules) {
+          if (rule.type === "KEYWORD_MATCH") {
+            const keywords = (rule.config as Record<string, unknown>)?.["keywords"];
+            if (Array.isArray(keywords)) {
+              for (const kw of keywords) {
+                if (typeof kw === "string" && contentLower.includes(kw.toLowerCase())) {
+                  violations.push({
+                    rule: rule.name,
+                    severity: rule.severity,
+                    matched: kw,
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        const hasCritical = violations.some((v) => v.severity === "CRITICAL" || v.severity === "HIGH");
+        const result = violations.length === 0
+          ? "PASSED"
+          : hasCritical
+            ? "FAILED"
+            : "PASSED_WITH_WARNINGS";
+
+        const check = await prisma.policyCheck.create({
+          data: {
+            workspaceId: workspace.id,
+            content: args.content,
+            contentType: args.content_type ?? "POST",
+            platform: args.platform ?? null,
+            result,
+            violationCount: violations.length,
+          },
+        });
+
+        if (violations.length > 0) {
+          for (const v of violations) {
+            await prisma.policyViolation.create({
+              data: {
+                policyCheckId: check.id,
+                workspaceId: workspace.id,
+                ruleName: v.rule,
+                severity: v.severity,
+                message: `Matched keyword: ${v.matched}`,
+                matchedContent: v.matched,
+              },
+            });
+          }
+        }
+
+        let text = `**Policy Check: ${result}**\n\n`;
+        text += `**Check ID:** \`${check.id}\`\n`;
+        text += `**Content Type:** ${args.content_type ?? "POST"}\n`;
+        text += `**Violations:** ${violations.length}\n\n`;
+        if (violations.length > 0) {
+          text += `| Rule | Severity | Matched |\n|------|----------|---------|\n`;
+          for (const v of violations) {
+            text += `| ${v.rule} | ${v.severity} | ${v.matched} |\n`;
+          }
+        }
+        return textResult(text);
+      }, { timeoutMs: 30_000 }),
+  });
+
+  registry.register({
+    name: "brand_list_violations",
+    description: "List recent policy violations for a workspace with optional severity filter.",
+    category: "brand-brain",
+    tier: "free",
+    inputSchema: ListViolationsSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: async (args: z.infer<typeof ListViolationsSchema>): Promise<CallToolResult> =>
+      safeToolCall("brand_list_violations", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
+        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        const where: Record<string, unknown> = { workspaceId: workspace.id };
+        if (args.severity) where["severity"] = args.severity;
+        const violations = await prisma.policyViolation.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          take: args.limit ?? 20,
+          include: {
+            rule: { select: { name: true } },
+            check: { select: { contentType: true } },
+          },
+        });
+        if (violations.length === 0) {
+          return textResult("**Policy Violations**\n\nNo violations found.");
+        }
+        let text = `**Policy Violations** (${violations.length})\n\n`;
+        for (const v of violations) {
+          text += `- **${v.rule?.name ?? v.ruleName}** (${v.severity})\n`;
+          text += `  Type: ${v.check?.contentType ?? "N/A"} | Message: ${v.message}\n`;
+          text += `  Matched: \`${v.matchedContent ?? "N/A"}\` | At: ${v.createdAt.toISOString()}\n\n`;
+        }
+        return textResult(text);
+      }, { timeoutMs: 30_000 }),
+  });
+
+  registry.register({
+    name: "brand_get_guardrails",
+    description: "List active brand guardrails for a workspace.",
+    category: "brand-brain",
+    tier: "free",
+    inputSchema: GetGuardrailsSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: async (args: z.infer<typeof GetGuardrailsSchema>): Promise<CallToolResult> =>
+      safeToolCall("brand_get_guardrails", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
+        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        const profile = await prisma.brandProfile.findUnique({
+          where: { workspaceId: workspace.id },
+          select: { id: true },
+        });
+        if (!profile) {
+          return textResult("**Error: NOT_FOUND**\nNo brand profile found for this workspace.\n**Retryable:** false");
+        }
+        const guardrails = await prisma.brandGuardrail.findMany({
+          where: { brandProfileId: profile.id, isActive: true },
+        });
+        if (guardrails.length === 0) {
+          return textResult("**Brand Guardrails**\n\nNo active guardrails found.");
+        }
+        let text = `**Brand Guardrails** (${guardrails.length})\n\n`;
+        for (const g of guardrails) {
+          text += `- **${g.name}** (${g.type})\n`;
+          text += `  Severity: ${g.severity} | ${g.description ?? "No description"}\n\n`;
+        }
+        return textResult(text);
+      }, { timeoutMs: 30_000 }),
+  });
+}
