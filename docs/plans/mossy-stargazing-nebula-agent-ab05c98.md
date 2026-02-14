@@ -1,5 +1,7 @@
 # BAZDMEG Testing Strategy: AI Cloud Swarm Platform Management Dashboard
 
+Resolves #1254
+
 ## Executive Summary
 
 This plan designs a comprehensive testing strategy for seven dashboard features using the BAZDMEG Hourglass Testing Model: 70% MCP tool tests, 20% E2E specs, 10% UI component tests. The strategy builds on the existing `createMockRegistry()` pattern, `vi.hoisted()` mock factories, and custom `mcpMatchers` already established in the codebase.

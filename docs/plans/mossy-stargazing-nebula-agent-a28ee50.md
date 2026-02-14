@@ -1,5 +1,7 @@
 # AI Cloud Swarm Platform -- Admin Dashboard UI Architecture
 
+Resolves #1254
+
 ## Document Purpose
 
 Complete UI/UX architecture for replacing the existing `/admin` section with a mission-control-grade CEO dashboard. This document covers navigation, layout wireframes, component hierarchy, information density strategy, real-time patterns, keyboard shortcuts, and the status color system.

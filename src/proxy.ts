@@ -67,6 +67,7 @@ const PROTECTED_PATHS = [
   "/settings",
   "/profile",
   "/enhance",
+  "/admin",
 ] as const;
 
 /**
@@ -232,7 +233,10 @@ export async function proxy(request: NextRequest) {
     constantTimeCompare(e2eSecretCookie, e2eBypassSecret) &&
     e2eRoleCookie !== undefined;
 
-  if (hasValidHeader || hasValidCookie) {
+  // SECURITY: Never allow E2E bypass on admin routes
+  const isAdminRoute = pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
+
+  if ((hasValidHeader || hasValidCookie) && !isAdminRoute) {
     // Determine which method succeeded for logging
     const bypassMethod = hasValidHeader ? "header" : "cookie";
 

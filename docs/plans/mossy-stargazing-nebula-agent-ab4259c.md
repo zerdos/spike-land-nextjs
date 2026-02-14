@@ -1,5 +1,7 @@
 # AI Cloud Swarm Platform Management Dashboard -- Component Architecture
 
+Resolves #1254
+
 ## Table of Contents
 
 1. [File Structure](#1-file-structure)
@@ -1747,3 +1749,11 @@ export interface ApiError {
 | Error handling | Hierarchical error boundaries | Per-section + per-widget isolation |
 | Loading states | loading.tsx + Skeleton + query isLoading | Progressive disclosure |
 | Type safety | Single types.ts, NO `any` | TypeScript strict mode enforcement |
+
+## 11. Technical Debt & Strictness Migration (BAZDMEG Principle 7)
+
+As identified in the BAZDMEG Audit, the project has significant TypeScript technical debt (Resolves #1232) that impacts dashboard reliability.
+
+1. **`exactOptionalPropertyTypes`**: Currently disabled with ~675 errors. New dashboard components MUST be written with this flag in mind.
+2. **Migration Path**: All new components under `src/components/admin/swarm/` will be strictly typed.
+3. **Debt Tracking**: The `TechDebtChart.tsx` widget will visualize the remaining TypeScript error count over time by parsing the output of `yarn tsc`.

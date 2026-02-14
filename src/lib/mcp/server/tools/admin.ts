@@ -8,6 +8,19 @@ import { z } from "zod";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { ToolRegistry } from "../tool-registry";
 import { safeToolCall, textResult } from "./tool-helpers";
+import { McpError, McpErrorCode } from "../../errors";
+
+/**
+ * Verify that a user has ADMIN or SUPER_ADMIN role.
+ * Throws McpError with PERMISSION_DENIED if not.
+ */
+async function requireAdminRole(userId: string): Promise<void> {
+  const prisma = (await import("@/lib/prisma")).default;
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+    throw new McpError("Admin access required.", McpErrorCode.PERMISSION_DENIED, false);
+  }
+}
 
 const ListAgentsSchema = z.object({
   status: z.enum(["ACTIVE", "INACTIVE", "ALL"]).optional().default("ALL").describe("Filter by agent status."),
@@ -72,6 +85,7 @@ export function registerAdminTools(
     inputSchema: ListAgentsSchema.shape,
     handler: async ({ status = "ALL", limit = 20 }: z.infer<typeof ListAgentsSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_agents", async () => {
+        await requireAdminRole(userId);
         const prisma = (await import("@/lib/prisma")).default;
         const where = status === "ALL" ? {} : { isDefault: status === "ACTIVE" };
         const agents = await prisma.aIProvider.findMany({
@@ -97,6 +111,7 @@ export function registerAdminTools(
     inputSchema: ManageAgentSchema.shape,
     handler: async ({ agent_id, action }: z.infer<typeof ManageAgentSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_manage_agent", async () => {
+        await requireAdminRole(userId);
         const prisma = (await import("@/lib/prisma")).default;
         const isDefault = action === "activate" || action === "restart";
         await prisma.aIProvider.update({
@@ -115,6 +130,7 @@ export function registerAdminTools(
     inputSchema: ListEmailsSchema.shape,
     handler: async ({ status = "ALL", limit = 20 }: z.infer<typeof ListEmailsSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_emails", async () => {
+        await requireAdminRole(userId);
         const prisma = (await import("@/lib/prisma")).default;
         const where = status === "ALL" ? {} : { status };
         const emails = await prisma.emailLog.findMany({
@@ -140,6 +156,7 @@ export function registerAdminTools(
     inputSchema: SendEmailSchema.shape,
     handler: async ({ to, subject, template }: z.infer<typeof SendEmailSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_send_email", async () => {
+        await requireAdminRole(userId);
         const prisma = (await import("@/lib/prisma")).default;
         const email = await prisma.emailLog.create({
           data: { to, subject, template, status: "PENDING", userId },
@@ -156,6 +173,7 @@ export function registerAdminTools(
     inputSchema: ListGallerySchema.shape,
     handler: async ({ limit = 20, featured }: z.infer<typeof ListGallerySchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_gallery", async () => {
+        await requireAdminRole(userId);
         const prisma = (await import("@/lib/prisma")).default;
         const where = featured !== undefined ? { isActive: featured } : {};
         const items = await prisma.featuredGalleryItem.findMany({
@@ -181,6 +199,7 @@ export function registerAdminTools(
     inputSchema: ManageGallerySchema.shape,
     handler: async ({ item_id, action }: z.infer<typeof ManageGallerySchema>): Promise<CallToolResult> =>
       safeToolCall("admin_manage_gallery", async () => {
+        await requireAdminRole(userId);
         const prisma = (await import("@/lib/prisma")).default;
         if (action === "remove") {
           await prisma.featuredGalleryItem.delete({ where: { id: item_id } });
@@ -202,6 +221,7 @@ export function registerAdminTools(
     inputSchema: ListJobsSchema.shape,
     handler: async ({ status = "ALL", limit = 20 }: z.infer<typeof ListJobsSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_jobs", async () => {
+        await requireAdminRole(userId);
         const prisma = (await import("@/lib/prisma")).default;
         const where = status === "ALL" ? {} : { status };
         const jobs = await prisma.mcpGenerationJob.findMany({
@@ -227,6 +247,7 @@ export function registerAdminTools(
     inputSchema: ManageJobSchema.shape,
     handler: async ({ job_id, action }: z.infer<typeof ManageJobSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_manage_job", async () => {
+        await requireAdminRole(userId);
         const prisma = (await import("@/lib/prisma")).default;
         if (action === "delete") {
           await prisma.mcpGenerationJob.delete({ where: { id: job_id } });
@@ -249,6 +270,7 @@ export function registerAdminTools(
     inputSchema: ListPhotosSchema.shape,
     handler: async ({ status = "ALL", limit = 20 }: z.infer<typeof ListPhotosSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_list_photos", async () => {
+        await requireAdminRole(userId);
         const prisma = (await import("@/lib/prisma")).default;
         const where = status === "ALL" ? {} : { isPublic: status === "PUBLIC" };
         const photos = await prisma.enhancedImage.findMany({
@@ -274,6 +296,7 @@ export function registerAdminTools(
     inputSchema: ModeratePhotoSchema.shape,
     handler: async ({ photo_id, action }: z.infer<typeof ModeratePhotoSchema>): Promise<CallToolResult> =>
       safeToolCall("admin_moderate_photo", async () => {
+        await requireAdminRole(userId);
         const prisma = (await import("@/lib/prisma")).default;
         await prisma.enhancedImage.update({
           where: { id: photo_id },

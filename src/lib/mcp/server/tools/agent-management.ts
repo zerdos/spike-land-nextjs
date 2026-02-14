@@ -23,7 +23,7 @@ const GetAgentQueueSchema = z.object({
 
 const SendAgentMessageSchema = z.object({
   agent_id: z.string().min(1).describe("Agent ID to send message to."),
-  content: z.string().min(1).describe("Message content."),
+  content: z.string().min(1).max(10000).describe("Message content (max 10000 chars)."),
 });
 
 export function registerAgentManagementTools(
@@ -77,7 +77,7 @@ export function registerAgentManagementTools(
           },
         });
         if (!agent) return textResult("**Error: NOT_FOUND**\nAgent not found.\n**Retryable:** false");
-        if (agent.userId !== userId) return textResult("**Error: PERMISSION_DENIED**\nYou do not own this agent.\n**Retryable:** false");
+        if (agent.userId !== userId) return textResult("**Error: NOT_FOUND**\nAgent not found.\n**Retryable:** false");
         return textResult(
           `**Agent**\n\n` +
           `**ID:** ${agent.id}\n` +

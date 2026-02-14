@@ -136,6 +136,21 @@
     /* Standard transitions (buttons, cards) */
     --animation-slow: 300ms;
     /* Longer transitions (modals, accordions) */
+
+    /* Swarm Dashboard: Status Colors */
+    --status-success: 150 90% 35%;
+    --status-active: 187 100% 50%;
+    --status-pending: 45 90% 45%;
+    --status-attention: 30 95% 55%;
+    --status-warning: 45 90% 45%;
+    --status-error: 0 84% 60%;
+    --status-inactive: 220 15% 40%;
+    --status-deploying: 263 70% 50%;
+
+    /* Swarm Dashboard: Environment Identity Colors */
+    --env-dev: 187 100% 50%;
+    --env-preview: 263 70% 50%;
+    --env-prod: 150 90% 35%;
   }
 
   .theme-retro {

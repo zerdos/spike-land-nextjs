@@ -253,8 +253,29 @@ export function registerSandboxTools(
         if (!isSandboxState(result)) return result;
 
         const sandbox = result;
-        sandbox.files.set(file_path, content);
+
+        const MAX_FILE_COUNT = 100;
+        const MAX_FILE_SIZE_BYTES = 1_048_576; // 1MB
+        const MAX_TOTAL_SIZE_BYTES = 52_428_800; // 50MB
+
         const sizeBytes = new TextEncoder().encode(content).byteLength;
+        if (sizeBytes > MAX_FILE_SIZE_BYTES) {
+          return { content: [{ type: "text", text: `File exceeds 1MB limit (${sizeBytes} bytes).` }], isError: true };
+        }
+        if (sandbox.files.size >= MAX_FILE_COUNT && !sandbox.files.has(file_path)) {
+          return { content: [{ type: "text", text: `Sandbox file limit (${MAX_FILE_COUNT}) reached.` }], isError: true };
+        }
+        // Check total size
+        let totalSize = 0;
+        for (const [, fileContent] of sandbox.files) {
+          totalSize += new TextEncoder().encode(fileContent).byteLength;
+        }
+        totalSize += sizeBytes;
+        if (totalSize > MAX_TOTAL_SIZE_BYTES) {
+          return { content: [{ type: "text", text: `Sandbox total size limit (50MB) exceeded.` }], isError: true };
+        }
+
+        sandbox.files.set(file_path, content);
 
         return textResult(
           `**File written**\n\n` +

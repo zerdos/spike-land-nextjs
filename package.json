@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:silent": "next dev --webpack > /dev/null 2> /dev/null || true",
-    "build": "yarn workspace @spike-npm-land/shared build && yarn db:generate && NODE_OPTIONS='--max-old-space-size=4096' next build --webpack",
+    "build": "yarn workspace @spike-npm-land/shared build && yarn db:generate && yarn docs:generate && NODE_OPTIONS='--max-old-space-size=4096' next build --webpack",
+    "docs:generate": "tsx src/lib/docs/generate-docs-data.ts && cp -r src/lib/docs/generated/ public/docs-data/",
     "deploy:dev": "NODE_ENV=development yarn build:fe && cd packages/testing.spike.land && yarn w:deploy:dev",
     "build:fe": "cd packages/code && yarn build",
     "start": "next start",
@@ -139,6 +140,7 @@
     "jstat": "1.9.6",
     "katex": "^0.16.28",
     "lucide-react": "0.564.0",
+    "minisearch": "^7.2.0",
     "ms": "2.1.3",
     "nanoid": "5.1.6",
     "next": "16.1.6",

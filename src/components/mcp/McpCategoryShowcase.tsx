@@ -2,11 +2,36 @@
 
 import { motion, type Variants } from "framer-motion";
 import {
+  AppWindow,
+  BookOpen,
   Bot,
+  Briefcase,
   Code2,
+  Coins,
   Compass,
+  CreditCard,
+  FileText,
+  FolderOpen,
+  GitBranch,
   ImagePlus,
+  Lock,
+  MessageSquare,
+  Music,
   Network,
+  Palette,
+  PlusCircle,
+  Rocket,
+  Search,
+  Send,
+  Settings,
+  Shield,
+  Sparkles,
+  Store,
+  Terminal,
+  Users,
+  Volume2,
+  Wrench,
+  Zap,
 } from "lucide-react";
 import type React from "react";
 
@@ -23,11 +48,10 @@ import { cn } from "@/lib/utils";
 import { MCP_CATEGORIES, type McpCategory } from "./mcp-tool-registry";
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Compass,
-  ImagePlus,
-  Code2,
-  Bot,
-  Network,
+  AppWindow, BookOpen, Bot, Briefcase, Code2, Coins, Compass, CreditCard,
+  FileText, FolderOpen, GitBranch, ImagePlus, Lock, MessageSquare, Music,
+  Network, Palette, PlusCircle, Rocket, Search, Send, Settings, Shield,
+  Sparkles, Store, Terminal, Users, Volume2, Wrench, Zap,
 };
 
 interface McpCategoryShowcaseProps {
