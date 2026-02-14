@@ -21,7 +21,7 @@ const GetProductSchema = z.object({
 const AddToCartSchema = z.object({
   product_id: z.string().min(1).describe("Product ID."),
   quantity: z.number().int().min(1).max(99).optional().default(1).describe("Quantity."),
-  variant: z.string().optional().describe("Product variant (size, color, etc)."),
+  variant_id: z.string().optional().describe("Product variant ID (size, color, etc)."),
 });
 
 const GetCartSchema = z.object({});
@@ -32,6 +32,8 @@ const RemoveFromCartSchema = z.object({
 
 const CheckoutSchema = z.object({
   payment_method: z.enum(["stripe", "free"]).optional().default("stripe").describe("Payment method."),
+  shipping_address: z.record(z.string(), z.unknown()).describe("Shipping address as JSON object."),
+  customer_email: z.string().email().describe("Customer email for order confirmation."),
 });
 
 const ListOrdersSchema = z.object({
@@ -56,17 +58,19 @@ export function registerMerchTools(
     handler: async ({ category, limit = 20 }: z.infer<typeof ListProductsSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_list_products", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const where = category ? { category, active: true } : { active: true };
+        const where = category
+          ? { category: { slug: category }, isActive: true }
+          : { isActive: true };
         const products = await prisma.merchProduct.findMany({
           where,
-          select: { id: true, name: true, price: true, category: true, imageUrl: true, inStock: true },
+          select: { id: true, name: true, retailPrice: true, categoryId: true, isActive: true },
           take: limit,
           orderBy: { name: "asc" },
         });
         if (products.length === 0) return textResult("No products found.");
         let text = `**Products (${products.length}):**\n\n`;
         for (const p of products) {
-          text += `- **${p.name}** — $${p.price.toFixed(2)} ${p.inStock ? "" : "[OUT OF STOCK]"}\n  Category: ${p.category} | ID: ${p.id}\n\n`;
+          text += `- **${p.name}** -- $${Number(p.retailPrice).toFixed(2)}\n  Category ID: ${p.categoryId} | ID: ${p.id}\n\n`;
         }
         return textResult(text);
       }),
@@ -83,16 +87,20 @@ export function registerMerchTools(
         const prisma = (await import("@/lib/prisma")).default;
         const product = await prisma.merchProduct.findUnique({
           where: { id: product_id },
-          select: { id: true, name: true, description: true, price: true, category: true, imageUrl: true, inStock: true, variants: true },
+          include: {
+            variants: { where: { isActive: true }, select: { id: true, name: true, priceDelta: true } },
+            category: { select: { name: true } },
+          },
         });
         if (!product) return textResult("**Error: NOT_FOUND**\nProduct not found.\n**Retryable:** false");
+        const variantList = product.variants.map((v) => `${v.name} (+$${Number(v.priceDelta).toFixed(2)})`).join(", ");
         return textResult(
           `**${product.name}**\n\n` +
-          `**Price:** $${product.price.toFixed(2)}\n` +
-          `**Category:** ${product.category}\n` +
-          `**In Stock:** ${product.inStock}\n` +
+          `**Price:** $${Number(product.retailPrice).toFixed(2)}\n` +
+          `**Category:** ${product.category.name}\n` +
+          `**Active:** ${product.isActive}\n` +
           `**Description:** ${product.description}\n` +
-          `**Variants:** ${(product.variants as string[])?.join(", ") || "none"}`
+          `**Variants:** ${variantList || "none"}`
         );
       }),
   });
@@ -103,13 +111,24 @@ export function registerMerchTools(
     category: "merch",
     tier: "free",
     inputSchema: AddToCartSchema.shape,
-    handler: async ({ product_id, quantity = 1, variant }: z.infer<typeof AddToCartSchema>): Promise<CallToolResult> =>
+    handler: async ({ product_id, quantity = 1, variant_id }: z.infer<typeof AddToCartSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_add_to_cart", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const item = await prisma.merchCartItem.create({
-          data: { productId: product_id, quantity, variant, userId },
+        // Upsert the user's cart
+        const cart = await prisma.merchCart.upsert({
+          where: { userId },
+          create: { userId },
+          update: {},
         });
-        return textResult(`**Added to Cart!**\n\n**Item ID:** ${item.id}\n**Product:** ${product_id}\n**Quantity:** ${quantity}${variant ? `\n**Variant:** ${variant}` : ""}`);
+        const item = await prisma.merchCartItem.create({
+          data: {
+            cartId: cart.id,
+            productId: product_id,
+            quantity,
+            ...(variant_id ? { variantId: variant_id } : {}),
+          },
+        });
+        return textResult(`**Added to Cart!**\n\n**Item ID:** ${item.id}\n**Product:** ${product_id}\n**Quantity:** ${quantity}${variant_id ? `\n**Variant ID:** ${variant_id}` : ""}`);
       }),
   });
 
@@ -122,17 +141,21 @@ export function registerMerchTools(
     handler: async (): Promise<CallToolResult> =>
       safeToolCall("merch_get_cart", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const items = await prisma.merchCartItem.findMany({
+        const cart = await prisma.merchCart.findUnique({
           where: { userId },
-          include: { merchProduct: { select: { name: true, price: true } } },
+          include: {
+            items: {
+              include: { product: { select: { name: true, retailPrice: true } } },
+            },
+          },
         });
-        if (items.length === 0) return textResult("Your cart is empty.");
+        if (!cart || cart.items.length === 0) return textResult("Your cart is empty.");
         let total = 0;
-        let text = `**Shopping Cart (${items.length} items):**\n\n`;
-        for (const item of items) {
-          const subtotal = item.merchProduct.price * item.quantity;
+        let text = `**Shopping Cart (${cart.items.length} items):**\n\n`;
+        for (const item of cart.items) {
+          const subtotal = Number(item.product.retailPrice) * item.quantity;
           total += subtotal;
-          text += `- **${item.merchProduct.name}** x${item.quantity} — $${subtotal.toFixed(2)}\n  ID: ${item.id}${item.variant ? ` | Variant: ${item.variant}` : ""}\n\n`;
+          text += `- **${item.product.name}** x${item.quantity} -- $${subtotal.toFixed(2)}\n  ID: ${item.id}${item.variantId ? ` | Variant: ${item.variantId}` : ""}\n\n`;
         }
         text += `**Total: $${total.toFixed(2)}**`;
         return textResult(text);
@@ -159,24 +182,41 @@ export function registerMerchTools(
     category: "merch",
     tier: "free",
     inputSchema: CheckoutSchema.shape,
-    handler: async ({ payment_method = "stripe" }: z.infer<typeof CheckoutSchema>): Promise<CallToolResult> =>
+    handler: async ({ payment_method = "stripe", shipping_address, customer_email }: z.infer<typeof CheckoutSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_checkout", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const items = await prisma.merchCartItem.findMany({
+        const cart = await prisma.merchCart.findUnique({
           where: { userId },
-          include: { merchProduct: { select: { price: true } } },
+          include: {
+            items: {
+              include: { product: { select: { retailPrice: true } } },
+            },
+          },
         });
-        if (items.length === 0) return textResult("Cart is empty. Nothing to checkout.");
-        const total = items.reduce((s: number, i: { merchProduct: { price: number }; quantity: number }) => s + i.merchProduct.price * i.quantity, 0);
+        if (!cart || cart.items.length === 0) return textResult("Cart is empty. Nothing to checkout.");
+        const subtotal = cart.items.reduce((s, i) => s + Number(i.product.retailPrice) * i.quantity, 0);
+        const shippingCost = 0;
+        const totalAmount = subtotal + shippingCost;
+        const orderNumber = `ORD-${Date.now()}`;
         const order = await prisma.merchOrder.create({
-          data: { userId, total, status: "PENDING", paymentMethod: payment_method, itemCount: items.length },
+          data: {
+            userId,
+            orderNumber,
+            status: "PENDING",
+            subtotal,
+            shippingCost,
+            totalAmount,
+            shippingAddress: shipping_address as Record<string, string>,
+            customerEmail: customer_email,
+          },
         });
-        await prisma.merchCartItem.deleteMany({ where: { userId } });
+        await prisma.merchCartItem.deleteMany({ where: { cartId: cart.id } });
         return textResult(
           `**Order Created!**\n\n` +
           `**Order ID:** ${order.id}\n` +
-          `**Items:** ${items.length}\n` +
-          `**Total:** $${total.toFixed(2)}\n` +
+          `**Order Number:** ${order.orderNumber}\n` +
+          `**Items:** ${cart.items.length}\n` +
+          `**Total:** $${Number(order.totalAmount).toFixed(2)}\n` +
           `**Payment:** ${payment_method}\n` +
           `**Status:** PENDING`
         );
@@ -195,14 +235,14 @@ export function registerMerchTools(
         const where = status === "ALL" ? { userId } : { userId, status };
         const orders = await prisma.merchOrder.findMany({
           where,
-          select: { id: true, total: true, status: true, itemCount: true, createdAt: true },
+          select: { id: true, orderNumber: true, totalAmount: true, status: true, createdAt: true, _count: { select: { items: true } } },
           take: limit,
           orderBy: { createdAt: "desc" },
         });
         if (orders.length === 0) return textResult("No orders found.");
         let text = `**Orders (${orders.length}):**\n\n`;
         for (const o of orders) {
-          text += `- **Order ${o.id}** [${o.status}] — $${o.total.toFixed(2)} (${o.itemCount} items)\n  Date: ${o.createdAt.toISOString()}\n\n`;
+          text += `- **Order ${o.orderNumber}** [${o.status}] -- $${Number(o.totalAmount).toFixed(2)} (${o._count.items} items)\n  Date: ${o.createdAt.toISOString()}\n\n`;
         }
         return textResult(text);
       }),
@@ -219,16 +259,17 @@ export function registerMerchTools(
         const prisma = (await import("@/lib/prisma")).default;
         const order = await prisma.merchOrder.findUnique({
           where: { id: order_id },
-          select: { id: true, total: true, status: true, paymentMethod: true, itemCount: true, createdAt: true },
+          select: { id: true, orderNumber: true, totalAmount: true, status: true, stripePaymentStatus: true, createdAt: true, _count: { select: { items: true } } },
         });
         if (!order) return textResult("**Error: NOT_FOUND**\nOrder not found.\n**Retryable:** false");
         return textResult(
           `**Order Details**\n\n` +
           `**ID:** ${order.id}\n` +
+          `**Order Number:** ${order.orderNumber}\n` +
           `**Status:** ${order.status}\n` +
-          `**Total:** $${order.total.toFixed(2)}\n` +
-          `**Items:** ${order.itemCount}\n` +
-          `**Payment:** ${order.paymentMethod}\n` +
+          `**Total:** $${Number(order.totalAmount).toFixed(2)}\n` +
+          `**Items:** ${order._count.items}\n` +
+          `**Payment Status:** ${order.stripePaymentStatus ?? "N/A"}\n` +
           `**Created:** ${order.createdAt.toISOString()}`
         );
       }),

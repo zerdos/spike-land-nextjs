@@ -69,6 +69,7 @@ import {
   registerGatewayTools,
   resetBoltState,
 } from "./gateway";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { ToolDefinition } from "../tool-registry";
 
 // ========================================
@@ -93,7 +94,7 @@ class MockToolRegistry {
   getHandler(name: string) {
     const tool = this.tools.get(name);
     if (!tool) throw new Error(`Tool not found: ${name}`);
-    return tool.handler;
+    return tool.handler as (input: Record<string, unknown>) => Promise<CallToolResult> | CallToolResult;
   }
 }
 

@@ -31,130 +31,137 @@ const GetDashboardSchema = z.object({
 });
 
 const GetAuditTrailSchema = z.object({
-  allocation_id: z.string().optional().describe("Filter by allocation ID."),
+  campaign_id: z.string().optional().describe("Filter by campaign ID."),
   limit: z.number().int().min(1).max(100).optional().describe("Max results (default 20)."),
 });
 
 const SetAutopilotSchema = z.object({
   enabled: z.boolean().describe("Enable or disable autopilot."),
-  max_daily_spend: z.number().min(0).optional().describe("Max daily spend limit."),
-  channels: z.array(z.string()).optional().describe("Channels to include in autopilot."),
+  workspace_id: z.string().min(1).describe("Workspace ID."),
+  campaign_id: z.string().optional().describe("Campaign ID (optional, for campaign-specific config)."),
 });
 
-const GetAutopilotStatusSchema = z.object({});
+const GetAutopilotStatusSchema = z.object({
+  workspace_id: z.string().min(1).describe("Workspace ID."),
+});
 
 export function registerOrbitAllocatorTools(
   registry: ToolRegistry,
-  userId: string,
+  _userId: string,
 ): void {
   registry.register({
     name: "allocator_get_allocations",
-    description: "Get current budget allocations across marketing channels.",
+    description: "Get current budget allocations across marketing channels. Note: Per-channel allocation tracking is not yet available; returns campaign-level daily budget moves.",
     category: "orbit-allocator",
     tier: "workspace",
     inputSchema: GetAllocationsSchema.shape,
-    handler: async ({ period = "current" }: z.infer<typeof GetAllocationsSchema>): Promise<CallToolResult> =>
+    handler: async ({ period: _period = "current" }: z.infer<typeof GetAllocationsSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_get_allocations", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
-        const allocations = await prisma.allocatorDailyBudgetMove.findMany({
-          where: { userId, period },
-          select: { id: true, channel: true, amount: true, spent: true, period: true },
-          orderBy: { amount: "desc" },
-        });
-        if (allocations.length === 0) return textResult(`No allocations found for period "${period}".`);
-        const totalBudget = allocations.reduce((s, a) => s + a.amount, 0);
-        const totalSpent = allocations.reduce((s, a) => s + (a.spent || 0), 0);
-        let text = `**Budget Allocations (${period}):**\n\n`;
-        text += `**Total Budget:** $${totalBudget.toFixed(2)}\n`;
-        text += `**Total Spent:** $${totalSpent.toFixed(2)}\n\n`;
-        for (const a of allocations) {
-          const pct = a.amount > 0 ? (((a.spent || 0) / a.amount) * 100).toFixed(1) : "0.0";
-          text += `- **${a.channel}**: $${(a.spent || 0).toFixed(2)} / $${a.amount.toFixed(2)} (${pct}%)\n  ID: ${a.id}\n\n`;
-        }
-        return textResult(text);
+        return textResult(
+          "**Allocator - Get Allocations**\n\n" +
+          "Per-channel budget allocation tracking is not yet available. " +
+          "The current schema supports campaign-level daily budget moves via `AllocatorDailyBudgetMove`. " +
+          "Use `allocator_dashboard` to view campaign-level budget data."
+        );
       }),
   });
 
   registry.register({
     name: "allocator_update_allocation",
-    description: "Update a budget allocation amount or channel.",
+    description: "Update a budget allocation amount or channel. Note: Direct allocation updates are not yet supported; use campaign budget management instead.",
     category: "orbit-allocator",
     tier: "workspace",
     inputSchema: UpdateAllocationSchema.shape,
-    handler: async ({ allocation_id, amount, channel }: z.infer<typeof UpdateAllocationSchema>): Promise<CallToolResult> =>
+    handler: async ({ allocation_id: _allocation_id }: z.infer<typeof UpdateAllocationSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_update_allocation", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
-        const data: Record<string, unknown> = { amount };
-        if (channel) data.channel = channel;
-        const allocation = await prisma.allocatorDailyBudgetMove.update({
-          where: { id: allocation_id },
-          data,
-        });
-        return textResult(`**Allocation Updated!**\n\n**ID:** ${allocation.id}\n**Channel:** ${allocation.channel}\n**Amount:** $${allocation.amount.toFixed(2)}`);
+        return textResult(
+          "**Allocator - Update Allocation**\n\n" +
+          "Direct per-channel allocation updates are not yet available. " +
+          "Budget changes are managed through autopilot executions and campaign-level budget adjustments."
+        );
       }),
   });
 
   registry.register({
     name: "allocator_create_allocation",
-    description: "Create a new budget allocation for a marketing channel.",
+    description: "Create a new budget allocation for a marketing channel. Note: Per-channel allocation creation is not yet available.",
     category: "orbit-allocator",
     tier: "workspace",
     inputSchema: CreateAllocationSchema.shape,
-    handler: async ({ channel, amount, period = "current" }: z.infer<typeof CreateAllocationSchema>): Promise<CallToolResult> =>
+    handler: async ({ channel: _channel }: z.infer<typeof CreateAllocationSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_create_allocation", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
-        const allocation = await prisma.allocatorDailyBudgetMove.create({
-          data: { channel, amount, spent: 0, period, userId },
-        });
-        return textResult(`**Allocation Created!**\n\n**ID:** ${allocation.id}\n**Channel:** ${channel}\n**Amount:** $${amount.toFixed(2)}\n**Period:** ${period}`);
+        return textResult(
+          "**Allocator - Create Allocation**\n\n" +
+          "Per-channel budget allocation creation is not yet available. " +
+          "Budget allocations are tracked at the campaign level via `AllocatorCampaign`."
+        );
       }),
   });
 
   registry.register({
     name: "allocator_dashboard",
-    description: "Get an overview dashboard of budget performance across all channels.",
+    description: "Get an overview dashboard of budget performance across all campaigns.",
     category: "orbit-allocator",
     tier: "workspace",
     inputSchema: GetDashboardSchema.shape,
     handler: async ({ period = "30d" }: z.infer<typeof GetDashboardSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_dashboard", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const allocations = await prisma.allocatorDailyBudgetMove.findMany({
-          where: { userId },
-          select: { channel: true, amount: true, spent: true },
+        const now = new Date();
+        const daysBack = period === "7d" ? 7 : period === "90d" ? 90 : 30;
+        const since = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
+        const moves = await prisma.allocatorDailyBudgetMove.findMany({
+          where: { date: { gte: since } },
+          select: { id: true, campaignId: true, totalMoved: true, netChange: true, executionCount: true, date: true },
         });
-        const totalBudget = allocations.reduce((s, a) => s + a.amount, 0);
-        const totalSpent = allocations.reduce((s, a) => s + (a.spent || 0), 0);
-        const utilization = totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(1) : "0.0";
+        if (moves.length === 0) {
+          return textResult(`**Allocator Dashboard (${period}):**\n\nNo budget moves found in the last ${daysBack} days.`);
+        }
+        const totalMoved = moves.reduce((s, m) => s + Number(m.totalMoved), 0);
+        const totalNetChange = moves.reduce((s, m) => s + Number(m.netChange), 0);
+        const totalExecutions = moves.reduce((s, m) => s + m.executionCount, 0);
+        const uniqueCampaigns = new Set(moves.map((m) => m.campaignId)).size;
         let text = `**Allocator Dashboard (${period}):**\n\n`;
-        text += `**Total Budget:** $${totalBudget.toFixed(2)}\n`;
-        text += `**Total Spent:** $${totalSpent.toFixed(2)}\n`;
-        text += `**Utilization:** ${utilization}%\n`;
-        text += `**Channels:** ${allocations.length}\n`;
+        text += `**Total Moved:** $${totalMoved.toFixed(2)}\n`;
+        text += `**Net Change:** $${totalNetChange.toFixed(2)}\n`;
+        text += `**Total Executions:** ${totalExecutions}\n`;
+        text += `**Campaigns:** ${uniqueCampaigns}\n`;
+        text += `**Budget Moves:** ${moves.length}\n`;
         return textResult(text);
       }),
   });
 
   registry.register({
     name: "allocator_audit_trail",
-    description: "View audit trail of budget changes and transactions.",
+    description: "View audit trail of allocator budget decisions and changes.",
     category: "orbit-allocator",
     tier: "workspace",
     inputSchema: GetAuditTrailSchema.shape,
-    handler: async ({ allocation_id, limit = 20 }: z.infer<typeof GetAuditTrailSchema>): Promise<CallToolResult> =>
+    handler: async ({ campaign_id, limit = 20 }: z.infer<typeof GetAuditTrailSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_audit_trail", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const where = allocation_id ? { allocationId: allocation_id, userId } : { userId };
-        const entries = await prisma.auditLog.findMany({
+        const where: Record<string, unknown> = {};
+        if (campaign_id) where["campaignId"] = campaign_id;
+        const entries = await prisma.allocatorAuditLog.findMany({
           where,
-          select: { id: true, action: true, details: true, createdAt: true },
+          select: {
+            id: true,
+            decisionType: true,
+            decisionOutcome: true,
+            aiReasoning: true,
+            triggeredBy: true,
+            createdAt: true,
+          },
           take: limit,
           orderBy: { createdAt: "desc" },
         });
         if (entries.length === 0) return textResult("No audit entries found.");
         let text = `**Audit Trail (${entries.length} entries):**\n\n`;
         for (const e of entries) {
-          text += `- **${e.action}** at ${e.createdAt.toISOString()}\n  ${e.details || "(no details)"}\n\n`;
+          text += `- **${e.decisionType}** (${e.decisionOutcome}) at ${e.createdAt.toISOString()}\n`;
+          text += `  Triggered by: ${e.triggeredBy}\n`;
+          if (e.aiReasoning) text += `  Reasoning: ${e.aiReasoning}\n`;
+          text += `  ID: ${e.id}\n\n`;
         }
         return textResult(text);
       }),
@@ -162,39 +169,66 @@ export function registerOrbitAllocatorTools(
 
   registry.register({
     name: "allocator_set_autopilot",
-    description: "Enable or disable autopilot budget optimization.",
+    description: "Enable or disable autopilot budget optimization for a workspace.",
     category: "orbit-allocator",
     tier: "workspace",
     inputSchema: SetAutopilotSchema.shape,
-    handler: async ({ enabled, max_daily_spend, channels }: z.infer<typeof SetAutopilotSchema>): Promise<CallToolResult> =>
+    handler: async ({ enabled, workspace_id, campaign_id }: z.infer<typeof SetAutopilotSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_set_autopilot", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         await prisma.allocatorAutopilotConfig.upsert({
-          where: { userId },
-          create: { userId, enabled, maxDailySpend: max_daily_spend, channels: channels || [] },
-          update: { enabled, ...(max_daily_spend !== undefined ? { maxDailySpend: max_daily_spend } : {}), ...(channels ? { channels } : {}) },
+          where: { workspaceId_campaignId: { workspaceId: workspace_id, campaignId: campaign_id ?? "" } },
+          create: {
+            workspaceId: workspace_id,
+            campaignId: campaign_id,
+            isEnabled: enabled,
+          },
+          update: { isEnabled: enabled },
         });
-        return textResult(`**Autopilot ${enabled ? "Enabled" : "Disabled"}!**\n\n${max_daily_spend ? `**Max Daily Spend:** $${max_daily_spend}\n` : ""}${channels ? `**Channels:** ${channels.join(", ")}` : ""}`);
+        return textResult(
+          `**Autopilot ${enabled ? "Enabled" : "Disabled"}!**\n\n` +
+          `**Workspace:** ${workspace_id}\n` +
+          (campaign_id ? `**Campaign:** ${campaign_id}\n` : "")
+        );
       }),
   });
 
   registry.register({
     name: "allocator_autopilot_status",
-    description: "Get current autopilot configuration and status.",
+    description: "Get current autopilot configuration and status for a workspace.",
     category: "orbit-allocator",
     tier: "workspace",
     inputSchema: GetAutopilotStatusSchema.shape,
-    handler: async (): Promise<CallToolResult> =>
+    handler: async ({ workspace_id }: z.infer<typeof GetAutopilotStatusSchema>): Promise<CallToolResult> =>
       safeToolCall("allocator_autopilot_status", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const config = await prisma.allocatorAutopilotConfig.findUnique({ where: { userId } });
-        if (!config) return textResult("**Autopilot:** Not configured.\n\nUse `allocator_set_autopilot` to enable.");
-        return textResult(
-          `**Autopilot Status**\n\n` +
-          `**Enabled:** ${config.enabled}\n` +
-          `**Max Daily Spend:** ${config.maxDailySpend ? `$${config.maxDailySpend}` : "unlimited"}\n` +
-          `**Channels:** ${(config.channels as string[])?.join(", ") || "all"}`
-        );
+        const configs = await prisma.allocatorAutopilotConfig.findMany({
+          where: { workspaceId: workspace_id },
+          select: {
+            id: true,
+            campaignId: true,
+            isEnabled: true,
+            mode: true,
+            maxDailyBudgetChange: true,
+            maxSingleChange: true,
+            isEmergencyStopped: true,
+            createdAt: true,
+          },
+        });
+        if (configs.length === 0) {
+          return textResult("**Autopilot:** Not configured for this workspace.\n\nUse `allocator_set_autopilot` to enable.");
+        }
+        let text = `**Autopilot Status (${configs.length} config(s)):**\n\n`;
+        for (const config of configs) {
+          text += `- **Config ID:** ${config.id}\n`;
+          text += `  **Campaign:** ${config.campaignId || "workspace-wide"}\n`;
+          text += `  **Enabled:** ${config.isEnabled}\n`;
+          text += `  **Mode:** ${config.mode}\n`;
+          text += `  **Max Daily Budget Change:** $${Number(config.maxDailyBudgetChange).toFixed(2)}\n`;
+          text += `  **Max Single Change:** $${Number(config.maxSingleChange).toFixed(2)}\n`;
+          text += `  **Emergency Stopped:** ${config.isEmergencyStopped}\n\n`;
+        }
+        return textResult(text);
       }),
   });
 }

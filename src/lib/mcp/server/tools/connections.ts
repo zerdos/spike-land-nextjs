@@ -10,21 +10,17 @@ import type { ToolRegistry } from "../tool-registry";
 import { safeToolCall, textResult } from "./tool-helpers";
 
 const ListConnectionsSchema = z.object({
-  type: z.enum(["partner", "vendor", "competitor", "lead", "ALL"]).optional().default("ALL").describe("Connection type filter."),
   limit: z.number().int().min(1).max(50).optional().describe("Max results (default 20)."),
 });
 
 const AddConnectionSchema = z.object({
-  name: z.string().min(1).max(200).describe("Business name."),
-  type: z.enum(["partner", "vendor", "competitor", "lead"]).describe("Connection type."),
-  url: z.string().optional().describe("Website URL."),
+  name: z.string().min(1).max(200).describe("Display name."),
   notes: z.string().optional().describe("Notes about this connection."),
 });
 
 const UpdateConnectionSchema = z.object({
   connection_id: z.string().min(1).describe("Connection ID."),
-  name: z.string().optional().describe("New name."),
-  type: z.enum(["partner", "vendor", "competitor", "lead"]).optional().describe("New type."),
+  name: z.string().optional().describe("New display name."),
   notes: z.string().optional().describe("Updated notes."),
 });
 
@@ -46,30 +42,40 @@ const SearchConnectionsSchema = z.object({
   query: z.string().min(1).describe("Search query."),
 });
 
+async function getUserWorkspaceId(userId: string): Promise<string> {
+  const prisma = (await import("@/lib/prisma")).default;
+  const membership = await prisma.workspaceMember.findFirst({
+    where: { userId },
+    select: { workspaceId: true },
+  });
+  if (!membership) throw new Error("No workspace found for user.");
+  return membership.workspaceId;
+}
+
 export function registerConnectionsTools(
   registry: ToolRegistry,
   userId: string,
 ): void {
   registry.register({
     name: "connections_list",
-    description: "List business connections with optional type filter.",
+    description: "List business connections.",
     category: "connections",
     tier: "workspace",
     inputSchema: ListConnectionsSchema.shape,
-    handler: async ({ type = "ALL", limit = 20 }: z.infer<typeof ListConnectionsSchema>): Promise<CallToolResult> =>
+    handler: async ({ limit = 20 }: z.infer<typeof ListConnectionsSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_list", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const where = type === "ALL" ? { userId } : { userId, type };
+        const workspaceId = await getUserWorkspaceId(userId);
         const connections = await prisma.connection.findMany({
-          where,
-          select: { id: true, name: true, type: true, url: true, createdAt: true },
+          where: { workspaceId },
+          select: { id: true, displayName: true, notes: true, warmthScore: true, createdAt: true },
           take: limit,
-          orderBy: { name: "asc" },
+          orderBy: { displayName: "asc" },
         });
         if (connections.length === 0) return textResult("No connections found.");
         let text = `**Connections (${connections.length}):**\n\n`;
         for (const c of connections) {
-          text += `- **${c.name}** (${c.type})${c.url ? ` — ${c.url}` : ""}\n  ID: ${c.id}\n\n`;
+          text += `- **${c.displayName}** (warmth: ${c.warmthScore})\n  ID: ${c.id}\n\n`;
         }
         return textResult(text);
       }),
@@ -81,13 +87,14 @@ export function registerConnectionsTools(
     category: "connections",
     tier: "workspace",
     inputSchema: AddConnectionSchema.shape,
-    handler: async ({ name, type, url, notes }: z.infer<typeof AddConnectionSchema>): Promise<CallToolResult> =>
+    handler: async ({ name, notes }: z.infer<typeof AddConnectionSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_add", async () => {
         const prisma = (await import("@/lib/prisma")).default;
+        const workspaceId = await getUserWorkspaceId(userId);
         const connection = await prisma.connection.create({
-          data: { name, type, url, notes, userId },
+          data: { displayName: name, notes, workspaceId },
         });
-        return textResult(`**Connection Added!**\n\n**ID:** ${connection.id}\n**Name:** ${name}\n**Type:** ${type}`);
+        return textResult(`**Connection Added!**\n\n**ID:** ${connection.id}\n**Name:** ${name}`);
       }),
   });
 
@@ -97,15 +104,14 @@ export function registerConnectionsTools(
     category: "connections",
     tier: "workspace",
     inputSchema: UpdateConnectionSchema.shape,
-    handler: async ({ connection_id, name, type, notes }: z.infer<typeof UpdateConnectionSchema>): Promise<CallToolResult> =>
+    handler: async ({ connection_id, name, notes }: z.infer<typeof UpdateConnectionSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_update", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         const data: Record<string, unknown> = {};
-        if (name) data.name = name;
-        if (type) data.type = type;
-        if (notes !== undefined) data.notes = notes;
+        if (name) data["displayName"] = name;
+        if (notes !== undefined) data["notes"] = notes;
         const connection = await prisma.connection.update({ where: { id: connection_id }, data });
-        return textResult(`**Connection Updated!** ${connection.name} (${connection.type})`);
+        return textResult(`**Connection Updated!** ${connection.displayName}`);
       }),
   });
 
@@ -131,11 +137,8 @@ export function registerConnectionsTools(
     inputSchema: TrackCompetitorSchema.shape,
     handler: async ({ competitor_id, metric, value }: z.infer<typeof TrackCompetitorSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_track_competitor", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
-        const entry = await prisma.scoutBenchmark.create({
-          data: { connectionId: competitor_id, metric, value, userId, recordedAt: new Date() },
-        });
-        return textResult(`**Metric Recorded!**\n\n**ID:** ${entry.id}\n**Competitor:** ${competitor_id}\n**Metric:** ${metric}\n**Value:** ${value}`);
+        void competitor_id; void metric; void value;
+        return textResult("**Not implemented.** ScoutBenchmark uses workspace-level period-based metrics (ownMetrics/competitorMetrics JSON). Per-connection metric tracking is not yet supported by the schema.");
       }),
   });
 
@@ -148,28 +151,21 @@ export function registerConnectionsTools(
     handler: async ({ competitor_id }: z.infer<typeof GetCompetitorReportSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_competitor_report", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const where: Record<string, unknown> = { userId };
-        if (competitor_id) where.connectionId = competitor_id;
-        const metrics = await prisma.scoutBenchmark.findMany({
-          where,
-          include: { connection: { select: { name: true } } },
-          orderBy: { recordedAt: "desc" },
+        const workspaceId = await getUserWorkspaceId(userId);
+        const where: Record<string, unknown> = { workspaceId };
+        if (competitor_id) where["period"] = competitor_id;
+        const benchmarks = await prisma.scoutBenchmark.findMany({
+          where: where as { workspaceId: string },
+          orderBy: { generatedAt: "desc" },
           take: 50,
         });
-        if (metrics.length === 0) return textResult("No competitor data tracked yet.");
-        const grouped = new Map<string, Array<{ metric: string; value: string; date: string }>>();
-        for (const m of metrics) {
-          const name = m.connection.name;
-          if (!grouped.has(name)) grouped.set(name, []);
-          grouped.get(name)!.push({ metric: m.metric, value: m.value, date: m.recordedAt.toISOString().split("T")[0]! });
-        }
+        if (benchmarks.length === 0) return textResult("No competitor data tracked yet.");
         let text = `**Competitor Report:**\n\n`;
-        for (const [name, entries] of grouped) {
-          text += `### ${name}\n`;
-          for (const e of entries) {
-            text += `- ${e.metric}: ${e.value} (${e.date})\n`;
-          }
-          text += "\n";
+        for (const b of benchmarks) {
+          text += `### Period: ${b.period}\n`;
+          text += `- Own Metrics: ${JSON.stringify(b.ownMetrics)}\n`;
+          text += `- Competitor Metrics: ${JSON.stringify(b.competitorMetrics)}\n`;
+          text += `- Generated: ${b.generatedAt.toISOString().split("T")[0]}\n\n`;
         }
         return textResult(text);
       }),
@@ -184,21 +180,22 @@ export function registerConnectionsTools(
     handler: async ({ query }: z.infer<typeof SearchConnectionsSchema>): Promise<CallToolResult> =>
       safeToolCall("connections_search", async () => {
         const prisma = (await import("@/lib/prisma")).default;
+        const workspaceId = await getUserWorkspaceId(userId);
         const connections = await prisma.connection.findMany({
           where: {
-            userId,
+            workspaceId,
             OR: [
-              { name: { contains: query, mode: "insensitive" } },
+              { displayName: { contains: query, mode: "insensitive" } },
               { notes: { contains: query, mode: "insensitive" } },
             ],
           },
-          select: { id: true, name: true, type: true },
+          select: { id: true, displayName: true, warmthScore: true },
           take: 20,
         });
         if (connections.length === 0) return textResult(`No connections matching "${query}".`);
         let text = `**Search Results (${connections.length}):**\n\n`;
         for (const c of connections) {
-          text += `- **${c.name}** (${c.type}) — ID: ${c.id}\n`;
+          text += `- **${c.displayName}** (warmth: ${c.warmthScore}) -- ID: ${c.id}\n`;
         }
         return textResult(text);
       }),

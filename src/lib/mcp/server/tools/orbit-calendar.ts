@@ -12,23 +12,24 @@ import { safeToolCall, textResult } from "./tool-helpers";
 const ListEventsSchema = z.object({
   start_date: z.string().optional().describe("Start date (ISO format)."),
   end_date: z.string().optional().describe("End date (ISO format)."),
-  channel: z.string().optional().describe("Filter by channel."),
+  platform: z.string().optional().describe("Filter by platform."),
   limit: z.number().int().min(1).max(100).optional().describe("Max results (default 20)."),
 });
 
 const CreateEventSchema = z.object({
-  title: z.string().min(1).max(200).describe("Event title."),
   content: z.string().min(1).describe("Post content."),
-  scheduled_at: z.string().describe("Scheduled publish date (ISO format)."),
-  channel: z.string().min(1).describe("Target channel (e.g., twitter, instagram, linkedin)."),
+  suggested_for: z.string().describe("Suggested publish date (ISO format)."),
+  platform: z.enum(["TWITTER", "LINKEDIN", "FACEBOOK", "INSTAGRAM", "TIKTOK", "YOUTUBE", "DISCORD", "SNAPCHAT", "PINTEREST"]).describe("Target platform."),
+  reason: z.string().min(1).describe("Reason for the suggestion."),
+  confidence: z.number().min(0).max(1).optional().describe("Confidence score (0-1)."),
+  keywords: z.array(z.string()).optional().describe("Related keywords."),
 });
 
 const UpdateEventSchema = z.object({
   event_id: z.string().min(1).describe("Calendar event ID."),
-  title: z.string().optional().describe("New title."),
   content: z.string().optional().describe("New content."),
-  scheduled_at: z.string().optional().describe("New scheduled date."),
-  status: z.enum(["DRAFT", "SCHEDULED", "PUBLISHED", "CANCELLED"]).optional().describe("New status."),
+  suggested_for: z.string().optional().describe("New suggested date."),
+  status: z.enum(["PENDING", "ACCEPTED", "REJECTED", "MODIFIED"]).optional().describe("New status."),
 });
 
 const DeleteEventSchema = z.object({
@@ -42,34 +43,36 @@ const GetCalendarOverviewSchema = z.object({
 
 export function registerOrbitCalendarTools(
   registry: ToolRegistry,
-  userId: string,
+  workspaceId: string,
 ): void {
   registry.register({
     name: "calendar_list_events",
-    description: "List content calendar events with optional date range and channel filters.",
+    description: "List content calendar events with optional date range and platform filters.",
     category: "orbit-calendar",
     tier: "workspace",
     inputSchema: ListEventsSchema.shape,
-    handler: async ({ start_date, end_date, channel, limit = 20 }: z.infer<typeof ListEventsSchema>): Promise<CallToolResult> =>
+    handler: async ({ start_date, end_date, platform, limit = 20 }: z.infer<typeof ListEventsSchema>): Promise<CallToolResult> =>
       safeToolCall("calendar_list_events", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const where: Record<string, unknown> = { userId };
-        if (channel) where.channel = channel;
+        const where: Record<string, unknown> = { workspaceId };
+        if (platform) where["platform"] = platform;
         if (start_date || end_date) {
-          where.scheduledAt = {};
-          if (start_date) (where.scheduledAt as Record<string, unknown>).gte = new Date(start_date);
-          if (end_date) (where.scheduledAt as Record<string, unknown>).lte = new Date(end_date);
+          const suggestedAtFilter: Record<string, unknown> = {};
+          if (start_date) suggestedAtFilter["gte"] = new Date(start_date);
+          if (end_date) suggestedAtFilter["lte"] = new Date(end_date);
+          where["suggestedFor"] = suggestedAtFilter;
         }
         const events = await prisma.calendarContentSuggestion.findMany({
           where,
-          select: { id: true, title: true, channel: true, status: true, scheduledAt: true },
+          select: { id: true, content: true, platform: true, status: true, suggestedFor: true, reason: true },
           take: limit,
-          orderBy: { scheduledAt: "asc" },
+          orderBy: { suggestedFor: "asc" },
         });
         if (events.length === 0) return textResult("No calendar events found.");
         let text = `**Calendar Events (${events.length}):**\n\n`;
         for (const e of events) {
-          text += `- **${e.title}** [${e.status}] on ${e.channel}\n  Scheduled: ${e.scheduledAt.toISOString()}\n  ID: ${e.id}\n\n`;
+          const contentPreview = e.content.length > 80 ? e.content.slice(0, 80) + "..." : e.content;
+          text += `- **${contentPreview}** [${e.status}] on ${e.platform}\n  Suggested for: ${e.suggestedFor.toISOString()}\n  ID: ${e.id}\n\n`;
         }
         return textResult(text);
       }),
@@ -81,30 +84,37 @@ export function registerOrbitCalendarTools(
     category: "orbit-calendar",
     tier: "workspace",
     inputSchema: CreateEventSchema.shape,
-    handler: async ({ title, content, scheduled_at, channel }: z.infer<typeof CreateEventSchema>): Promise<CallToolResult> =>
+    handler: async ({ content, suggested_for, platform, reason, confidence, keywords }: z.infer<typeof CreateEventSchema>): Promise<CallToolResult> =>
       safeToolCall("calendar_create_event", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         const event = await prisma.calendarContentSuggestion.create({
-          data: { title, content, scheduledAt: new Date(scheduled_at), channel, status: "SCHEDULED", userId },
+          data: {
+            content,
+            suggestedFor: new Date(suggested_for),
+            platform,
+            reason,
+            confidence: confidence ?? 0.5,
+            keywords: keywords ?? [],
+            workspaceId,
+          },
         });
-        return textResult(`**Event Created!**\n\n**ID:** ${event.id}\n**Title:** ${title}\n**Channel:** ${channel}\n**Scheduled:** ${scheduled_at}`);
+        return textResult(`**Event Created!**\n\n**ID:** ${event.id}\n**Platform:** ${platform}\n**Suggested for:** ${suggested_for}`);
       }),
   });
 
   registry.register({
     name: "calendar_update_event",
-    description: "Update a content calendar event (title, content, schedule, or status).",
+    description: "Update a content calendar event (content, schedule, or status).",
     category: "orbit-calendar",
     tier: "workspace",
     inputSchema: UpdateEventSchema.shape,
-    handler: async ({ event_id, title, content, scheduled_at, status }: z.infer<typeof UpdateEventSchema>): Promise<CallToolResult> =>
+    handler: async ({ event_id, content, suggested_for, status }: z.infer<typeof UpdateEventSchema>): Promise<CallToolResult> =>
       safeToolCall("calendar_update_event", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         const data: Record<string, unknown> = {};
-        if (title) data.title = title;
-        if (content) data.content = content;
-        if (scheduled_at) data.scheduledAt = new Date(scheduled_at);
-        if (status) data.status = status;
+        if (content) data["content"] = content;
+        if (suggested_for) data["suggestedFor"] = new Date(suggested_for);
+        if (status) data["status"] = status;
         const event = await prisma.calendarContentSuggestion.update({ where: { id: event_id }, data });
         return textResult(`**Event Updated!**\n\n**ID:** ${event.id}\n**Status:** ${event.status}`);
       }),
@@ -126,7 +136,7 @@ export function registerOrbitCalendarTools(
 
   registry.register({
     name: "calendar_overview",
-    description: "Get a monthly overview of scheduled content across all channels.",
+    description: "Get a monthly overview of scheduled content across all platforms.",
     category: "orbit-calendar",
     tier: "workspace",
     inputSchema: GetCalendarOverviewSchema.shape,
@@ -139,20 +149,20 @@ export function registerOrbitCalendarTools(
         const start = new Date(y, m - 1, 1);
         const end = new Date(y, m, 0, 23, 59, 59);
         const events = await prisma.calendarContentSuggestion.findMany({
-          where: { userId, scheduledAt: { gte: start, lte: end } },
-          select: { channel: true, status: true },
+          where: { workspaceId, suggestedFor: { gte: start, lte: end } },
+          select: { platform: true, status: true },
         });
-        const byChannel = new Map<string, number>();
+        const byPlatform = new Map<string, number>();
         const byStatus = new Map<string, number>();
         for (const e of events) {
-          byChannel.set(e.channel, (byChannel.get(e.channel) || 0) + 1);
+          byPlatform.set(e.platform, (byPlatform.get(e.platform) || 0) + 1);
           byStatus.set(e.status, (byStatus.get(e.status) || 0) + 1);
         }
         let text = `**Calendar Overview (${m}/${y}):**\n\n`;
         text += `**Total Events:** ${events.length}\n\n`;
-        if (byChannel.size > 0) {
-          text += `**By Channel:**\n`;
-          for (const [ch, count] of byChannel) text += `- ${ch}: ${count}\n`;
+        if (byPlatform.size > 0) {
+          text += `**By Platform:**\n`;
+          for (const [pl, count] of byPlatform) text += `- ${pl}: ${count}\n`;
           text += "\n";
         }
         if (byStatus.size > 0) {

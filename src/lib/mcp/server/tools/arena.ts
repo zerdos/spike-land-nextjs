@@ -50,7 +50,7 @@ export function registerArenaTools(
     }): Promise<CallToolResult> => {
       try {
         const where: Record<string, unknown> = { status };
-        if (category) where.category = category;
+        if (category) where["category"] = category;
 
         const challenges = await prisma.arenaChallenge.findMany({
           where,

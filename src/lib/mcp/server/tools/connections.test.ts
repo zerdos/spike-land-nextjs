@@ -3,6 +3,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const mockPrisma = {
   connection: { findMany: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
   scoutBenchmark: { create: vi.fn(), findMany: vi.fn() },
+  workspaceMember: { findFirst: vi.fn().mockResolvedValue({ workspaceId: "ws-1" }) },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -36,7 +37,7 @@ describe("connections tools", () => {
   describe("connections_list", () => {
     it("should list connections", async () => {
       mockPrisma.connection.findMany.mockResolvedValue([
-        { id: "c1", name: "Acme Corp", type: "partner", url: "https://acme.com", createdAt: new Date() },
+        { id: "c1", displayName: "Acme Corp", warmthScore: 5, notes: null, createdAt: new Date() },
       ]);
       const handler = registry.handlers.get("connections_list")!;
       const result = await handler({});
@@ -55,14 +56,14 @@ describe("connections tools", () => {
     it("should add connection", async () => {
       mockPrisma.connection.create.mockResolvedValue({ id: "c2" });
       const handler = registry.handlers.get("connections_add")!;
-      const result = await handler({ name: "New Corp", type: "vendor" });
+      const result = await handler({ name: "New Corp" });
       expect(getText(result)).toContain("Connection Added");
     });
   });
 
   describe("connections_update", () => {
     it("should update connection", async () => {
-      mockPrisma.connection.update.mockResolvedValue({ name: "Updated Corp", type: "partner" });
+      mockPrisma.connection.update.mockResolvedValue({ displayName: "Updated Corp", warmthScore: 3 });
       const handler = registry.handlers.get("connections_update")!;
       const result = await handler({ connection_id: "c1", name: "Updated Corp" });
       expect(getText(result)).toContain("Connection Updated");
@@ -79,23 +80,22 @@ describe("connections tools", () => {
   });
 
   describe("connections_track_competitor", () => {
-    it("should track metric", async () => {
-      mockPrisma.scoutBenchmark.create.mockResolvedValue({ id: "m1" });
+    it("should return not implemented", async () => {
       const handler = registry.handlers.get("connections_track_competitor")!;
       const result = await handler({ competitor_id: "c1", metric: "pricing", value: "$99/mo" });
-      expect(getText(result)).toContain("Metric Recorded");
+      expect(getText(result)).toContain("Not implemented");
     });
   });
 
   describe("connections_competitor_report", () => {
     it("should return report", async () => {
       mockPrisma.scoutBenchmark.findMany.mockResolvedValue([
-        { metric: "pricing", value: "$99/mo", recordedAt: new Date(), connection: { name: "Acme Corp" } },
+        { id: "b1", workspaceId: "ws-1", period: "2025-Q4", ownMetrics: { traffic: 1000 }, competitorMetrics: { traffic: 2000 }, generatedAt: new Date() },
       ]);
       const handler = registry.handlers.get("connections_competitor_report")!;
       const result = await handler({});
-      expect(getText(result)).toContain("Acme Corp");
-      expect(getText(result)).toContain("pricing");
+      expect(getText(result)).toContain("2025-Q4");
+      expect(getText(result)).toContain("Competitor Report");
     });
 
     it("should return empty message", async () => {
@@ -109,7 +109,7 @@ describe("connections tools", () => {
   describe("connections_search", () => {
     it("should search connections", async () => {
       mockPrisma.connection.findMany.mockResolvedValue([
-        { id: "c1", name: "Acme Corp", type: "partner" },
+        { id: "c1", displayName: "Acme Corp", warmthScore: 3 },
       ]);
       const handler = registry.handlers.get("connections_search")!;
       const result = await handler({ query: "acme" });

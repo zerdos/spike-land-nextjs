@@ -2,7 +2,8 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockPrisma = {
   merchProduct: { findMany: vi.fn(), findUnique: vi.fn() },
-  merchCartItem: { create: vi.fn(), findMany: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+  merchCart: { findUnique: vi.fn(), upsert: vi.fn() },
+  merchCartItem: { create: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
   merchOrder: { create: vi.fn(), findMany: vi.fn(), findUnique: vi.fn() },
 };
 
@@ -37,7 +38,7 @@ describe("merch tools", () => {
   describe("merch_list_products", () => {
     it("should list products", async () => {
       mockPrisma.merchProduct.findMany.mockResolvedValue([
-        { id: "p1", name: "T-Shirt", price: 29.99, category: "apparel", imageUrl: "https://example.com/tshirt.jpg", inStock: true },
+        { id: "p1", name: "T-Shirt", retailPrice: 29.99, categoryId: "cat1", isActive: true },
       ]);
       const handler = registry.handlers.get("merch_list_products")!;
       const result = await handler({});
@@ -56,13 +57,20 @@ describe("merch tools", () => {
   describe("merch_get_product", () => {
     it("should return product details", async () => {
       mockPrisma.merchProduct.findUnique.mockResolvedValue({
-        id: "p1", name: "T-Shirt", description: "Soft cotton", price: 29.99, category: "apparel",
-        imageUrl: "https://example.com/tshirt.jpg", inStock: true, variants: ["S", "M", "L"],
+        id: "p1", name: "T-Shirt", description: "Soft cotton", retailPrice: 29.99,
+        isActive: true, category: { name: "Apparel" },
+        variants: [
+          { id: "v1", name: "S", priceDelta: 0 },
+          { id: "v2", name: "M", priceDelta: 0 },
+          { id: "v3", name: "L", priceDelta: 0 },
+        ],
       });
       const handler = registry.handlers.get("merch_get_product")!;
       const result = await handler({ product_id: "p1" });
       expect(getText(result)).toContain("T-Shirt");
-      expect(getText(result)).toContain("S, M, L");
+      expect(getText(result)).toContain("S");
+      expect(getText(result)).toContain("M");
+      expect(getText(result)).toContain("L");
     });
 
     it("should return NOT_FOUND", async () => {
@@ -75,18 +83,23 @@ describe("merch tools", () => {
 
   describe("merch_add_to_cart", () => {
     it("should add to cart", async () => {
+      mockPrisma.merchCart.upsert.mockResolvedValue({ id: "cart1", userId });
       mockPrisma.merchCartItem.create.mockResolvedValue({ id: "ci1" });
       const handler = registry.handlers.get("merch_add_to_cart")!;
-      const result = await handler({ product_id: "p1", quantity: 2, variant: "M" });
+      const result = await handler({ product_id: "p1", quantity: 2, variant_id: "v2" });
       expect(getText(result)).toContain("Added to Cart");
     });
   });
 
   describe("merch_get_cart", () => {
     it("should show cart with total", async () => {
-      mockPrisma.merchCartItem.findMany.mockResolvedValue([
-        { id: "ci1", quantity: 2, variant: "M", merchProduct: { name: "T-Shirt", price: 29.99 } },
-      ]);
+      mockPrisma.merchCart.findUnique.mockResolvedValue({
+        id: "cart1",
+        userId,
+        items: [
+          { id: "ci1", quantity: 2, variantId: "v2", product: { name: "T-Shirt", retailPrice: 29.99 } },
+        ],
+      });
       const handler = registry.handlers.get("merch_get_cart")!;
       const result = await handler({});
       expect(getText(result)).toContain("T-Shirt");
@@ -94,7 +107,7 @@ describe("merch tools", () => {
     });
 
     it("should show empty cart", async () => {
-      mockPrisma.merchCartItem.findMany.mockResolvedValue([]);
+      mockPrisma.merchCart.findUnique.mockResolvedValue(null);
       const handler = registry.handlers.get("merch_get_cart")!;
       const result = await handler({});
       expect(getText(result)).toContain("cart is empty");
@@ -112,21 +125,25 @@ describe("merch tools", () => {
 
   describe("merch_checkout", () => {
     it("should create order and clear cart", async () => {
-      mockPrisma.merchCartItem.findMany.mockResolvedValue([
-        { quantity: 1, merchProduct: { price: 29.99 } },
-      ]);
-      mockPrisma.merchOrder.create.mockResolvedValue({ id: "ord-1" });
+      mockPrisma.merchCart.findUnique.mockResolvedValue({
+        id: "cart1",
+        userId,
+        items: [
+          { quantity: 1, product: { retailPrice: 29.99 } },
+        ],
+      });
+      mockPrisma.merchOrder.create.mockResolvedValue({ id: "ord-1", orderNumber: "ORD-123", totalAmount: 29.99 });
       mockPrisma.merchCartItem.deleteMany.mockResolvedValue({});
       const handler = registry.handlers.get("merch_checkout")!;
-      const result = await handler({});
+      const result = await handler({ shipping_address: { line1: "123 Main St" }, customer_email: "test@example.com" });
       expect(getText(result)).toContain("Order Created");
       expect(getText(result)).toContain("$29.99");
     });
 
     it("should reject empty cart checkout", async () => {
-      mockPrisma.merchCartItem.findMany.mockResolvedValue([]);
+      mockPrisma.merchCart.findUnique.mockResolvedValue(null);
       const handler = registry.handlers.get("merch_checkout")!;
-      const result = await handler({});
+      const result = await handler({ shipping_address: { line1: "123 Main St" }, customer_email: "test@example.com" });
       expect(getText(result)).toContain("Cart is empty");
     });
   });
@@ -134,11 +151,11 @@ describe("merch tools", () => {
   describe("merch_list_orders", () => {
     it("should list orders", async () => {
       mockPrisma.merchOrder.findMany.mockResolvedValue([
-        { id: "ord-1", total: 29.99, status: "PAID", itemCount: 1, createdAt: new Date() },
+        { id: "ord-1", orderNumber: "ORD-123", totalAmount: 29.99, status: "PAID", _count: { items: 1 }, createdAt: new Date() },
       ]);
       const handler = registry.handlers.get("merch_list_orders")!;
       const result = await handler({});
-      expect(getText(result)).toContain("ord-1");
+      expect(getText(result)).toContain("ORD-123");
       expect(getText(result)).toContain("PAID");
     });
   });
@@ -146,7 +163,8 @@ describe("merch tools", () => {
   describe("merch_get_order", () => {
     it("should return order details", async () => {
       mockPrisma.merchOrder.findUnique.mockResolvedValue({
-        id: "ord-1", total: 29.99, status: "SHIPPED", paymentMethod: "stripe", itemCount: 1, createdAt: new Date(),
+        id: "ord-1", orderNumber: "ORD-123", totalAmount: 29.99, status: "SHIPPED",
+        stripePaymentStatus: "succeeded", _count: { items: 1 }, createdAt: new Date(),
       });
       const handler = registry.handlers.get("merch_get_order")!;
       const result = await handler({ order_id: "ord-1" });

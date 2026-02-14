@@ -48,15 +48,15 @@ export function registerOrbitSocialTools(
       safeToolCall("social_list_connections", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         const where: Record<string, unknown> = { userId };
-        if (platform) where.platform = platform;
+        if (platform) where["platform"] = platform;
         const connections = await prisma.socialAccount.findMany({
           where,
-          select: { id: true, platform: true, handle: true, status: true, connectedAt: true },
+          select: { id: true, platform: true, accountName: true, status: true, connectedAt: true },
         });
         if (connections.length === 0) return textResult("No social connections found.");
         let text = `**Social Connections (${connections.length}):**\n\n`;
         for (const c of connections) {
-          text += `- **${c.platform}** @${c.handle} [${c.status}]\n  ID: ${c.id}\n\n`;
+          text += `- **${c.platform}** @${c.accountName} [${c.status}]\n  ID: ${c.id}\n\n`;
         }
         return textResult(text);
       }),
@@ -72,7 +72,15 @@ export function registerOrbitSocialTools(
       safeToolCall("social_connect_platform", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         const connection = await prisma.socialAccount.create({
-          data: { platform, handle, status: "ACTIVE", userId, connectedAt: new Date() },
+          data: {
+            platform: platform.toUpperCase() as "TWITTER" | "INSTAGRAM" | "LINKEDIN" | "FACEBOOK" | "TIKTOK" | "YOUTUBE" | "DISCORD" | "SNAPCHAT" | "PINTEREST",
+            accountId: handle,
+            accountName: handle,
+            accessTokenEncrypted: "",
+            userId,
+            workspaceId: "",
+            connectedAt: new Date(),
+          },
         });
         return textResult(`**Connected!**\n\n**Platform:** ${platform}\n**Handle:** @${handle}\n**ID:** ${connection.id}`);
       }),
@@ -127,21 +135,25 @@ export function registerOrbitSocialTools(
     category: "orbit-social",
     tier: "workspace",
     inputSchema: PostContentSchema.shape,
-    handler: async ({ connection_id, content, media_urls }: z.infer<typeof PostContentSchema>): Promise<CallToolResult> =>
+    handler: async ({ connection_id, content, media_urls: _media_urls }: z.infer<typeof PostContentSchema>): Promise<CallToolResult> =>
       safeToolCall("social_post_content", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         const connection = await prisma.socialAccount.findUnique({
           where: { id: connection_id },
-          select: { platform: true, handle: true },
+          select: { id: true, platform: true, accountName: true },
         });
         if (!connection) return textResult("**Error: NOT_FOUND**\nConnection not found.\n**Retryable:** false");
         const post = await prisma.socialPost.create({
-          data: { connectionId: connection_id, content, mediaUrls: media_urls || [], status: "POSTED", userId },
+          data: { content, status: "PUBLISHED", createdById: userId },
+        });
+        // Link the post to the social account
+        await prisma.socialPostAccount.create({
+          data: { postId: post.id, accountId: connection.id, status: "PUBLISHED", publishedAt: new Date() },
         });
         return textResult(
           `**Posted!**\n\n` +
           `**Platform:** ${connection.platform}\n` +
-          `**Handle:** @${connection.handle}\n` +
+          `**Handle:** @${connection.accountName}\n` +
           `**Post ID:** ${post.id}\n` +
           `**Content:** ${content.slice(0, 100)}${content.length > 100 ? "..." : ""}`
         );

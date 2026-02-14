@@ -111,7 +111,7 @@ export function registerAuthTools(
         text += `**Avatar:** ${user.image || "(none)"}\n`;
         text += `**Joined:** ${user.createdAt.toISOString()}\n`;
         if (include_workspaces && "workspaceMembers" in user) {
-          const members = user.workspaceMembers as Array<{ workspace: { name: string; slug: string }; role: string }>;
+          const members = user.workspaceMembers as unknown as Array<{ workspace: { name: string; slug: string }; role: string }>;
           if (members.length > 0) {
             text += `\n**Workspaces:**\n`;
             for (const m of members) {
