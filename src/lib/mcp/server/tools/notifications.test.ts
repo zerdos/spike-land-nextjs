@@ -1,9 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockPrisma = {
-  workspace: { findFirst: vi.fn() },
+  workspace: { findFirst: vi.fn(), update: vi.fn() },
   notification: { findMany: vi.fn(), updateMany: vi.fn(), create: vi.fn() },
-  workspaceSettings: { upsert: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -86,7 +85,7 @@ describe("notifications tools", () => {
 
   describe("notification_configure_channels", () => {
     it("should update notification channel settings", async () => {
-      mockPrisma.workspaceSettings.upsert.mockResolvedValue({});
+      mockPrisma.workspace.update.mockResolvedValue({});
       const handler = registry.handlers.get("notification_configure_channels")!;
       const result = await handler({
         workspace_slug: "my-ws",
@@ -99,24 +98,20 @@ describe("notifications tools", () => {
       expect(text).toContain("Email:** true");
       expect(text).toContain("Slack:** false");
       expect(text).toContain("In-App:** true");
-      expect(mockPrisma.workspaceSettings.upsert).toHaveBeenCalledWith({
-        where: { workspaceId: wsId },
-        create: expect.objectContaining({
-          workspaceId: wsId,
-          emailNotifications: true,
-          slackNotifications: false,
-          inAppNotifications: true,
-        }),
-        update: expect.objectContaining({
-          emailNotifications: true,
-          slackNotifications: false,
-          inAppNotifications: true,
-        }),
+      expect(mockPrisma.workspace.update).toHaveBeenCalledWith({
+        where: { id: wsId },
+        data: {
+          settings: {
+            emailNotifications: true,
+            slackNotifications: false,
+            inAppNotifications: true,
+          },
+        },
       });
     });
 
     it("should handle partial channel updates", async () => {
-      mockPrisma.workspaceSettings.upsert.mockResolvedValue({});
+      mockPrisma.workspace.update.mockResolvedValue({});
       const handler = registry.handlers.get("notification_configure_channels")!;
       const result = await handler({
         workspace_slug: "my-ws",

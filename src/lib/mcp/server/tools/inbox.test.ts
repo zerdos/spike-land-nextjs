@@ -134,7 +134,7 @@ describe("inbox tools", () => {
   describe("inbox_reply", () => {
     it("should mark item as resolved", async () => {
       mockPrisma.inboxItem.findFirst.mockResolvedValue({ id: "item-1", status: "UNREAD" });
-      mockPrisma.inboxItem.update.mockResolvedValue({ id: "item-1", status: "RESOLVED" });
+      mockPrisma.inboxItem.update.mockResolvedValue({ id: "item-1", status: "REPLIED" });
 
       const handler = registry.handlers.get("inbox_reply")!;
       const result = await handler({
@@ -148,7 +148,7 @@ describe("inbox tools", () => {
       expect(mockPrisma.inboxItem.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: "item-1" },
-          data: expect.objectContaining({ status: "RESOLVED" }),
+          data: expect.objectContaining({ status: "REPLIED" }),
         }),
       );
     });

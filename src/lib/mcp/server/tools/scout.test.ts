@@ -43,9 +43,8 @@ describe("scout tools", () => {
           name: "Rival Co",
           platform: "INSTAGRAM",
           handle: "rivalco",
-          followerCount: 50000,
           isActive: true,
-          lastScrapedAt: new Date("2025-06-01"),
+          updatedAt: new Date("2025-06-01"),
         },
       ]);
       const handler = registry.handlers.get("scout_list_competitors")!;
@@ -55,7 +54,6 @@ describe("scout tools", () => {
       expect(text).toContain("Rival Co");
       expect(text).toContain("INSTAGRAM");
       expect(text).toContain("@rivalco");
-      expect(text).toContain("50,000");
     });
 
     it("should show empty message when no competitors", async () => {
@@ -106,7 +104,7 @@ describe("scout tools", () => {
           yourValue: "3.2%",
           competitorValue: "2.1%",
           difference: "+1.1%",
-          createdAt: new Date("2025-06-01"),
+          generatedAt: new Date("2025-06-01"),
         },
       ]);
       const handler = registry.handlers.get("scout_get_benchmark")!;
@@ -139,18 +137,18 @@ describe("scout tools", () => {
   });
 
   describe("scout_list_topics", () => {
-    it("should list topics by trend score", async () => {
+    it("should list topics with result counts", async () => {
       mockPrisma.scoutTopic.findMany.mockResolvedValue([
-        { name: "AI Tools", trendScore: 95, mentionCount: 1200 },
-        { name: "Sustainability", trendScore: 82, mentionCount: 800 },
+        { name: "AI Tools", isActive: true, _count: { results: 12 } },
+        { name: "Sustainability", isActive: false, _count: { results: 8 } },
       ]);
       const handler = registry.handlers.get("scout_list_topics")!;
       const result = await handler({ workspace_slug: "acme" });
       const text = getText(result);
-      expect(text).toContain("Trending Topics");
+      expect(text).toContain("Topics");
       expect(text).toContain("AI Tools");
-      expect(text).toContain("95");
-      expect(text).toContain("1200");
+      expect(text).toContain("Results: 12");
+      expect(text).toContain("Sustainability");
     });
 
     it("should respect limit parameter", async () => {
@@ -171,36 +169,39 @@ describe("scout tools", () => {
   });
 
   describe("scout_get_insights", () => {
-    it("should return competitive insights", async () => {
+    it("should return scout results", async () => {
+      mockPrisma.scoutTopic.findMany.mockResolvedValue([
+        { id: "topic-1" },
+      ]);
       mockPrisma.scoutResult.findMany.mockResolvedValue([
         {
-          type: "content_gap",
-          summary: "Competitor posts 3x more video content",
-          recommendations: "Increase video production cadence",
-          createdAt: new Date("2025-06-01"),
+          topicId: "topic-1",
+          platform: "TWITTER",
+          author: "rival_co",
+          content: "Competitor posts 3x more video content than average",
+          foundAt: new Date("2025-06-01"),
+          engagement: { likes: 100, retweets: 50 },
+          topic: { name: "Video Strategy" },
         },
       ]);
       const handler = registry.handlers.get("scout_get_insights")!;
       const result = await handler({ workspace_slug: "acme" });
       const text = getText(result);
-      expect(text).toContain("Competitive Insights");
-      expect(text).toContain("content_gap");
+      expect(text).toContain("Scout Results");
+      expect(text).toContain("Video Strategy");
       expect(text).toContain("3x more video");
-      expect(text).toContain("Increase video production");
+      expect(text).toContain("rival_co");
     });
 
-    it("should filter by competitor_id when provided", async () => {
-      mockPrisma.scoutResult.findMany.mockResolvedValue([]);
+    it("should return empty when no topics exist", async () => {
+      mockPrisma.scoutTopic.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("scout_get_insights")!;
-      await handler({ workspace_slug: "acme", competitor_id: "c-1" });
-      expect(mockPrisma.scoutResult.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({ competitorId: "c-1" }),
-        }),
-      );
+      const result = await handler({ workspace_slug: "acme" });
+      expect(getText(result)).toContain("No topics found");
     });
 
-    it("should show empty message when no insights", async () => {
+    it("should show empty message when no results", async () => {
+      mockPrisma.scoutTopic.findMany.mockResolvedValue([{ id: "topic-1" }]);
       mockPrisma.scoutResult.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("scout_get_insights")!;
       const result = await handler({ workspace_slug: "acme" });

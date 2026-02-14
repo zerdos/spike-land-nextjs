@@ -43,7 +43,9 @@ describe("crisis tools", () => {
           id: "cr-1",
           crisisType: "BRAND_ATTACK",
           severity: "HIGH",
-          affectedAccounts: 3,
+          affectedAccountIds: ["acc-1", "acc-2", "acc-3"],
+          triggerType: "SENTIMENT_SPIKE",
+          status: "DETECTED",
           detectedAt: new Date("2025-06-01T10:00:00Z"),
         },
       ]);
@@ -56,7 +58,7 @@ describe("crisis tools", () => {
       expect(text).toContain("cr-1");
       expect(text).toContain("BRAND_ATTACK");
       expect(text).toContain("HIGH");
-      expect(text).toContain("3");
+      expect(text).toContain("SENTIMENT_SPIKE");
     });
 
     it("should filter by severity", async () => {
@@ -87,7 +89,9 @@ describe("crisis tools", () => {
           id: "cr-2",
           crisisType: "CONTENT_LEAK",
           severity: "MEDIUM",
-          affectedAccounts: null,
+          affectedAccountIds: [],
+          triggerType: "KEYWORD_ALERT",
+          status: "DETECTED",
           detectedAt: new Date("2025-06-01"),
         },
       ]);
@@ -100,20 +104,16 @@ describe("crisis tools", () => {
   });
 
   describe("crisis_get_timeline", () => {
-    it("should return crisis timeline with responses", async () => {
+    it("should return crisis timeline with status", async () => {
       mockPrisma.crisisDetectionEvent.findFirst.mockResolvedValue({
         id: "cr-1",
-        crisisType: "BRAND_ATTACK",
+        triggerType: "SENTIMENT_SPIKE",
         severity: "HIGH",
-        isResolved: false,
+        status: "ACKNOWLEDGED",
         detectedAt: new Date("2025-06-01T10:00:00Z"),
-        responses: [
-          {
-            action: "TEMPLATE_RESPONSE",
-            content: "We are investigating the issue",
-            respondedAt: new Date("2025-06-01T10:30:00Z"),
-          },
-        ],
+        acknowledgedAt: new Date("2025-06-01T10:30:00Z"),
+        resolvedAt: null,
+        responseNotes: "We are investigating the issue",
       });
 
       const handler = registry.handlers.get("crisis_get_timeline")!;
@@ -124,20 +124,21 @@ describe("crisis tools", () => {
 
       const text = getText(result);
       expect(text).toContain("Crisis Timeline");
-      expect(text).toContain("BRAND_ATTACK");
-      expect(text).toContain("Active");
-      expect(text).toContain("TEMPLATE_RESPONSE");
+      expect(text).toContain("SENTIMENT_SPIKE");
+      expect(text).toContain("ACKNOWLEDGED");
       expect(text).toContain("We are investigating");
     });
 
-    it("should show no responses message when empty", async () => {
+    it("should show resolved status", async () => {
       mockPrisma.crisisDetectionEvent.findFirst.mockResolvedValue({
         id: "cr-1",
-        crisisType: "PR_CRISIS",
+        triggerType: "KEYWORD_ALERT",
         severity: "LOW",
-        isResolved: true,
+        status: "RESOLVED",
         detectedAt: new Date("2025-06-01"),
-        responses: [],
+        acknowledgedAt: null,
+        resolvedAt: new Date("2025-06-02"),
+        responseNotes: null,
       });
 
       const handler = registry.handlers.get("crisis_get_timeline")!;
@@ -147,8 +148,7 @@ describe("crisis tools", () => {
       });
 
       const text = getText(result);
-      expect(text).toContain("No responses yet");
-      expect(text).toContain("Resolved");
+      expect(text).toContain("RESOLVED");
     });
 
     it("should return NOT_FOUND for missing crisis", async () => {
