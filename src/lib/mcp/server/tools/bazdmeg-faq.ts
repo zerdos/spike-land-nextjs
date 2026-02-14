@@ -4,6 +4,7 @@
  * CRUD operations for BAZDMEG FAQ entries.
  */
 
+import { isAdminByUserId } from "@/lib/auth/admin-middleware";
 import { z } from "zod";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { ToolRegistry } from "../tool-registry";
@@ -47,9 +48,11 @@ export function registerBazdmegFaqTools(
     handler: async ({ category, include_unpublished }: z.infer<typeof FaqListSchema>): Promise<CallToolResult> =>
       safeToolCall("bazdmeg_faq_list", async () => {
         const prisma = (await import("@/lib/prisma")).default;
+        const isUserAdmin = await isAdminByUserId(userId);
+        const showUnpublished = include_unpublished && isUserAdmin;
         const entries = await prisma.bazdmegFaqEntry.findMany({
           where: {
-            ...(include_unpublished ? {} : { isPublished: true }),
+            ...(showUnpublished ? {} : { isPublished: true }),
             ...(category ? { category } : {}),
           },
           orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
@@ -76,6 +79,10 @@ export function registerBazdmegFaqTools(
     inputSchema: FaqCreateSchema.shape,
     handler: async ({ question, answer, category, sort_order }: z.infer<typeof FaqCreateSchema>): Promise<CallToolResult> =>
       safeToolCall("bazdmeg_faq_create", async () => {
+        const isUserAdmin = await isAdminByUserId(userId);
+        if (!isUserAdmin) {
+          return textResult("Forbidden: admin access required.");
+        }
         const prisma = (await import("@/lib/prisma")).default;
         const entry = await prisma.bazdmegFaqEntry.create({
           data: {
@@ -97,6 +104,10 @@ export function registerBazdmegFaqTools(
     inputSchema: FaqUpdateSchema.shape,
     handler: async ({ id, question, answer, category, sort_order, is_published }: z.infer<typeof FaqUpdateSchema>): Promise<CallToolResult> =>
       safeToolCall("bazdmeg_faq_update", async () => {
+        const isUserAdmin = await isAdminByUserId(userId);
+        if (!isUserAdmin) {
+          return textResult("Forbidden: admin access required.");
+        }
         const prisma = (await import("@/lib/prisma")).default;
         const entry = await prisma.bazdmegFaqEntry.update({
           where: { id },
@@ -120,6 +131,10 @@ export function registerBazdmegFaqTools(
     inputSchema: FaqDeleteSchema.shape,
     handler: async ({ id }: z.infer<typeof FaqDeleteSchema>): Promise<CallToolResult> =>
       safeToolCall("bazdmeg_faq_delete", async () => {
+        const isUserAdmin = await isAdminByUserId(userId);
+        if (!isUserAdmin) {
+          return textResult("Forbidden: admin access required.");
+        }
         const prisma = (await import("@/lib/prisma")).default;
         await prisma.bazdmegFaqEntry.delete({ where: { id } });
         return textResult(`FAQ entry deleted (ID: ${id})`);

@@ -1,3 +1,5 @@
+import { getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
 import { assignVariant } from "@/lib/ab-test/variant-assignment";
 import type { NextRequest } from "next/server";
@@ -5,6 +7,18 @@ import { NextResponse } from "next/server";
 
 /** GET: get variant assignment for a visitor */
 export async function GET(request: NextRequest) {
+  const ip = getClientIp(request);
+  const { isLimited } = await checkRateLimit(`ab-test:assign:${ip}`, {
+    maxRequests: 30,
+    windowMs: 60000,
+  });
+  if (isLimited) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment." },
+      { status: 429 },
+    );
+  }
+
   const testId = request.nextUrl.searchParams.get("testId");
   const visitorId = request.nextUrl.searchParams.get("visitorId");
 
@@ -58,6 +72,18 @@ export async function GET(request: NextRequest) {
 
 /** POST: record a conversion */
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const { isLimited } = await checkRateLimit(`ab-test:convert:${ip}`, {
+    maxRequests: 10,
+    windowMs: 60000,
+  });
+  if (isLimited) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment." },
+      { status: 429 },
+    );
+  }
+
   const { data: body, error: jsonError } = await tryCatch(request.json());
   if (jsonError) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });

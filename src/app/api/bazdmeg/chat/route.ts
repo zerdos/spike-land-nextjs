@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
   });
 }
 
-/** Fire-and-forget: persist message and optionally create GitHub issue */
+/** Fire-and-forget: persist chat message to database */
 async function saveAndCreateIssue(data: {
   sessionId: string;
   question: string;
@@ -127,30 +127,11 @@ async function saveAndCreateIssue(data: {
 }) {
   const prisma = (await import("@/lib/prisma")).default;
 
-  // Create GitHub issue (non-blocking)
-  let gitHubIssueUrl: string | undefined;
-  let gitHubIssueNum: number | undefined;
-
-  const { createIssue } = await import("@/lib/agents/github-issues");
-  const { data: issue } = await createIssue({
-    title: `Community Q: ${data.question.slice(0, 80)}`,
-    body: `## Community Question\n\n> ${data.question}\n\n## AI Answer\n\n${data.answer}\n\n---\n*Auto-created from BAZDMEG chat*`,
-    labels: ["bazdmeg", "community-question"],
-  });
-
-  if (issue) {
-    gitHubIssueUrl = issue.url;
-    gitHubIssueNum = issue.number;
-  }
-
-  // Save to DB
   await prisma.bazdmegChatMessage.create({
     data: {
       sessionId: data.sessionId,
       question: data.question,
       answer: data.answer,
-      gitHubIssueUrl,
-      gitHubIssueNum,
       model: "haiku",
       inputTokens: data.inputTokens,
       outputTokens: data.outputTokens,

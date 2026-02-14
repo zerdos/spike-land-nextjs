@@ -1,13 +1,20 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-const mockPrisma = {
-  bazdmegFaqEntry: {
-    findMany: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
+const { mockIsAdminByUserId, mockPrisma } = vi.hoisted(() => ({
+  mockIsAdminByUserId: vi.fn<(userId: string) => Promise<boolean>>(),
+  mockPrisma: {
+    bazdmegFaqEntry: {
+      findMany: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
   },
-};
+}));
+
+vi.mock("@/lib/auth/admin-middleware", () => ({
+  isAdminByUserId: mockIsAdminByUserId,
+}));
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
 
@@ -33,6 +40,7 @@ describe("bazdmeg-faq tools", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockIsAdminByUserId.mockResolvedValue(true);
     registry = createMockRegistry();
     registerBazdmegFaqTools(registry, userId);
   });
@@ -77,6 +85,18 @@ describe("bazdmeg-faq tools", () => {
       const result = await handler({});
       expect(getText(result)).toContain("No FAQ entries found");
     });
+
+    it("should ignore include_unpublished for non-admin users", async () => {
+      mockIsAdminByUserId.mockResolvedValue(false);
+      mockPrisma.bazdmegFaqEntry.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("bazdmeg_faq_list")!;
+      await handler({ include_unpublished: true });
+      expect(mockPrisma.bazdmegFaqEntry.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { isPublished: true },
+        }),
+      );
+    });
   });
 
   describe("bazdmeg_faq_create", () => {
@@ -93,6 +113,13 @@ describe("bazdmeg-faq tools", () => {
       expect(getText(result)).toContain("FAQ entry created");
       expect(getText(result)).toContain("new-1");
     });
+
+    it("should reject non-admin users", async () => {
+      mockIsAdminByUserId.mockResolvedValue(false);
+      const handler = registry.handlers.get("bazdmeg_faq_create")!;
+      const result = await handler({ question: "New?", answer: "Nope" });
+      expect(getText(result)).toContain("Forbidden");
+    });
   });
 
   describe("bazdmeg_faq_update", () => {
@@ -106,6 +133,13 @@ describe("bazdmeg-faq tools", () => {
       const result = await handler({ id: "f1", question: "Updated question?" });
       expect(getText(result)).toContain("FAQ entry updated");
     });
+
+    it("should reject non-admin users", async () => {
+      mockIsAdminByUserId.mockResolvedValue(false);
+      const handler = registry.handlers.get("bazdmeg_faq_update")!;
+      const result = await handler({ id: "f1", question: "Nope" });
+      expect(getText(result)).toContain("Forbidden");
+    });
   });
 
   describe("bazdmeg_faq_delete", () => {
@@ -114,6 +148,13 @@ describe("bazdmeg-faq tools", () => {
       const handler = registry.handlers.get("bazdmeg_faq_delete")!;
       const result = await handler({ id: "f1" });
       expect(getText(result)).toContain("FAQ entry deleted");
+    });
+
+    it("should reject non-admin users", async () => {
+      mockIsAdminByUserId.mockResolvedValue(false);
+      const handler = registry.handlers.get("bazdmeg_faq_delete")!;
+      const result = await handler({ id: "f1" });
+      expect(getText(result)).toContain("Forbidden");
     });
   });
 });

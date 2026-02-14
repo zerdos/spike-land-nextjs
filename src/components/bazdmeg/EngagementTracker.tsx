@@ -53,7 +53,7 @@ export function EngagementTracker({
     const payload = { ...dataRef.current };
     navigator.sendBeacon(
       "/api/bazdmeg/engagement",
-      JSON.stringify(payload),
+      new Blob([JSON.stringify(payload)], { type: "application/json" }),
     );
   }, []);
 

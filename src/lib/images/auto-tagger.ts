@@ -67,6 +67,6 @@ export async function applyAutoTags(imageId: string): Promise<void> {
       logger.info(`[AutoTagger] Applied ${tags.length} tags to image ${imageId}`);
     }
   } catch (error) {
-    logger.error(`[AutoTagger] Failed to apply tags for image ${imageId}:`, error as object);
+    logger.error(`[AutoTagger] Failed to apply tags for image ${imageId}`, { error });
   }
 }

@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { isAdminByUserId } from "@/lib/auth/admin-middleware";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -43,6 +44,10 @@ export async function POST(request: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const isUserAdmin = await isAdminByUserId(session.user.id);
+  if (!isUserAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const { data: body, error: jsonError } = await tryCatch(request.json());
   if (jsonError) {
@@ -64,6 +69,10 @@ export async function PATCH(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const isUserAdmin = await isAdminByUserId(session.user.id);
+  if (!isUserAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { data: body, error: jsonError } = await tryCatch(request.json());
@@ -95,6 +104,10 @@ export async function DELETE(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const isUserAdmin = await isAdminByUserId(session.user.id);
+  if (!isUserAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { data: body, error: jsonError } = await tryCatch(request.json());
