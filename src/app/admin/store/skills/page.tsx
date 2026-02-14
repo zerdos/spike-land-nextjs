@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import prisma from "@/lib/prisma";
-import type { Skill, SkillCategory, SkillStatus } from "@prisma/client";
+import type { SkillCategory, SkillStatus } from "@prisma/client";
 import { Download, Package, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
