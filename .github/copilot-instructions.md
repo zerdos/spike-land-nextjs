@@ -66,11 +66,11 @@ yarn db:generate      # Generate Prisma client
 
 ## Key Documentation
 
-- `docs/FEATURES.md` — Platform vision and features
-- `docs/API_REFERENCE.md` — API endpoints
-- `docs/TOKEN_SYSTEM.md` — Token economy
-- `docs/DATABASE_SCHEMA.md` — Database design
-- `docs/DATABASE_SETUP.md` — Database setup guide
+- `docs/features/FEATURES.md` — Platform vision and features
+- `docs/architecture/API_REFERENCE.md` — API endpoints
+- `docs/architecture/TOKEN_SYSTEM.md` — Token economy
+- `docs/architecture/DATABASE_SCHEMA.md` — Database design
+- `docs/architecture/DATABASE_SETUP.md` — Database setup guide
 
 ## Important Patterns
 

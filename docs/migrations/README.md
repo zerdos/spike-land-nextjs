@@ -53,8 +53,8 @@ Complete!
 
 - **Versioning Strategy**: `docs/API_VERSIONING.md`
 - **API Changelog**: `docs/API_CHANGELOG.md`
-- **API Reference**: `docs/API_REFERENCE.md`
-- **Error Handling**: `docs/API_REFERENCE.md#error-handling`
+- **API Reference**: `docs/architecture/API_REFERENCE.md`
+- **Error Handling**: `docs/architecture/API_REFERENCE.md#error-handling`
 
 ## Support During Migration
 

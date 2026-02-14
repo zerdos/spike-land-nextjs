@@ -38,7 +38,7 @@ Completed: January 19, 2026
 
 - Removed hardcoded Cloudflare `account_id` from wrangler.toml files
 - Fixed stack trace exposure in error responses (OWASP A01:2021 - Broken Access Control)
-- Created `docs/SECRETS_SETUP.md` for credential management documentation
+- Created `docs/guides/SECRETS_SETUP.md` for credential management documentation
 
 **Impact**: Eliminated P0 security vulnerabilities
 

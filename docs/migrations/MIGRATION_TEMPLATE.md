@@ -271,9 +271,9 @@ Contact api-support@spike.land if:
 
 ### Resources
 
-- **API Reference**: docs/API_REFERENCE.md
+- **API Reference**: docs/architecture/API_REFERENCE.md
 - **Versioning Strategy**: docs/API_VERSIONING.md
-- **Error Handling**: docs/API_REFERENCE.md#error-handling
+- **Error Handling**: docs/architecture/API_REFERENCE.md#error-handling
 - **Code Examples**: docs/examples/
 
 ### Getting Help

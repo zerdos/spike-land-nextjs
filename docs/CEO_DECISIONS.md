@@ -90,8 +90,8 @@ and trace sampling is set to 10% by default. See `sentry.server.config.ts`,
 
 **Related Files Updated**:
 
-- `docs/LAUNCH_CHECKLIST.md`
-- `docs/LAUNCH_PLAN.md`
+- `docs/business/LAUNCH_CHECKLIST.md`
+- `docs/business/LAUNCH_PLAN.md`
 - `docs/best-practices/logging-monitoring.md`
 - `docs/best-practices/error-handling.md`
 - `.env.example`

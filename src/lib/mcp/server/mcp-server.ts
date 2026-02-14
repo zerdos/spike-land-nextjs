@@ -32,9 +32,7 @@ import { registerPixelTools } from "./tools/pixel";
 import { registerOrbitAllocatorTools } from "./tools/orbit-allocator";
 import { registerOrbitCalendarTools } from "./tools/orbit-calendar";
 import { registerOrbitSocialTools } from "./tools/orbit-social";
-import { registerCanvasTools } from "./tools/canvas";
 import { registerMerchTools } from "./tools/merch";
-import { registerTabletopTools } from "./tools/tabletop";
 import { registerBrandBrainTools } from "./tools/brand-brain";
 import { registerConnectionsTools } from "./tools/connections";
 import { registerBoxesTools } from "./tools/boxes";
@@ -152,14 +150,8 @@ export function createMcpServer(userId: string): McpServer {
   // Orbit social tools (discoverable)
   registerOrbitSocialTools(registry, userId);
 
-  // Canvas tools (discoverable)
-  registerCanvasTools(registry, userId);
-
   // Merch tools (discoverable)
   registerMerchTools(registry, userId);
-
-  // Tabletop tools (discoverable)
-  registerTabletopTools(registry, userId);
 
   // Brand Brain tools (discoverable)
   registerBrandBrainTools(registry, userId);

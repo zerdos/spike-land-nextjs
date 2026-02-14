@@ -30,9 +30,7 @@ const {
   mockRegisterOrbitAllocatorTools,
   mockRegisterOrbitCalendarTools,
   mockRegisterOrbitSocialTools,
-  mockRegisterCanvasTools,
   mockRegisterMerchTools,
-  mockRegisterTabletopTools,
   mockRegisterBrandBrainTools,
   mockRegisterConnectionsTools,
   mockRegisterBoxesTools,
@@ -88,9 +86,7 @@ const {
   mockRegisterOrbitAllocatorTools: vi.fn(),
   mockRegisterOrbitCalendarTools: vi.fn(),
   mockRegisterOrbitSocialTools: vi.fn(),
-  mockRegisterCanvasTools: vi.fn(),
   mockRegisterMerchTools: vi.fn(),
-  mockRegisterTabletopTools: vi.fn(),
   mockRegisterBrandBrainTools: vi.fn(),
   mockRegisterConnectionsTools: vi.fn(),
   mockRegisterBoxesTools: vi.fn(),
@@ -153,9 +149,7 @@ vi.mock("./tools/pixel", () => ({ registerPixelTools: mockRegisterPixelTools }))
 vi.mock("./tools/orbit-allocator", () => ({ registerOrbitAllocatorTools: mockRegisterOrbitAllocatorTools }));
 vi.mock("./tools/orbit-calendar", () => ({ registerOrbitCalendarTools: mockRegisterOrbitCalendarTools }));
 vi.mock("./tools/orbit-social", () => ({ registerOrbitSocialTools: mockRegisterOrbitSocialTools }));
-vi.mock("./tools/canvas", () => ({ registerCanvasTools: mockRegisterCanvasTools }));
 vi.mock("./tools/merch", () => ({ registerMerchTools: mockRegisterMerchTools }));
-vi.mock("./tools/tabletop", () => ({ registerTabletopTools: mockRegisterTabletopTools }));
 vi.mock("./tools/brand-brain", () => ({ registerBrandBrainTools: mockRegisterBrandBrainTools }));
 vi.mock("./tools/connections", () => ({ registerConnectionsTools: mockRegisterConnectionsTools }));
 vi.mock("./tools/boxes", () => ({ registerBoxesTools: mockRegisterBoxesTools }));
@@ -242,9 +236,7 @@ describe("createMcpServer", () => {
       mockRegisterOrbitAllocatorTools,
       mockRegisterOrbitCalendarTools,
       mockRegisterOrbitSocialTools,
-      mockRegisterCanvasTools,
       mockRegisterMerchTools,
-      mockRegisterTabletopTools,
       mockRegisterBrandBrainTools,
       mockRegisterConnectionsTools,
       mockRegisterBoxesTools,

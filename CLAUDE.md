@@ -12,7 +12,7 @@ This file provides guidance to agents when working with code in this repository.
 | **Domain**  | spike.land                            |
 | **Owner**   | Zoltan Erdos                          |
 
-See [docs/BUSINESS_STRUCTURE.md](./docs/BUSINESS_STRUCTURE.md) for full company
+See [docs/business/BUSINESS_STRUCTURE.md](./docs/business/BUSINESS_STRUCTURE.md) for full company
 documentation.
 
 ---
@@ -23,12 +23,12 @@ documentation.
 
 | Topic                      | Document                                                                         |
 | -------------------------- | -------------------------------------------------------------------------------- |
-| Platform Vision & Features | [docs/FEATURES.md](./docs/FEATURES.md)                                           |
-| API Reference              | [docs/API_REFERENCE.md](./docs/API_REFERENCE.md)                                 |
-| Token System               | [docs/TOKEN_SYSTEM.md](./docs/TOKEN_SYSTEM.md)                                   |
-| Database Schema            | [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)                             |
-| Database Setup             | [docs/DATABASE_SETUP.md](./docs/DATABASE_SETUP.md)                               |
-| My-Apps Architecture       | [docs/MY_APPS_ARCHITECTURE.md](./docs/MY_APPS_ARCHITECTURE.md)                   |
+| Platform Vision & Features | [docs/features/FEATURES.md](./docs/features/FEATURES.md)                         |
+| API Reference              | [docs/architecture/API_REFERENCE.md](./docs/architecture/API_REFERENCE.md)       |
+| Token System               | [docs/architecture/TOKEN_SYSTEM.md](./docs/architecture/TOKEN_SYSTEM.md)         |
+| Database Schema            | [docs/architecture/DATABASE_SCHEMA.md](./docs/architecture/DATABASE_SCHEMA.md)   |
+| Database Setup             | [docs/architecture/DATABASE_SETUP.md](./docs/architecture/DATABASE_SETUP.md)     |
+| My-Apps Architecture       | [docs/architecture/MY_APPS_ARCHITECTURE.md](./docs/architecture/MY_APPS_ARCHITECTURE.md) |
 | Development Setup          | [README.md](./README.md)                                                         |
 | Shared Package             | [packages/shared/README.md](./packages/shared/README.md)                         |
 | Code Editor                | [packages/code/README.md](./packages/code/README.md)                             |

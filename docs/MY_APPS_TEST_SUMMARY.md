@@ -235,7 +235,7 @@ open http://localhost:3000/my-apps
 
 ## File Locations
 
-- **Testing Guide**: `docs/MY_APPS_TESTING_GUIDE.md`
+- **Testing Guide**: `docs/guides/MY_APPS_TESTING_GUIDE.md`
 - **Manual Script**: `scripts/test-my-apps-manual.md`
 - **Setup Verifier**: `scripts/verify-my-apps-setup.sh`
 - **This Summary**: `docs/MY_APPS_TEST_SUMMARY.md`

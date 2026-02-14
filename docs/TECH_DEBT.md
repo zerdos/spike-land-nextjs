@@ -1,325 +1,183 @@
-# Technical Debt Registry
+# Tech Debt Registry
 
 > Last updated: 2026-02-14
-> Maintainer: Development Team
+> Last audit: 2026-02-14 (Sprint 3 Inventory)
 
-> **Recent Stabilization Work**: See [TECH_STABILIZATION_SPRINT_1.md](./TECH_STABILIZATION_SPRINT_1.md)
-> and [TECH_STABILIZATION_SPRINT_2.md](./TECH_STABILIZATION_SPRINT_2.md) for completed and in-progress
-> debt reduction efforts.
+## Overview
 
-This document tracks identified technical debt across the spike.land codebase. Items are prioritized by impact and categorized by component.
+This document tracks known technical debt across the spike-land-nextjs monorepo.
+Items are prioritized P0 (critical) through P3 (minor/nice-to-have).
 
----
+## Active Items
 
-## Table of Contents
+### P0 - Critical
 
-- [Critical (P0)](#critical-p0)
-- [High Priority (P1)](#high-priority-p1)
-- [Medium Priority (P2)](#medium-priority-p2)
-- [Low Priority (P3)](#low-priority-p3)
-- [Architecture Notes](#architecture-notes)
-- [Refactoring Opportunities](#refactoring-opportunities)
+#### TD-P0-1: next-auth on beta.30
 
----
+- **Status**: Open
+- **Impact**: Production running on pre-release version
+- **Details**: `next-auth` is pinned to `5.0.0-beta.30` in root `package.json`. Beta releases may contain breaking changes, missing fixes, or undocumented behavior.
+- **Action**: Monitor next-auth releases; upgrade when stable v5 is available.
 
-## Critical (P0)
+#### TD-P0-2: Test coverage below targets
 
-### 1. TypeScript Configuration Issues in `testing.spike.land`
+- **Status**: Open
+- **Impact**: Bugs ship undetected, refactoring is risky
+- **Details**: CI coverage thresholds are well below the 100% target stated in CLAUDE.md. Several modules have 0% coverage including `src/lib/feature-flags/`, `src/lib/learnit/`, `src/lib/mcp/server/`, `src/lib/validation/`, and `src/lib/sync/clients/`.
+- **Action**: Incrementally increase thresholds as coverage improves; prioritize business-critical modules.
 
-**Location:** `packages/testing.spike.land/tsconfig.json`
+#### TD-P0-3: Sentry MCP token lacks API scopes
 
-**Issue:** Missing type definitions for `@cloudflare/vitest-pool-workers` causing TypeScript compilation errors.
+- **Status**: Open
+- **Impact**: Sentry MCP integration is non-functional (all API calls return 403)
+- **Details**: The `SENTRY_AUTH_TOKEN` in `.mcp.json` is a source-map upload token, not an API token. It lacks `org:read`, `project:read`, and `issue:read` scopes.
+- **Action**: Create a separate Sentry API token with proper scopes and configure it for MCP.
 
-**Impact:** Prevents clean TypeScript builds; developers must use `--skipLibCheck` workaround.
+### P1 - High Priority
 
-**Suggested Fix:**
+#### TD-P1-1: Duplicate ErrorBoundary implementations
 
-```bash
-yarn add -D @cloudflare/vitest-pool-workers
-# Or remove from tsconfig.json if not actually used
-```
+- **Status**: Open
+- **Impact**: Code duplication, potential behavioral differences
+- **Details**: ErrorBoundary exists in both `src/components/errors/error-boundary.tsx` and `packages/code/src/@/components/app/error-boundary.tsx`. These may diverge over time.
+- **Action**: Audit both implementations, choose one canonical version, update all imports.
 
-### 2. Unused Dependencies (66 total)
+#### TD-P1-2: Duplicate route handling logic in testing.spike.land
 
-**Location:** All package.json files across monorepo
+- **Status**: Open
+- **Impact**: Hard to trace request flow, risk of route conflicts
+- **Details**: Request routing is scattered across `chat.ts`, `mainFetchHandler.ts`, `fetchHandler.ts`, and `routeHandler.ts` with overlapping responsibilities.
+- **Action**: Consolidate into a single router with clear middleware pattern.
 
-**Issue:** Knip analysis reveals 66 unused dependencies:
-- Root package.json: 7 unused (removed in BAZDMEG audit)
-- packages/code: 38 unused dependencies + 6 devDependencies
-- packages/testing.spike.land: 8 unused
-- packages/js.spike.land: 1 unused
-- packages/video: 2 unused + 1 devDependency
+#### TD-P1-3: Inconsistent error handling patterns in testing.spike.land
 
-**Impact:** Bloated node_modules, slower installs, unnecessary security surface area.
+- **Status**: Open
+- **Impact**: Unpredictable error responses, difficult debugging
+- **Details**: Mixed approaches: `handleErrors()` wrapper in some routes, direct try-catch in others, no error handling in some handlers.
+- **Action**: Standardize on `handleErrors()` wrapper for all route handlers.
 
-**Status:** Root-level deps removed. packages/code cleanup requires careful testing (separate ticket).
+#### TD-P1-4: Unused dependencies (66 total per knip analysis)
 
----
+- **Status**: Partially resolved (root-level cleaned)
+- **Impact**: Bloated node_modules, slower installs, unnecessary security surface
+- **Details**: `packages/code` has 38 unused dependencies + 6 devDependencies. `packages/testing.spike.land` has 8 unused. `packages/js.spike.land` has 1 unused.
+- **Action**: Clean up per-package dependencies with careful testing (runtime deps may not be detected by static analysis).
 
-### 3. Unused Files (253 total)
+#### TD-P1-5: Unused files (253 total per knip analysis)
 
-**Location:** Primarily `packages/code/src/@/components/` and `packages/code/src/@/lib/`
+- **Status**: Open
+- **Impact**: Code maintenance burden, confusing codebase navigation
+- **Details**: Primarily in `packages/code/src/@/components/` and `packages/code/src/@/lib/`, including 60+ unused shadcn/ui components and stale utility modules.
+- **Action**: Per-file review before deletion; verify no runtime-only references exist.
 
-**Issue:** 253 files identified as unused by knip, including:
-- 60+ unused shadcn/ui component files
-- Unused utility modules (broadcast-channel, cache-utils, config-manager)
-- Stale wrapper components
+### P2 - Medium Priority
 
-**Impact:** Code maintenance burden, confusing codebase navigation.
+#### TD-P2-1: Deprecated analyzeImage in gemini-client.ts
 
-**Status:** Requires per-file review before deletion (runtime dependencies may not be detected by static analysis).
+- **Status**: Open
+- **Impact**: Using deprecated function pattern
+- **Details**: `analyzeImage` in `src/lib/ai/gemini-client.ts` is deprecated in favor of `analyzeImageV2`. Still called from `src/workflows/enhance-image.direct.ts`.
+- **Action**: Migrate callers to `analyzeImageV2`, then remove the deprecated function.
 
----
+#### TD-P2-2: @ai-sdk/anthropic not in root package.json
 
-### 4. Test Coverage Gaps
+- **Status**: Open
+- **Impact**: Dependency management inconsistency
+- **Details**: `@ai-sdk/anthropic` is used in `packages/testing.spike.land` and `packages/code` but not declared in root `package.json`.
+- **Action**: Add to root `package.json` or consolidate dependency declarations.
 
-**Location:** `vitest.config.ts` coverage thresholds
+#### TD-P2-3: Wrangler compatibility dates need update
 
-**Issue:** Current CI thresholds are far below the 100% target stated in CLAUDE.md:
-- Lines: 30% (target: 80%+)
-- Functions: 20% (target: 80%+)
-- Branches: 25% (target: 78%+)
-- Statements: 30% (target: 80%+)
+- **Status**: Open
+- **Impact**: Missing newer Cloudflare runtime features
+- **Details**: `packages/js.spike.land/wrangler.toml` has `compatibility_date = "2024-12-01"`. `packages/testing.spike.land/wrangler.toml` has `compatibility_date = "2025-07-12"`.
+- **Action**: Update wrangler.toml compat dates across all worker packages to current.
 
-**Modules at 0% coverage:**
-- `src/lib/feature-flags/flag-service.ts`
-- `src/lib/learnit/agent-loop.ts`, `content-generator.ts`, `agent-service.ts`
-- `src/lib/mcp/server/mcp-server.ts`, `tool-registry.ts`
-- `src/lib/validation/` (entire directory)
-- `src/lib/sync/clients/` (entire directory)
+#### TD-P2-4: Hardcoded URLs and origins in testing.spike.land
 
-**Impact:** Bugs ship undetected, refactoring is risky, CLAUDE.md claim of "100% coverage required" is aspirational.
+- **Status**: Open
+- **Impact**: Fragile deployments, difficult environment switching
+- **Details**: Hardcoded esbuild URL in `chat.ts`, hardcoded renderer URL in `liveRoutes.ts`, various `testing.spike.land` references in frontend code.
+- **Action**: Move all external URLs to environment variables; create a `config/urls.ts` module.
 
----
+#### TD-P2-5: Session storage migration code in chatRoom.ts
 
-### 5. Sentry MCP Token Permissions
+- **Status**: Open
+- **Impact**: Technical debt that accumulates over time
+- **Details**: Backward compatibility code at `chatRoom.ts:413-431` migrating from old `session` key to `session_core`. Added ~Feb 2026.
+- **Action**: Set a removal date (Aug 2026); remove after sufficient migration time.
 
-**Location:** `.env` / `.mcp.json` / Sentry dashboard
+#### TD-P2-6: R2 storage keys not namespaced
 
-**Issue:** The `SENTRY_AUTH_TOKEN` configured for MCP integration is a source-map upload token, not an API token. It lacks the required scopes: `org:read`, `project:read`, `issue:read`. All MCP API calls return 403.
+- **Status**: Open
+- **Impact**: Potential key conflicts as system grows
+- **Details**: R2 storage uses flat keys like `r2_html_{codeSpace}` instead of hierarchical keys.
+- **Action**: Migrate to namespaced keys: `codespace/{codeSpace}/html`.
 
-**Impact:** Sentry MCP integration is non-functional. Cannot query issues, traces, or project data through MCP.
+#### TD-P2-7: Commented-out auto-save system in chatRoom.ts
 
-**Suggested Fix:** Create a separate Sentry API token with proper scopes and configure it for MCP.
+- **Status**: Open
+- **Impact**: Code clutter, unclear feature status
+- **Details**: Large blocks of commented-out auto-save functionality at `chatRoom.ts:572-620`, including `setupAutoSave()`, `autoSave()`, `getAutoSaveHistory()`, `restoreFromAutoSave()`.
+- **Action**: Either remove entirely if deprecated, or implement properly and create a ticket.
 
----
+#### TD-P2-8: esbuild resolution pins may be obsolete
 
-## High Priority (P1)
+- **Status**: Open (needs investigation)
+- **Impact**: May prevent esbuild upgrades
+- **Details**: Root `package.json` has resolutions pinning `esbuild@0.14.47` to `0.25.0`. The `resolutions-comments` field notes this "may be obsolete."
+- **Action**: Test removing the `esbuild@0.14.47` resolution; verify esbuild-wasm still works.
 
-### 6. Commented-Out Auto-Save System in Durable Object
+### P3 - Low Priority / Nice-to-Have
 
-**Location:** `packages/testing.spike.land/src/chatRoom.ts:572-620`
+#### TD-P3-1: Scripts directory cleanup
 
-**Issue:** Large blocks of commented-out auto-save functionality:
+- **Status**: Open
+- **Impact**: Developer confusion, maintenance overhead
+- **Details**: 34 scripts in `/scripts/` directory. Some are one-off migrations that have been completed (e.g., `migrate-users-to-stable-ids.ts`, `fix-user-tier.ts`, `fix-user-tokens.ts`).
+- **Action**: Review each script, archive completed migration scripts to `scripts/archive/`.
 
-- `autoSaveInterval`, `lastAutoSave`, `autoSaveHistory` variables
-- `setupAutoSave()`, `autoSave()`, `getAutoSaveHistory()`, `restoreFromAutoSave()` methods
+#### TD-P3-2: Magic numbers and strings throughout codebase
 
-**Impact:**
+- **Status**: Open
+- **Impact**: Reduced readability, harder to maintain
+- **Details**: Hardcoded browser dimensions (1920x1080) in `chatRoom.ts`, animation timings in `AgentProgressIndicator.tsx`, and other numeric literals scattered across the codebase.
+- **Action**: Extract to named constants with descriptive names.
 
-- Code clutter reduces readability
-- Unclear if this feature is deprecated or planned for revival
-- `savedVersion_${timestamp}` storage keys are still used in `liveRoutes.ts` but the auto-save system is disabled
+#### TD-P3-3: Inconsistent async patterns
 
-**Suggested Fix:** Either:
+- **Status**: Open
+- **Impact**: Minor -- confusing but not harmful
+- **Details**: Some handlers in `liveRoutes.ts` are marked `async` but contain no `await` expressions.
+- **Action**: Remove unnecessary `async` keywords or document the pattern.
 
-1. Remove entirely if deprecated
-2. Implement properly with the new versioning system (Phase 5)
-3. Document why it's disabled and create a ticket for future implementation
+#### TD-P3-4: CSS flexbox scroll container pattern not standardized
 
----
+- **Status**: Open
+- **Impact**: Recurring UI bugs with scroll containers
+- **Details**: The `h-full` vs `absolute inset-0` pattern for scroll containers in flex layouts (seen in `my-apps/[codeSpace]/page.tsx`). Fix was applied ad-hoc.
+- **Action**: Create a reusable `ScrollContainer` component that handles this pattern correctly.
 
-### 7. Duplicate Route Handling Logic
+#### TD-P3-5: TypeScript config issues in testing.spike.land
 
-**Location:**
+- **Status**: Open
+- **Impact**: Requires `--skipLibCheck` workaround
+- **Details**: Missing type definitions for `@cloudflare/vitest-pool-workers` in `packages/testing.spike.land/tsconfig.json`.
+- **Action**: Add the missing dev dependency or remove from tsconfig if not used.
 
-- `packages/testing.spike.land/src/chat.ts` (main routing)
-- `packages/testing.spike.land/src/mainFetchHandler.ts`
-- `packages/testing.spike.land/src/fetchHandler.ts`
-- `packages/testing.spike.land/src/routeHandler.ts`
+## Resolved Items (Sprint 3 - 2026-02-14)
 
-**Issue:** Request routing is scattered across multiple files with overlapping responsibilities:
-
-- `chat.ts` handles: MCP routes, static assets, editor paths, AI endpoints, CMS
-- `fetchHandler.ts` handles: live routes, API routes, WebSocket
-- `routeHandler.ts` handles: Durable Object internal routing
-
-**Impact:**
-
-- Hard to trace request flow
-- Risk of route conflicts
-- Difficult to add new routes consistently
-
-**Suggested Fix:** Consolidate into a single router with clear middleware pattern:
-
-```typescript
-// Proposed structure
-Router
-  ├── StaticAssetMiddleware
-  ├── AuthMiddleware (where needed)
-  └── Routes
-      ├── /mcp/* → McpHandler
-      ├── /live/* → LiveHandler → DurableObject
-      ├── /api/* → ApiHandler
-      └── /* → StaticHandler
-```
-
----
-
-### 8. Inconsistent Error Handling Patterns
-
-**Location:** Throughout `packages/testing.spike.land/src/`
-
-**Issue:** Mixed error handling approaches:
-
-- Some routes use `handleErrors()` wrapper
-- Some use try-catch with custom responses
-- Some don't handle errors at all
-
-**Examples:**
-
-```typescript
-// Pattern 1: handleErrors wrapper (chatRoom.ts:612)
-return handleErrors(request, async () => { ... });
-
-// Pattern 2: Direct try-catch (various)
-try { ... } catch (e) { return new Response("Error", { status: 500 }); }
-
-// Pattern 3: No error handling (some route handlers)
-```
-
-**Suggested Fix:** Standardize on `handleErrors()` wrapper for all route handlers.
-
----
-
-## Medium Priority (P2)
-
-### 9. CSS Flexbox Scroll Container Pattern
-
-**Location:** `src/app/my-apps/[codeSpace]/page.tsx:867-870`
-
-**Issue:** The chat scroll container required a fix from `h-full` to `absolute inset-0` because percentage heights don't work with flex-derived parent heights.
-
-**Pattern to Document:**
-
-```tsx
-// DON'T: This doesn't work for scrolling in flex containers
-<div className="h-full overflow-y-auto">
-
-// DO: Use absolute positioning for scroll containers in flex layouts
-<div className="flex-1 min-h-0 overflow-hidden relative">
-  <div className="absolute inset-0 overflow-y-auto">
-```
-
-**Suggested Fix:** Create a reusable `ScrollContainer` component that handles this pattern correctly.
-
----
-
-### 10. Hardcoded URLs and Origins
-
-**Location:** Multiple files
-
-**Examples:**
-
-- `packages/testing.spike.land/src/chat.ts:156` - Hardcoded esbuild URL
-- `packages/testing.spike.land/src/liveRoutes.ts:197` - Hardcoded renderer URL
-- Various `testing.spike.land` references in frontend code
-
-**Suggested Fix:**
-
-1. Move all external URLs to environment variables
-2. Create a `config/urls.ts` module for URL construction
-
----
-
-### 11. Session Storage Migration Code
-
-**Location:** `packages/testing.spike.land/src/chatRoom.ts:413-431`
-
-**Issue:** Backward compatibility code for migrating from old `session` key to new `session_core` key.
-
-```typescript
-// If no data found with new key, try the old key for backward compatibility
-if (!sessionCore) {
-  sessionCore = await this.state.storage.get("session");
-  if (sessionCore) {
-    // Migration logic...
-  }
-}
-```
-
-**Impact:** Technical debt that should be removed after sufficient time has passed.
-
-**Suggested Fix:**
-
-1. Add migration date to comment
-2. Set a removal date (e.g., 6 months after deployment)
-3. Create a ticket to remove this code
-
----
-
-### 12. R2 Storage Keys Not Namespaced
-
-**Location:** `packages/testing.spike.land/src/chatRoom.ts:336-372`
-
-**Issue:** R2 storage uses keys like `r2_html_${codeSpace}` which could conflict if codeSpace names overlap with other systems.
-
-**Suggested Fix:** Use proper namespacing: `codespace/${codeSpace}/html`
-
----
-
-## Low Priority (P3)
-
-### 13. Magic Numbers and Strings
-
-**Location:** Throughout codebase
-
-**Examples:**
-
-```typescript
-// chatRoom.ts - Browser dimensions
-const browserWidth = 1920;
-const browserHeight = 1080;
-
-// AgentProgressIndicator.tsx - Animation timings
-}, 2000); // Log message cycling interval
-}, 50);   // Progress bar update interval
-}, 100);  // Elapsed time update interval
-```
-
-**Suggested Fix:** Extract to constants with descriptive names.
-
----
-
-### 14. Unused Imports and Dead Code
-
-**Location:** Various files
-
-**Examples:**
-
-- `chatRoom.ts`: Commented imports for `AutoSaveEntry`
-- `liveRoutes.ts`: Some imported utilities may be unused
-
-**Suggested Fix:** Run `yarn lint` with `no-unused-vars` rule enabled and fix.
-
----
-
-### 15. Inconsistent Async Patterns
-
-**Location:** `packages/testing.spike.land/src/routes/liveRoutes.ts`
-
-**Issue:** Some handlers are marked async but don't await anything:
-
-```typescript
-async handleLazyRoute(_request: Request, url: URL): Promise<Response> {
-  // No await in this function
-  return new Response(...);
-}
-```
-
-**Suggested Fix:** Remove unnecessary async keywords or add explicit return type documentation.
-
----
+| Item | Resolution | Date |
+|------|-----------|------|
+| Empty/stub files (12 files) | Deleted in Sprint 3 cleanup | 2026-02-14 |
+| Stub MCP tools (canvas, tabletop) | Deleted -- no backing models exist | 2026-02-14 |
+| Unused test fixtures (marketing-mocks, sse-mock) | Deleted -- no imports found | 2026-02-14 |
+| Unused packages (react-app-examples, opfs-node-adapter, video) | Deleted -- never imported | 2026-02-14 |
+| Duplicate rollup.config.js | Deleted -- kept .mjs version | 2026-02-14 |
+| Duplicate Prisma migration (20260211133638) | Older duplicate removed, DB records cleaned | 2026-02-14 |
+| Unorganized docs/ (73 files) | Reorganized into subdirectories | 2026-02-14 |
+| Stale docs (Stripe, Tabletop, Vibeathon, Sprint 2) | Archived to docs/archive/ | 2026-02-14 |
+| .eslintcache in repo | Already in .gitignore -- no action needed | 2026-02-14 |
 
 ## Architecture Notes
 
@@ -329,150 +187,57 @@ The `Code` class in `chatRoom.ts` manages session state with this structure:
 
 ```
 Storage Keys:
-├── session_core      → Metadata (codeSpace, etc.)
-├── session_code      → Source code (TSX)
-├── session_transpiled → Transpiled JS
-├── version_count     → Number of saved versions
-├── version_{N}       → Individual version snapshots
-└── (R2) r2_html_{codeSpace} → Rendered HTML
-└── (R2) r2_css_{codeSpace}  → CSS styles
+  session_core      -> Metadata (codeSpace, etc.)
+  session_code      -> Source code (TSX)
+  session_transpiled -> Transpiled JS
+  version_count     -> Number of saved versions
+  version_{N}       -> Individual version snapshots
+  (R2) r2_html_{codeSpace} -> Rendered HTML
+  (R2) r2_css_{codeSpace}  -> CSS styles
 ```
 
-**Key Insight:** The split between Durable Object storage (code, transpiled) and R2 storage (html, css) is intentional for size limits, but creates complexity in save/load operations.
-
----
+The split between Durable Object storage (code, transpiled) and R2 storage (html, css) is intentional for size limits, but creates complexity in save/load operations.
 
 ### Request Flow Architecture
 
 ```
 External Request
-       │
-       ▼
-┌─────────────────┐
-│   cf-workers.ts │ Entry point
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│     chat.ts     │ Main router (static, MCP, AI)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│mainFetchHandler │ Security headers, error handling
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│ fetchHandler.ts │ Route dispatch (live, api, etc.)
-└────────┬────────┘
-         │ (for /live/*)
-         ▼
-┌─────────────────┐
-│  Durable Object │ Code class instance
-│   chatRoom.ts   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│ routeHandler.ts │ Internal DO routing
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Route Handlers  │ liveRoutes, codeRoutes, etc.
-└─────────────────┘
+       |
+       v
+  cf-workers.ts     Entry point
+       |
+       v
+  chat.ts           Main router (static, MCP, AI)
+       |
+       v
+  mainFetchHandler   Security headers, error handling
+       |
+       v
+  fetchHandler.ts    Route dispatch (live, api, etc.)
+       |  (for /live/*)
+       v
+  Durable Object     Code class instance (chatRoom.ts)
+       |
+       v
+  routeHandler.ts    Internal DO routing
+       |
+       v
+  Route Handlers     liveRoutes, codeRoutes, etc.
 ```
 
----
+## Sprint History
 
-### Frontend Component Dependencies
-
-```
-my-apps/[codeSpace]/page.tsx
-├── MiniPreview.tsx (scaled iframe preview)
-│   └── Uses IntersectionObserver for lazy loading
-│   └── Uses ResizeObserver for responsive scaling
-├── PreviewModal.tsx (full-size modal)
-├── AgentProgressIndicator.tsx (agent status)
-│   └── Supports floating mode when scrolled up
-└── Chat components (messages, input)
-```
-
----
-
-## Refactoring Opportunities
-
-### 1. Extract Chat Logic into Custom Hook
-
-**Current:** `page.tsx` is 1000+ lines with mixed concerns
-
-**Proposed:**
-
-```typescript
-// hooks/useAppChat.ts
-export function useAppChat(appId: string) {
-  // Message management
-  // Streaming state
-  // Agent progress
-  // Scroll behavior
-}
-```
-
----
-
-### 2. Create Shared Preview Component Library
-
-**Current:** Preview components are in `my-apps/` only
-
-**Proposed:**
-
-```
-src/components/previews/
-├── MiniPreview.tsx
-├── PreviewModal.tsx
-├── BrowserChrome.tsx (shared browser UI)
-└── index.ts
-```
-
----
-
-### 3. Standardize API Response Format
-
-**Current:** Mixed response formats across endpoints
-
-**Proposed:**
-
-```typescript
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-  };
-  meta?: {
-    timestamp: number;
-    version: string;
-  };
-}
-```
-
----
-
-## Changelog
-
-| Date       | Author | Changes                                         |
-| ---------- | ------ | ----------------------------------------------- |
-| 2026-01-17 | Claude | Initial document created from codebase analysis |
-
----
+| Sprint | Date | Focus | Status |
+|--------|------|-------|--------|
+| Sprint 1 | 2026-01-17 | Initial stabilization | Completed |
+| Sprint 2 | 2026-01-27 (target) | Continuation | Abandoned -- superseded by Sprint 3 |
+| Sprint 3 | 2026-02-14 | Comprehensive inventory and cleanup | In Progress |
 
 ## Contributing
 
 When adding new tech debt items:
 
-1. Assign a priority (P0-P3)
+1. Assign a priority (P0-P3) and a unique ID (e.g., TD-P1-6)
 2. Include specific file locations
 3. Describe the impact
 4. Suggest a fix if known
@@ -480,7 +245,7 @@ When adding new tech debt items:
 
 Priority definitions:
 
-- **P0 (Critical):** Blocks development or causes production issues
-- **P1 (High):** Significant code quality or maintainability impact
-- **P2 (Medium):** Should be addressed but not urgent
-- **P3 (Low):** Nice to have improvements
+- **P0 (Critical)**: Blocks development or causes production issues
+- **P1 (High)**: Significant code quality or maintainability impact
+- **P2 (Medium)**: Should be addressed but not urgent
+- **P3 (Low)**: Nice-to-have improvements

@@ -29,12 +29,10 @@ FROM base AS dep-context
 COPY --link package.json yarn.lock .yarnrc.yml ./
 COPY --link .yarn/ ./.yarn/
 COPY --link packages/mcp-server/package.json ./packages/mcp-server/
-COPY --link packages/opfs-node-adapter/package.json ./packages/opfs-node-adapter/
 COPY --link packages/js.spike.land/package.json ./packages/js.spike.land/
 COPY --link packages/code/package.json ./packages/code/
 COPY --link packages/testing.spike.land/package.json ./packages/testing.spike.land/
 COPY --link packages/shared/package.json ./packages/shared/
-COPY --link packages/react-app-examples/package.json ./packages/react-app-examples/
 COPY --link prisma ./prisma
 
 # ============================================================================

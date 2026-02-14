@@ -32,7 +32,7 @@ Built on Next.js 16 with TypeScript, Tailwind CSS 4, shadcn/ui components, compr
 
 **Platform Support**: Instagram, Facebook, Twitter/X, LinkedIn, TikTok
 
-📖 **[Full Orbit Documentation →](./docs/ORBIT_USER_GUIDE.md)** | 📖 **[A/B Testing Guide →](./docs/AB_TESTING_GUIDE.md)**
+📖 **[Full Orbit Documentation →](./docs/features/ORBIT_USER_GUIDE.md)** | 📖 **[A/B Testing Guide →](./docs/AB_TESTING_GUIDE.md)**
 
 ### 🖼️ Supporting Tools
 
@@ -148,7 +148,7 @@ This application uses [NextAuth.js v5](https://authjs.dev/) for authentication
 with support for GitHub, Google, Facebook, and Apple OAuth providers.
 
 **For complete secrets documentation**, see
-[docs/SECRETS_SETUP.md](./docs/SECRETS_SETUP.md).
+[docs/guides/SECRETS_SETUP.md](./docs/guides/SECRETS_SETUP.md).
 
 #### 1. Generate AUTH_SECRET
 
@@ -190,7 +190,7 @@ Or visit
 **Apple OAuth (Sign in with Apple):**
 
 Apple Sign-In requires a JWT-based client secret that must be regenerated every 6
-months. See [docs/SECRETS_SETUP.md](./docs/SECRETS_SETUP.md#apple-oauth-optional)
+months. See [docs/guides/SECRETS_SETUP.md](./docs/guides/SECRETS_SETUP.md#apple-oauth-optional)
 for detailed setup instructions.
 
 ```bash
@@ -220,7 +220,7 @@ GITHUB_SECRET=your-github-client-secret
 GOOGLE_ID=your-google-client-id
 GOOGLE_SECRET=your-google-client-secret
 
-# Optional: Apple Sign-In (requires JWT secret, see docs/SECRETS_SETUP.md)
+# Optional: Apple Sign-In (requires JWT secret, see docs/guides/SECRETS_SETUP.md)
 AUTH_APPLE_ID=your-apple-services-id
 AUTH_APPLE_SECRET=your-generated-jwt-secret
 ```
@@ -464,7 +464,7 @@ git push origin feature/my-feature
 
 ## 📚 Documentation
 
-- **`docs/SECRETS_SETUP.md`** - Complete secrets and environment variables guide
+- **`docs/guides/SECRETS_SETUP.md`** - Complete secrets and environment variables guide
 - **`.github/BRANCH_PROTECTION_SETUP.md`** - Branch protection setup guide
 - **`.github/workflows/README.md`** - CI/CD workflow documentation
 - **`e2e/README.md`** - E2E testing guide

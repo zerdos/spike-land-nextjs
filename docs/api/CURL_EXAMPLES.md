@@ -769,7 +769,7 @@ curl -X POST $API_BASE/stripe/checkout \
   }'
 ```
 
-**Available Packages** (see `/docs/TOKEN_SYSTEM.md` for current pricing):
+**Available Packages** (see `/docs/architecture/TOKEN_SYSTEM.md` for current pricing):
 
 - `starter`: 100 tokens
 - `pro`: 500 tokens

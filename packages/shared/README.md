@@ -441,5 +441,5 @@ import type {
 ## Related Documentation
 
 - [Mobile App README](../mobile-app/README.md) - Mobile app documentation
-- [API Reference](../../docs/API_REFERENCE.md) - Backend API documentation
-- [Token System](../../docs/TOKEN_SYSTEM.md) - Token economics
+- [API Reference](../../docs/architecture/API_REFERENCE.md) - Backend API documentation
+- [Token System](../../docs/architecture/TOKEN_SYSTEM.md) - Token economics

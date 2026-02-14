@@ -648,7 +648,7 @@ The codebase currently has some inconsistencies that should be addressed:
 1. New endpoints must use `@/lib/api/responses` utilities
 2. When modifying existing endpoints, update to use the utilities
 3. Track migration progress in GitHub issues
-4. Update API documentation (docs/API_REFERENCE.md) as endpoints are migrated
+4. Update API documentation (docs/architecture/API_REFERENCE.md) as endpoints are migrated
 
 ---
 

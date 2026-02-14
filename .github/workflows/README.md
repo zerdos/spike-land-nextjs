@@ -15,7 +15,7 @@ application with comprehensive quality gates.
 ## Required Secrets
 
 For complete secrets documentation including all environment variables, see:
-**[docs/SECRETS_SETUP.md](../../docs/SECRETS_SETUP.md)**
+**[docs/guides/SECRETS_SETUP.md](../../docs/guides/SECRETS_SETUP.md)**
 
 ### Quick Reference for CI/CD
 
@@ -37,7 +37,7 @@ For complete secrets documentation including all environment variables, see:
 5. Add each secret with its respective name and value
 
 For detailed setup instructions, see
-[docs/SECRETS_SETUP.md](../../docs/SECRETS_SETUP.md).
+[docs/guides/SECRETS_SETUP.md](../../docs/guides/SECRETS_SETUP.md).
 
 ## Local Testing
 

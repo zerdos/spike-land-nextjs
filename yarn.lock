@@ -8071,18 +8071,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@spike-land/react-app-examples@workspace:packages/react-app-examples":
-  version: 0.0.0-use.local
-  resolution: "@spike-land/react-app-examples@workspace:packages/react-app-examples"
-  dependencies:
-    "@types/react": "npm:19.2.14"
-    typescript: "npm:5.9.3"
-  peerDependencies:
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
-  languageName: unknown
-  linkType: soft
-
 "@spike-npm-land/code@npm:0.9.57, @spike-npm-land/code@workspace:packages/code":
   version: 0.0.0-use.local
   resolution: "@spike-npm-land/code@workspace:packages/code"
@@ -8220,16 +8208,6 @@ __metadata:
     workbox-window: "npm:7.4.0"
     worker-rpc: "npm:0.2.0"
     zod: "npm:4.3.6"
-  languageName: unknown
-  linkType: soft
-
-"@spike-npm-land/opfs-node-adapter@workspace:packages/opfs-node-adapter":
-  version: 0.0.0-use.local
-  resolution: "@spike-npm-land/opfs-node-adapter@workspace:packages/opfs-node-adapter"
-  dependencies:
-    eslint: "npm:10.0.0"
-    typescript: "npm:5.9.3"
-    vitest: "npm:4.0.18"
   languageName: unknown
   linkType: soft
 

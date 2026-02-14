@@ -1234,10 +1234,10 @@ See `.env.example` for the complete list of available configuration options.
 
 ## Project-Specific Documentation
 
-- **Token System**: [docs/TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md)
-- **API Reference**: [docs/API_REFERENCE.md](./API_REFERENCE.md)
-- **Database Schema**: [docs/DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)
-- **Features Overview**: [docs/FEATURES.md](./FEATURES.md)
+- **Token System**: [docs/architecture/TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md)
+- **API Reference**: [docs/architecture/API_REFERENCE.md](./API_REFERENCE.md)
+- **Database Schema**: [docs/architecture/DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)
+- **Features Overview**: [docs/features/FEATURES.md](../features/FEATURES.md)
 
 ## Support and Maintenance
 
