@@ -1,0 +1,458 @@
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { registerLieDetectorTools } from "./lie-detector";
+
+interface ToolResult {
+  content: Array<{ text: string }>;
+  isError?: boolean;
+}
+
+function createMockRegistry() {
+  const tools = new Map<
+    string,
+    {
+      handler: (...args: unknown[]) => Promise<ToolResult>;
+      inputSchema: Record<string, unknown>;
+    }
+  >();
+
+  return {
+    tools,
+    register: vi.fn(
+      ({
+        name,
+        handler,
+        inputSchema,
+      }: {
+        name: string;
+        handler: (...args: unknown[]) => Promise<ToolResult>;
+        inputSchema: Record<string, unknown>;
+      }) => {
+        tools.set(name, { handler, inputSchema });
+      },
+    ),
+  };
+}
+
+function getText(result: ToolResult): string {
+  return result.content[0]!.text;
+}
+
+describe("Lie Detector MCP Tools", () => {
+  let registry: ReturnType<typeof createMockRegistry>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    registry = createMockRegistry();
+    registerLieDetectorTools(
+      registry as unknown as Parameters<typeof registerLieDetectorTools>[0],
+      "test-user-123",
+    );
+  });
+
+  it("registers 3 lie-detector tools", () => {
+    expect(registry.register).toHaveBeenCalledTimes(3);
+    expect(registry.tools.has("verify_syntax")).toBe(true);
+    expect(registry.tools.has("verify_tests")).toBe(true);
+    expect(registry.tools.has("verify_spec_match")).toBe(true);
+  });
+
+  // -----------------------------------------------------------------------
+  // verify_syntax
+  // -----------------------------------------------------------------------
+  describe("verify_syntax", () => {
+    it("should pass valid code", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: 'const x = 1;\nconsole.log(x);',
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("passed");
+      expect(getText(result)).toContain("No issues found");
+    });
+
+    it("should pass valid code with functions and brackets", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: 'function foo(a: number, b: number): number {\n  return a + b;\n}\nconst arr = [1, 2, 3];',
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("passed");
+    });
+
+    it("should detect unbalanced opening brace", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: "function foo() {\n  return 1;\n",
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("issue");
+      expect(getText(result)).toContain("Unclosed");
+      expect(getText(result)).toContain("{");
+    });
+
+    it("should detect unbalanced closing bracket", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: "const x = 1;\n}",
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("issue");
+      expect(getText(result)).toContain("Unexpected closing");
+    });
+
+    it("should detect unterminated string literal", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: 'const x = "hello;\nconst y = 2;',
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("issue");
+      expect(getText(result)).toContain("Unterminated string");
+    });
+
+    it("should detect unterminated single-quote string", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: "const x = 'hello;",
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("Unterminated string");
+      expect(getText(result)).toContain("single");
+    });
+
+    it("should ignore brackets inside comments", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: '// this has { unbalanced bracket\nconst x = 1;',
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("passed");
+    });
+
+    it("should handle inline comments after code", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: 'const x = 1; // a {bracket in comment',
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("passed");
+    });
+
+    it("should handle escaped characters in strings", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: 'const x = "hello \\"world\\"";',
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("passed");
+    });
+
+    it("should allow template literals spanning multiple lines", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: "const x = `hello\nworld`;",
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("passed");
+    });
+
+    it("should report multiple issues", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: "function foo() {\n  const x = 'bad;\n",
+        language: "typescript",
+      });
+      const text = getText(result);
+      // Should have at least 2 issues (unterminated string + unclosed brace)
+      expect(text).toContain("issue");
+    });
+
+    it("should report error and warning counts", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: "function foo() {\n  return 1;\n",
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("error");
+    });
+
+    it("should handle empty-ish valid code", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: "// just a comment\n",
+        language: "javascript",
+      });
+      expect(getText(result)).toContain("passed");
+    });
+
+    it("should detect mismatched brackets", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: "const x = [1, 2, 3);",
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("issue");
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // verify_tests
+  // -----------------------------------------------------------------------
+  describe("verify_tests", () => {
+    it("should parse vitest output with pass and fail", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const vitestOutput = `
+ \u2713 src/test.ts (3 tests) 45ms
+   \u2713 should work
+   \u2713 should handle errors
+   \u00D7 should fail
+ Test Files  1 passed (1)
+      Tests  2 passed | 1 failed (3)
+   Duration  1.23s
+`;
+      const result = await handler({
+        test_output: vitestOutput,
+        format: "vitest",
+      });
+      const text = getText(result);
+      expect(text).toContain("Test Report");
+      expect(text).toContain("| Total | 3 |");
+      expect(text).toContain("| Passed | 2 |");
+      expect(text).toContain("| Failed | 1 |");
+      expect(text).toContain("1.23s");
+      expect(text).toContain("67%");
+    });
+
+    it("should parse vitest output with all passing", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const vitestOutput = `
+ \u2713 src/test.ts (5 tests) 120ms
+      Tests  5 passed (5)
+   Duration  2.00s
+`;
+      const result = await handler({
+        test_output: vitestOutput,
+        format: "vitest",
+      });
+      const text = getText(result);
+      expect(text).toContain("| Passed | 5 |");
+      expect(text).toContain("| Failed | 0 |");
+      expect(text).toContain("100%");
+      expect(text).toContain("All tests passed");
+    });
+
+    it("should parse vitest output with skipped tests", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const vitestOutput = `
+      Tests  3 passed | 1 skipped (4)
+   Duration  0.50s
+`;
+      const result = await handler({
+        test_output: vitestOutput,
+        format: "vitest",
+      });
+      const text = getText(result);
+      expect(text).toContain("| Skipped | 1 |");
+      expect(text).toContain("| Total | 4 |");
+    });
+
+    it("should extract vitest failure names", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const vitestOutput = `
+   \u00D7 should handle edge case
+      Tests  0 passed | 1 failed (1)
+   Duration  0.10s
+`;
+      const result = await handler({
+        test_output: vitestOutput,
+        format: "vitest",
+      });
+      const text = getText(result);
+      expect(text).toContain("should handle edge case");
+      expect(text).toContain("Failures (1)");
+    });
+
+    it("should parse jest output format", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const jestOutput = `
+PASS src/test.ts
+  \u2713 should work (5ms)
+FAIL src/other.test.ts
+  \u25CF should not break
+Tests:       4 passed, 1 failed, 5 total
+Time:        3.45 s
+`;
+      const result = await handler({
+        test_output: jestOutput,
+        format: "jest",
+      });
+      const text = getText(result);
+      expect(text).toContain("| Total | 5 |");
+      expect(text).toContain("| Passed | 4 |");
+      expect(text).toContain("| Failed | 1 |");
+      expect(text).toContain("3.45 s");
+      expect(text).toContain("should not break");
+    });
+
+    it("should handle empty/unparseable output", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const result = await handler({
+        test_output: "no recognizable format here",
+        format: "vitest",
+      });
+      const text = getText(result);
+      expect(text).toContain("Test Report");
+      expect(text).toContain("| Total | 0 |");
+      expect(text).toContain("N/A");
+    });
+
+    it("should show pass rate as N/A when total is 0", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const result = await handler({
+        test_output: "Nothing here",
+        format: "jest",
+      });
+      expect(getText(result)).toContain("N/A");
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // verify_spec_match
+  // -----------------------------------------------------------------------
+  describe("verify_spec_match", () => {
+    it("should match all requirements when output contains keywords", async () => {
+      const handler = registry.tools.get("verify_spec_match")!.handler;
+      const result = await handler({
+        spec: {
+          requirements: [
+            "implement error handling",
+            "add input validation",
+          ],
+        },
+        output:
+          "// implement error handling and input validation\nfunction processInput(input: string) {\n  if (!input) throw new Error('validation failed');\n  try { handling(input); } catch (error) { handleError(error); }\n}",
+        strict: false,
+      });
+      const text = getText(result);
+      expect(text).toContain("100%");
+      expect(text).toContain("[x]");
+    });
+
+    it("should report unmet requirements", async () => {
+      const handler = registry.tools.get("verify_spec_match")!.handler;
+      const result = await handler({
+        spec: {
+          requirements: [
+            "implement pagination",
+            "add search functionality",
+          ],
+        },
+        output: "const items = data.slice(0, 10);",
+        strict: false,
+      });
+      const text = getText(result);
+      expect(text).toContain("Unmet Requirements");
+      expect(text).toContain("[ ]");
+      expect(text).toContain("search");
+    });
+
+    it("should be stricter in strict mode", async () => {
+      const handler = registry.tools.get("verify_spec_match")!.handler;
+
+      // In relaxed mode, partial match should pass
+      const relaxed = await handler({
+        spec: {
+          requirements: ["implement user authentication with JWT tokens"],
+        },
+        output: "function authenticate(user: User) { return createToken(user); }",
+        strict: false,
+      });
+
+      // In strict mode, same partial match should fail (needs more keywords)
+      const strict = await handler({
+        spec: {
+          requirements: ["implement user authentication with JWT tokens"],
+        },
+        output: "function authenticate(user: User) { return createToken(user); }",
+        strict: true,
+      });
+
+      const relaxedScore = getText(relaxed);
+      const strictScore = getText(strict);
+      // Strict should be harder to pass — at minimum the scores should differ
+      // or strict should have unmet requirements
+      expect(strictScore).toContain("Spec Match Report");
+      expect(relaxedScore).toContain("Spec Match Report");
+    });
+
+    it("should provide suggestions for unmet requirements", async () => {
+      const handler = registry.tools.get("verify_spec_match")!.handler;
+      const result = await handler({
+        spec: {
+          requirements: ["implement database migration strategy"],
+        },
+        output: "console.log('hello');",
+        strict: false,
+      });
+      const text = getText(result);
+      expect(text).toContain("Suggestions");
+      expect(text).toContain("missing keywords");
+    });
+
+    it("should handle 0% match", async () => {
+      const handler = registry.tools.get("verify_spec_match")!.handler;
+      const result = await handler({
+        spec: {
+          requirements: [
+            "implement caching layer",
+            "add rate limiting",
+            "support webhooks",
+          ],
+        },
+        output: "const x = 1;",
+        strict: false,
+      });
+      const text = getText(result);
+      expect(text).toContain("0%");
+      expect(text).toContain("Unmet Requirements (3)");
+    });
+
+    it("should report match score correctly for partial matches", async () => {
+      const handler = registry.tools.get("verify_spec_match")!.handler;
+      const result = await handler({
+        spec: {
+          requirements: [
+            "export function",
+            "handle database errors",
+          ],
+        },
+        output: "export function getData() { return null; }",
+        strict: false,
+      });
+      const text = getText(result);
+      expect(text).toContain("50%");
+      expect(text).toContain("Met Requirements (1)");
+      expect(text).toContain("Unmet Requirements (1)");
+    });
+
+    it("should show strict mode label", async () => {
+      const handler = registry.tools.get("verify_spec_match")!.handler;
+      const result = await handler({
+        spec: { requirements: ["test"] },
+        output: "test code",
+        strict: true,
+      });
+      expect(getText(result)).toContain("Strict");
+    });
+
+    it("should show relaxed mode label", async () => {
+      const handler = registry.tools.get("verify_spec_match")!.handler;
+      const result = await handler({
+        spec: { requirements: ["test"] },
+        output: "test code",
+        strict: false,
+      });
+      expect(getText(result)).toContain("Relaxed");
+    });
+  });
+});

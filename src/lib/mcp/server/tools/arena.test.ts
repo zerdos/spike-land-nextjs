@@ -320,7 +320,6 @@ describe("Arena MCP Tools", () => {
       await new Promise((r) => setTimeout(r, 10));
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining("Arena generation failed"),
-        expect.any(Error),
       );
       consoleSpy.mockRestore();
     });

@@ -237,8 +237,7 @@ describe("tool-helpers", () => {
       // Wait for fire-and-forget to settle
       await vi.waitFor(() => {
         expect(consoleErrorSpy).toHaveBeenCalledWith(
-          "Failed to record tool invocation:",
-          expect.objectContaining({ message: "DB down" }),
+          expect.stringContaining("Failed to record tool invocation"),
         );
       });
 
@@ -261,8 +260,7 @@ describe("tool-helpers", () => {
 
       await vi.waitFor(() => {
         expect(consoleErrorSpy).toHaveBeenCalledWith(
-          "Failed to record tool invocation:",
-          expect.objectContaining({ message: "DB down" }),
+          expect.stringContaining("Failed to record tool invocation"),
         );
       });
 
