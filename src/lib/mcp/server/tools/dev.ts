@@ -27,6 +27,11 @@ function errorResult(msg: string): CallToolResult {
   return { content: [{ type: "text", text: `Error: ${msg}` }], isError: true };
 }
 
+/** Validate a string looks like a git ref (commit hash, branch name, HEAD~N). */
+function isValidGitRef(ref: string): boolean {
+  return /^[a-zA-Z0-9._~^/\-]+$/.test(ref) && ref.length <= 100;
+}
+
 function safeExec(cmd: string, timeoutMs = 10_000): string {
   try {
     return execSync(cmd, { encoding: "utf-8", timeout: timeoutMs, stdio: ["pipe", "pipe", "pipe"] }).trim();
@@ -126,10 +131,12 @@ export function registerDevTools(registry: ToolRegistry, _userId: string): void 
       const recentLog = safeExec("git log --oneline -5");
       const dirty = safeExec("git status --porcelain").length > 0 ? "yes" : "no";
 
-      // Try to get CI status via gh
-      const ciStatus = safeExec(
-        `gh run list --commit ${commitFull} --workflow ci-cd.yml --json conclusion,status --limit 1 -q '.[0] | .status + ":" + .conclusion'`,
-      );
+      // Try to get CI status via gh (validate commitFull to prevent injection)
+      const ciStatus = isValidGitRef(commitFull)
+        ? safeExec(
+            `gh run list --commit ${commitFull} --workflow ci-cd.yml --json conclusion,status --limit 1 -q '.[0] | .status + ":" + .conclusion'`,
+          )
+        : "";
 
       const openPRs = safeExec(
         `gh pr list --json number,title,headRefName --limit 5 -q '.[] | "#" + (.number|tostring) + " " + .title + " (" + .headRefName + ")"'`,
@@ -170,6 +177,9 @@ export function registerDevTools(registry: ToolRegistry, _userId: string): void 
     },
     handler: async (input: { commit_hash?: string }) => {
       const base = input.commit_hash ?? "HEAD~1";
+      if (!isValidGitRef(base)) {
+        return errorResult("Invalid commit hash format. Use a hex SHA, branch name, or HEAD~N.");
+      }
       try {
         const result = execSync(`yarn vitest run --changed ${base} --reporter=verbose 2>&1`, {
           encoding: "utf-8",
