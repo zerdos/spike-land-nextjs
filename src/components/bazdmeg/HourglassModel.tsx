@@ -1,4 +1,3 @@
-import { GlassCard } from "@/components/infographic/shared/GlassCard";
 import { ScrollReveal } from "@/components/infographic/shared/ScrollReveal";
 import { motion } from "framer-motion";
 

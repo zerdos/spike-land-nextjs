@@ -1,7 +1,6 @@
 import { GlassCard } from "@/components/infographic/shared/GlassCard";
 import { ScrollReveal } from "@/components/infographic/shared/ScrollReveal";
-import { staggerDelay } from "@/lib/animation-variants";
-import { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface Principle {
   id: number;

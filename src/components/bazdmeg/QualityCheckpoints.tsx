@@ -8,10 +8,10 @@ const CHECKPOINTS = [
     description: "Run this BEFORE the AI writes any code.",
     variant: "high" as const,
     items: [
-      { id: "pc1", text: "Can I explain the problem in my own words?", completed: false },
-      { id: "pc2", text: "Has the AI interviewed me about requirements?", completed: false },
-      { id: "pc3", text: "Do I understand why current code exists?", completed: false },
-      { id: "pc4", text: "Are my tests green and non-flaky?", completed: false },
+      { id: "pc1", label: "Can I explain the problem in my own words?", checked: false },
+      { id: "pc2", label: "Has the AI interviewed me about requirements?", checked: false },
+      { id: "pc3", label: "Do I understand why current code exists?", checked: false },
+      { id: "pc4", label: "Are my tests green and non-flaky?", checked: false },
     ]
   },
   {
@@ -19,10 +19,10 @@ const CHECKPOINTS = [
     description: "Run this AFTER the AI writes code, BEFORE creating a PR.",
     variant: "highlighted" as const,
     items: [
-      { id: "poc1", text: "Can I explain every line to a teammate?", completed: false },
-      { id: "poc2", text: "Verified assumptions against architecture?", completed: false },
-      { id: "poc3", text: "Agents tested it like a human would?", completed: false },
-      { id: "poc4", text: "MCP tool tests cover logic at 100%?", completed: false },
+      { id: "poc1", label: "Can I explain every line to a teammate?", checked: false },
+      { id: "poc2", label: "Verified assumptions against architecture?", checked: false },
+      { id: "poc3", label: "Agents tested it like a human would?", checked: false },
+      { id: "poc4", label: "MCP tool tests cover logic at 100%?", checked: false },
     ]
   },
   {
@@ -30,10 +30,10 @@ const CHECKPOINTS = [
     description: "Run this BEFORE submitting the pull request.",
     variant: "openClaw" as const,
     items: [
-      { id: "pr1", text: "Do unit tests prove the code works?", completed: false },
-      { id: "pr2", text: "Does TypeScript pass in strict mode?", completed: false },
-      { id: "pr3", text: "Can I answer 'why' for every decision?", completed: false },
-      { id: "pr4", text: "Comfortable debugging this at 3am?", completed: false },
+      { id: "pr1", label: "Do unit tests prove the code works?", checked: false },
+      { id: "pr2", label: "Does TypeScript pass in strict mode?", checked: false },
+      { id: "pr3", label: "Can I answer 'why' for every decision?", checked: false },
+      { id: "pr4", label: "Comfortable debugging this at 3am?", checked: false },
     ]
   }
 ];
