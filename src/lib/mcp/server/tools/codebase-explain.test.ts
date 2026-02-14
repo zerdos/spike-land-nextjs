@@ -585,5 +585,484 @@ export { internal as publicApi };
       const text = getText(result);
       expect(text).toContain("publicApi");
     });
+
+    it("should extract arrow function definitions", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+export const fetchUser = async (id: string): Promise<User> => {
+  return db.find(id);
+};
+const processItem = (item: Item) => item.value;
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/helpers.ts",
+      });
+      const text = getText(result);
+      expect(text).toContain("fetchUser");
+    });
+
+    it("should handle file with only internal imports (no external)", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+import { helper } from "./helper";
+import { utils } from "../utils";
+import { config } from "@/lib/config";
+
+export function main() {}
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/main.ts",
+      });
+      const text = getText(result);
+      expect(text).toContain("Internal:");
+      expect(text).toContain("Exports:");
+      // Should not have External section
+      expect(text).not.toContain("External:");
+    });
+
+    it("should not duplicate exports across patterns", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+export function myFunc() {}
+export function myFunc() {} // duplicate
+export const myConst = 1;
+export const myConst = 2; // duplicate
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/dedup.ts",
+      });
+      const text = getText(result);
+      const exportsSection = text.split("## Exports")[1]!.split("## Functions")[0]!;
+      const myFuncMatches = exportsSection.match(/`myFunc`/g);
+      expect(myFuncMatches).toHaveLength(1);
+    });
+
+    it("should not duplicate functions across patterns", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+export function doWork() {}
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/work.ts",
+      });
+      const text = getText(result);
+      const functionsSection = text.split("## Functions")[1]!.split("## Dependency")[0]!;
+      const doWorkMatches = functionsSection.match(/`doWork`/g);
+      expect(doWorkMatches).toHaveLength(1);
+    });
+  });
+
+  // ── detectTechFromFiles additional branches ─────────────────────
+
+  describe("explain_overview - additional file detection", () => {
+    it("should detect Jest config from files", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["jest.config.ts", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("Jest");
+    });
+
+    it("should detect Jest config .js variant", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["jest.config.js", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("Jest");
+    });
+
+    it("should detect Vite config from files", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["vite.config.ts", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("Vite");
+    });
+
+    it("should detect Vite config .js variant", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["vite.config.js", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("Vite");
+    });
+
+    it("should detect webpack config from files", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["webpack.config.js", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("webpack");
+    });
+
+    it("should detect webpack config .ts variant", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["webpack.config.ts", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("webpack");
+    });
+
+    it("should detect Tailwind CSS config from files", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["tailwind.config.ts", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("Tailwind CSS");
+    });
+
+    it("should detect Tailwind CSS config .js variant", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["tailwind.config.js", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("Tailwind CSS");
+    });
+
+    it("should detect Docker from docker-compose.yaml", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["docker-compose.yaml", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("Docker");
+    });
+
+    it("should detect Turborepo from turbo.json", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["turbo.json", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("Turborepo");
+    });
+
+    it("should detect Prisma from prisma/schema.prisma", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["prisma/schema.prisma", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("Prisma");
+    });
+
+    it("should detect Storybook from .storybook directory", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = [".storybook/main.ts", "src/index.ts"];
+      const result = await handler({ files });
+      expect(getText(result)).toContain("Storybook");
+    });
+
+    it("should handle files with no extension", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["Makefile", "Dockerfile"];
+      const result = await handler({ files });
+      const text = getText(result);
+      expect(text).toContain("**Total files:** 2");
+    });
+
+    it("should handle files without directories", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["README.md", "LICENSE"];
+      const result = await handler({ files });
+      const text = getText(result);
+      expect(text).toContain("**Total files:** 2");
+    });
+
+    it("should handle second-level child dir with 0 files below it", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      const files = ["src/lib/index.ts"];
+      const result = await handler({ files });
+      const text = getText(result);
+      // src/lib is a second-level dir; the file is at that level, not below it
+      expect(text).toContain("src/");
+    });
+  });
+
+  // ── explain_module - additional edge cases ──────────────────────
+
+  describe("explain_module - additional patterns", () => {
+    it("should handle module with no exports in entry content", async () => {
+      const handler = registry.handlers.get("explain_module")!;
+      const entryContent = `
+import { something } from "lib";
+const internal = something();
+`;
+      const result = await handler({
+        module_path: "src/bootstrap",
+        files: ["src/bootstrap/index.ts"],
+        entry_content: entryContent,
+      });
+      const text = getText(result);
+      expect(text).toContain("No named exports detected");
+    });
+
+    it("should handle module with no dependencies in entry content", async () => {
+      const handler = registry.handlers.get("explain_module")!;
+      const entryContent = `
+export const VALUE = 42;
+`;
+      const result = await handler({
+        module_path: "src/constants",
+        files: ["src/constants/index.ts"],
+        entry_content: entryContent,
+      });
+      const text = getText(result);
+      expect(text).toContain("No dependencies detected");
+    });
+
+    it("should handle module with only external dependencies", async () => {
+      const handler = registry.handlers.get("explain_module")!;
+      const entryContent = `
+import { z } from "zod";
+export const schema = z.string();
+`;
+      const result = await handler({
+        module_path: "src/schemas",
+        files: ["src/schemas/index.ts"],
+        entry_content: entryContent,
+      });
+      const text = getText(result);
+      expect(text).toContain("**External:**");
+      expect(text).not.toContain("**Internal:**");
+    });
+
+    it("should detect .spec. files as tests", async () => {
+      const handler = registry.handlers.get("explain_module")!;
+      const result = await handler({
+        module_path: "src/lib",
+        files: ["src/lib/utils.spec.ts"],
+      });
+      const text = getText(result);
+      expect(text).toContain("(test)");
+    });
+
+    it("should detect main.ts as entry file", async () => {
+      const handler = registry.handlers.get("explain_module")!;
+      const result = await handler({
+        module_path: "src/app",
+        files: ["src/app/main.ts"],
+      });
+      const text = getText(result);
+      expect(text).toContain("(entry)");
+    });
+
+    it("should detect no patterns when module has no tests/index/types/entry", async () => {
+      const handler = registry.handlers.get("explain_module")!;
+      const result = await handler({
+        module_path: "src/misc",
+        files: ["src/misc/helper.ts"],
+      });
+      const text = getText(result);
+      expect(text).toContain("No notable patterns detected");
+    });
+
+    it("should use modulePath as moduleName when no slash present", async () => {
+      const handler = registry.handlers.get("explain_module")!;
+      const result = await handler({
+        module_path: "standalone",
+        files: ["standalone/file.ts"],
+      });
+      const text = getText(result);
+      expect(text).toContain("Module: standalone");
+    });
+
+    it("should handle export default pattern detection", async () => {
+      const handler = registry.handlers.get("explain_module")!;
+      const entryContent = `export default function App() {}`;
+      const result = await handler({
+        module_path: "src/app",
+        files: ["src/app/index.ts"],
+        entry_content: entryContent,
+      });
+      const text = getText(result);
+      expect(text).toContain("Uses default export");
+    });
+  });
+
+  // ── Dedup / fallback branches in extraction functions ───────────
+
+  describe("explain_flow - dedup and fallback branches", () => {
+    it("should deduplicate ES6 static imports of same module", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+import { a } from "shared";
+import { b } from "shared";
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/dup.ts",
+      });
+      const text = getText(result);
+      const importsSection = text.split("## Imports")[1]!.split("## Exports")[0]!;
+      const sharedMatches = importsSection.match(/`shared`/g);
+      expect(sharedMatches).toHaveLength(1);
+    });
+
+    it("should deduplicate require of same module already imported via ES6", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+import { something } from "lodash";
+const _ = require("lodash");
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/mixed.ts",
+      });
+      const text = getText(result);
+      const importsSection = text.split("## Imports")[1]!.split("## Exports")[0]!;
+      const lodashMatches = importsSection.match(/`lodash`/g);
+      expect(lodashMatches).toHaveLength(1);
+    });
+
+    it("should deduplicate export function appearing twice", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      // This triggers the seen.has() branch in extractExports for fnPattern
+      const content = `
+export function doStuff() {}
+// overload signature
+export function doStuff(arg: string) {}
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/overload.ts",
+      });
+      const text = getText(result);
+      const exportsSection = text.split("## Exports")[1]!.split("## Functions")[0]!;
+      const matches = exportsSection.match(/`doStuff`/g);
+      expect(matches).toHaveLength(1);
+    });
+
+    it("should deduplicate export const appearing in both varPattern and namedPattern", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+export const VALUE = 1;
+export { VALUE };
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/reexport.ts",
+      });
+      const text = getText(result);
+      const exportsSection = text.split("## Exports")[1]!.split("## Functions")[0]!;
+      const matches = exportsSection.match(/`VALUE`/g);
+      expect(matches).toHaveLength(1);
+    });
+
+    it("should deduplicate export class with same name", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+export class MyService {}
+export { MyService };
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/svc.ts",
+      });
+      const text = getText(result);
+      const exportsSection = text.split("## Exports")[1]!.split("## Functions")[0]!;
+      const matches = exportsSection.match(/`MyService`/g);
+      expect(matches).toHaveLength(1);
+    });
+
+    it("should deduplicate export interface/type with same name", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+export interface Config {}
+export { Config };
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/types.ts",
+      });
+      const text = getText(result);
+      const exportsSection = text.split("## Exports")[1]!.split("## Functions")[0]!;
+      const configMatches = exportsSection.match(/`Config`/g);
+      expect(configMatches).toHaveLength(1);
+    });
+
+    it("should deduplicate default export when already seen via export default class", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+export default class App {}
+export default App;
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/app.ts",
+      });
+      const text = getText(result);
+      const exportsSection = text.split("## Exports")[1]!.split("## Functions")[0]!;
+      const defaultMatches = exportsSection.match(/`default`/g);
+      expect(defaultMatches).toHaveLength(1);
+    });
+
+    it("should deduplicate named export { } items already seen", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+export function foo() {}
+export const bar = 1;
+export { foo, bar };
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/barrel.ts",
+      });
+      const text = getText(result);
+      const exportsSection = text.split("## Exports")[1]!.split("## Functions")[0]!;
+      const fooMatches = exportsSection.match(/`foo`/g);
+      expect(fooMatches).toHaveLength(1);
+    });
+
+    it("should deduplicate arrow function that also appears as function declaration", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+function helper() {}
+const helper = () => {};
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/fns.ts",
+      });
+      const text = getText(result);
+      const functionsSection = text.split("## Functions")[1]!.split("## Dependency")[0]!;
+      const helperMatches = functionsSection.match(/`helper`/g);
+      expect(helperMatches).toHaveLength(1);
+    });
+
+    it("should handle tech stack entry without version (undefined)", async () => {
+      const handler = registry.handlers.get("explain_overview")!;
+      // Package with deps missing version
+      const packageJson = JSON.stringify({
+        dependencies: { react: "18.0.0" },
+      });
+      const result = await handler({
+        files: ["src/index.ts"],
+        package_json: packageJson,
+      });
+      const text = getText(result);
+      expect(text).toContain("React");
+    });
+
+    it("should handle file path without slash in modulePath fallback", async () => {
+      const handler = registry.handlers.get("explain_module")!;
+      const result = await handler({
+        module_path: "root",
+        files: ["root"],
+      });
+      const text = getText(result);
+      expect(text).toContain("Module: root");
+    });
+
+    it("should handle file basename fallback when no slash in path", async () => {
+      const handler = registry.handlers.get("explain_module")!;
+      const result = await handler({
+        module_path: "src/lib",
+        files: ["noSlashFile"],
+      });
+      const text = getText(result);
+      expect(text).toContain("noSlashFile");
+    });
+
+    it("should handle file path in detectPatterns when no slash in basename", async () => {
+      const handler = registry.handlers.get("explain_module")!;
+      const result = await handler({
+        module_path: "src/mod",
+        files: ["indexfile"],
+      });
+      const text = getText(result);
+      // "indexfile" doesn't start with "index.", so no barrel pattern
+      expect(text).toContain("No notable patterns detected");
+    });
   });
 });

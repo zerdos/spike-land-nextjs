@@ -88,6 +88,88 @@ describe("brand-brain tools", () => {
       const result = await handler({ workspace_slug: "my-ws", content: "Hello" });
       expect(getText(result)).toContain("NOT_FOUND");
     });
+
+    it("should include platform in output when provided", async () => {
+      mockPrisma.brandProfile.findUnique.mockResolvedValue({
+        id: "bp1",
+        vocabulary: [],
+        guardrails: [],
+      });
+      const handler = registry.handlers.get("brand_score_content")!;
+      const result = await handler({ workspace_slug: "my-ws", content: "Hello", platform: "TWITTER" });
+      expect(getText(result)).toContain("**Platform:** TWITTER");
+    });
+
+    it("should skip non-BANNED vocabulary types", async () => {
+      mockPrisma.brandProfile.findUnique.mockResolvedValue({
+        id: "bp1",
+        vocabulary: [
+          { term: "innovative", type: "PREFERRED" },
+          { term: "synergy", type: "FORBIDDEN" },
+        ],
+        guardrails: [],
+      });
+      const handler = registry.handlers.get("brand_score_content")!;
+      const result = await handler({ workspace_slug: "my-ws", content: "Our innovative synergy approach" });
+      expect(getText(result)).toContain("Brand Score: 100/100");
+      expect(getText(result)).toContain("**Violations:** 0");
+    });
+
+    it("should skip non-PROHIBITED_TOPIC guardrails", async () => {
+      mockPrisma.brandProfile.findUnique.mockResolvedValue({
+        id: "bp1",
+        vocabulary: [],
+        guardrails: [
+          {
+            type: "SENTIMENT_CHECK",
+            name: "positive-only",
+            ruleConfig: { keywords: ["hate"] },
+            isActive: true,
+          },
+        ],
+      });
+      const handler = registry.handlers.get("brand_score_content")!;
+      const result = await handler({ workspace_slug: "my-ws", content: "I hate this" });
+      expect(getText(result)).toContain("Brand Score: 100/100");
+      expect(getText(result)).toContain("**Violations:** 0");
+    });
+
+    it("should handle non-array keywords in guardrail ruleConfig", async () => {
+      mockPrisma.brandProfile.findUnique.mockResolvedValue({
+        id: "bp1",
+        vocabulary: [],
+        guardrails: [
+          {
+            type: "PROHIBITED_TOPIC",
+            name: "broken-config",
+            ruleConfig: { keywords: "not-an-array" },
+            isActive: true,
+          },
+        ],
+      });
+      const handler = registry.handlers.get("brand_score_content")!;
+      const result = await handler({ workspace_slug: "my-ws", content: "Some content" });
+      expect(getText(result)).toContain("Brand Score: 100/100");
+    });
+
+    it("should skip non-string keywords in guardrail", async () => {
+      mockPrisma.brandProfile.findUnique.mockResolvedValue({
+        id: "bp1",
+        vocabulary: [],
+        guardrails: [
+          {
+            type: "PROHIBITED_TOPIC",
+            name: "mixed-keywords",
+            ruleConfig: { keywords: [123, null, "badword"] },
+            isActive: true,
+          },
+        ],
+      });
+      const handler = registry.handlers.get("brand_score_content")!;
+      const result = await handler({ workspace_slug: "my-ws", content: "This has badword in it" });
+      expect(getText(result)).toContain("GUARDRAIL:mixed-keywords");
+      expect(getText(result)).toContain("**Violations:** 1");
+    });
   });
 
   describe("brand_rewrite_content", () => {
@@ -159,6 +241,23 @@ describe("brand-brain tools", () => {
       expect(getText(result)).toContain("**Vocabulary Terms:** 3");
       expect(getText(result)).toContain("Banned: 2");
       expect(getText(result)).toContain("Preferred: 1");
+    });
+
+    it("should show fallback values for null profile fields", async () => {
+      mockPrisma.brandProfile.findUnique.mockResolvedValue({
+        name: null,
+        mission: null,
+        values: null,
+        toneDescriptors: null,
+        guardrails: [],
+        vocabulary: [],
+      });
+      const handler = registry.handlers.get("brand_get_profile")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      expect(getText(result)).toContain("**Name:** Unnamed");
+      expect(getText(result)).toContain("**Mission:** (none)");
+      expect(getText(result)).toContain("**Values:** (none)");
+      expect(getText(result)).toContain("**Tone:** (none)");
     });
 
     it("should return error when no brand profile", async () => {
@@ -235,6 +334,105 @@ describe("brand-brain tools", () => {
       expect(getText(result)).toContain("PASSED");
       expect(getText(result)).toContain("**Violations:** 0");
     });
+
+    it("should skip non-KEYWORD_MATCH rule types", async () => {
+      mockPrisma.policyRule.findMany.mockResolvedValue([
+        {
+          id: "rule4",
+          name: "Sentiment Rule",
+          ruleType: "SENTIMENT_ANALYSIS",
+          severity: "HIGH",
+          isActive: true,
+          conditions: { keywords: ["badword"] },
+        },
+      ]);
+      mockPrisma.policyCheck.create.mockResolvedValue({ id: "chk4" });
+      const handler = registry.handlers.get("brand_check_policy")!;
+      const result = await handler({ workspace_slug: "my-ws", content: "This has badword" });
+      expect(getText(result)).toContain("PASSED");
+      expect(getText(result)).toContain("**Violations:** 0");
+    });
+
+    it("should handle non-array keywords in policy conditions", async () => {
+      mockPrisma.policyRule.findMany.mockResolvedValue([
+        {
+          id: "rule5",
+          name: "Bad Config",
+          ruleType: "KEYWORD_MATCH",
+          severity: "HIGH",
+          isActive: true,
+          conditions: { keywords: "not-an-array" },
+        },
+      ]);
+      mockPrisma.policyCheck.create.mockResolvedValue({ id: "chk5" });
+      const handler = registry.handlers.get("brand_check_policy")!;
+      const result = await handler({ workspace_slug: "my-ws", content: "Some content" });
+      expect(getText(result)).toContain("PASSED");
+      expect(getText(result)).toContain("**Violations:** 0");
+    });
+
+    it("should skip non-string keywords in policy conditions", async () => {
+      mockPrisma.policyRule.findMany.mockResolvedValue([
+        {
+          id: "rule6",
+          name: "Mixed Types",
+          ruleType: "KEYWORD_MATCH",
+          severity: "LOW",
+          isActive: true,
+          conditions: { keywords: [42, null, "flagged"] },
+        },
+      ]);
+      mockPrisma.policyCheck.create.mockResolvedValue({ id: "chk6" });
+      mockPrisma.policyViolation.create.mockResolvedValue({});
+      const handler = registry.handlers.get("brand_check_policy")!;
+      const result = await handler({ workspace_slug: "my-ws", content: "This is flagged content" });
+      expect(getText(result)).toContain("PASSED_WITH_WARNINGS");
+      expect(getText(result)).toContain("**Violations:** 1");
+    });
+
+    it("should include platform in policy check when provided", async () => {
+      mockPrisma.policyRule.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("brand_check_policy")!;
+      const result = await handler({ workspace_slug: "my-ws", content: "Hello", platform: "TWITTER" });
+      expect(getText(result)).toContain("PASSED");
+    });
+
+    it("should fail with HIGH severity violations", async () => {
+      mockPrisma.policyRule.findMany.mockResolvedValue([
+        {
+          id: "rule7",
+          name: "Strict Rule",
+          ruleType: "KEYWORD_MATCH",
+          severity: "HIGH",
+          isActive: true,
+          conditions: { keywords: ["offensive"] },
+        },
+      ]);
+      mockPrisma.policyCheck.create.mockResolvedValue({ id: "chk7" });
+      mockPrisma.policyViolation.create.mockResolvedValue({});
+      const handler = registry.handlers.get("brand_check_policy")!;
+      const result = await handler({ workspace_slug: "my-ws", content: "This is offensive" });
+      expect(getText(result)).toContain("FAILED");
+    });
+
+    it("should handle violation with unmatched rule name", async () => {
+      mockPrisma.policyRule.findMany.mockResolvedValue([
+        {
+          id: "rule8",
+          name: "Real Rule",
+          ruleType: "KEYWORD_MATCH",
+          severity: "LOW",
+          isActive: true,
+          conditions: { keywords: ["trigger"] },
+        },
+      ]);
+      mockPrisma.policyCheck.create.mockResolvedValue({ id: "chk8" });
+      mockPrisma.policyViolation.create.mockResolvedValue({});
+      const handler = registry.handlers.get("brand_check_policy")!;
+      const result = await handler({ workspace_slug: "my-ws", content: "trigger word here" });
+      expect(getText(result)).toContain("PASSED_WITH_WARNINGS");
+      expect(mockPrisma.policyViolation.create).toHaveBeenCalled();
+    });
   });
 
   describe("brand_list_violations", () => {
@@ -285,6 +483,32 @@ describe("brand-brain tools", () => {
         expect.objectContaining({ take: 5 }),
       );
     });
+
+    it("should handle violations with null rule, check, and matchedContent", async () => {
+      mockPrisma.policyViolation.findMany.mockResolvedValue([
+        {
+          id: "v2",
+          severity: "WARNING",
+          message: "Some issue",
+          matchedContent: null,
+          createdAt: new Date("2024-07-01"),
+          rule: null,
+          check: null,
+        },
+      ]);
+      const handler = registry.handlers.get("brand_list_violations")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      expect(getText(result)).toContain("unknown");
+      expect(getText(result)).toContain("N/A");
+    });
+
+    it("should not include severity in where clause when not provided", async () => {
+      mockPrisma.policyViolation.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("brand_list_violations")!;
+      await handler({ workspace_slug: "my-ws" });
+      const call = mockPrisma.policyViolation.findMany.mock.calls[0][0];
+      expect(call.where).not.toHaveProperty("severity");
+    });
   });
 
   describe("brand_get_guardrails", () => {
@@ -320,6 +544,21 @@ describe("brand-brain tools", () => {
       const handler = registry.handlers.get("brand_get_guardrails")!;
       const result = await handler({ workspace_slug: "my-ws" });
       expect(getText(result)).toContain("No active guardrails found");
+    });
+
+    it("should show 'No description' for guardrails with null description", async () => {
+      mockPrisma.brandProfile.findUnique.mockResolvedValue({ id: "bp1" });
+      mockPrisma.brandGuardrail.findMany.mockResolvedValue([
+        {
+          name: "Simple Guard",
+          type: "KEYWORD_BLOCK",
+          severity: "LOW",
+          description: null,
+        },
+      ]);
+      const handler = registry.handlers.get("brand_get_guardrails")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      expect(getText(result)).toContain("No description");
     });
 
     it("should return error when no brand profile", async () => {

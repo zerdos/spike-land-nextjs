@@ -72,6 +72,10 @@ describe("context-architect tools", () => {
     it("should handle nested dots", () => {
       expect(getExtension("src/file.test.ts")).toBe("ts");
     });
+
+    it("should return empty when dot is before last slash (directory dot)", () => {
+      expect(getExtension("some.dir/filename")).toBe("");
+    });
   });
 
   describe("detectTechStack", () => {
@@ -98,6 +102,115 @@ describe("context-architect tools", () => {
     it("should return empty array for unknown stack", () => {
       const files = [{ path: "data.csv", size: 100, type: "csv" }];
       expect(detectTechStack(files)).toEqual([]);
+    });
+
+    it("should detect JavaScript (js/jsx)", () => {
+      const files = [
+        { path: "src/app.js", size: 100, type: "js" },
+        { path: "src/component.jsx", size: 100, type: "jsx" },
+      ];
+      const stack = detectTechStack(files);
+      expect(stack).toContain("JavaScript");
+    });
+
+    it("should detect Python", () => {
+      const files = [{ path: "main.py", size: 100, type: "py" }];
+      expect(detectTechStack(files)).toContain("Python");
+    });
+
+    it("should detect Rust", () => {
+      const files = [{ path: "main.rs", size: 100, type: "rs" }];
+      expect(detectTechStack(files)).toContain("Rust");
+    });
+
+    it("should detect Go", () => {
+      const files = [{ path: "main.go", size: 100, type: "go" }];
+      expect(detectTechStack(files)).toContain("Go");
+    });
+
+    it("should detect Java", () => {
+      const files = [{ path: "Main.java", size: 100, type: "java" }];
+      expect(detectTechStack(files)).toContain("Java");
+    });
+
+    it("should detect Ruby", () => {
+      const files = [{ path: "app.rb", size: 100, type: "rb" }];
+      expect(detectTechStack(files)).toContain("Ruby");
+    });
+
+    it("should detect PHP", () => {
+      const files = [{ path: "index.php", size: 100, type: "php" }];
+      expect(detectTechStack(files)).toContain("PHP");
+    });
+
+    it("should detect C#", () => {
+      const files = [{ path: "Program.cs", size: 100, type: "cs" }];
+      expect(detectTechStack(files)).toContain("C#");
+    });
+
+    it("should detect Swift", () => {
+      const files = [{ path: "App.swift", size: 100, type: "swift" }];
+      expect(detectTechStack(files)).toContain("Swift");
+    });
+
+    it("should detect Kotlin", () => {
+      const files = [{ path: "Main.kt", size: 100, type: "kt" }];
+      expect(detectTechStack(files)).toContain("Kotlin");
+    });
+
+    it("should detect Vite via config file", () => {
+      const files = [{ path: "vite.config.ts", size: 50, type: "ts" }];
+      expect(detectTechStack(files)).toContain("Vite");
+    });
+
+    it("should detect Rust/Cargo via Cargo.toml", () => {
+      const files = [{ path: "Cargo.toml", size: 50, type: "toml" }];
+      expect(detectTechStack(files)).toContain("Rust/Cargo");
+    });
+
+    it("should detect Go Modules via go.mod", () => {
+      const files = [{ path: "go.mod", size: 50, type: "mod" }];
+      expect(detectTechStack(files)).toContain("Go Modules");
+    });
+
+    it("should detect Python via pyproject.toml", () => {
+      const files = [{ path: "pyproject.toml", size: 50, type: "toml" }];
+      expect(detectTechStack(files)).toContain("Python");
+    });
+
+    it("should detect Tailwind CSS via config", () => {
+      const files = [{ path: "tailwind.config.ts", size: 50, type: "ts" }];
+      expect(detectTechStack(files)).toContain("Tailwind CSS");
+    });
+
+    it("should detect Docker via docker-compose.yml", () => {
+      const files = [{ path: "docker-compose.yml", size: 50, type: "yml" }];
+      expect(detectTechStack(files)).toContain("Docker");
+    });
+
+    it("should detect Next.js via next.config.js", () => {
+      const files = [{ path: "next.config.js", size: 50, type: "js" }];
+      expect(detectTechStack(files)).toContain("Next.js");
+    });
+
+    it("should detect Next.js via next.config.mjs", () => {
+      const files = [{ path: "next.config.mjs", size: 50, type: "mjs" }];
+      expect(detectTechStack(files)).toContain("Next.js");
+    });
+
+    it("should detect Vite via vite.config.js", () => {
+      const files = [{ path: "vite.config.js", size: 50, type: "js" }];
+      expect(detectTechStack(files)).toContain("Vite");
+    });
+
+    it("should detect Tailwind CSS via tailwind.config.js", () => {
+      const files = [{ path: "tailwind.config.js", size: 50, type: "js" }];
+      expect(detectTechStack(files)).toContain("Tailwind CSS");
+    });
+
+    it("should detect TypeScript via tsx extension", () => {
+      const files = [{ path: "App.tsx", size: 100, type: "tsx" }];
+      expect(detectTechStack(files)).toContain("TypeScript");
     });
   });
 
@@ -128,6 +241,22 @@ describe("context-architect tools", () => {
       const score = scoreFile(file, ["authentication"]);
       expect(score).toBe(0);
     });
+
+    it("should add +1 for code extension files", () => {
+      const tsFile = { path: "data/file.ts", size: 100, type: "ts" };
+      const mdFile = { path: "data/file.md", size: 100, type: "md" };
+      // Both match keyword "file", both in non-source dir, no penalty
+      const tsScore = scoreFile(tsFile, ["data"]);
+      const mdScore = scoreFile(mdFile, ["data"]);
+      expect(tsScore).toBeGreaterThan(mdScore);
+    });
+
+    it("should handle empty keywords array", () => {
+      const file = { path: "src/index.ts", size: 100, type: "ts" };
+      const score = scoreFile(file, []);
+      // No keyword match (+0), source dir (+2), code ext (+1) = 3
+      expect(score).toBe(3);
+    });
   });
 
   describe("parseImports", () => {
@@ -148,6 +277,12 @@ import bar from "../bar";`;
     it("should return empty for no imports", () => {
       const content = `const x = 1;\nconst y = 2;`;
       expect(parseImports(content)).toEqual([]);
+    });
+
+    it("should parse Python-style from...import syntax", () => {
+      const content = `from "some-module" import something;`;
+      const imports = parseImports(content);
+      expect(imports).toContain("some-module");
     });
   });
 
@@ -281,6 +416,53 @@ import bar from "../bar";`;
       expect(getText(result)).toContain("truncated");
     });
 
+    it("should handle files with no size (undefined)", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          sha: "abc",
+          url: "",
+          tree: [
+            { path: "src/file.ts", type: "blob" }, // no size field
+          ],
+          truncated: false,
+        }),
+      });
+
+      const handler = registry.handlers.get("context_index_repo")!;
+      const result = await handler({
+        repo_url: "https://github.com/test/nosize",
+        branch: "main",
+      });
+
+      expect(isError(result)).toBe(false);
+      const text = getText(result);
+      expect(text).toContain("Indexed 1 files");
+    });
+
+    it("should not show tech stack section when none detected", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          sha: "abc",
+          url: "",
+          tree: [
+            { path: "data.csv", type: "blob", size: 100 },
+          ],
+          truncated: false,
+        }),
+      });
+
+      const handler = registry.handlers.get("context_index_repo")!;
+      const result = await handler({
+        repo_url: "https://github.com/test/notech",
+        branch: "main",
+      });
+
+      const text = getText(result);
+      expect(text).not.toContain("Detected tech stack");
+    });
+
     it("should store index in repoIndex map", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -396,6 +578,30 @@ import bar from "../bar";`;
       // Count table rows (lines starting with |, excluding header)
       const dataRows = text.split("\n").filter((l: string) => l.match(/^\| \d/));
       expect(dataRows.length).toBeLessThanOrEqual(2);
+    });
+
+    it("should format sizes as KB for files > 1024 bytes", async () => {
+      const key = repoKey(userId, "https://github.com/test/sizes");
+      repoIndex.set(key, {
+        url: "https://github.com/test/sizes",
+        branch: "main",
+        files: [
+          { path: "src/big.ts", size: 2048, type: "ts" },
+          { path: "src/small.ts", size: 512, type: "ts" },
+        ],
+        indexedAt: new Date(),
+      });
+
+      const handler = registry.handlers.get("context_pack")!;
+      const result = await handler({
+        repo_url: "https://github.com/test/sizes",
+        task_description: "big small files source",
+        max_files: 20,
+      });
+
+      const text = getText(result);
+      expect(text).toContain("KB");
+      expect(text).toContain("B");
     });
 
     it("should rank source files higher than test files", async () => {
@@ -524,6 +730,66 @@ import bar from "../bar";`;
       expect(text).toContain("Direct imports:** None found");
       // helper.ts is alone in its directory
       expect(text).toContain("Sibling files (same directory, 0)");
+    });
+
+    it("should truncate sibling list when more than 20 siblings", async () => {
+      // Create index with > 20 sibling files
+      const files = [{ path: "src/many/target.ts", size: 100, type: "ts" }];
+      for (let i = 0; i < 25; i++) {
+        files.push({ path: `src/many/file${i}.ts`, size: 100, type: "ts" });
+      }
+      const key = repoKey(userId, "https://github.com/test/many");
+      repoIndex.set(key, {
+        url: "https://github.com/test/many",
+        branch: "main",
+        files,
+        indexedAt: new Date(),
+      });
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => `const x = 1;`,
+      });
+
+      const handler = registry.handlers.get("context_get_deps")!;
+      const result = await handler({
+        repo_url: "https://github.com/test/many",
+        file_path: "src/many/target.ts",
+      });
+
+      const text = getText(result);
+      expect(text).toContain("...and");
+      expect(text).toContain("more");
+    });
+
+    it("should show no sibling files when directory has only non-code files", async () => {
+      const key = repoKey(userId, "https://github.com/test/nocode");
+      repoIndex.set(key, {
+        url: "https://github.com/test/nocode",
+        branch: "main",
+        files: [
+          { path: "docs/readme.ts", size: 100, type: "ts" },
+          { path: "docs/image.png", size: 500, type: "png" },
+          { path: "docs/data.csv", size: 200, type: "csv" },
+        ],
+        indexedAt: new Date(),
+      });
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => `export const x = 1;`,
+      });
+
+      const handler = registry.handlers.get("context_get_deps")!;
+      const result = await handler({
+        repo_url: "https://github.com/test/nocode",
+        file_path: "docs/readme.ts",
+      });
+
+      const text = getText(result);
+      // No code siblings (png and csv are not code extensions)
+      expect(text).toContain("Sibling files (same directory, 0)");
+      expect(text).toContain("None");
     });
   });
 });

@@ -278,6 +278,175 @@ describe("req-interview tools", () => {
     });
   });
 
+  describe("interview_submit edge cases", () => {
+    it("re-submitting all answers to already-completed interview does not reset completedAt", async () => {
+      const startHandler = registry.tools.get("interview_start")!.handler;
+      const startResult = await startHandler({
+        project_name: "Test",
+        initial_description: "Testing",
+      });
+      const idMatch = getText(startResult).match(/`([0-9a-f-]{36})`/);
+      const interviewId = idMatch![1]!;
+
+      const submitHandler = registry.tools.get("interview_submit")!.handler;
+
+      // Complete the interview
+      await submitHandler({
+        interview_id: interviewId,
+        answers: [
+          { question_id: "problem", answer: "P" },
+          { question_id: "data", answer: "D" },
+          { question_id: "user_flow", answer: "F" },
+          { question_id: "constraints", answer: "C" },
+          { question_id: "failure", answer: "Fail" },
+          { question_id: "verification", answer: "V" },
+          { question_id: "explainability", answer: "E" },
+        ],
+      });
+
+      // Re-submit answers to the already-completed interview
+      const result = await submitHandler({
+        interview_id: interviewId,
+        answers: [
+          { question_id: "problem", answer: "Updated problem" },
+        ],
+      });
+
+      expect(isError(result)).toBe(false);
+      const text = getText(result);
+      expect(text).toContain("Answered:** 7/7");
+      expect(text).toContain("Complete:** true");
+      expect(text).toContain("interview_generate_spec");
+    });
+
+    it("returns error listing multiple invalid question IDs", async () => {
+      const startHandler = registry.tools.get("interview_start")!.handler;
+      const startResult = await startHandler({
+        project_name: "Test",
+        initial_description: "Testing",
+      });
+      const idMatch = getText(startResult).match(/`([0-9a-f-]{36})`/);
+      const interviewId = idMatch![1]!;
+
+      const submitHandler = registry.tools.get("interview_submit")!.handler;
+      const result = await submitHandler({
+        interview_id: interviewId,
+        answers: [
+          { question_id: "bogus_one", answer: "A" },
+          { question_id: "bogus_two", answer: "B" },
+        ],
+      });
+
+      expect(isError(result)).toBe(true);
+      const text = getText(result);
+      expect(text).toContain("bogus_one");
+      expect(text).toContain("bogus_two");
+      expect(text).toContain("Valid IDs");
+    });
+  });
+
+  describe("interview_generate_spec edge cases", () => {
+    it("returns error for non-existent interview ID in generate_spec", async () => {
+      const genHandler = registry.tools.get("interview_generate_spec")!.handler;
+      const result = await genHandler({ interview_id: "does-not-exist-uuid" });
+
+      expect(isError(result)).toBe(true);
+      expect(getText(result)).toContain("does-not-exist-uuid");
+      expect(getText(result)).toContain("not found");
+    });
+
+    it("generates spec with single-line user_flow (no newlines)", async () => {
+      const startHandler = registry.tools.get("interview_start")!.handler;
+      const startResult = await startHandler({
+        project_name: "SingleFlow",
+        initial_description: "Single line flow",
+      });
+      const idMatch = getText(startResult).match(/`([0-9a-f-]{36})`/);
+      const interviewId = idMatch![1]!;
+
+      const submitHandler = registry.tools.get("interview_submit")!.handler;
+      await submitHandler({
+        interview_id: interviewId,
+        answers: [
+          { question_id: "problem", answer: "Simple problem" },
+          { question_id: "data", answer: "Simple data" },
+          { question_id: "user_flow", answer: "Just one step" },
+          { question_id: "constraints", answer: "None" },
+          { question_id: "failure", answer: "Retry" },
+          { question_id: "verification", answer: "Manual test" },
+          { question_id: "explainability", answer: "Straightforward" },
+        ],
+      });
+
+      const genHandler = registry.tools.get("interview_generate_spec")!.handler;
+      const result = await genHandler({ interview_id: interviewId });
+
+      expect(isError(result)).toBe(false);
+      const text = getText(result);
+      expect(text).toContain("# Specification: SingleFlow");
+      expect(text).toContain("Decomposed Tasks (1)");
+      expect(text).toContain("1. Just one step");
+    });
+
+    it("generates spec with user_flow containing blank lines and bullet markers", async () => {
+      const startHandler = registry.tools.get("interview_start")!.handler;
+      const startResult = await startHandler({
+        project_name: "BulletFlow",
+        initial_description: "Bullet flow",
+      });
+      const idMatch = getText(startResult).match(/`([0-9a-f-]{36})`/);
+      const interviewId = idMatch![1]!;
+
+      const submitHandler = registry.tools.get("interview_submit")!.handler;
+      await submitHandler({
+        interview_id: interviewId,
+        answers: [
+          { question_id: "problem", answer: "Bullet problem" },
+          { question_id: "data", answer: "Bullet data" },
+          { question_id: "user_flow", answer: "- Step one\n\n* Step two\n3) Step three\n   " },
+          { question_id: "constraints", answer: "Keep it" },
+          { question_id: "failure", answer: "Handle it" },
+          { question_id: "verification", answer: "Test it" },
+          { question_id: "explainability", answer: "Explain it" },
+        ],
+      });
+
+      const genHandler = registry.tools.get("interview_generate_spec")!.handler;
+      const result = await genHandler({ interview_id: interviewId });
+
+      expect(isError(result)).toBe(false);
+      const text = getText(result);
+      expect(text).toContain("Decomposed Tasks (3)");
+      expect(text).toContain("1. Step one");
+      expect(text).toContain("2. Step two");
+      expect(text).toContain("3. Step three");
+    });
+
+    it("returns error listing all unanswered questions when none answered", async () => {
+      const startHandler = registry.tools.get("interview_start")!.handler;
+      const startResult = await startHandler({
+        project_name: "Empty",
+        initial_description: "No answers",
+      });
+      const idMatch = getText(startResult).match(/`([0-9a-f-]{36})`/);
+      const interviewId = idMatch![1]!;
+
+      const genHandler = registry.tools.get("interview_generate_spec")!.handler;
+      const result = await genHandler({ interview_id: interviewId });
+
+      expect(isError(result)).toBe(true);
+      const text = getText(result);
+      expect(text).toContain("incomplete");
+      expect(text).toContain("problem");
+      expect(text).toContain("data");
+      expect(text).toContain("user_flow");
+      expect(text).toContain("constraints");
+      expect(text).toContain("failure");
+      expect(text).toContain("verification");
+      expect(text).toContain("explainability");
+    });
+  });
+
   describe("full lifecycle", () => {
     it("start -> partial submit -> remaining submit -> generate spec", async () => {
       // Step 1: Start

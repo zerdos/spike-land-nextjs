@@ -63,6 +63,38 @@ describe("allocator tools", () => {
         }),
       );
     });
+
+    it("should handle null campaign fields with fallback values", async () => {
+      mockPrisma.allocatorAutopilotExecution.findMany.mockResolvedValue([
+        {
+          id: "exec2",
+          recommendationType: "PAUSE",
+          budgetChange: null,
+          executedAt: null,
+          campaign: null,
+        },
+      ]);
+      const handler = registry.handlers.get("allocator_get_recommendations")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      expect(getText(result)).toContain("Unknown");
+      expect(getText(result)).toContain("N/A");
+    });
+
+    it("should handle campaign with null name and platform", async () => {
+      mockPrisma.allocatorAutopilotExecution.findMany.mockResolvedValue([
+        {
+          id: "exec3",
+          recommendationType: "INCREASE_BUDGET",
+          budgetChange: 100,
+          executedAt: new Date("2024-07-01"),
+          campaign: { name: null, platform: null },
+        },
+      ]);
+      const handler = registry.handlers.get("allocator_get_recommendations")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      expect(getText(result)).toContain("Unknown");
+      expect(getText(result)).toContain("N/A");
+    });
   });
 
   describe("allocator_list_campaigns", () => {
@@ -106,6 +138,45 @@ describe("allocator tools", () => {
         }),
       );
     });
+
+    it("should show autopilot OFF when disabled", async () => {
+      mockPrisma.allocatorCampaign.findMany.mockResolvedValue([
+        {
+          id: "camp2",
+          name: "Disabled Pilot",
+          platform: "FACEBOOK_ADS",
+          status: "PAUSED",
+          budget: 500,
+          spend: 200,
+          autopilotConfig: [{ isEnabled: false, mode: "CONSERVATIVE" }],
+          _count: { adSets: 1 },
+        },
+      ]);
+      const handler = registry.handlers.get("allocator_list_campaigns")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      expect(getText(result)).toContain("OFF");
+      expect(getText(result)).toContain("CONSERVATIVE");
+    });
+
+    it("should show 'Not configured' when autopilotConfig is empty", async () => {
+      mockPrisma.allocatorCampaign.findMany.mockResolvedValue([
+        {
+          id: "camp3",
+          name: "No Config",
+          platform: "LINKEDIN_ADS",
+          status: "ACTIVE",
+          budget: null,
+          spend: null,
+          autopilotConfig: [],
+          _count: { adSets: 0 },
+        },
+      ]);
+      const handler = registry.handlers.get("allocator_list_campaigns")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      expect(getText(result)).toContain("Not configured");
+      expect(getText(result)).toContain("Budget: N/A");
+      expect(getText(result)).toContain("Spend: N/A");
+    });
   });
 
   describe("allocator_get_benchmarks", () => {
@@ -143,6 +214,26 @@ describe("allocator tools", () => {
       const result = await handler({ workspace_slug: "my-ws", campaign_id: "camp1" });
       expect(getText(result)).toContain("No metrics data available");
     });
+
+    it("should show N/A for missing standard metrics and display extra keys", async () => {
+      mockPrisma.allocatorCampaign.findFirst.mockResolvedValue({
+        id: "camp2",
+        name: "Partial Metrics",
+        platform: "GOOGLE_ADS",
+        metrics: { cpa: null, roas: 2.5, conversions: 150, impressions: 50000 },
+      });
+      const handler = registry.handlers.get("allocator_get_benchmarks")!;
+      const result = await handler({ workspace_slug: "my-ws", campaign_id: "camp2" });
+      const text = getText(result);
+      expect(text).toContain("Benchmarks for Partial Metrics");
+      expect(text).toContain("GOOGLE_ADS");
+      expect(text).toContain("| CPA | N/A |");
+      expect(text).toContain("| ROAS | 2.5 |");
+      expect(text).toContain("| CTR | N/A |");
+      expect(text).toContain("| CPM | N/A |");
+      expect(text).toContain("| conversions | 150 |");
+      expect(text).toContain("| impressions | 50000 |");
+    });
   });
 
   describe("allocator_execute_move", () => {
@@ -176,6 +267,25 @@ describe("allocator tools", () => {
       const handler = registry.handlers.get("allocator_execute_move")!;
       const result = await handler({ workspace_slug: "my-ws", execution_id: "bad-id", confirm: true });
       expect(getText(result)).toContain("NOT_FOUND");
+    });
+
+    it("should handle null campaign and null budgetChange in execution", async () => {
+      mockPrisma.allocatorAutopilotExecution.findFirst.mockResolvedValue({
+        id: "exec2",
+        recommendationType: "REALLOCATE",
+        budgetChange: null,
+        campaign: null,
+      });
+      mockPrisma.allocatorAutopilotExecution.update.mockResolvedValue({
+        id: "exec2",
+        status: "COMPLETED",
+      });
+      const handler = registry.handlers.get("allocator_execute_move")!;
+      const result = await handler({ workspace_slug: "my-ws", execution_id: "exec2", confirm: true });
+      const text = getText(result);
+      expect(text).toContain("Execution Completed");
+      expect(text).toContain("Unknown");
+      expect(text).toContain("**Budget Change:** N/A");
     });
   });
 
@@ -221,6 +331,45 @@ describe("allocator tools", () => {
       await handler({ workspace_slug: "my-ws", limit: 5 });
       expect(mockPrisma.allocatorAutopilotExecution.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ take: 5 }),
+      );
+    });
+
+    it("should filter audit log by campaign_id", async () => {
+      mockPrisma.allocatorAutopilotExecution.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("allocator_get_audit_log")!;
+      await handler({ workspace_slug: "my-ws", campaign_id: "camp1" });
+      expect(mockPrisma.allocatorAutopilotExecution.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ campaignId: "camp1" }),
+        }),
+      );
+    });
+
+    it("should handle null campaign name in audit entries", async () => {
+      mockPrisma.allocatorAutopilotExecution.findMany.mockResolvedValue([
+        {
+          id: "exec3",
+          recommendationType: "INCREASE_BUDGET",
+          status: "COMPLETED",
+          budgetChange: null,
+          executedAt: null,
+          campaign: null,
+        },
+      ]);
+      const handler = registry.handlers.get("allocator_get_audit_log")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("Unknown");
+      expect(text).toContain("Budget Change: N/A");
+      expect(text).toContain("At: N/A");
+    });
+
+    it("should use default limit when not specified", async () => {
+      mockPrisma.allocatorAutopilotExecution.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("allocator_get_audit_log")!;
+      await handler({ workspace_slug: "my-ws" });
+      expect(mockPrisma.allocatorAutopilotExecution.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ take: 20 }),
       );
     });
   });
@@ -273,6 +422,87 @@ describe("allocator tools", () => {
           where: {
             workspaceId_campaignId: { workspaceId: "ws1", campaignId: "camp1" },
           },
+        }),
+      );
+    });
+
+    it("should handle workspace-wide guardrails without campaign_id", async () => {
+      mockPrisma.allocatorAutopilotConfig.upsert.mockResolvedValue({
+        id: "cfg3",
+        maxDailyBudgetChange: 300,
+        maxSingleChange: null,
+        minRoasThreshold: null,
+        maxCpaThreshold: null,
+        pauseOnAnomaly: null,
+      });
+      const handler = registry.handlers.get("allocator_set_guardrails")!;
+      const result = await handler({
+        workspace_slug: "my-ws",
+        max_daily_budget_change: 300,
+      });
+      const text = getText(result);
+      expect(text).toContain("Guardrails Updated");
+      expect(text).toContain("Workspace-wide");
+      expect(mockPrisma.allocatorAutopilotConfig.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            workspaceId_campaignId: { workspaceId: "ws1", campaignId: "" },
+          },
+          create: expect.objectContaining({
+            campaignId: "",
+            maxDailyBudgetChange: 300,
+          }),
+        }),
+      );
+    });
+
+    it("should only include provided optional fields in data", async () => {
+      mockPrisma.allocatorAutopilotConfig.upsert.mockResolvedValue({
+        id: "cfg4",
+        maxDailyBudgetChange: null,
+        maxSingleChange: 75,
+        minRoasThreshold: null,
+        maxCpaThreshold: 30,
+        pauseOnAnomaly: null,
+      });
+      const handler = registry.handlers.get("allocator_set_guardrails")!;
+      const result = await handler({
+        workspace_slug: "my-ws",
+        max_single_change: 75,
+        max_cpa_threshold: 30,
+      });
+      const text = getText(result);
+      expect(text).toContain("Max Single Change | 75");
+      expect(text).toContain("Max CPA Threshold | 30");
+      expect(text).toContain("Max Daily Budget Change | N/A");
+      expect(text).toContain("Min ROAS Threshold | N/A");
+      expect(text).toContain("Pause on Anomaly | N/A");
+    });
+
+    it("should pass pause_on_anomaly when provided", async () => {
+      mockPrisma.allocatorAutopilotConfig.upsert.mockResolvedValue({
+        id: "cfg5",
+        maxDailyBudgetChange: null,
+        maxSingleChange: null,
+        minRoasThreshold: 1.5,
+        maxCpaThreshold: null,
+        pauseOnAnomaly: false,
+      });
+      const handler = registry.handlers.get("allocator_set_guardrails")!;
+      const result = await handler({
+        workspace_slug: "my-ws",
+        min_roas_threshold: 1.5,
+        pause_on_anomaly: false,
+      });
+      const text = getText(result);
+      expect(text).toContain("Min ROAS Threshold | 1.5");
+      expect(text).toContain("Pause on Anomaly | false");
+      expect(mockPrisma.allocatorAutopilotConfig.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: expect.objectContaining({
+            minRoasThreshold: 1.5,
+            pauseOnAnomaly: false,
+          }),
         }),
       );
     });

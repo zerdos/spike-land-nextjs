@@ -75,6 +75,28 @@ describe("workflows tools", () => {
       expect(text).toContain("Invalid JSON");
     });
 
+    it("should create workflow with optional description", async () => {
+      mockPrisma.workflow.create.mockResolvedValue({ id: "wf-d", name: "Described" });
+      mockPrisma.workflowVersion.create.mockResolvedValue({ id: "ver-d", version: 1 });
+
+      const handler = registry.handlers.get("workflow_create")!;
+      const result = await handler({
+        workspace_slug: "my-ws",
+        name: "Described",
+        description: "A workflow with a description",
+        trigger_type: "webhook",
+        steps: "[]",
+      });
+      const text = getText(result);
+      expect(text).toContain("Workflow Created");
+      expect(text).toContain("Described");
+      expect(mockPrisma.workflow.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ description: "A workflow with a description" }),
+        }),
+      );
+    });
+
     it("should create workflow with empty steps array", async () => {
       mockPrisma.workflow.create.mockResolvedValue({ id: "wf-2", name: "Empty" });
       mockPrisma.workflowVersion.create.mockResolvedValue({ id: "ver-2", version: 1 });
@@ -169,6 +191,23 @@ describe("workflows tools", () => {
       expect(text).toContain("Log entries:** 2");
     });
 
+    it("should show endedAt when run has completed", async () => {
+      mockPrisma.workflowRun.findFirst.mockResolvedValue({
+        id: "run-done",
+        status: "COMPLETED",
+        workflow: { name: "Finished Flow" },
+        logs: [],
+        startedAt: new Date("2025-06-01T10:00:00Z"),
+        endedAt: new Date("2025-06-01T10:05:00Z"),
+      });
+
+      const handler = registry.handlers.get("workflow_get_status")!;
+      const result = await handler({ workspace_slug: "my-ws", run_id: "run-done" });
+      const text = getText(result);
+      expect(text).toContain("COMPLETED");
+      expect(text).toContain("Ended:** 2025-06-01T10:05:00.000Z");
+    });
+
     it("should return error for missing run", async () => {
       mockPrisma.workflowRun.findFirst.mockResolvedValue(null);
 
@@ -209,6 +248,46 @@ describe("workflows tools", () => {
       expect(text).toContain("Runs: 10");
       expect(text).toContain("Weekly Report");
       expect(text).toContain("Runs: 52");
+    });
+
+    it("should fallback to version 1 when no versions exist", async () => {
+      mockPrisma.workflow.findMany.mockResolvedValue([
+        {
+          id: "wf-no-ver",
+          name: "No Version Workflow",
+          status: "DRAFT",
+          _count: { runs: 0 },
+          versions: [],
+          updatedAt: new Date("2025-06-01"),
+        },
+      ]);
+
+      const handler = registry.handlers.get("workflow_list")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("No Version Workflow");
+      expect(text).toContain("v1");
+    });
+
+    it("should respect explicit limit parameter", async () => {
+      mockPrisma.workflow.findMany.mockResolvedValue([
+        {
+          id: "wf-lim",
+          name: "Limited",
+          status: "ACTIVE",
+          _count: { runs: 1 },
+          versions: [{ version: 1 }],
+          updatedAt: new Date("2025-06-01"),
+        },
+      ]);
+
+      const handler = registry.handlers.get("workflow_list")!;
+      const result = await handler({ workspace_slug: "my-ws", limit: 5 });
+      const text = getText(result);
+      expect(text).toContain("Limited");
+      expect(mockPrisma.workflow.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ take: 5 }),
+      );
     });
 
     it("should handle no workflows", async () => {
@@ -284,6 +363,53 @@ describe("workflows tools", () => {
       const result = await handler({ workspace_slug: "my-ws", run_id: "bad-id" });
       const text = getText(result);
       expect(text).toContain("NOT_FOUND");
+    });
+
+    it("should display metadata when present in log entries", async () => {
+      mockPrisma.workflowRun.findFirst.mockResolvedValue({
+        id: "run-meta",
+        status: "COMPLETED",
+        workflow: { name: "Meta Flow" },
+        logs: [
+          {
+            stepId: "s-1",
+            stepStatus: "COMPLETED",
+            message: "Processed batch",
+            metadata: { count: 42, source: "api" },
+            timestamp: new Date("2025-06-01T10:00:00Z"),
+          },
+        ],
+      });
+
+      const handler = registry.handlers.get("workflow_get_logs")!;
+      const result = await handler({ workspace_slug: "my-ws", run_id: "run-meta" });
+      const text = getText(result);
+      expect(text).toContain("Processed batch");
+      expect(text).toContain("Metadata:");
+      expect(text).toContain('"count":42');
+    });
+
+    it("should show N/A for null stepId and stepStatus", async () => {
+      mockPrisma.workflowRun.findFirst.mockResolvedValue({
+        id: "run-null",
+        status: "RUNNING",
+        workflow: { name: "Null Fields Flow" },
+        logs: [
+          {
+            stepId: null,
+            stepStatus: null,
+            message: "Workflow started",
+            metadata: null,
+            timestamp: new Date("2025-06-01T10:00:00Z"),
+          },
+        ],
+      });
+
+      const handler = registry.handlers.get("workflow_get_logs")!;
+      const result = await handler({ workspace_slug: "my-ws", run_id: "run-null" });
+      const text = getText(result);
+      expect(text).toContain("Workflow started");
+      expect(text).toContain("Step: N/A | Status: N/A");
     });
 
     it("should handle run with no log entries", async () => {

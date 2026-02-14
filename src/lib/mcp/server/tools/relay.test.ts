@@ -94,6 +94,26 @@ describe("relay tools", () => {
       expect(text).toContain("Count:** 3");
       expect(mockPrisma.relayDraft.create).toHaveBeenCalledTimes(3);
     });
+
+    it("should omit tone from output when not provided", async () => {
+      mockPrisma.inboxItem.findFirst.mockResolvedValue({ id: "item-1" });
+      mockPrisma.relayDraft.create.mockResolvedValue({ id: "draft-no-tone" });
+
+      const handler = registry.handlers.get("relay_generate_drafts")!;
+      const result = await handler({
+        workspace_slug: "my-ws",
+        inbox_item_id: "item-1",
+        count: 1,
+      });
+      const text = getText(result);
+      expect(text).toContain("Drafts Created");
+      expect(text).not.toContain("**Tone:**");
+      expect(mockPrisma.relayDraft.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ metadata: {} }),
+        }),
+      );
+    });
   });
 
   describe("relay_approve_draft", () => {
@@ -162,6 +182,29 @@ describe("relay tools", () => {
       );
     });
 
+    it("should reject a draft without reason", async () => {
+      mockPrisma.relayDraft.findFirst.mockResolvedValue({ id: "draft-2", status: "PENDING" });
+      mockPrisma.relayDraft.update.mockResolvedValue({ id: "draft-2", status: "REJECTED" });
+
+      const handler = registry.handlers.get("relay_reject_draft")!;
+      const result = await handler({
+        workspace_slug: "my-ws",
+        draft_id: "draft-2",
+      });
+      const text = getText(result);
+      expect(text).toContain("Draft Rejected");
+      expect(text).toContain("REJECTED");
+      expect(text).not.toContain("**Reason:**");
+      expect(mockPrisma.relayDraft.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: "REJECTED",
+            reason: null,
+          }),
+        }),
+      );
+    });
+
     it("should return NOT_FOUND for missing draft", async () => {
       mockPrisma.relayDraft.findFirst.mockResolvedValue(null);
 
@@ -201,6 +244,40 @@ describe("relay tools", () => {
       const result = await handler({ workspace_slug: "my-ws" });
       const text = getText(result);
       expect(text).toContain("No inbox items found");
+    });
+
+    it("should handle empty drafts array with 0% approval rate", async () => {
+      mockPrisma.inboxItem.findMany.mockResolvedValue([{ id: "item-1" }]);
+      mockPrisma.relayDraft.groupBy.mockResolvedValue([]);
+
+      const handler = registry.handlers.get("relay_get_metrics")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("Total Drafts:** 0");
+      expect(text).toContain("Approval Rate:** 0.0%");
+    });
+
+    it("should handle group with missing _count", async () => {
+      mockPrisma.inboxItem.findMany.mockResolvedValue([{ id: "item-1" }]);
+      mockPrisma.relayDraft.groupBy.mockResolvedValue([
+        { status: "PENDING", _count: undefined },
+      ]);
+
+      const handler = registry.handlers.get("relay_get_metrics")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("PENDING");
+      expect(text).toContain("Total Drafts:** 0");
+    });
+
+    it("should use default 30 days", async () => {
+      mockPrisma.inboxItem.findMany.mockResolvedValue([{ id: "item-1" }]);
+      mockPrisma.relayDraft.groupBy.mockResolvedValue([]);
+
+      const handler = registry.handlers.get("relay_get_metrics")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("Relay Metrics (30 days)");
     });
   });
 
@@ -243,6 +320,94 @@ describe("relay tools", () => {
       const result = await handler({ workspace_slug: "my-ws" });
       const text = getText(result);
       expect(text).toContain("No inbox items found");
+    });
+
+    it("should truncate content longer than 80 characters", async () => {
+      const longContent = "A".repeat(100);
+      mockPrisma.inboxItem.findMany.mockResolvedValue([{ id: "item-1" }]);
+      mockPrisma.relayDraft.findMany.mockResolvedValue([
+        {
+          id: "draft-long",
+          content: longContent,
+          createdAt: new Date("2025-06-01"),
+          inboxItem: { senderName: "Bob", content: "Original" },
+        },
+      ]);
+
+      const handler = registry.handlers.get("relay_list_pending")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("A".repeat(80) + "...");
+      expect(text).not.toContain("A".repeat(100));
+    });
+
+    it("should show 'Unknown' for missing sender name", async () => {
+      mockPrisma.inboxItem.findMany.mockResolvedValue([{ id: "item-1" }]);
+      mockPrisma.relayDraft.findMany.mockResolvedValue([
+        {
+          id: "draft-no-sender",
+          content: "Some reply",
+          createdAt: new Date("2025-06-01"),
+          inboxItem: { senderName: null, content: "Hello" },
+        },
+      ]);
+
+      const handler = registry.handlers.get("relay_list_pending")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("From: Unknown");
+    });
+
+    it("should handle non-Date createdAt as string", async () => {
+      mockPrisma.inboxItem.findMany.mockResolvedValue([{ id: "item-1" }]);
+      mockPrisma.relayDraft.findMany.mockResolvedValue([
+        {
+          id: "draft-str-date",
+          content: "A reply",
+          createdAt: "2025-06-01T00:00:00Z",
+          inboxItem: { senderName: "Charlie", content: "Hey" },
+        },
+      ]);
+
+      const handler = registry.handlers.get("relay_list_pending")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("2025-06-01T00:00:00Z");
+    });
+
+    it("should handle draft with null inboxItem", async () => {
+      mockPrisma.inboxItem.findMany.mockResolvedValue([{ id: "item-1" }]);
+      mockPrisma.relayDraft.findMany.mockResolvedValue([
+        {
+          id: "draft-no-inbox",
+          content: "Orphan draft",
+          createdAt: new Date("2025-06-01"),
+          inboxItem: undefined,
+        },
+      ]);
+
+      const handler = registry.handlers.get("relay_list_pending")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("From: Unknown");
+    });
+
+    it("should handle draft with empty content", async () => {
+      mockPrisma.inboxItem.findMany.mockResolvedValue([{ id: "item-1" }]);
+      mockPrisma.relayDraft.findMany.mockResolvedValue([
+        {
+          id: "draft-empty",
+          content: "",
+          createdAt: new Date("2025-06-01"),
+          inboxItem: { senderName: "Dave", content: "Hi" },
+        },
+      ]);
+
+      const handler = registry.handlers.get("relay_list_pending")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("draft-empty");
+      expect(text).toContain("Dave");
     });
   });
 });

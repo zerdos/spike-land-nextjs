@@ -246,6 +246,69 @@ describe("dashboard tools", () => {
     });
   });
 
+  describe("dash_health - edge cases", () => {
+    it("should report DEGRADED when database latency > 3000ms", async () => {
+      mockPrisma.$queryRaw.mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 3100));
+        return [{ "?column?": 1 }];
+      });
+      mockRedis.ping.mockResolvedValue("PONG");
+
+      const handler = registry.handlers.get("dash_health")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("DEGRADED");
+    }, 10000);
+
+    it("should report DEGRADED when Redis latency > 3000ms", async () => {
+      mockPrisma.$queryRaw.mockResolvedValue([{ "?column?": 1 }]);
+      mockRedis.ping.mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 3100));
+        return "PONG";
+      });
+
+      const handler = registry.handlers.get("dash_health")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("DEGRADED");
+    }, 10000);
+  });
+
+  describe("dash_activity_feed - edge cases", () => {
+    it("should skip agents with null lastSeenAt in activity feed", async () => {
+      mockPrisma.claudeCodeAgent.findMany.mockResolvedValue([
+        { id: "a1", displayName: "Idle-Agent", lastSeenAt: null },
+      ]);
+      mockPrisma.mcpGenerationJob.findMany.mockResolvedValue([
+        { id: "j1", type: "BUILD", status: "PENDING", createdAt: new Date() },
+      ]);
+      const handler = registry.handlers.get("dash_activity_feed")!;
+      const result = await handler({});
+      const text = getText(result);
+      // Agent with null lastSeenAt should be skipped
+      expect(text).not.toContain("Idle-Agent");
+      expect(text).toContain("[job]");
+    });
+  });
+
+  describe("dash_widget_data - edge cases", () => {
+    it("should display 'never' for agent with null lastSeenAt", async () => {
+      mockPrisma.claudeCodeAgent.findMany.mockResolvedValue([
+        { id: "a1", displayName: "New-Agent", lastSeenAt: null },
+      ]);
+      const handler = registry.handlers.get("dash_widget_data")!;
+      const result = await handler({ widget_id: "agents" });
+      const text = getText(result);
+      expect(text).toContain("New-Agent");
+      expect(text).toContain("never");
+    });
+
+    it("should return empty deployments with empty array", async () => {
+      mockListVercelDeployments.mockResolvedValue([]);
+      const handler = registry.handlers.get("dash_widget_data")!;
+      const result = await handler({ widget_id: "deployments" });
+      expect(getText(result)).toContain("No recent deployments");
+    });
+  });
+
   describe("requireAdminRole", () => {
     it("should deny access when user has USER role", async () => {
       mockPrisma.user.findUnique.mockResolvedValue({ role: "USER" });

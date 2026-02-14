@@ -91,6 +91,27 @@ describe("calendar tools", () => {
       const text = getText(result);
       expect(text).toContain("...");
     });
+
+    it("should not truncate short content (<=100 chars)", async () => {
+      const shortContent = "Short post";
+      mockPrisma.socialPost.create.mockResolvedValue({
+        id: "post-3",
+        content: shortContent,
+        status: "SCHEDULED",
+        scheduledAt: new Date("2025-07-01"),
+      });
+      mockPrisma.scheduledPostAccount.createMany.mockResolvedValue({ count: 1 });
+      const handler = registry.handlers.get("calendar_schedule_post")!;
+      const result = await handler({
+        workspace_slug: "acme",
+        content: shortContent,
+        account_ids: ["acc-1"],
+        scheduled_at: "2025-07-01T10:00:00Z",
+      });
+      const text = getText(result);
+      expect(text).toContain("Short post");
+      expect(text).not.toContain("...");
+    });
   });
 
   describe("calendar_list_scheduled", () => {
@@ -136,6 +157,95 @@ describe("calendar tools", () => {
           }),
         }),
       );
+    });
+
+    it("should handle from_date only filter", async () => {
+      mockPrisma.scheduledPost.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("calendar_list_scheduled")!;
+      await handler({
+        workspace_slug: "acme",
+        from_date: "2025-07-01",
+      });
+      const call = mockPrisma.scheduledPost.findMany.mock.calls[0]![0];
+      expect(call.where.scheduledAt).toEqual({ gte: expect.objectContaining({}) });
+      expect(call.where.scheduledAt).not.toHaveProperty("lte");
+    });
+
+    it("should handle to_date only filter", async () => {
+      mockPrisma.scheduledPost.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("calendar_list_scheduled")!;
+      await handler({
+        workspace_slug: "acme",
+        to_date: "2025-07-31",
+      });
+      const call = mockPrisma.scheduledPost.findMany.mock.calls[0]![0];
+      expect(call.where.scheduledAt).toEqual({ lte: expect.objectContaining({}) });
+      expect(call.where.scheduledAt).not.toHaveProperty("gte");
+    });
+
+    it("should handle posts with null content, non-Date scheduledAt, and null status", async () => {
+      mockPrisma.scheduledPost.findMany.mockResolvedValue([
+        {
+          id: "sp-null",
+          content: null,
+          scheduledAt: "2025-07-01T10:00:00Z",
+          status: null,
+        },
+      ]);
+      const handler = registry.handlers.get("calendar_list_scheduled")!;
+      const result = await handler({ workspace_slug: "acme" });
+      const text = getText(result);
+      expect(text).toContain("sp-null");
+      expect(text).toContain("2025-07-01T10:00:00Z");
+      expect(text).toContain("SCHEDULED");
+    });
+
+    it("should handle post with null scheduledAt", async () => {
+      mockPrisma.scheduledPost.findMany.mockResolvedValue([
+        {
+          id: "sp-nodate",
+          content: "Some content",
+          scheduledAt: null,
+          status: "SCHEDULED",
+        },
+      ]);
+      const handler = registry.handlers.get("calendar_list_scheduled")!;
+      const result = await handler({ workspace_slug: "acme" });
+      const text = getText(result);
+      expect(text).toContain("N/A");
+      expect(text).toContain("sp-nodate");
+    });
+
+    it("should not truncate short content (<=80 chars) in list view", async () => {
+      mockPrisma.scheduledPost.findMany.mockResolvedValue([
+        {
+          id: "sp-short",
+          content: "Brief post",
+          scheduledAt: new Date("2025-07-01T10:00:00Z"),
+          status: "SCHEDULED",
+        },
+      ]);
+      const handler = registry.handlers.get("calendar_list_scheduled")!;
+      const result = await handler({ workspace_slug: "acme" });
+      const text = getText(result);
+      expect(text).toContain("Brief post");
+      expect(text).not.toContain("...");
+    });
+
+    it("should truncate long content (>80 chars) in list view", async () => {
+      const longContent = "B".repeat(100);
+      mockPrisma.scheduledPost.findMany.mockResolvedValue([
+        {
+          id: "sp-long",
+          content: longContent,
+          scheduledAt: new Date("2025-07-01T10:00:00Z"),
+          status: "SCHEDULED",
+        },
+      ]);
+      const handler = registry.handlers.get("calendar_list_scheduled")!;
+      const result = await handler({ workspace_slug: "acme" });
+      const text = getText(result);
+      expect(text).toContain("...");
     });
   });
 
@@ -190,6 +300,17 @@ describe("calendar tools", () => {
       const result = await handler({ workspace_slug: "acme", account_id: "acc-1" });
       expect(getText(result)).toContain("No posting time recommendations");
     });
+
+    it("should handle recommendations with null fields", async () => {
+      mockPrisma.postingTimeRecommendation.findMany.mockResolvedValue([
+        { day: null, hour: null, score: null, reason: null },
+      ]);
+      const handler = registry.handlers.get("calendar_get_best_times")!;
+      const result = await handler({ workspace_slug: "acme", account_id: "acc-1" });
+      const text = getText(result);
+      expect(text).toContain("N/A");
+      expect(text).toContain("0");
+    });
   });
 
   describe("calendar_detect_gaps", () => {
@@ -214,6 +335,18 @@ describe("calendar tools", () => {
       const handler = registry.handlers.get("calendar_detect_gaps")!;
       const result = await handler({ workspace_slug: "acme", days_ahead: 7 });
       expect(getText(result)).toContain("No gaps found");
+    });
+
+    it("should skip posts with non-Date scheduledAt (treat as gaps)", async () => {
+      mockPrisma.scheduledPost.findMany.mockResolvedValue([
+        { scheduledAt: "2025-07-01T10:00:00Z", status: "SCHEDULED" },
+        { scheduledAt: null, status: "SCHEDULED" },
+      ]);
+      const handler = registry.handlers.get("calendar_detect_gaps")!;
+      const result = await handler({ workspace_slug: "acme", days_ahead: 3 });
+      const text = getText(result);
+      expect(text).toContain("gap(s)");
+      expect(text).toContain("No content scheduled");
     });
   });
 });

@@ -93,7 +93,22 @@ describe("merch tools", () => {
       const result = await handler({ workspace_slug: "my-ws", variant_id: "var-1" });
       const text = getText(result);
       expect(text).toContain("Cart Updated");
+      expect(text).toContain("qty: 1");
       expect(mockPrisma.merchCart.create).toHaveBeenCalled();
+    });
+
+    it("should fallback to 0 items when updatedCart is null", async () => {
+      mockPrisma.merchVariant.findFirst.mockResolvedValue({ id: "var-1", productId: "prod-1" });
+      mockPrisma.merchCart.findUnique
+        .mockResolvedValueOnce({ id: "cart-1", _count: { items: 1 } })
+        .mockResolvedValueOnce(null);
+      mockPrisma.merchCartItem.create.mockResolvedValue({ id: "ci-1" });
+
+      const handler = registry.handlers.get("merch_add_to_cart")!;
+      const result = await handler({ workspace_slug: "my-ws", variant_id: "var-1", quantity: 1 });
+      const text = getText(result);
+      expect(text).toContain("Cart Updated");
+      expect(text).toContain("Total items:** 0");
     });
 
     it("should return error for missing variant", async () => {
@@ -175,6 +190,68 @@ describe("merch tools", () => {
       const text = getText(result);
       expect(text).toContain("NOT_FOUND");
     });
+
+    it("should display 'default' when variantName is null", async () => {
+      mockPrisma.merchOrder.findFirst.mockResolvedValue({
+        id: "order-2",
+        orderNumber: "ORD-456",
+        status: "PENDING",
+        totalAmount: 30,
+        shippingAddress: { address: "789 Elm St" },
+        createdAt: new Date("2025-07-01"),
+        items: [{ id: "oi-2", productName: "Sticker Pack", variantName: null, quantity: 1 }],
+        shipments: [],
+      });
+
+      const handler = registry.handlers.get("merch_get_order")!;
+      const result = await handler({ workspace_slug: "my-ws", order_id: "order-2" });
+      const text = getText(result);
+      expect(text).toContain("Sticker Pack");
+      expect(text).toContain("(default)");
+      expect(text).not.toContain("Shipments");
+    });
+
+    it("should handle order with empty items and empty shipments", async () => {
+      mockPrisma.merchOrder.findFirst.mockResolvedValue({
+        id: "order-3",
+        orderNumber: "ORD-789",
+        status: "PENDING",
+        totalAmount: 0,
+        shippingAddress: { address: "100 Pine St" },
+        createdAt: new Date("2025-08-01"),
+        items: [],
+        shipments: [],
+      });
+
+      const handler = registry.handlers.get("merch_get_order")!;
+      const result = await handler({ workspace_slug: "my-ws", order_id: "order-3" });
+      const text = getText(result);
+      expect(text).toContain("Order Details");
+      expect(text).toContain("ORD-789");
+      expect(text).not.toContain("Items (");
+      expect(text).not.toContain("Shipments (");
+    });
+
+    it("should display N/A for null trackingNumber and carrier in shipments", async () => {
+      mockPrisma.merchOrder.findFirst.mockResolvedValue({
+        id: "order-4",
+        orderNumber: "ORD-999",
+        status: "PROCESSING",
+        totalAmount: 40,
+        shippingAddress: { address: "200 Birch Rd" },
+        createdAt: new Date("2025-09-01"),
+        items: [],
+        shipments: [{ trackingNumber: null, carrier: null, status: "LABEL_CREATED" }],
+      });
+
+      const handler = registry.handlers.get("merch_get_order")!;
+      const result = await handler({ workspace_slug: "my-ws", order_id: "order-4" });
+      const text = getText(result);
+      expect(text).toContain("Shipments (1)");
+      expect(text).toContain("Tracking: N/A");
+      expect(text).toContain("Carrier: N/A");
+      expect(text).toContain("LABEL_CREATED");
+    });
   });
 
   describe("merch_track_shipment", () => {
@@ -205,6 +282,44 @@ describe("merch tools", () => {
       const text = getText(result);
       expect(text).toContain("NOT_FOUND");
       expect(text).toContain("Shipment not found");
+    });
+
+    it("should display N/A for null trackingNumber and carrier", async () => {
+      mockPrisma.merchShipment.findFirst.mockResolvedValue({
+        trackingNumber: null,
+        carrier: null,
+        status: "LABEL_CREATED",
+        shippedAt: null,
+        deliveredAt: null,
+      });
+
+      const handler = registry.handlers.get("merch_track_shipment")!;
+      const result = await handler({ workspace_slug: "my-ws", order_id: "order-1" });
+      const text = getText(result);
+      expect(text).toContain("Shipment Tracking");
+      expect(text).toContain("Tracking Number:** N/A");
+      expect(text).toContain("Carrier:** N/A");
+      expect(text).toContain("LABEL_CREATED");
+      expect(text).not.toContain("Shipped At");
+      expect(text).not.toContain("Delivered At");
+    });
+
+    it("should show shippedAt but not deliveredAt when only shipped", async () => {
+      mockPrisma.merchShipment.findFirst.mockResolvedValue({
+        trackingNumber: "TRK789",
+        carrier: "DHL",
+        status: "IN_TRANSIT",
+        shippedAt: new Date("2025-07-10"),
+        deliveredAt: null,
+      });
+
+      const handler = registry.handlers.get("merch_track_shipment")!;
+      const result = await handler({ workspace_slug: "my-ws", order_id: "order-1" });
+      const text = getText(result);
+      expect(text).toContain("TRK789");
+      expect(text).toContain("DHL");
+      expect(text).toContain("Shipped At");
+      expect(text).not.toContain("Delivered At");
     });
   });
 });

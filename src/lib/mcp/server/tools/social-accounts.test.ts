@@ -84,6 +84,53 @@ describe("social-accounts tools", () => {
         }),
       );
     });
+
+    it("should filter by status", async () => {
+      mockPrisma.socialAccount.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("social_list_accounts")!;
+      await handler({ workspace_slug: "my-ws", status: "DISCONNECTED" });
+      expect(mockPrisma.socialAccount.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ status: "DISCONNECTED" }),
+        }),
+      );
+    });
+
+    it("should show health info for accounts with health and omit for those without", async () => {
+      mockPrisma.socialAccount.findMany.mockResolvedValue([
+        {
+          id: "acc-1",
+          platform: "INSTAGRAM",
+          accountId: "ig-123",
+          accountName: "WithHealth",
+          status: "ACTIVE",
+          connectedAt: new Date("2025-06-01"),
+          metadata: null,
+          health: { healthScore: 80, status: "GOOD" },
+        },
+        {
+          id: "acc-2",
+          platform: "TWITTER",
+          accountId: "tw-456",
+          accountName: "NoHealth",
+          status: "ACTIVE",
+          connectedAt: new Date("2025-06-15"),
+          metadata: null,
+          health: null,
+        },
+      ]);
+      const handler = registry.handlers.get("social_list_accounts")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("WithHealth");
+      expect(text).toContain("80/100");
+      expect(text).toContain("GOOD");
+      expect(text).toContain("NoHealth");
+      // NoHealth account should not have health info
+      const lines = text.split("\n");
+      const noHealthLine = lines.find((l: string) => l.includes("NoHealth"));
+      expect(noHealthLine).not.toContain("Health:");
+    });
   });
 
   describe("social_get_account", () => {
@@ -112,6 +159,30 @@ describe("social-accounts tools", () => {
       expect(text).toContain("12");
     });
 
+    it("should return account details without health data", async () => {
+      mockPrisma.socialAccount.findFirst.mockResolvedValue({
+        id: "acc-2",
+        platform: "TWITTER",
+        accountId: "tw-456",
+        accountName: "NoHealthBrand",
+        status: "ACTIVE",
+        connectedAt: new Date("2025-06-01"),
+        metadata: null,
+        health: null,
+        metrics: [],
+        _count: { postAccounts: 3 },
+      });
+      const handler = registry.handlers.get("social_get_account")!;
+      const result = await handler({ workspace_slug: "my-ws", account_id: "acc-2" });
+      const text = getText(result);
+      expect(text).toContain("Social Account Details");
+      expect(text).toContain("NoHealthBrand");
+      expect(text).toContain("TWITTER");
+      expect(text).toContain("3");
+      expect(text).not.toContain("Health:");
+      expect(text).not.toContain("Recent Metrics");
+    });
+
     it("should return NOT_FOUND for missing account", async () => {
       mockPrisma.socialAccount.findFirst.mockResolvedValue(null);
       const handler = registry.handlers.get("social_get_account")!;
@@ -138,6 +209,25 @@ describe("social-accounts tools", () => {
       expect(mockPrisma.socialPostAccount.create).toHaveBeenCalledTimes(2);
     });
 
+    it("should create a draft post without scheduled_at in output", async () => {
+      mockPrisma.socialPost.create.mockResolvedValue({ id: "post-3", status: "DRAFT" });
+      mockPrisma.socialPostAccount.create.mockResolvedValue({ id: "pa-3" });
+      const handler = registry.handlers.get("social_publish_post")!;
+      const result = await handler({
+        workspace_slug: "my-ws",
+        account_ids: ["acc-1"],
+        content: "Draft only",
+      });
+      const text = getText(result);
+      expect(text).toContain("DRAFT");
+      expect(text).not.toContain("Scheduled At");
+      expect(mockPrisma.socialPost.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: "DRAFT", content: "Draft only" }),
+        }),
+      );
+    });
+
     it("should create a scheduled post", async () => {
       mockPrisma.socialPost.create.mockResolvedValue({ id: "post-2", status: "SCHEDULED" });
       mockPrisma.socialPostAccount.create.mockResolvedValue({ id: "pa-2" });
@@ -152,6 +242,14 @@ describe("social-accounts tools", () => {
       expect(text).toContain("Post Created");
       expect(text).toContain("SCHEDULED");
       expect(text).toContain("2025-12-01T10:00:00Z");
+      expect(mockPrisma.socialPost.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: "SCHEDULED",
+            scheduledAt: expect.any(Date),
+          }),
+        }),
+      );
     });
   });
 
@@ -183,6 +281,94 @@ describe("social-accounts tools", () => {
       expect(text).toContain("MyBrand");
     });
 
+    it("should show scheduled date when scheduledAt is present", async () => {
+      mockPrisma.socialPost.findFirst.mockResolvedValue({
+        id: "post-sched",
+        content: "Scheduled content",
+        status: "SCHEDULED",
+        scheduledAt: new Date("2025-12-01T10:00:00Z"),
+        publishedAt: null,
+        likes: null,
+        comments: null,
+        shares: null,
+        impressions: null,
+        reach: null,
+        engagementRate: null,
+        createdAt: new Date("2025-06-30"),
+        postAccounts: [],
+      });
+      const handler = registry.handlers.get("social_get_post")!;
+      const result = await handler({ workspace_slug: "my-ws", post_id: "post-sched" });
+      const text = getText(result);
+      expect(text).toContain("Scheduled:");
+      expect(text).not.toContain("Published:");
+      expect(text).not.toContain("Metrics:");
+      expect(text).not.toContain("Linked Accounts");
+    });
+
+    it("should show metrics with null engagement rate and null fallbacks", async () => {
+      mockPrisma.socialPost.findFirst.mockResolvedValue({
+        id: "post-partial",
+        content: "Partial metrics",
+        status: "PUBLISHED",
+        scheduledAt: null,
+        publishedAt: new Date("2025-07-10"),
+        likes: 10,
+        comments: null,
+        shares: null,
+        impressions: null,
+        reach: null,
+        engagementRate: null,
+        createdAt: new Date("2025-07-09"),
+        postAccounts: [
+          { id: "pa-1", status: "PUBLISHED", publishedAt: new Date("2025-07-10"), account: { platform: "FACEBOOK", accountName: "FBPage" } },
+        ],
+      });
+      const handler = registry.handlers.get("social_get_post")!;
+      const result = await handler({ workspace_slug: "my-ws", post_id: "post-partial" });
+      const text = getText(result);
+      expect(text).toContain("Published:");
+      expect(text).not.toContain("Scheduled:");
+      // Metrics section should appear since likes is not null
+      expect(text).toContain("Metrics:");
+      expect(text).toContain("Likes: 10");
+      expect(text).toContain("Comments: 0");
+      expect(text).toContain("Shares: 0");
+      expect(text).toContain("Impressions: 0");
+      expect(text).toContain("Reach: 0");
+      // engagementRate is null, should NOT show engagement rate line
+      expect(text).not.toContain("Engagement Rate:");
+      // Linked accounts present
+      expect(text).toContain("Linked Accounts");
+      expect(text).toContain("FBPage");
+    });
+
+    it("should show metrics when only impressions is non-null", async () => {
+      mockPrisma.socialPost.findFirst.mockResolvedValue({
+        id: "post-imp",
+        content: "Impressions only",
+        status: "PUBLISHED",
+        scheduledAt: null,
+        publishedAt: null,
+        likes: null,
+        comments: null,
+        shares: null,
+        impressions: 500,
+        reach: null,
+        engagementRate: 0.03,
+        createdAt: new Date("2025-07-09"),
+        postAccounts: [],
+      });
+      const handler = registry.handlers.get("social_get_post")!;
+      const result = await handler({ workspace_slug: "my-ws", post_id: "post-imp" });
+      const text = getText(result);
+      // impressions is not null, so metrics section should show
+      expect(text).toContain("Metrics:");
+      expect(text).toContain("Likes: 0");
+      expect(text).toContain("Impressions: 500");
+      expect(text).toContain("Engagement Rate: 0.03");
+    });
+
     it("should return NOT_FOUND for missing post", async () => {
       mockPrisma.socialPost.findFirst.mockResolvedValue(null);
       const handler = registry.handlers.get("social_get_post")!;
@@ -207,6 +393,15 @@ describe("social-accounts tools", () => {
       const result = await handler({ workspace_slug: "my-ws", post_id: "post-1", confirm: false });
       const text = getText(result);
       expect(text).toContain("CONFIRMATION_REQUIRED");
+      expect(mockPrisma.socialPost.delete).not.toHaveBeenCalled();
+    });
+
+    it("should return NOT_FOUND when post does not exist", async () => {
+      mockPrisma.socialPost.findFirst.mockResolvedValue(null);
+      const handler = registry.handlers.get("social_delete_post")!;
+      const result = await handler({ workspace_slug: "my-ws", post_id: "nonexistent", confirm: true });
+      const text = getText(result);
+      expect(text).toContain("NOT_FOUND");
       expect(mockPrisma.socialPost.delete).not.toHaveBeenCalled();
     });
   });

@@ -124,6 +124,48 @@ describe("career tools", () => {
       const result = await handler({ skills: sampleSkills, limit: 1 });
       expect(getText(result)).toContain("1 matches");
     });
+
+    it("should return empty when all occupation fetches fail", async () => {
+      mockSearchOccupations.mockResolvedValue({ results: [sampleSearchResult], total: 1 });
+      mockGetOccupation.mockRejectedValue(new Error("API error"));
+      const handler = registry.handlers.get("career_assess_skills")!;
+      const result = await handler({ skills: sampleSkills });
+      expect(getText(result)).toContain("No matching occupations found");
+    });
+
+    it("should omit key gaps when no high-priority gaps exist", async () => {
+      const noHighGapsResult = {
+        ...sampleMatchResult,
+        gaps: [
+          { skill: sampleOccupation.skills[1], userProficiency: 2, requiredLevel: 3, gap: 1, priority: "low" as const },
+        ],
+      };
+      mockSearchOccupations.mockResolvedValue({ results: [sampleSearchResult], total: 1 });
+      mockGetOccupation.mockResolvedValue(sampleOccupation);
+      mockAssessSkills.mockReturnValue([noHighGapsResult]);
+      const handler = registry.handlers.get("career_assess_skills")!;
+      const result = await handler({ skills: sampleSkills });
+      expect(getText(result)).not.toContain("Key gaps");
+    });
+
+    it("should deduplicate occupation URIs across search results", async () => {
+      const skills6 = [
+        { uri: "s1", title: "JavaScript", proficiency: 4 },
+        { uri: "s2", title: "TypeScript", proficiency: 3 },
+        { uri: "s3", title: "Python", proficiency: 3 },
+        { uri: "s4", title: "Go", proficiency: 2 },
+        { uri: "s5", title: "Rust", proficiency: 2 },
+        { uri: "s6", title: "Java", proficiency: 1 },
+      ];
+      mockSearchOccupations.mockResolvedValue({ results: [sampleSearchResult, sampleSearchResult], total: 2 });
+      mockGetOccupation.mockResolvedValue(sampleOccupation);
+      mockAssessSkills.mockReturnValue([sampleMatchResult]);
+      const handler = registry.handlers.get("career_assess_skills")!;
+      const result = await handler({ skills: skills6 });
+      // Only first 5 skills queried, duplicate URIs deduplicated, so getOccupation called once
+      expect(mockGetOccupation).toHaveBeenCalledTimes(1);
+      expect(getText(result)).toContain("Skills Assessment Results");
+    });
   });
 
   describe("career_search_occupations", () => {
@@ -167,6 +209,61 @@ describe("career tools", () => {
       const result = await handler({ uri: sampleOccupation.uri });
       expect(getText(result)).toContain("Optional Skills");
       expect(getText(result)).toContain("Python");
+    });
+
+    it("should omit alternative labels when empty", async () => {
+      const noLabels = { ...sampleOccupation, alternativeLabels: [] };
+      mockGetOccupation.mockResolvedValue(noLabels);
+      const handler = registry.handlers.get("career_get_occupation")!;
+      const result = await handler({ uri: noLabels.uri });
+      expect(getText(result)).not.toContain("Also known as");
+    });
+
+    it("should truncate essential skills over 15", async () => {
+      const manySkills = Array.from({ length: 20 }, (_, i) => ({
+        uri: `http://data.europa.eu/esco/skill/e${i}`,
+        title: `EssentialSkill${i}`,
+        skillType: "essential" as const,
+        importance: 0.9,
+      }));
+      const occupation = { ...sampleOccupation, skills: manySkills };
+      mockGetOccupation.mockResolvedValue(occupation);
+      const handler = registry.handlers.get("career_get_occupation")!;
+      const result = await handler({ uri: occupation.uri });
+      const text = getText(result);
+      expect(text).toContain("Essential Skills (20)");
+      expect(text).toContain("...and 5 more");
+      expect(text).not.toContain("Optional Skills");
+    });
+
+    it("should not show optional skills section when none exist", async () => {
+      const essentialOnly = {
+        ...sampleOccupation,
+        skills: [sampleOccupation.skills[0]],
+      };
+      mockGetOccupation.mockResolvedValue(essentialOnly);
+      const handler = registry.handlers.get("career_get_occupation")!;
+      const result = await handler({ uri: essentialOnly.uri });
+      expect(getText(result)).not.toContain("Optional Skills");
+    });
+
+    it("should truncate optional skills over 10", async () => {
+      const manyOptional = Array.from({ length: 15 }, (_, i) => ({
+        uri: `http://data.europa.eu/esco/skill/o${i}`,
+        title: `OptionalSkill${i}`,
+        skillType: "optional" as const,
+        importance: 0.3,
+      }));
+      const occupation = {
+        ...sampleOccupation,
+        skills: [sampleOccupation.skills[0], ...manyOptional],
+      };
+      mockGetOccupation.mockResolvedValue(occupation);
+      const handler = registry.handlers.get("career_get_occupation")!;
+      const result = await handler({ uri: occupation.uri });
+      const text = getText(result);
+      expect(text).toContain("Optional Skills (15)");
+      expect(text).toContain("...and 5 more");
     });
   });
 
@@ -230,6 +327,36 @@ describe("career tools", () => {
       const handler = registry.handlers.get("career_get_jobs")!;
       const result = await handler({ query: "javascript" });
       expect(getText(result)).toContain("75,000");
+    });
+
+    it("should show 'From' when only salary_min is present", async () => {
+      const minOnlyJob = { ...sampleJob, salary_min: 40000, salary_max: null };
+      mockSearchJobs.mockResolvedValue({ jobs: [minOnlyJob], total: 1 });
+      const handler = registry.handlers.get("career_get_jobs")!;
+      const result = await handler({ query: "javascript" });
+      const text = getText(result);
+      expect(text).toContain("From");
+      expect(text).toContain("40,000");
+    });
+
+    it("should show 'Up to' when only salary_max is present", async () => {
+      const maxOnlyJob = { ...sampleJob, salary_min: null, salary_max: 80000 };
+      mockSearchJobs.mockResolvedValue({ jobs: [maxOnlyJob], total: 1 });
+      const handler = registry.handlers.get("career_get_jobs")!;
+      const result = await handler({ query: "javascript" });
+      const text = getText(result);
+      expect(text).toContain("Up to");
+      expect(text).toContain("80,000");
+    });
+
+    it("should omit salary line when both salary_min and salary_max are null", async () => {
+      const noSalaryJob = { ...sampleJob, salary_min: null, salary_max: null };
+      mockSearchJobs.mockResolvedValue({ jobs: [noSalaryJob], total: 1 });
+      const handler = registry.handlers.get("career_get_jobs")!;
+      const result = await handler({ query: "javascript" });
+      const text = getText(result);
+      expect(text).not.toContain("Salary:");
+      expect(text).toContain("Senior JS Developer");
     });
   });
 });

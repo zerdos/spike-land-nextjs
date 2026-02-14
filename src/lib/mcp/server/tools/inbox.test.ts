@@ -89,6 +89,51 @@ describe("inbox tools", () => {
         platform: "twitter",
       });
     });
+
+    it("should use fallbacks for null senderName, platform, type, sentiment, priorityScore", async () => {
+      mockPrisma.inboxItem.findMany.mockResolvedValue([
+        {
+          id: "item-null",
+          senderName: null,
+          platform: null,
+          type: null,
+          sentiment: null,
+          priorityScore: null,
+          status: "UNREAD",
+          receivedAt: new Date("2025-06-01"),
+        },
+      ]);
+      mockPrisma.inboxItem.count.mockResolvedValue(1);
+
+      const handler = registry.handlers.get("inbox_list_items")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("**Unknown** via unknown");
+      expect(text).toContain("Type: message");
+      expect(text).toContain("Sentiment: neutral");
+      expect(text).toContain("Priority: N/A");
+    });
+
+    it("should stringify non-Date receivedAt values", async () => {
+      mockPrisma.inboxItem.findMany.mockResolvedValue([
+        {
+          id: "item-str",
+          senderName: "Test",
+          platform: "tiktok",
+          type: "dm",
+          sentiment: "positive",
+          priorityScore: 50,
+          status: "READ",
+          receivedAt: "2025-06-01T00:00:00.000Z",
+        },
+      ]);
+      mockPrisma.inboxItem.count.mockResolvedValue(1);
+
+      const handler = registry.handlers.get("inbox_list_items")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("2025-06-01T00:00:00.000Z");
+    });
   });
 
   describe("inbox_get_item", () => {
@@ -128,6 +173,109 @@ describe("inbox tools", () => {
       const handler = registry.handlers.get("inbox_get_item")!;
       const result = await handler({ workspace_slug: "my-ws", item_id: "missing" });
       expect(getText(result)).toContain("NOT_FOUND");
+    });
+
+    it("should use fallbacks for null fields", async () => {
+      mockPrisma.inboxItem.findFirst.mockResolvedValue({
+        id: "item-null",
+        senderName: null,
+        platform: null,
+        type: null,
+        content: null,
+        status: "UNREAD",
+        sentiment: null,
+        sentimentScore: null,
+        priorityScore: null,
+        receivedAt: new Date("2025-06-01"),
+        suggestedResponses: [],
+        drafts: undefined,
+        assignedTo: null,
+        escalationHistory: [],
+      });
+
+      const handler = registry.handlers.get("inbox_get_item")!;
+      const result = await handler({ workspace_slug: "my-ws", item_id: "item-null" });
+      const text = getText(result);
+      expect(text).toContain("**Sender:** Unknown");
+      expect(text).toContain("**Platform:** unknown");
+      expect(text).toContain("**Type:** message");
+      expect(text).toContain("**Content:** (empty)");
+      expect(text).toContain("**Sentiment:** neutral (score: N/A)");
+      expect(text).toContain("**Priority:** N/A");
+    });
+
+    it("should stringify non-Date receivedAt", async () => {
+      mockPrisma.inboxItem.findFirst.mockResolvedValue({
+        id: "item-str-date",
+        senderName: "Test",
+        platform: "instagram",
+        type: "comment",
+        content: "Hello",
+        status: "UNREAD",
+        sentiment: "positive",
+        sentimentScore: 0.5,
+        priorityScore: 50,
+        receivedAt: "2025-06-01T00:00:00.000Z",
+        suggestedResponses: [],
+        drafts: [],
+        assignedTo: null,
+        escalationHistory: [],
+      });
+
+      const handler = registry.handlers.get("inbox_get_item")!;
+      const result = await handler({ workspace_slug: "my-ws", item_id: "item-str-date" });
+      const text = getText(result);
+      expect(text).toContain("2025-06-01T00:00:00.000Z");
+    });
+
+    it("should not show suggested responses section when empty", async () => {
+      mockPrisma.inboxItem.findFirst.mockResolvedValue({
+        id: "item-no-sr",
+        senderName: "Test",
+        platform: "twitter",
+        type: "mention",
+        content: "Hi",
+        status: "READ",
+        sentiment: "neutral",
+        sentimentScore: 0,
+        priorityScore: 30,
+        receivedAt: new Date("2025-06-01"),
+        suggestedResponses: [],
+        drafts: [{ id: "d1", status: "PENDING", content: "Draft", createdAt: new Date() }],
+        assignedTo: null,
+        escalationHistory: [],
+      });
+
+      const handler = registry.handlers.get("inbox_get_item")!;
+      const result = await handler({ workspace_slug: "my-ws", item_id: "item-no-sr" });
+      const text = getText(result);
+      expect(text).not.toContain("Suggested Responses");
+      expect(text).toContain("**Drafts:** 1");
+    });
+
+    it("should not show drafts section when undefined", async () => {
+      mockPrisma.inboxItem.findFirst.mockResolvedValue({
+        id: "item-no-drafts",
+        senderName: "Test",
+        platform: "twitter",
+        type: "mention",
+        content: "Hi",
+        status: "READ",
+        sentiment: "neutral",
+        sentimentScore: 0,
+        priorityScore: 30,
+        receivedAt: new Date("2025-06-01"),
+        suggestedResponses: undefined,
+        drafts: undefined,
+        assignedTo: null,
+        escalationHistory: [],
+      });
+
+      const handler = registry.handlers.get("inbox_get_item")!;
+      const result = await handler({ workspace_slug: "my-ws", item_id: "item-no-drafts" });
+      const text = getText(result);
+      expect(text).not.toContain("Suggested Responses");
+      expect(text).not.toContain("Drafts");
     });
   });
 
@@ -223,6 +371,27 @@ describe("inbox tools", () => {
       const result = await handler({ workspace_slug: "my-ws", item_id: "missing" });
       expect(getText(result)).toContain("NOT_FOUND");
     });
+
+    it("should handle routing without assignment", async () => {
+      mockPrisma.inboxItem.findFirst.mockResolvedValue({
+        id: "item-1",
+        sentiment: null,
+        priorityScore: null,
+        suggestedResponses: undefined,
+      });
+
+      const handler = registry.handlers.get("inbox_route")!;
+      const result = await handler({
+        workspace_slug: "my-ws",
+        item_id: "item-1",
+      });
+      const text = getText(result);
+      expect(text).toContain("(unassigned)");
+      expect(text).toContain("Sentiment:** neutral");
+      expect(text).toContain("Priority:** N/A");
+      expect(text).toContain("Suggested Responses:** 0");
+      expect(mockPrisma.inboxItem.update).not.toHaveBeenCalled();
+    });
   });
 
   describe("inbox_get_priority_score", () => {
@@ -251,6 +420,24 @@ describe("inbox tools", () => {
       const handler = registry.handlers.get("inbox_get_priority_score")!;
       const result = await handler({ workspace_slug: "my-ws", item_id: "missing" });
       expect(getText(result)).toContain("NOT_FOUND");
+    });
+
+    it("should use fallbacks for null fields and omit priorityFactors", async () => {
+      mockPrisma.inboxItem.findFirst.mockResolvedValue({
+        id: "item-null",
+        priorityScore: null,
+        priorityFactors: null,
+        sentiment: null,
+        sentimentScore: null,
+      });
+
+      const handler = registry.handlers.get("inbox_get_priority_score")!;
+      const result = await handler({ workspace_slug: "my-ws", item_id: "item-null" });
+      const text = getText(result);
+      expect(text).toContain("**Priority Score:** N/A");
+      expect(text).toContain("**Sentiment:** neutral");
+      expect(text).toContain("**Sentiment Score:** N/A");
+      expect(text).not.toContain("Priority Factors");
     });
   });
 });

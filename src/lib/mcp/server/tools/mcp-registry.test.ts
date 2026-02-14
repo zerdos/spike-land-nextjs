@@ -106,6 +106,15 @@ describe("mcp-registry tools", () => {
       const result = await handler({ query: "browser" });
       expect(getText(result)).toContain("stdio");
     });
+
+    it("should omit homepage when not available", async () => {
+      const serverNoHomepage = { ...sampleServer, homepage: "" };
+      mockSearchAllRegistries.mockResolvedValue([serverNoHomepage]);
+      const handler = registry.handlers.get("mcp_registry_search")!;
+      const result = await handler({ query: "browser" });
+      expect(getText(result)).toContain("Test Browser Server");
+      expect(getText(result)).not.toContain("Homepage:");
+    });
   });
 
   describe("mcp_registry_get", () => {
@@ -139,6 +148,56 @@ describe("mcp-registry tools", () => {
       expect(mockSearchGlama).toHaveBeenCalled();
       expect(mockSearchSmithery).not.toHaveBeenCalled();
     });
+
+    it("should show homepage when available", async () => {
+      mockSearchSmithery.mockResolvedValue([sampleServer]);
+      const handler = registry.handlers.get("mcp_registry_get")!;
+      const result = await handler({ serverId: "test-server", source: "smithery" });
+      expect(getText(result)).toContain("Homepage:");
+      expect(getText(result)).toContain("https://example.com");
+    });
+
+    it("should omit homepage when not available", async () => {
+      const serverNoHomepage = { ...sampleServer, homepage: "" };
+      mockSearchSmithery.mockResolvedValue([serverNoHomepage]);
+      const handler = registry.handlers.get("mcp_registry_get")!;
+      const result = await handler({ serverId: "test-server", source: "smithery" });
+      expect(getText(result)).not.toContain("Homepage:");
+    });
+
+    it("should show required env vars when present", async () => {
+      const serverWithEnv = { ...sampleServer, envVarsRequired: ["API_KEY", "SECRET"] };
+      mockSearchSmithery.mockResolvedValue([serverWithEnv]);
+      const handler = registry.handlers.get("mcp_registry_get")!;
+      const result = await handler({ serverId: "test-server", source: "smithery" });
+      expect(getText(result)).toContain("Required Env Vars:");
+      expect(getText(result)).toContain("API_KEY, SECRET");
+    });
+
+    it("should omit env vars section when none required", async () => {
+      mockSearchSmithery.mockResolvedValue([sampleServer]);
+      const handler = registry.handlers.get("mcp_registry_get")!;
+      const result = await handler({ serverId: "test-server", source: "smithery" });
+      expect(getText(result)).not.toContain("Required Env Vars:");
+    });
+
+    it("should return full details from official registry", async () => {
+      const officialServer = { ...sampleServer, source: "official" as const };
+      mockSearchOfficialRegistry.mockResolvedValue([officialServer]);
+      const handler = registry.handlers.get("mcp_registry_get")!;
+      const result = await handler({ serverId: "test-server", source: "official" });
+      expect(getText(result)).toContain("Test Browser Server");
+      expect(getText(result)).toContain("official");
+    });
+
+    it("should return full details from glama", async () => {
+      const glamaServer = { ...sampleServer, source: "glama" as const };
+      mockSearchGlama.mockResolvedValue([glamaServer]);
+      const handler = registry.handlers.get("mcp_registry_get")!;
+      const result = await handler({ serverId: "test-server", source: "glama" });
+      expect(getText(result)).toContain("Test Browser Server");
+      expect(getText(result)).toContain("glama");
+    });
   });
 
   describe("mcp_registry_install", () => {
@@ -164,6 +223,40 @@ describe("mcp-registry tools", () => {
       const result = await handler({ serverId: "missing", source: "smithery" });
       expect(getText(result)).toContain("NOT_FOUND");
     });
+
+    it("should query official registry when source is official", async () => {
+      const officialServer = { ...sampleServer, source: "official" as const };
+      mockSearchOfficialRegistry.mockResolvedValue([officialServer]);
+      const handler = registry.handlers.get("mcp_registry_install")!;
+      const result = await handler({ serverId: "test-server", source: "official" });
+      expect(mockSearchOfficialRegistry).toHaveBeenCalled();
+      expect(mockSearchSmithery).not.toHaveBeenCalled();
+      expect(getText(result)).toContain("MCP Server Configured");
+    });
+
+    it("should query glama when source is glama", async () => {
+      const glamaServer = { ...sampleServer, source: "glama" as const };
+      mockSearchGlama.mockResolvedValue([glamaServer]);
+      const handler = registry.handlers.get("mcp_registry_install")!;
+      const result = await handler({ serverId: "test-server", source: "glama" });
+      expect(mockSearchGlama).toHaveBeenCalled();
+      expect(mockSearchSmithery).not.toHaveBeenCalled();
+      expect(getText(result)).toContain("MCP Server Configured");
+    });
+
+    it("should omit env when envVars is empty object", async () => {
+      mockSearchSmithery.mockResolvedValue([sampleServer]);
+      const handler = registry.handlers.get("mcp_registry_install")!;
+      const result = await handler({ serverId: "test-server", source: "smithery", envVars: {} });
+      expect(getText(result)).not.toContain('"env"');
+    });
+
+    it("should omit env when envVars is not provided", async () => {
+      mockSearchSmithery.mockResolvedValue([sampleServer]);
+      const handler = registry.handlers.get("mcp_registry_install")!;
+      const result = await handler({ serverId: "test-server", source: "smithery" });
+      expect(getText(result)).not.toContain('"env"');
+    });
   });
 
   describe("mcp_registry_list_installed", () => {
@@ -185,6 +278,53 @@ describe("mcp-registry tools", () => {
       const handler = registry.handlers.get("mcp_registry_list_installed")!;
       const result = await handler({});
       expect(getText(result)).toContain("No .mcp.json found");
+    });
+
+    it("should handle empty server list", async () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockReturnValue(JSON.stringify({ mcpServers: {} }));
+
+      const handler = registry.handlers.get("mcp_registry_list_installed")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("No MCP servers configured");
+    });
+
+    it("should fallback to root config when mcpServers key is absent", async () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockReturnValue(JSON.stringify({
+        "my-server": { transport: "sse", url: "https://my.server.com" },
+      }));
+
+      const handler = registry.handlers.get("mcp_registry_list_installed")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("my-server");
+      expect(getText(result)).toContain("sse");
+      expect(getText(result)).toContain("https://my.server.com");
+    });
+
+    it("should handle server entry without url", async () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockReturnValue(JSON.stringify({
+        mcpServers: { "local-server": { transport: "stdio" } },
+      }));
+
+      const handler = registry.handlers.get("mcp_registry_list_installed")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("local-server");
+      expect(getText(result)).toContain("stdio");
+      expect(getText(result)).not.toContain("url=");
+    });
+
+    it("should handle server entry with missing transport", async () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockReturnValue(JSON.stringify({
+        mcpServers: { "bare-server": {} },
+      }));
+
+      const handler = registry.handlers.get("mcp_registry_list_installed")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("bare-server");
+      expect(getText(result)).toContain("unknown");
     });
   });
 });

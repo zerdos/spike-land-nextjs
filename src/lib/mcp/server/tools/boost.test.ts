@@ -60,6 +60,43 @@ describe("boost tools", () => {
       const result = await handler({ workspace_slug: "acme" });
       expect(getText(result)).toContain("No boost opportunities detected");
     });
+
+    it("should handle null contentPreview, engagementRate, predictedRoi, confidenceScore", async () => {
+      mockPrisma.postBoostRecommendation.findMany.mockResolvedValue([
+        {
+          id: "rec-null",
+          contentPreview: null,
+          engagementRate: null,
+          predictedRoi: null,
+          confidenceScore: null,
+        },
+      ]);
+      const handler = registry.handlers.get("boost_detect_opportunities")!;
+      const result = await handler({ workspace_slug: "acme" });
+      const text = getText(result);
+      expect(text).toContain("N/A");
+      expect(text).toContain("0.0%");
+      expect(text).toContain("0%");
+      expect(text).toContain("rec-null");
+    });
+
+    it("should truncate long content preview with ellipsis", async () => {
+      const longContent = "A".repeat(80);
+      mockPrisma.postBoostRecommendation.findMany.mockResolvedValue([
+        {
+          id: "rec-long",
+          contentPreview: longContent,
+          engagementRate: 0.1,
+          predictedRoi: "2x",
+          confidenceScore: 0.5,
+        },
+      ]);
+      const handler = registry.handlers.get("boost_detect_opportunities")!;
+      const result = await handler({ workspace_slug: "acme" });
+      const text = getText(result);
+      expect(text).toContain("...");
+      expect(text).toContain("A".repeat(60));
+    });
   });
 
   describe("boost_get_recommendation", () => {
@@ -87,6 +124,26 @@ describe("boost tools", () => {
       const handler = registry.handlers.get("boost_get_recommendation")!;
       const result = await handler({ workspace_slug: "acme", recommendation_id: "rec-999" });
       expect(getText(result)).toContain("NOT_FOUND");
+    });
+
+    it("should handle null fields with fallback values", async () => {
+      mockPrisma.postBoostRecommendation.findFirst.mockResolvedValue({
+        id: "rec-null",
+        contentPreview: null,
+        engagementRate: null,
+        predictedRoi: null,
+        confidenceScore: null,
+        suggestedBudget: null,
+      });
+      const handler = registry.handlers.get("boost_get_recommendation")!;
+      const result = await handler({ workspace_slug: "acme", recommendation_id: "rec-null" });
+      const text = getText(result);
+      expect(text).toContain("Boost Recommendation");
+      expect(text).toContain("**Post:** N/A");
+      expect(text).toContain("0.0%");
+      expect(text).toContain("**Predicted ROI:** N/A");
+      expect(text).toContain("0%");
+      expect(text).toContain("$N/A");
     });
   });
 
@@ -155,6 +212,38 @@ describe("boost tools", () => {
       });
       expect(getText(result)).toContain("NOT_FOUND");
     });
+
+    it("should fall back to FACEBOOK when recommendedPlatforms is empty", async () => {
+      mockPrisma.postBoostRecommendation.findFirst.mockResolvedValue({
+        id: "rec-empty-plat",
+        workspaceId: "ws-1",
+        postId: "post-2",
+        postType: "SOCIAL",
+        recommendedPlatforms: [],
+      });
+      mockPrisma.appliedBoost.create.mockResolvedValue({
+        id: "boost-2",
+        recommendationId: "rec-empty-plat",
+        budget: 200,
+        status: "ACTIVE",
+      });
+      const handler = registry.handlers.get("boost_apply")!;
+      const result = await handler({
+        workspace_slug: "acme",
+        recommendation_id: "rec-empty-plat",
+        budget: 200,
+        confirm: true,
+      });
+      const text = getText(result);
+      expect(text).toContain("Boost Applied");
+      expect(mockPrisma.appliedBoost.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            platform: "FACEBOOK",
+          }),
+        }),
+      );
+    });
   });
 
   describe("boost_predict_roi", () => {
@@ -206,6 +295,41 @@ describe("boost tools", () => {
         budget: 50,
       });
       expect(getText(result)).toContain("NOT_FOUND");
+    });
+
+    it("should return zero ROAS when budget is zero", async () => {
+      mockPrisma.socialPost.findFirst.mockResolvedValue({
+        id: "post-zero",
+        impressions: 1000,
+        engagements: 50,
+      });
+      const handler = registry.handlers.get("boost_predict_roi")!;
+      const result = await handler({
+        workspace_slug: "acme",
+        post_id: "post-zero",
+        budget: 0,
+      });
+      const text = getText(result);
+      expect(text).toContain("ROI Prediction");
+      expect(text).toContain("$0");
+      expect(text).toContain("ROAS: 0.00x");
+    });
+
+    it("should handle null impressions and engagements with fallbacks", async () => {
+      mockPrisma.socialPost.findFirst.mockResolvedValue({
+        id: "post-null",
+        impressions: null,
+        engagements: null,
+      });
+      const handler = registry.handlers.get("boost_predict_roi")!;
+      const result = await handler({
+        workspace_slug: "acme",
+        post_id: "post-null",
+        budget: 100,
+      });
+      const text = getText(result);
+      expect(text).toContain("ROI Prediction");
+      expect(text).toContain("3.0%");
     });
   });
 });

@@ -77,6 +77,42 @@ describe("email tools", () => {
       expect(text).toContain("Clicked:** No");
     });
 
+    it("should show dates when openedAt, clickedAt, and bouncedAt are present", async () => {
+      mockPrisma.emailLog.findFirst.mockResolvedValue({
+        id: "email-2",
+        to: "user@example.com",
+        subject: "Promo",
+        status: "DELIVERED",
+        openedAt: new Date("2025-06-01T12:00:00Z"),
+        clickedAt: new Date("2025-06-01T12:05:00Z"),
+        bouncedAt: new Date("2025-06-01T12:10:00Z"),
+      });
+      const handler = registry.handlers.get("email_get_status")!;
+      const result = await handler({ workspace_slug: "my-ws", email_id: "email-2" });
+      const text = getText(result);
+      expect(text).toContain("Opened:** 2025-06-01T12:00:00.000Z");
+      expect(text).toContain("Clicked:** 2025-06-01T12:05:00.000Z");
+      expect(text).toContain("Bounced:** 2025-06-01T12:10:00.000Z");
+    });
+
+    it("should show 'No' for all null date fields", async () => {
+      mockPrisma.emailLog.findFirst.mockResolvedValue({
+        id: "email-3",
+        to: "user@example.com",
+        subject: "Test",
+        status: "SENT",
+        openedAt: null,
+        clickedAt: null,
+        bouncedAt: null,
+      });
+      const handler = registry.handlers.get("email_get_status")!;
+      const result = await handler({ workspace_slug: "my-ws", email_id: "email-3" });
+      const text = getText(result);
+      expect(text).toContain("Opened:** No");
+      expect(text).toContain("Clicked:** No");
+      expect(text).toContain("Bounced:** No");
+    });
+
     it("should return NOT_FOUND for missing email", async () => {
       mockPrisma.emailLog.findFirst.mockResolvedValue(null);
       const handler = registry.handlers.get("email_get_status")!;
@@ -95,6 +131,19 @@ describe("email tools", () => {
       const text = getText(result);
       expect(text).toContain("Email Logs");
       expect(text).toContain("Welcome");
+    });
+
+    it("should respect explicit limit parameter", async () => {
+      mockPrisma.emailLog.findMany.mockResolvedValue([
+        { id: "e-1", subject: "First", to: "a@test.com", status: "SENT", sentAt: new Date("2025-06-01") },
+      ]);
+      const handler = registry.handlers.get("email_list")!;
+      const result = await handler({ workspace_slug: "my-ws", limit: 5 });
+      const text = getText(result);
+      expect(text).toContain("Email Logs");
+      expect(mockPrisma.emailLog.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ take: 5 }),
+      );
     });
 
     it("should return message when no emails found", async () => {

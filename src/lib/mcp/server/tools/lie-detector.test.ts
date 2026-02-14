@@ -454,5 +454,175 @@ Time:        3.45 s
       });
       expect(getText(result)).toContain("Relaxed");
     });
+
+    it("should handle requirement with no extractable keywords (all stop words)", async () => {
+      const handler = registry.tools.get("verify_spec_match")!.handler;
+      const result = await handler({
+        spec: { requirements: ["the a is to of"] },
+        output: "some code output",
+        strict: false,
+      });
+      const text = getText(result);
+      expect(text).toContain("Unmet Requirements");
+      expect(text).toContain("Could not extract keywords");
+      expect(text).toContain("Rewrite as a more specific requirement");
+    });
+
+    it("should truncate long requirement text in suggestions", async () => {
+      const handler = registry.tools.get("verify_spec_match")!.handler;
+      const longReq = "implement a very sophisticated advanced comprehensive authentication system with multiple layers of security";
+      const result = await handler({
+        spec: { requirements: [longReq] },
+        output: "const x = 1;",
+        strict: false,
+      });
+      const text = getText(result);
+      expect(text).toContain("...");
+      expect(text).toContain("missing keywords");
+    });
+  });
+
+  // ── verify_syntax - additional edge cases ────────────────────────
+
+  describe("verify_syntax - additional branches", () => {
+    it("should close template literal with backtick properly", async () => {
+      const handler = registry.tools.get("verify_syntax")!.handler;
+      const result = await handler({
+        code: "const x = `template`;\nconst y = 1;",
+        language: "typescript",
+      });
+      expect(getText(result)).toContain("passed");
+    });
+  });
+
+  // ── verify_tests - additional parsing branches ───────────────────
+
+  describe("verify_tests - additional branches", () => {
+    it("should parse vitest FAIL blocks with expected/received", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const vitestOutput = `
+FAIL src/utils.test.ts > should compute correctly
+  Expected: 42
+  Received: 0
+
+      Tests  0 passed | 1 failed (1)
+   Duration  0.50s
+`;
+      const result = await handler({
+        test_output: vitestOutput,
+        format: "vitest",
+      });
+      const text = getText(result);
+      expect(text).toContain("Assertion failed");
+      expect(text).toContain("Expected");
+      expect(text).toContain("Received");
+    });
+
+    it("should parse jest output with skipped tests", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const jestOutput = `
+Tests:       3 passed, 1 skipped, 4 total
+Time:        2.50 s
+`;
+      const result = await handler({
+        test_output: jestOutput,
+        format: "jest",
+      });
+      const text = getText(result);
+      expect(text).toContain("| Skipped | 1 |");
+      expect(text).toContain("| Total | 4 |");
+      expect(text).toContain("2.50 s");
+    });
+
+    it("should parse vitest failure with x prefix", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const vitestOutput = `
+   x should compute value
+      Tests  0 passed | 1 failed (1)
+   Duration  0.10s
+`;
+      const result = await handler({
+        test_output: vitestOutput,
+        format: "vitest",
+      });
+      const text = getText(result);
+      expect(text).toContain("should compute value");
+    });
+
+    it("should handle jest output with only failed tests", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const jestOutput = `
+FAIL src/broken.test.ts
+  \u25CF should not crash
+Tests:       2 failed, 2 total
+Time:        1.00 s
+`;
+      const result = await handler({
+        test_output: jestOutput,
+        format: "jest",
+      });
+      const text = getText(result);
+      expect(text).toContain("| Failed | 2 |");
+      expect(text).toContain("| Total | 2 |");
+      expect(text).toContain("should not crash");
+    });
+
+    it("should parse vitest output with only failed and no passed count", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const vitestOutput = `
+      Tests  1 failed (1)
+   Duration  0.10s
+`;
+      const result = await handler({
+        test_output: vitestOutput,
+        format: "vitest",
+      });
+      const text = getText(result);
+      expect(text).toContain("| Passed | 0 |");
+      expect(text).toContain("| Failed | 1 |");
+      expect(text).toContain("| Total | 1 |");
+    });
+
+    it("should parse jest output with only passed count and no failed/skipped", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const jestOutput = `
+Tests:       5 passed, 5 total
+Time:        1.00 s
+`;
+      const result = await handler({
+        test_output: jestOutput,
+        format: "jest",
+      });
+      const text = getText(result);
+      expect(text).toContain("| Passed | 5 |");
+      expect(text).toContain("| Failed | 0 |");
+      expect(text).toContain("| Skipped | 0 |");
+    });
+
+    it("should handle vitest output with no duration line", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const vitestOutput = `
+      Tests  3 passed (3)
+`;
+      const result = await handler({
+        test_output: vitestOutput,
+        format: "vitest",
+      });
+      const text = getText(result);
+      expect(text).toContain("| Duration | unknown |");
+    });
+
+    it("should handle jest output with no time line", async () => {
+      const handler = registry.tools.get("verify_tests")!.handler;
+      const jestOutput = `
+Tests:       2 passed, 2 total
+`;
+      const result = await handler({
+        test_output: jestOutput,
+        format: "jest",
+      });
+      const text = getText(result);
+      expect(text).toContain("| Duration | unknown |");
+    });
   });
 });

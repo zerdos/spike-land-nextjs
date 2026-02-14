@@ -90,6 +90,58 @@ describe("swarm tools", () => {
       expect(getText(result)).not.toContain("Idle");
     });
 
+    it("should filter by idle status", async () => {
+      const now = new Date();
+      const tenMinAgo = new Date(now.getTime() - 10 * 60 * 1000);
+      mockPrisma.claudeCodeAgent.findMany.mockResolvedValue([
+        {
+          id: "a1", displayName: "Active", lastSeenAt: now,
+          totalTokensUsed: 0, totalTasksCompleted: 0,
+          machineId: "m1", projectPath: null,
+          _count: { messages: 0 },
+        },
+        {
+          id: "a2", displayName: "IdleAgent", lastSeenAt: tenMinAgo,
+          totalTokensUsed: 0, totalTasksCompleted: 0,
+          machineId: "m2", projectPath: null,
+          _count: { messages: 0 },
+        },
+        {
+          id: "a3", displayName: "StoppedAgent", lastSeenAt: null,
+          totalTokensUsed: 0, totalTasksCompleted: 0,
+          machineId: "m3", projectPath: null,
+          _count: { messages: 0 },
+        },
+      ]);
+      const handler = registry.handlers.get("swarm_list_agents")!;
+      const result = await handler({ status: "idle" });
+      expect(getText(result)).toContain("IdleAgent");
+      expect(getText(result)).not.toContain("Active");
+      expect(getText(result)).not.toContain("StoppedAgent");
+    });
+
+    it("should filter by stopped status (null lastSeenAt)", async () => {
+      const now = new Date();
+      mockPrisma.claudeCodeAgent.findMany.mockResolvedValue([
+        {
+          id: "a1", displayName: "Active", lastSeenAt: now,
+          totalTokensUsed: 0, totalTasksCompleted: 0,
+          machineId: "m1", projectPath: null,
+          _count: { messages: 0 },
+        },
+        {
+          id: "a2", displayName: "StoppedAgent", lastSeenAt: null,
+          totalTokensUsed: 0, totalTasksCompleted: 0,
+          machineId: "m2", projectPath: null,
+          _count: { messages: 0 },
+        },
+      ]);
+      const handler = registry.handlers.get("swarm_list_agents")!;
+      const result = await handler({ status: "stopped" });
+      expect(getText(result)).toContain("StoppedAgent");
+      expect(getText(result)).not.toContain("Active");
+    });
+
     it("should show IDLE for agents seen more than 5 minutes ago", async () => {
       const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000);
       mockPrisma.claudeCodeAgent.findMany.mockResolvedValue([
@@ -135,6 +187,36 @@ describe("swarm tools", () => {
       expect(getText(result)).toContain("Worker-1");
       expect(getText(result)).toContain("Tokens: 500");
       expect(getText(result)).toContain("Tasks: 3");
+    });
+
+    it("should show (none) for null projectPath and workingDirectory", async () => {
+      const now = new Date();
+      mockPrisma.claudeCodeAgent.findUnique.mockResolvedValue({
+        id: "agent-2", displayName: "Worker-2", machineId: "m1",
+        sessionId: "s2", projectPath: null, workingDirectory: null,
+        totalTokensUsed: 0, totalTasksCompleted: 0, totalSessionTime: 0,
+        lastSeenAt: now, createdAt: now, deletedAt: null,
+        _count: { messages: 0 },
+      });
+      const handler = registry.handlers.get("swarm_get_agent")!;
+      const result = await handler({ agent_id: "agent-2" });
+      const text = getText(result);
+      expect(text).toContain("Project: (none)");
+      expect(text).toContain("Working Dir: (none)");
+    });
+
+    it("should show 'never' when lastSeenAt is null", async () => {
+      const now = new Date();
+      mockPrisma.claudeCodeAgent.findUnique.mockResolvedValue({
+        id: "agent-3", displayName: "NeverSeen", machineId: "m1",
+        sessionId: "s3", projectPath: "/proj", workingDirectory: "/dir",
+        totalTokensUsed: 0, totalTasksCompleted: 0, totalSessionTime: 0,
+        lastSeenAt: null, createdAt: now, deletedAt: null,
+        _count: { messages: 0 },
+      });
+      const handler = registry.handlers.get("swarm_get_agent")!;
+      const result = await handler({ agent_id: "agent-3" });
+      expect(getText(result)).toContain("Last Seen: never");
     });
 
     it("should return not found for missing agent", async () => {
@@ -195,6 +277,48 @@ describe("swarm tools", () => {
         agent_id: "agent-1", project_path: "/new-proj", working_directory: "/new-dir",
       });
       expect(getText(result)).toContain("redirected");
+    });
+
+    it("should redirect with only project_path (no working_directory)", async () => {
+      mockPrisma.claudeCodeAgent.update.mockResolvedValue({});
+      const handler = registry.handlers.get("swarm_redirect_agent")!;
+      const result = await handler({
+        agent_id: "agent-1", project_path: "/new-proj",
+      });
+      expect(getText(result)).toContain("redirected");
+      expect(mockPrisma.claudeCodeAgent.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { projectPath: "/new-proj" },
+        }),
+      );
+    });
+
+    it("should redirect with only working_directory (no project_path)", async () => {
+      mockPrisma.claudeCodeAgent.update.mockResolvedValue({});
+      const handler = registry.handlers.get("swarm_redirect_agent")!;
+      const result = await handler({
+        agent_id: "agent-1", working_directory: "/new-dir",
+      });
+      expect(getText(result)).toContain("redirected");
+      expect(mockPrisma.claudeCodeAgent.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { workingDirectory: "/new-dir" },
+        }),
+      );
+    });
+
+    it("should redirect with neither path field", async () => {
+      mockPrisma.claudeCodeAgent.update.mockResolvedValue({});
+      const handler = registry.handlers.get("swarm_redirect_agent")!;
+      const result = await handler({
+        agent_id: "agent-1",
+      });
+      expect(getText(result)).toContain("redirected");
+      expect(mockPrisma.claudeCodeAgent.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {},
+        }),
+      );
     });
   });
 

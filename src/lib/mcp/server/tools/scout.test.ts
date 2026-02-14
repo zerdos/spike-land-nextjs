@@ -62,6 +62,24 @@ describe("scout tools", () => {
       const result = await handler({ workspace_slug: "acme" });
       expect(getText(result)).toContain("No competitors tracked yet");
     });
+
+    it("should fall back to handle when competitor name is null", async () => {
+      mockPrisma.scoutCompetitor.findMany.mockResolvedValue([
+        {
+          id: "c-2",
+          name: null,
+          platform: "TWITTER",
+          handle: "handleonly",
+          isActive: true,
+          updatedAt: new Date("2025-06-01"),
+        },
+      ]);
+      const handler = registry.handlers.get("scout_list_competitors")!;
+      const result = await handler({ workspace_slug: "acme" });
+      const text = getText(result);
+      expect(text).toContain("**handleonly**");
+      expect(text).toContain("@handleonly");
+    });
   });
 
   describe("scout_add_competitor", () => {
@@ -133,6 +151,17 @@ describe("scout tools", () => {
       const handler = registry.handlers.get("scout_get_benchmark")!;
       const result = await handler({ workspace_slug: "acme" });
       expect(getText(result)).toContain("No benchmark data available");
+    });
+
+    it("should handle benchmark records with missing fields", async () => {
+      mockPrisma.scoutBenchmark.findMany.mockResolvedValue([
+        { generatedAt: new Date("2025-06-01") },
+      ]);
+      const handler = registry.handlers.get("scout_get_benchmark")!;
+      const result = await handler({ workspace_slug: "acme" });
+      const text = getText(result);
+      expect(text).toContain("unknown");
+      expect(text).toContain("N/A");
     });
   });
 
@@ -206,6 +235,50 @@ describe("scout tools", () => {
       const handler = registry.handlers.get("scout_get_insights")!;
       const result = await handler({ workspace_slug: "acme" });
       expect(getText(result)).toContain("No insights available");
+    });
+
+    it("should truncate long content with ellipsis", async () => {
+      const longContent = "A".repeat(300);
+      mockPrisma.scoutTopic.findMany.mockResolvedValue([{ id: "topic-1" }]);
+      mockPrisma.scoutResult.findMany.mockResolvedValue([
+        {
+          topicId: "topic-1",
+          platform: "TWITTER",
+          author: "longwriter",
+          content: longContent,
+          foundAt: new Date("2025-06-01"),
+          engagement: { likes: 5 },
+          topic: { name: "Long Topic" },
+        },
+      ]);
+      const handler = registry.handlers.get("scout_get_insights")!;
+      const result = await handler({ workspace_slug: "acme" });
+      const text = getText(result);
+      expect(text).toContain("...");
+      // Should contain only 200 chars of content + ellipsis
+      expect(text).toContain("A".repeat(200));
+    });
+
+    it("should not add ellipsis for short content", async () => {
+      const shortContent = "Short insight content";
+      mockPrisma.scoutTopic.findMany.mockResolvedValue([{ id: "topic-1" }]);
+      mockPrisma.scoutResult.findMany.mockResolvedValue([
+        {
+          topicId: "topic-1",
+          platform: "INSTAGRAM",
+          author: "shortwriter",
+          content: shortContent,
+          foundAt: new Date("2025-06-01"),
+          engagement: { likes: 10 },
+          topic: { name: "Short Topic" },
+        },
+      ]);
+      const handler = registry.handlers.get("scout_get_insights")!;
+      const result = await handler({ workspace_slug: "acme" });
+      const text = getText(result);
+      expect(text).toContain("Short insight content");
+      // Ensure no truncation ellipsis
+      expect(text).not.toMatch(/Short insight content\.\.\./);
     });
   });
 });

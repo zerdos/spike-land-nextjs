@@ -67,6 +67,57 @@ describe("pulse tools", () => {
       const result = await handler({ workspace_slug: "my-ws", account_id: "missing" });
       expect(getText(result)).toContain("NOT_FOUND");
     });
+
+    it("should show 'Never' when sync timestamps are null", async () => {
+      mockPrisma.socialAccountHealth.findUnique.mockResolvedValue({
+        healthScore: 50,
+        status: "DEGRADED",
+        lastSuccessfulSync: null,
+        lastSyncAttempt: null,
+        consecutiveErrors: 3,
+        totalErrorsLast24h: 10,
+        rateLimitRemaining: null,
+        rateLimitTotal: null,
+        rateLimitResetAt: null,
+        isRateLimited: true,
+        tokenRefreshRequired: true,
+        tokenExpiresAt: null,
+        account: { platform: "TWITTER", accountName: "TestBrand" },
+      });
+      const handler = registry.handlers.get("pulse_get_health_score")!;
+      const result = await handler({ workspace_slug: "my-ws", account_id: "acc-2" });
+      const text = getText(result);
+      expect(text).toContain("Last Successful Sync:** Never");
+      expect(text).toContain("Last Sync Attempt:** Never");
+      expect(text).not.toContain("Rate Limit:");
+      expect(text).toContain("Rate Limited:** Yes");
+      expect(text).toContain("Token Refresh Required:** Yes");
+      expect(text).not.toContain("Token Expires:");
+    });
+
+    it("should show rate limit with null remaining and no reset time", async () => {
+      mockPrisma.socialAccountHealth.findUnique.mockResolvedValue({
+        healthScore: 70,
+        status: "WARNING",
+        lastSuccessfulSync: new Date("2025-06-01"),
+        lastSyncAttempt: new Date("2025-06-01"),
+        consecutiveErrors: 1,
+        totalErrorsLast24h: 2,
+        rateLimitRemaining: null,
+        rateLimitTotal: 1000,
+        rateLimitResetAt: null,
+        isRateLimited: false,
+        tokenRefreshRequired: false,
+        tokenExpiresAt: null,
+        account: { platform: "FACEBOOK", accountName: "BrandFB" },
+      });
+      const handler = registry.handlers.get("pulse_get_health_score")!;
+      const result = await handler({ workspace_slug: "my-ws", account_id: "acc-3" });
+      const text = getText(result);
+      expect(text).toContain("? / 1000 remaining");
+      expect(text).not.toContain("resets");
+      expect(text).not.toContain("Token Expires:");
+    });
   });
 
   describe("pulse_list_anomalies", () => {
@@ -93,6 +144,14 @@ describe("pulse tools", () => {
       expect(text).toContain("followers");
       expect(text).toContain("HIGH");
       expect(text).toContain("-3.20");
+    });
+
+    it("should handle empty accounts array", async () => {
+      mockPrisma.socialAccount.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("pulse_list_anomalies")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("No social accounts in this workspace");
     });
 
     it("should respect severity filter", async () => {
@@ -152,6 +211,22 @@ describe("pulse tools", () => {
       const text = getText(result);
       expect(text).toContain("No metrics found");
     });
+
+    it("should show dash for null engagementRate", async () => {
+      mockPrisma.socialMetrics.findMany.mockResolvedValue([
+        {
+          date: new Date("2025-07-01"),
+          followers: 500,
+          engagementRate: null,
+          impressions: 2000,
+          reach: 1000,
+        },
+      ]);
+      const handler = registry.handlers.get("pulse_get_metrics")!;
+      const result = await handler({ workspace_slug: "my-ws", account_id: "acc-1", days: 3 });
+      const text = getText(result);
+      expect(text).toContain("| - |");
+    });
   });
 
   describe("pulse_get_account_health", () => {
@@ -187,6 +262,30 @@ describe("pulse tools", () => {
       expect(text).toContain("95/100");
       expect(text).toContain("RATE LIMITED");
       expect(text).toContain("No health data");
+    });
+
+    it("should handle empty accounts", async () => {
+      mockPrisma.socialAccount.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("pulse_get_account_health")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("No social accounts in this workspace");
+    });
+
+    it("should show TOKEN REFRESH NEEDED warning", async () => {
+      mockPrisma.socialAccount.findMany.mockResolvedValue([
+        {
+          id: "acc-1",
+          platform: "INSTAGRAM",
+          accountName: "RefreshBrand",
+          status: "ACTIVE",
+          health: { healthScore: 60, status: "WARNING", isRateLimited: false, tokenRefreshRequired: true },
+        },
+      ]);
+      const handler = registry.handlers.get("pulse_get_account_health")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("TOKEN REFRESH NEEDED");
     });
   });
 
@@ -226,6 +325,47 @@ describe("pulse tools", () => {
           where: expect.objectContaining({ eventType: "TOKEN_EXPIRED" }),
         }),
       );
+    });
+
+    it("should filter by account_id", async () => {
+      mockPrisma.accountHealthEvent.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("pulse_list_health_events")!;
+      await handler({ workspace_slug: "my-ws", account_id: "acc-42" });
+      expect(mockPrisma.accountHealthEvent.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ accountId: "acc-42" }),
+        }),
+      );
+    });
+
+    it("should show '?' for null previousStatus and previousScore", async () => {
+      mockPrisma.accountHealthEvent.findMany.mockResolvedValue([
+        {
+          id: "evt-2",
+          eventType: "ACCOUNT_CREATED",
+          severity: "LOW",
+          previousStatus: null,
+          newStatus: "HEALTHY",
+          previousScore: null,
+          newScore: 100,
+          message: "New account added",
+          createdAt: new Date("2025-07-02"),
+          account: { accountName: "NewBrand", platform: "TIKTOK" },
+        },
+      ]);
+      const handler = registry.handlers.get("pulse_list_health_events")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("? -> HEALTHY");
+      expect(text).toContain("Score: ? -> 100");
+    });
+
+    it("should handle empty health events", async () => {
+      mockPrisma.accountHealthEvent.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("pulse_list_health_events")!;
+      const result = await handler({ workspace_slug: "my-ws" });
+      const text = getText(result);
+      expect(text).toContain("No health events found");
     });
   });
 });
