@@ -121,71 +121,34 @@ RUN chmod +x ./scripts/run-cached-tests.sh
 # ============================================================================
 # STAGE 8: Unit Tests (sharded) - with coverage-based caching
 # ============================================================================
-FROM test-source AS unit-test-shard
-ARG SHARD_INDEX=1
-ARG SHARD_TOTAL=4
+# Shared test environment
+FROM test-source AS test-env
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ARG DUMMY_DATABASE_URL
 ENV NODE_ENV=test \
     DATABASE_URL=${DUMMY_DATABASE_URL} \
-    SHARD_INDEX=${SHARD_INDEX} \
-    SHARD_TOTAL=${SHARD_TOTAL} \
-    TEST_CACHE_DIR=/app/.test-cache \
-    VITEST_COVERAGE=true
-RUN --mount=type=cache,id=${TEST_CACHE_NS}-${TARGETARCH},target=/app/.test-cache,sharing=locked \
-    ./scripts/run-cached-tests.sh > /tmp/unit-${SHARD_INDEX}.log 2>&1 \
-    || (cat /tmp/unit-${SHARD_INDEX}.log && exit 1)
-
-FROM test-source AS unit-tests-1
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ARG DUMMY_DATABASE_URL
-ENV NODE_ENV=test \
-    DATABASE_URL=${DUMMY_DATABASE_URL} \
-    SHARD_INDEX=1 \
     SHARD_TOTAL=4 \
     TEST_CACHE_DIR=/app/.test-cache \
     VITEST_COVERAGE=true
+
+FROM test-env AS unit-tests-1
+ENV SHARD_INDEX=1
 RUN --mount=type=cache,id=${TEST_CACHE_NS}-${TARGETARCH},target=/app/.test-cache,sharing=locked \
     ./scripts/run-cached-tests.sh > /tmp/unit-1.log 2>&1 || (cat /tmp/unit-1.log && exit 1)
 
-FROM test-source AS unit-tests-2
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ARG DUMMY_DATABASE_URL
-ENV NODE_ENV=test \
-    DATABASE_URL=${DUMMY_DATABASE_URL} \
-    SHARD_INDEX=2 \
-    SHARD_TOTAL=4 \
-    TEST_CACHE_DIR=/app/.test-cache \
-    VITEST_COVERAGE=true
+FROM test-env AS unit-tests-2
+ENV SHARD_INDEX=2
 RUN --mount=type=cache,id=${TEST_CACHE_NS}-${TARGETARCH},target=/app/.test-cache,sharing=locked \
     ./scripts/run-cached-tests.sh > /tmp/unit-2.log 2>&1 || (cat /tmp/unit-2.log && exit 1)
 
-FROM test-source AS unit-tests-3
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ARG DUMMY_DATABASE_URL
-ENV NODE_ENV=test \
-    DATABASE_URL=${DUMMY_DATABASE_URL} \
-    SHARD_INDEX=3 \
-    SHARD_TOTAL=4 \
-    TEST_CACHE_DIR=/app/.test-cache \
-    VITEST_COVERAGE=true
+FROM test-env AS unit-tests-3
+ENV SHARD_INDEX=3
 RUN --mount=type=cache,id=${TEST_CACHE_NS}-${TARGETARCH},target=/app/.test-cache,sharing=locked \
     ./scripts/run-cached-tests.sh > /tmp/unit-3.log 2>&1 || (cat /tmp/unit-3.log && exit 1)
 
-FROM test-source AS unit-tests-4
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ARG DUMMY_DATABASE_URL
-ENV NODE_ENV=test \
-    DATABASE_URL=${DUMMY_DATABASE_URL} \
-    SHARD_INDEX=4 \
-    SHARD_TOTAL=4 \
-    TEST_CACHE_DIR=/app/.test-cache \
-    VITEST_COVERAGE=true
+FROM test-env AS unit-tests-4
+ENV SHARD_INDEX=4
 RUN --mount=type=cache,id=${TEST_CACHE_NS}-${TARGETARCH},target=/app/.test-cache,sharing=locked \
     ./scripts/run-cached-tests.sh > /tmp/unit-4.log 2>&1 || (cat /tmp/unit-4.log && exit 1)
 

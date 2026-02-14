@@ -44,6 +44,9 @@ documented requirements.
 
 ### Phase 0: Ticket Governance (BLOCKING)
 
+> **Fast-path:** If CI runs under 10 seconds and the change is small (single commit),
+> you may commit directly to main without a ticket. Use `file_guard` to verify first.
+
 #### Step 1: Investigate Project Board
 
 ```bash
@@ -284,6 +287,33 @@ yarn build            # Build for production
 yarn lint             # Run ESLint
 yarn test:coverage    # Unit tests with enforced CI coverage thresholds
 ```
+
+**Dev Workflow (MCP-integrated):**
+
+```bash
+yarn start:dev            # Start dev server + Claude Code with MCP
+yarn start:dev:guard      # Start with file guard (auto-test on change)
+yarn dev:logs             # View dev server logs
+yarn dev:logs:tail        # Follow dev server logs
+yarn dev:logs:clear       # Clear dev server logs
+```
+
+**MCP Dev Tools (localhost only):**
+
+When running locally, the spike.land MCP server exposes dev workflow tools:
+- `dev_logs` — Read dev server logs (filterable, tail-able)
+- `dev_status` — Server PID, uptime, port, current commit
+- `github_status` — Current branch, commit, CI status, open PRs
+- `file_guard` — Pre-check file changes against `vitest --changed`
+- `notify_agent` — Send/receive dev event notifications
+
+### Trunk-Based Development (When CI < 10s)
+
+When `vitest --changed HEAD` runs in under 10 seconds:
+- Commit directly to main — no branches needed
+- Use `file_guard` MCP tool to verify changes pre-commit
+- CI catches issues in real-time
+- Still create branches for multi-day features or multi-agent collaboration
 
 **Shared Package:**
 

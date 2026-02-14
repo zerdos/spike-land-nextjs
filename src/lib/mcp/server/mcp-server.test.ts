@@ -14,9 +14,6 @@ const {
   mockRegisterToolFactoryTools,
   mockRegisterBootstrapTools,
   mockRegisterAppsTools,
-  mockRegisterOrbitWorkspaceTools,
-  mockRegisterOrbitInboxTools,
-  mockRegisterOrbitRelayTools,
   mockRegisterArenaTools,
   mockRegisterAlbumImagesTools,
   mockRegisterAlbumManagementTools,
@@ -26,15 +23,6 @@ const {
   mockRegisterLearnItTools,
   mockRegisterAdminTools,
   mockRegisterAuthTools,
-  mockRegisterPixelTools,
-  mockRegisterOrbitAllocatorTools,
-  mockRegisterOrbitCalendarTools,
-  mockRegisterOrbitSocialTools,
-  mockRegisterMerchTools,
-  mockRegisterBrandBrainTools,
-  mockRegisterConnectionsTools,
-  mockRegisterBoxesTools,
-  mockRegisterSmartRoutingTools,
   mockRegisterSkillStoreTools,
   mockRegisterWorkspacesTools,
   mockRegisterAgentManagementTools,
@@ -42,7 +30,6 @@ const {
   mockRegisterCreditsTools,
   mockRegisterBillingTools,
   mockRegisterPipelinesTools,
-  mockRegisterAgencyTools,
   mockRegisterBlogTools,
   mockRegisterReportsTools,
   mockRegisterAudioTools,
@@ -50,6 +37,7 @@ const {
   mockRegisterNewsletterTools,
   mockRegisterTtsTools,
   mockRegisterBazdmegFaqTools,
+  mockRegisterDevTools,
   mockRegistryInstance,
 } = vi.hoisted(() => ({
   mockRegistryInstance: {} as Record<string, unknown>,
@@ -71,9 +59,6 @@ const {
   mockRegisterToolFactoryTools: vi.fn(),
   mockRegisterBootstrapTools: vi.fn(),
   mockRegisterAppsTools: vi.fn(),
-  mockRegisterOrbitWorkspaceTools: vi.fn(),
-  mockRegisterOrbitInboxTools: vi.fn(),
-  mockRegisterOrbitRelayTools: vi.fn(),
   mockRegisterArenaTools: vi.fn(),
   mockRegisterAlbumImagesTools: vi.fn(),
   mockRegisterAlbumManagementTools: vi.fn(),
@@ -83,15 +68,6 @@ const {
   mockRegisterLearnItTools: vi.fn(),
   mockRegisterAdminTools: vi.fn(),
   mockRegisterAuthTools: vi.fn(),
-  mockRegisterPixelTools: vi.fn(),
-  mockRegisterOrbitAllocatorTools: vi.fn(),
-  mockRegisterOrbitCalendarTools: vi.fn(),
-  mockRegisterOrbitSocialTools: vi.fn(),
-  mockRegisterMerchTools: vi.fn(),
-  mockRegisterBrandBrainTools: vi.fn(),
-  mockRegisterConnectionsTools: vi.fn(),
-  mockRegisterBoxesTools: vi.fn(),
-  mockRegisterSmartRoutingTools: vi.fn(),
   mockRegisterSkillStoreTools: vi.fn(),
   mockRegisterWorkspacesTools: vi.fn(),
   mockRegisterAgentManagementTools: vi.fn(),
@@ -99,7 +75,6 @@ const {
   mockRegisterCreditsTools: vi.fn(),
   mockRegisterBillingTools: vi.fn(),
   mockRegisterPipelinesTools: vi.fn(),
-  mockRegisterAgencyTools: vi.fn(),
   mockRegisterBlogTools: vi.fn(),
   mockRegisterReportsTools: vi.fn(),
   mockRegisterAudioTools: vi.fn(),
@@ -107,6 +82,7 @@ const {
   mockRegisterNewsletterTools: vi.fn(),
   mockRegisterTtsTools: vi.fn(),
   mockRegisterBazdmegFaqTools: vi.fn(),
+  mockRegisterDevTools: vi.fn(),
 }));
 
 // Mock McpServer constructor - must use function keyword for `new` support
@@ -135,9 +111,6 @@ vi.mock("./tools/vault", () => ({ registerVaultTools: mockRegisterVaultTools }))
 vi.mock("./tools/tool-factory", () => ({ registerToolFactoryTools: mockRegisterToolFactoryTools }));
 vi.mock("./tools/bootstrap", () => ({ registerBootstrapTools: mockRegisterBootstrapTools }));
 vi.mock("./tools/apps", () => ({ registerAppsTools: mockRegisterAppsTools }));
-vi.mock("./tools/orbit-workspace", () => ({ registerOrbitWorkspaceTools: mockRegisterOrbitWorkspaceTools }));
-vi.mock("./tools/orbit-inbox", () => ({ registerOrbitInboxTools: mockRegisterOrbitInboxTools }));
-vi.mock("./tools/orbit-relay", () => ({ registerOrbitRelayTools: mockRegisterOrbitRelayTools }));
 vi.mock("./tools/arena", () => ({ registerArenaTools: mockRegisterArenaTools }));
 vi.mock("./tools/album-images", () => ({ registerAlbumImagesTools: mockRegisterAlbumImagesTools }));
 vi.mock("./tools/album-management", () => ({ registerAlbumManagementTools: mockRegisterAlbumManagementTools }));
@@ -147,15 +120,6 @@ vi.mock("./tools/create", () => ({ registerCreateTools: mockRegisterCreateTools 
 vi.mock("./tools/learnit", () => ({ registerLearnItTools: mockRegisterLearnItTools }));
 vi.mock("./tools/admin", () => ({ registerAdminTools: mockRegisterAdminTools }));
 vi.mock("./tools/auth", () => ({ registerAuthTools: mockRegisterAuthTools }));
-vi.mock("./tools/pixel", () => ({ registerPixelTools: mockRegisterPixelTools }));
-vi.mock("./tools/orbit-allocator", () => ({ registerOrbitAllocatorTools: mockRegisterOrbitAllocatorTools }));
-vi.mock("./tools/orbit-calendar", () => ({ registerOrbitCalendarTools: mockRegisterOrbitCalendarTools }));
-vi.mock("./tools/orbit-social", () => ({ registerOrbitSocialTools: mockRegisterOrbitSocialTools }));
-vi.mock("./tools/merch", () => ({ registerMerchTools: mockRegisterMerchTools }));
-vi.mock("./tools/brand-brain", () => ({ registerBrandBrainTools: mockRegisterBrandBrainTools }));
-vi.mock("./tools/connections", () => ({ registerConnectionsTools: mockRegisterConnectionsTools }));
-vi.mock("./tools/boxes", () => ({ registerBoxesTools: mockRegisterBoxesTools }));
-vi.mock("./tools/smart-routing", () => ({ registerSmartRoutingTools: mockRegisterSmartRoutingTools }));
 vi.mock("./tools/skill-store", () => ({ registerSkillStoreTools: mockRegisterSkillStoreTools }));
 vi.mock("./tools/workspaces", () => ({ registerWorkspacesTools: mockRegisterWorkspacesTools }));
 vi.mock("./tools/agent-management", () => ({ registerAgentManagementTools: mockRegisterAgentManagementTools }));
@@ -163,7 +127,6 @@ vi.mock("./tools/settings", () => ({ registerSettingsTools: mockRegisterSettings
 vi.mock("./tools/credits", () => ({ registerCreditsTools: mockRegisterCreditsTools }));
 vi.mock("./tools/billing", () => ({ registerBillingTools: mockRegisterBillingTools }));
 vi.mock("./tools/pipelines", () => ({ registerPipelinesTools: mockRegisterPipelinesTools }));
-vi.mock("./tools/agency", () => ({ registerAgencyTools: mockRegisterAgencyTools }));
 vi.mock("./tools/blog", () => ({ registerBlogTools: mockRegisterBlogTools }));
 vi.mock("./tools/reports", () => ({ registerReportsTools: mockRegisterReportsTools }));
 vi.mock("./tools/audio", () => ({ registerAudioTools: mockRegisterAudioTools }));
@@ -171,6 +134,7 @@ vi.mock("./tools/chat", () => ({ registerChatTools: mockRegisterChatTools }));
 vi.mock("./tools/newsletter", () => ({ registerNewsletterTools: mockRegisterNewsletterTools }));
 vi.mock("./tools/tts", () => ({ registerTtsTools: mockRegisterTtsTools }));
 vi.mock("./tools/bazdmeg-faq", () => ({ registerBazdmegFaqTools: mockRegisterBazdmegFaqTools }));
+vi.mock("./tools/dev", () => ({ registerDevTools: mockRegisterDevTools }));
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ToolRegistry } from "./tool-registry";
@@ -178,16 +142,22 @@ import { createMcpServer } from "./mcp-server";
 
 describe("createMcpServer", () => {
   const userId = "test-user-123";
+  const originalNodeEnv = process.env["NODE_ENV"];
 
   beforeEach(() => {
     vi.clearAllMocks();
     // Default: both jules and gateway unavailable
     mockIsJulesAvailable.mockReturnValue(false);
     mockIsGatewayAvailable.mockReturnValue(false);
+    vi.stubEnv("NODE_ENV", "test");
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
+    if (originalNodeEnv !== undefined) {
+      (process.env as Record<string, string>)["NODE_ENV"] = originalNodeEnv;
+    }
   });
 
   it("should create McpServer with correct name, version, and capabilities", () => {
@@ -223,9 +193,6 @@ describe("createMcpServer", () => {
       mockRegisterToolFactoryTools,
       mockRegisterBootstrapTools,
       mockRegisterAppsTools,
-      mockRegisterOrbitWorkspaceTools,
-      mockRegisterOrbitInboxTools,
-      mockRegisterOrbitRelayTools,
       mockRegisterArenaTools,
       mockRegisterAlbumImagesTools,
       mockRegisterAlbumManagementTools,
@@ -235,15 +202,6 @@ describe("createMcpServer", () => {
       mockRegisterLearnItTools,
       mockRegisterAdminTools,
       mockRegisterAuthTools,
-      mockRegisterPixelTools,
-      mockRegisterOrbitAllocatorTools,
-      mockRegisterOrbitCalendarTools,
-      mockRegisterOrbitSocialTools,
-      mockRegisterMerchTools,
-      mockRegisterBrandBrainTools,
-      mockRegisterConnectionsTools,
-      mockRegisterBoxesTools,
-      mockRegisterSmartRoutingTools,
       mockRegisterSkillStoreTools,
       mockRegisterWorkspacesTools,
       mockRegisterAgentManagementTools,
@@ -251,7 +209,6 @@ describe("createMcpServer", () => {
       mockRegisterCreditsTools,
       mockRegisterBillingTools,
       mockRegisterPipelinesTools,
-      mockRegisterAgencyTools,
       mockRegisterBlogTools,
       mockRegisterReportsTools,
       mockRegisterAudioTools,
@@ -306,5 +263,21 @@ describe("createMcpServer", () => {
 
     expect(mockRegisterJulesTools).toHaveBeenCalled();
     expect(mockRegisterGatewayTools).toHaveBeenCalled();
+  });
+
+  it("should register dev tools when NODE_ENV is development", () => {
+    vi.stubEnv("NODE_ENV", "development");
+
+    createMcpServer(userId);
+
+    expect(mockRegisterDevTools).toHaveBeenCalledWith(mockRegistryInstance, userId);
+  });
+
+  it("should skip dev tools when NODE_ENV is not development", () => {
+    vi.stubEnv("NODE_ENV", "production");
+
+    createMcpServer(userId);
+
+    expect(mockRegisterDevTools).not.toHaveBeenCalled();
   });
 });

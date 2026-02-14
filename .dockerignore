@@ -67,3 +67,7 @@ tmp
 .claude/tasks/
 
 .well-known
+.dev-logs
+.claude
+.eslintcache
+.husky

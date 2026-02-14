@@ -82,6 +82,9 @@ packages/video/out/
 *.mov
 *.avi
 
+# Dev server logs
+.dev-logs/
+
 # CI artifact downloads
 /ci-output
 

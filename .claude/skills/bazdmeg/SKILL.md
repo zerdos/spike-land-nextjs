@@ -100,13 +100,34 @@ Before adding AI agents to a workflow, verify these five gates pass.
 
 | Gate | Requirement | Why |
 |------|-------------|-----|
-| CI Speed | Under 10 minutes | Every minute saved = a minute saved per agent iteration |
+| CI Speed | Under 10 min (under 10s = branchless) | Fast CI = fast agent iterations. If CI completes in under 10 seconds, skip branches entirely — commit to main (trunk-based dev). |
 | Flaky Tests | Zero | Flaky tests gaslight the AI into chasing phantom bugs |
 | Coverage | 100% on business logic | Untested code is invisible to agents; they will refactor through it |
 | TypeScript | Strict mode enabled | Claude Code integrates with the TS Language Server; strict mode = level zero |
 | CLAUDE.md | Current and complete | Stops the AI from guessing; it follows the playbook instead |
 
 See [references/02-discipline.md](references/02-discipline.md) for the full breakdown.
+
+---
+
+## The 10-Second Rule: Trunk-Based Development
+
+If your CI pipeline (lint + typecheck + tests on changed files) consistently completes in under 10 seconds:
+
+**Skip feature branches.** Commit directly to main. The feedback loop is fast enough that broken commits are caught and fixed immediately.
+
+This is **trunk-based development** — the same pattern used by Google, Meta, and other high-velocity engineering orgs. Prerequisites:
+- Fast, reliable CI (under 10 seconds for affected tests)
+- Zero flaky tests
+- `vitest --changed COMMIT_HASH` to only run affected tests
+- `file_guard` MCP tool to pre-validate changes
+
+**When to still use branches:**
+- CI takes more than 10 seconds
+- Multiple agents work on the same codebase simultaneously
+- Regulatory/compliance requirements mandate review
+
+**The math:** 50 commits/day at 5s CI each = 4 minutes waiting. Branching overhead at 5 min/change = 250 minutes of ceremony. The choice is clear.
 
 ---
 

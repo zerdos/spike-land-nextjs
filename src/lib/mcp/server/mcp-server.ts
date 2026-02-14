@@ -16,9 +16,6 @@ import { registerVaultTools } from "./tools/vault";
 import { registerToolFactoryTools } from "./tools/tool-factory";
 import { registerBootstrapTools } from "./tools/bootstrap";
 import { registerAppsTools } from "./tools/apps";
-import { registerOrbitWorkspaceTools } from "./tools/orbit-workspace";
-import { registerOrbitInboxTools } from "./tools/orbit-inbox";
-import { registerOrbitRelayTools } from "./tools/orbit-relay";
 import { registerArenaTools } from "./tools/arena";
 import { registerAlbumImagesTools } from "./tools/album-images";
 import { registerAlbumManagementTools } from "./tools/album-management";
@@ -28,15 +25,6 @@ import { registerCreateTools } from "./tools/create";
 import { registerLearnItTools } from "./tools/learnit";
 import { registerAdminTools } from "./tools/admin";
 import { registerAuthTools } from "./tools/auth";
-import { registerPixelTools } from "./tools/pixel";
-import { registerOrbitAllocatorTools } from "./tools/orbit-allocator";
-import { registerOrbitCalendarTools } from "./tools/orbit-calendar";
-import { registerOrbitSocialTools } from "./tools/orbit-social";
-import { registerMerchTools } from "./tools/merch";
-import { registerBrandBrainTools } from "./tools/brand-brain";
-import { registerConnectionsTools } from "./tools/connections";
-import { registerBoxesTools } from "./tools/boxes";
-import { registerSmartRoutingTools } from "./tools/smart-routing";
 import { registerSkillStoreTools } from "./tools/skill-store";
 import { registerWorkspacesTools } from "./tools/workspaces";
 import { registerAgentManagementTools } from "./tools/agent-management";
@@ -44,7 +32,6 @@ import { registerSettingsTools } from "./tools/settings";
 import { registerCreditsTools } from "./tools/credits";
 import { registerBillingTools } from "./tools/billing";
 import { registerPipelinesTools } from "./tools/pipelines";
-import { registerAgencyTools } from "./tools/agency";
 import { registerBlogTools } from "./tools/blog";
 import { registerReportsTools } from "./tools/reports";
 import { registerAudioTools } from "./tools/audio";
@@ -52,6 +39,7 @@ import { registerChatTools } from "./tools/chat";
 import { registerNewsletterTools } from "./tools/newsletter";
 import { registerTtsTools } from "./tools/tts";
 import { registerBazdmegFaqTools } from "./tools/bazdmeg-faq";
+import { registerDevTools } from "./tools/dev";
 
 /**
  * Create a fully configured MCP server for a specific user.
@@ -103,15 +91,6 @@ export function createMcpServer(userId: string): McpServer {
   // My-Apps tools (discoverable)
   registerAppsTools(registry, userId);
 
-  // Orbit workspace tools (discoverable)
-  registerOrbitWorkspaceTools(registry, userId);
-
-  // Orbit inbox tools (discoverable)
-  registerOrbitInboxTools(registry, userId);
-
-  // Orbit relay tools (discoverable)
-  registerOrbitRelayTools(registry, userId);
-
   // Arena tools (discoverable)
   registerArenaTools(registry, userId);
 
@@ -139,33 +118,6 @@ export function createMcpServer(userId: string): McpServer {
   // Auth tools (discoverable)
   registerAuthTools(registry, userId);
 
-  // Pixel tools (discoverable)
-  registerPixelTools(registry, userId);
-
-  // Orbit allocator tools (discoverable)
-  registerOrbitAllocatorTools(registry, userId);
-
-  // Orbit calendar tools (discoverable)
-  registerOrbitCalendarTools(registry, userId);
-
-  // Orbit social tools (discoverable)
-  registerOrbitSocialTools(registry, userId);
-
-  // Merch tools (discoverable)
-  registerMerchTools(registry, userId);
-
-  // Brand Brain tools (discoverable)
-  registerBrandBrainTools(registry, userId);
-
-  // Connections tools (discoverable)
-  registerConnectionsTools(registry, userId);
-
-  // Boxes tools (discoverable)
-  registerBoxesTools(registry, userId);
-
-  // Smart routing tools (discoverable)
-  registerSmartRoutingTools(registry, userId);
-
   // Skill store tools (discoverable)
   registerSkillStoreTools(registry, userId);
 
@@ -187,9 +139,6 @@ export function createMcpServer(userId: string): McpServer {
   // Pipelines tools (discoverable)
   registerPipelinesTools(registry, userId);
 
-  // Agency tools (discoverable)
-  registerAgencyTools(registry, userId);
-
   // Blog tools (discoverable)
   registerBlogTools(registry, userId);
 
@@ -210,6 +159,11 @@ export function createMcpServer(userId: string): McpServer {
 
   // BAZDMEG FAQ tools (discoverable)
   registerBazdmegFaqTools(registry, userId);
+
+  // Dev workflow tools (localhost only)
+  if (process.env.NODE_ENV === "development") {
+    registerDevTools(registry, userId);
+  }
 
   return mcpServer;
 }

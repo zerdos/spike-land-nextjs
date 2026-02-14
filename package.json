@@ -66,7 +66,11 @@
     "depot:build": "depot build . --target=build --progress=plain",
     "depot:lint": "depot build . --target=lint --progress=plain",
     "depot:tests": "depot build . --target=unit-tests --progress=plain",
-    "start:dev": "node scripts/start-dev.mjs"
+    "start:dev": "node scripts/start-dev.mjs",
+    "dev:logs": "cat .dev-logs/dev-server.log 2>/dev/null || echo 'No dev logs found. Start with: yarn start:dev'",
+    "dev:logs:tail": "tail -f .dev-logs/dev-server.log",
+    "dev:logs:clear": "rm -rf .dev-logs && echo 'Dev logs cleared'",
+    "start:dev:guard": "FILE_GUARD=1 node scripts/start-dev.mjs"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.2.42",
