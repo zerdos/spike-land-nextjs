@@ -9,6 +9,7 @@
 
 import { sendEmail } from "@/lib/email/client";
 import { PulseAlertEmail } from "@/lib/email/templates/pulse-alert";
+import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { sendSlackNotification } from "./slack-channel";
@@ -94,7 +95,7 @@ export async function getWorkspacePreferences(
   );
 
   if (error || !workspace) {
-    console.warn("[Notifications] Failed to get workspace preferences:", error);
+    logger.warn("[Notifications] Failed to get workspace preferences", { error });
     return { workspaceId, ...DEFAULT_PREFERENCES };
   }
 
@@ -225,7 +226,7 @@ async function storeInAppNotification(
   );
 
   if (error) {
-    console.error("[Notifications] Failed to store in-app notification:", error);
+    logger.error("[Notifications] Failed to store in-app notification", { error });
     return {
       channel: "in_app",
       status: "failed",
@@ -233,9 +234,8 @@ async function storeInAppNotification(
     };
   }
 
-  console.log(
-    "[Notifications] In-app notification stored:",
-    result?.id ?? notification.id,
+  logger.info(
+    `[Notifications] In-app notification stored: ${result?.id ?? notification.id}`,
   );
 
   return {
@@ -282,7 +282,7 @@ export async function sendNotification(
 
   // Check quiet hours
   if (isQuietHours(preferences)) {
-    console.log("[Notifications] Quiet hours active, skipping notifications");
+    logger.info("[Notifications] Quiet hours active, skipping notifications");
     return {
       success: true,
       channels: [

@@ -72,6 +72,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   merch: "Merchandise store: products, cart, checkout, and order management",
   "brand-brain": "AI brand voice: rewrite text and analyze brand characteristics",
   connections: "Business connections and competitor tracking",
+  bazdmeg: "BAZDMEG methodology FAQ management",
   boxes: "Box management: organize items in virtual containers",
   "smart-routing": "Smart routing: traffic rules, weights, and performance stats",
   "skill-store": "Skill Store: browse, install, and manage agent skills and extensions",

@@ -2,6 +2,7 @@
  * Arena seed script - run with: npx tsx src/lib/arena/seed.ts
  */
 import { config } from "dotenv";
+import logger from "@/lib/logger";
 config({ path: ".env.local" });
 
 async function seed() {
@@ -14,10 +15,10 @@ async function seed() {
     admin = await prisma.user.findFirst();
   }
   if (!admin) {
-    console.log("No users found in database");
+    logger.info("No users found in database");
     process.exit(1);
   }
-  console.log("Using user:", admin.id, admin.name, `(role: ${admin.role})`);
+  logger.info(`Using user: ${admin.id} ${admin.name} (role: ${admin.role})`);
 
   const challenges = [
     {
@@ -55,21 +56,21 @@ async function seed() {
       where: { title: c.title },
     });
     if (existing) {
-      console.log("Skipping (exists):", c.title);
+      logger.info(`Skipping (exists): ${c.title}`);
       continue;
     }
     const created = await prisma.arenaChallenge.create({
       data: { ...c, createdById: admin.id },
     });
-    console.log("Created:", created.id, created.title);
+    logger.info(`Created: ${created.id} ${created.title}`);
   }
 
-  console.log("Done!");
+  logger.info("Done!");
 }
 
 seed()
   .then(() => process.exit(0))
   .catch((e) => {
-    console.error(e);
+    logger.error("Seed failed", { error: e });
     process.exit(1);
   });

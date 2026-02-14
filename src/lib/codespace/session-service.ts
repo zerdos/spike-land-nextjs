@@ -1,5 +1,6 @@
+import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-
+import logger from "@/lib/logger";
 import { publishSSEEvent, redis } from "@/lib/upstash";
 import { DEFAULT_TEMPLATE } from "./default-template";
 import { computeSessionHash } from "./hash-utils";
@@ -26,7 +27,7 @@ export class SessionService {
         return cached;
       }
     } catch (e) {
-      console.error(`[SessionService] Redis error for ${codeSpace}:`, e);
+      logger.error(`[SessionService] Redis error for ${codeSpace}`, { error: e });
     }
 
     // Fallback to PostgreSQL
@@ -53,7 +54,7 @@ export class SessionService {
     try {
       await redis.set(cacheKey, session, { ex: SESSION_CACHE_TTL });
     } catch (e) {
-      console.error(`[SessionService] Failed to cache session for ${codeSpace}:`, e);
+      logger.error(`[SessionService] Failed to cache session for ${codeSpace}`, { error: e });
     }
 
     return session;
@@ -78,8 +79,7 @@ export class SessionService {
         html: session.html,
         css: session.css,
         hash,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        messages: session.messages as any,
+        messages: session.messages as unknown as Prisma.InputJsonValue,
         requiresReRender: session.requiresReRender,
       },
       create: {
@@ -89,8 +89,7 @@ export class SessionService {
         html: session.html,
         css: session.css,
         hash,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        messages: session.messages as any,
+        messages: session.messages as unknown as Prisma.InputJsonValue,
         requiresReRender: session.requiresReRender,
       },
     });
@@ -127,8 +126,7 @@ export class SessionService {
         html: session.html,
         css: session.css,
         hash,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        messages: session.messages as any,
+        messages: session.messages as unknown as Prisma.InputJsonValue,
         requiresReRender: session.requiresReRender,
       },
       create: {
@@ -138,8 +136,7 @@ export class SessionService {
         html: session.html,
         css: session.css,
         hash,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        messages: session.messages as any,
+        messages: session.messages as unknown as Prisma.InputJsonValue,
         requiresReRender: session.requiresReRender,
       },
     });
@@ -173,8 +170,7 @@ export class SessionService {
         html: newSession.html,
         css: newSession.css,
         hash: newHash,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        messages: newSession.messages as any,
+        messages: newSession.messages as unknown as Prisma.InputJsonValue,
         requiresReRender: newSession.requiresReRender ?? false,
       },
     });
@@ -227,7 +223,7 @@ export class SessionService {
       },
       timestamp: Date.now(),
     }).catch(err => {
-      console.error(`[SessionService] Failed to broadcast update for ${codeSpace}:`, err);
+      logger.error(`[SessionService] Failed to broadcast update for ${codeSpace}`, { error: err });
     });
 
     return { success: true, session: { ...newSession, hash: newHash } };

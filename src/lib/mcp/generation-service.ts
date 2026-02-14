@@ -12,6 +12,7 @@ import prisma from "@/lib/prisma";
 import { uploadToR2 } from "@/lib/storage/r2-client";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, McpJobType } from "@prisma/client";
+import logger from "@/lib/logger";
 import { classifyError as classifyErrorImpl } from "./error-classifier";
 import type { ClassifiedError } from "./errors";
 
@@ -145,7 +146,7 @@ export async function createGenerationJob(
     aspectRatio,
     userId,
   }).catch((error) => {
-    console.error(`Generation job ${job.id} failed:`, error);
+    logger.error(`Generation job ${job.id} failed`, { error });
   });
 
   return {
@@ -215,7 +216,7 @@ export async function createModificationJob(
     mimeType,
     userId,
   }).catch((error) => {
-    console.error(`Modification job ${job.id} failed:`, error);
+    logger.error(`Modification job ${job.id} failed`, { error });
   });
 
   return {
@@ -291,7 +292,7 @@ async function processGenerationJob(
     return;
   }
 
-  console.log(`Generation job ${jobId} completed successfully`);
+  logger.info(`Generation job ${jobId} completed successfully`);
 }
 
 /**
@@ -301,11 +302,11 @@ async function handleGenerationJobFailure(
   jobId: string,
   error: Error,
 ): Promise<void> {
-  console.error(`Generation job ${jobId} failed:`, error);
+  logger.error(`Generation job ${jobId} failed`, { error });
 
   // Classify error for user-friendly message
   const classifiedError = classifyError(error);
-  console.log(
+  logger.info(
     `Generation job ${jobId} error classified as: ${classifiedError.code}`,
   );
 
@@ -365,7 +366,7 @@ async function processModificationJob(
 
   // Auto-detect aspect ratio from input image dimensions
   const detectedAspectRatio = detectAspectRatio(inputWidth, inputHeight);
-  console.log(
+  logger.info(
     `Modification job ${jobId}: detected aspect ratio ${detectedAspectRatio} from ${inputWidth}x${inputHeight}`,
   );
 
@@ -455,7 +456,7 @@ async function processModificationJob(
     return;
   }
 
-  console.log(`Modification job ${jobId} completed successfully`);
+  logger.info(`Modification job ${jobId} completed successfully`);
 }
 
 /**
@@ -465,11 +466,11 @@ async function handleModificationJobFailure(
   jobId: string,
   error: Error,
 ): Promise<void> {
-  console.error(`Modification job ${jobId} failed:`, error);
+  logger.error(`Modification job ${jobId} failed`, { error });
 
   // Classify error for user-friendly message
   const classifiedError = classifyError(error);
-  console.log(
+  logger.info(
     `Modification job ${jobId} error classified as: ${classifiedError.code}`,
   );
 
@@ -704,12 +705,12 @@ export async function rerunMcpJob(
       tier: job.tier.replace("TIER_", "") as "1K" | "2K" | "4K",
       userId: job.userId,
     }).catch((error) => {
-      console.error(`Rerun generation job ${newJob.id} failed:`, error);
+      logger.error(`Rerun generation job ${newJob.id} failed`, { error });
     });
   } else if (job.type === McpJobType.MODIFY && job.inputImageUrl) {
     // For modify jobs, we need to fetch the original image
     fetchAndProcessModification(newJob.id, job).catch((error) => {
-      console.error(`Rerun modification job ${newJob.id} failed:`, error);
+      logger.error(`Rerun modification job ${newJob.id} failed`, { error });
     });
   }
 
@@ -760,6 +761,6 @@ async function fetchAndProcessModification(
     mimeType,
     userId: originalJob.userId,
   }).catch((error) => {
-    console.error(`Rerun modification job ${newJobId} failed:`, error);
+    logger.error(`Rerun modification job ${newJobId} failed`, { error });
   });
 }

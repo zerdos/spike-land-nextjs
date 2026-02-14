@@ -155,8 +155,7 @@ export const createMockStorageService = (): StorageService =>
 // Note: The caller must pass in the mocked StorageService constructor from their module
 // Use function expression for Vitest 4 constructor mocking
 export const setupStorageServiceMock = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  StorageServiceMock: new(...args: any[]) => StorageService,
+  StorageServiceMock: new(...args: unknown[]) => StorageService,
   mockStorageService: StorageService,
 ) => {
   vi.mocked(StorageServiceMock).mockImplementation(function() {

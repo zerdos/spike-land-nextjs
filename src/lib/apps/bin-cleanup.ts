@@ -5,6 +5,7 @@
  * the retention period (default 30 days).
  */
 
+import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 
@@ -77,7 +78,7 @@ export async function cleanupExpiredBinApps(
   );
 
   if (fetchError) {
-    console.error("Error fetching expired bin apps:", fetchError);
+    logger.error("Error fetching expired bin apps", { error: fetchError });
     throw new Error(`Failed to fetch expired apps: ${fetchError.message}`);
   }
 
@@ -118,7 +119,7 @@ export async function cleanupExpiredBinApps(
     );
 
     if (deleteError) {
-      console.error(`Error deleting app ${app.id}:`, deleteError);
+      logger.error(`Error deleting app ${app.id}`, { error: deleteError });
       appResult.error = deleteError.message;
       result.apps.push(appResult);
       result.errors.push({
@@ -129,7 +130,7 @@ export async function cleanupExpiredBinApps(
     } else {
       result.apps.push(appResult);
       result.deleted++;
-      console.log(
+      logger.info(
         `Cleaned up expired bin app: ${app.name} (${app.id}), user: ${app.userId}`,
       );
     }
@@ -162,7 +163,7 @@ export async function getBinStats(): Promise<{
   );
 
   if (error) {
-    console.error("Error getting bin stats:", error);
+    logger.error("Error getting bin stats", { error });
     return {
       totalInBin: 0,
       expiringWithin7Days: 0,

@@ -26,7 +26,7 @@ const ActionNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
         </div>
       </CardHeader>
       <CardContent className="p-3 text-xs text-muted-foreground">
-        {data["config"]?.["description"] || "Performs a task"}
+        {String(data["config"]?.["description"] ?? "Performs a task")}
       </CardContent>
       <Handle
         type="source"

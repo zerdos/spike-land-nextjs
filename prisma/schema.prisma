@@ -4993,3 +4993,56 @@ model SkillInstallation {
   @@index([userId])
   @@map("skill_installations")
 }
+
+model BazdmegChatMessage {
+  id             String   @id @default(cuid())
+  sessionId      String
+  question       String
+  answer         String?
+  gitHubIssueUrl String?
+  gitHubIssueNum Int?
+  model          String   @default("haiku")
+  inputTokens    Int      @default(0)
+  outputTokens   Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  @@index([sessionId, createdAt])
+  @@index([createdAt])
+  @@map("bazdmeg_chat_messages")
+}
+
+model BazdmegFaqEntry {
+  id           String   @id @default(cuid())
+  question     String
+  answer       String
+  category     String   @default("general")
+  sortOrder    Int      @default(0)
+  isPublished  Boolean  @default(true)
+  viewCount    Int      @default(0)
+  helpfulCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isPublished, sortOrder])
+  @@index([category])
+  @@map("bazdmeg_faq_entries")
+}
+
+model PageEngagement {
+  id             String   @id @default(cuid())
+  visitorId      String
+  page           String
+  abVariant      String?
+  scrollDepthMax Int      @default(0)
+  timeOnPageMs   Int      @default(0)
+  sectionsViewed String[]
+  chatOpened     Boolean  @default(false)
+  ctaClicked     String?
+  faqExpanded    Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([visitorId, page])
+  @@index([page, createdAt])
+  @@map("page_engagements")
+}

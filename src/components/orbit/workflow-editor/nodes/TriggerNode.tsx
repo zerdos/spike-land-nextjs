@@ -21,7 +21,7 @@ const TriggerNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
         </div>
       </CardHeader>
       <CardContent className="p-3 text-xs text-muted-foreground">
-        {data["config"]?.["description"] || "Starts the workflow"}
+        {String(data["config"]?.["description"] ?? "Starts the workflow")}
       </CardContent>
       <Handle
         type="source"

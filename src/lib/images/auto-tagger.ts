@@ -1,4 +1,6 @@
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import logger from "@/lib/logger";
 
 export function extractTagsFromAnalysis(analysisJson: unknown): string[] {
   if (!analysisJson || typeof analysisJson !== "object") {
@@ -45,8 +47,7 @@ export async function applyAutoTags(imageId: string): Promise<void> {
     const job = await prisma.imageEnhancementJob.findFirst({
       where: {
         imageId,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        analysisResult: { not: null as any }, // Prisma JSON filter workaround
+        analysisResult: { not: Prisma.DbNull },
       },
       orderBy: { createdAt: "desc" },
       select: { analysisResult: true },
@@ -63,9 +64,9 @@ export async function applyAutoTags(imageId: string): Promise<void> {
         where: { id: imageId },
         data: { tags },
       });
-      console.log(`[AutoTagger] Applied ${tags.length} tags to image ${imageId}`);
+      logger.info(`[AutoTagger] Applied ${tags.length} tags to image ${imageId}`);
     }
   } catch (error) {
-    console.error(`[AutoTagger] Failed to apply tags for image ${imageId}:`, error);
+    logger.error(`[AutoTagger] Failed to apply tags for image ${imageId}:`, error as object);
   }
 }

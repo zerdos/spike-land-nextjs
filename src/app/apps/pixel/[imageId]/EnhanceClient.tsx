@@ -24,7 +24,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-interface EnhanceClientProps {
+export interface EnhanceClientProps {
   image: EnhancedImage & {
     enhancementJobs: (ImageEnhancementJob & {
       sourceImage?: {
@@ -110,8 +110,12 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   const { job: streamJob } = useJobStream({
     jobId: activeJobId,
     onComplete: useCallback(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (completedJob: any) => {
+      (completedJob: {
+        id: string;
+        enhancedUrl: string | null;
+        enhancedWidth: number | null;
+        enhancedHeight: number | null;
+      }) => {
         // SSE complete - update local state immediately
         setImage((prev: ImageWithJobs) => ({
           ...prev,

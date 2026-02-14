@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import type { CreativeVariant, TargetingSuggestion } from "@/lib/types/organic-to-ad";
 
@@ -31,10 +32,10 @@ export class AdCreationService {
       }
 
       // Log parameters to avoid unused variable lint errors (and for debugging)
-      console.log(`Creating ad for workspace ${workspaceId}, post ${postId}`);
-      console.log("Creative details:", creative.id, creative.format);
-      console.log("Targeting details:", targeting.platform, targeting.audienceSize);
-      console.log("Budget details:", budget.daily, budget.total);
+      logger.info(`Creating ad for workspace ${workspaceId}, post ${postId}`);
+      logger.info(`Creative details: ${creative.id} ${creative.format}`);
+      logger.info(`Targeting details: ${targeting.platform} ${targeting.audienceSize}`);
+      logger.info(`Budget details: ${budget.daily} ${budget.total}`);
 
       // 2. Fetch post to ensure it exists and belongs to workspace (indirectly via user checking if strictly needed)
       // For now, assume access control is handled at API layer.
@@ -64,7 +65,7 @@ export class AdCreationService {
       };
     } catch (error) {
       // Comprehensive error logging
-      console.error("AdCreationService: Error creating ad draft:", error);
+      logger.error("AdCreationService: Error creating ad draft", { error });
 
       // Re-throw to allow API to handle error response
       if (error instanceof Error) {

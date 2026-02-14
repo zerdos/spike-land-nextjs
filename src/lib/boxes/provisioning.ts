@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { triggerWorkflowManually } from "@/lib/workflows/workflow-executor";
 import { BoxStatus } from "@prisma/client";
@@ -22,20 +23,20 @@ export async function triggerBoxProvisioning(boxId: string): Promise<void> {
     });
 
     if (!box) {
-      console.error(`[BoxProvisioning] Box ${boxId} not found`);
+      logger.error(`[BoxProvisioning] Box ${boxId} not found`);
       return;
     }
 
     // Helper to mark box as error
     const failBox = async (reason: string) => {
-      console.error(`[BoxProvisioning] ${reason}`);
+      logger.error(`[BoxProvisioning] ${reason}`);
       try {
         await prisma.box.update({
           where: { id: boxId },
           data: { status: BoxStatus.ERROR },
         });
       } catch (dbError) {
-        console.error(`[BoxProvisioning] Failed to update box status to ERROR: ${dbError}`);
+        logger.error(`[BoxProvisioning] Failed to update box status to ERROR: ${dbError}`);
       }
     };
 
@@ -63,7 +64,7 @@ export async function triggerBoxProvisioning(boxId: string): Promise<void> {
         if (!response.ok) {
           await failBox(`Webhook failed: ${response.status} ${response.statusText}`);
         } else {
-          console.log(
+          logger.info(
             `[BoxProvisioning] Successfully triggered provisioning webhook for box ${boxId}`,
           );
         }
@@ -98,7 +99,7 @@ export async function triggerBoxProvisioning(boxId: string): Promise<void> {
             userId: box.userId,
             tier: box.tier,
           });
-          console.log(
+          logger.info(
             `[BoxProvisioning] Triggered workflow "${workflow.name}" (${workflow.id}) for box ${boxId}`,
           );
           return;
@@ -112,7 +113,7 @@ export async function triggerBoxProvisioning(boxId: string): Promise<void> {
     // 3. No mechanism found
     await failBox(`No provisioning mechanism (Webhook or Workflow) found for box ${boxId}`);
   } catch (error) {
-    console.error("[BoxProvisioning] Unhandled error during provisioning:", error);
+    logger.error("[BoxProvisioning] Unhandled error during provisioning", { error });
     // Try to fail the box if possible, but don't crash
     try {
       await prisma.box.update({

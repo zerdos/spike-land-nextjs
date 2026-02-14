@@ -5,6 +5,7 @@
  * dependencies, and error handling.
  */
 
+import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import type {
   StepExecutionResult,
@@ -126,7 +127,7 @@ registerStepHandler("condition", async (step, context) => {
  */
 registerStepHandler("log", async (step, context) => {
   const message = step.config["message"] as string;
-  console.log(`[Workflow ${context.workflowId}] Log step:`, message);
+  logger.info(`[Workflow ${context.workflowId}] Log step: ${message}`);
   return { output: { logged: message } };
 });
 

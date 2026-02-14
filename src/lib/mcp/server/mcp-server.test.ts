@@ -49,6 +49,7 @@ const {
   mockRegisterChatTools,
   mockRegisterNewsletterTools,
   mockRegisterTtsTools,
+  mockRegisterBazdmegFaqTools,
   mockRegistryInstance,
 } = vi.hoisted(() => ({
   mockRegistryInstance: {} as Record<string, unknown>,
@@ -105,6 +106,7 @@ const {
   mockRegisterChatTools: vi.fn(),
   mockRegisterNewsletterTools: vi.fn(),
   mockRegisterTtsTools: vi.fn(),
+  mockRegisterBazdmegFaqTools: vi.fn(),
 }));
 
 // Mock McpServer constructor - must use function keyword for `new` support
@@ -168,6 +170,7 @@ vi.mock("./tools/audio", () => ({ registerAudioTools: mockRegisterAudioTools }))
 vi.mock("./tools/chat", () => ({ registerChatTools: mockRegisterChatTools }));
 vi.mock("./tools/newsletter", () => ({ registerNewsletterTools: mockRegisterNewsletterTools }));
 vi.mock("./tools/tts", () => ({ registerTtsTools: mockRegisterTtsTools }));
+vi.mock("./tools/bazdmeg-faq", () => ({ registerBazdmegFaqTools: mockRegisterBazdmegFaqTools }));
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ToolRegistry } from "./tool-registry";
@@ -255,6 +258,7 @@ describe("createMcpServer", () => {
       mockRegisterChatTools,
       mockRegisterNewsletterTools,
       mockRegisterTtsTools,
+      mockRegisterBazdmegFaqTools,
     ];
 
     for (const registerFn of unconditionalRegisters) {

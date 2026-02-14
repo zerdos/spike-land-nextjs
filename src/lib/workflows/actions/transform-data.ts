@@ -2,21 +2,19 @@ import { z } from "zod";
 import type { ActionInput, ActionOutput, WorkflowAction } from "./action-types";
 
 const TransformDataInputSchema = z.object({
-  data: z.any(),
+  data: z.unknown(),
   transformation: z.enum(["map", "filter", "pick", "omit"]),
   config: z.unknown(),
 });
 
 export interface TransformDataInput extends ActionInput {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any;
+  data: unknown;
   transformation: "map" | "filter" | "pick" | "omit";
   config: unknown;
 }
 
 export interface TransformDataOutput extends ActionOutput {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  result: any;
+  result: unknown;
 }
 
 export const transformDataAction: WorkflowAction<
@@ -40,11 +38,11 @@ export const transformDataAction: WorkflowAction<
           }
           const keysToPick =
             (Array.isArray(input.config) ? input.config : [input.config]) as string[];
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const picked: Record<string, any> = {};
+          const picked: Record<string, unknown> = {};
+          const pickSource = result as Record<string, unknown>;
           keysToPick.forEach((key: string) => {
-            if (key in result) {
-              picked[key] = result[key];
+            if (key in pickSource) {
+              picked[key] = pickSource[key];
             }
           });
           result = picked;
@@ -55,7 +53,7 @@ export const transformDataAction: WorkflowAction<
           }
           const keysToOmit =
             (Array.isArray(input.config) ? input.config : [input.config]) as string[];
-          const omitted = { ...result };
+          const omitted = { ...(result as Record<string, unknown>) };
           keysToOmit.forEach((key: string) => {
             delete omitted[key];
           });

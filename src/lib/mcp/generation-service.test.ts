@@ -7,6 +7,7 @@ const {
   mockWorkspaceCreditManager,
   mockGeminiClient,
   mockUploadToR2,
+  mockLogger,
 } = vi
   .hoisted(() => ({
     mockMcpGenerationJob: {
@@ -28,7 +29,17 @@ const {
       DEFAULT_MODEL: "gemini-3-pro-image-preview",
     },
     mockUploadToR2: vi.fn(),
+    mockLogger: {
+      info: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
+      debug: vi.fn(),
+    },
   }));
+
+vi.mock("@/lib/logger", () => ({
+  default: mockLogger,
+}));
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -810,9 +821,6 @@ describe("generation-service", () => {
 
   describe("outer catch handlers for background processing", () => {
     it("should log error when generation job throws unexpected error", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
-        () => {},
-      );
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
       mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
@@ -846,19 +854,14 @@ describe("generation-service", () => {
       // Wait for background processing
       await vi.advanceTimersByTimeAsync(100);
 
-      // Verify the outer catch handler logged the error
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`Generation job ${testJobId} failed:`),
-        expect.any(Error),
+      // Verify the outer catch handler logged the error via logger
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.stringContaining(`Generation job ${testJobId} failed`),
+        expect.objectContaining({ error: expect.any(Error) }),
       );
-
-      consoleErrorSpy.mockRestore();
     });
 
     it("should log error when modification job throws unexpected error", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
-        () => {},
-      );
       const inputBase64 = Buffer.from("original-image").toString("base64");
 
       mockMcpGenerationJob.count.mockResolvedValue(0);
@@ -888,13 +891,11 @@ describe("generation-service", () => {
       // Wait for background processing
       await vi.advanceTimersByTimeAsync(100);
 
-      // Verify the outer catch handler logged the error
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`Modification job ${testJobId} failed:`),
-        expect.any(Error),
+      // Verify the outer catch handler logged the error via logger
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.stringContaining(`Modification job ${testJobId} failed`),
+        expect.objectContaining({ error: expect.any(Error) }),
       );
-
-      consoleErrorSpy.mockRestore();
     });
   });
 
@@ -1450,9 +1451,6 @@ describe("generation-service", () => {
     });
 
     it("should handle fetch failure for input image", async () => {
-      const consoleErrorSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
       const newJobId = "new-modify-fetch-fail";
       const inputUrl = "https://r2.example.com/input.jpg";
       mockMcpGenerationJob.findUnique
@@ -1515,13 +1513,9 @@ describe("generation-service", () => {
       );
 
       fetchSpy.mockRestore();
-      consoleErrorSpy.mockRestore();
     });
 
     it("should handle fetch network error", async () => {
-      const consoleErrorSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
       const newJobId = "new-modify-network-error";
       const inputUrl = "https://r2.example.com/input.jpg";
       mockMcpGenerationJob.findUnique
@@ -1584,13 +1578,9 @@ describe("generation-service", () => {
       );
 
       fetchSpy.mockRestore();
-      consoleErrorSpy.mockRestore();
     });
 
     it("should log outer catch error when fetchAndProcessModification throws unexpectedly", async () => {
-      const consoleErrorSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
       const newJobId = "new-modify-unexpected-throw";
       const inputUrl = "https://r2.example.com/input.jpg";
       mockMcpGenerationJob.findUnique.mockResolvedValue({
@@ -1637,18 +1627,17 @@ describe("generation-service", () => {
       // Wait for the outer catch handler to fire
       await vi.waitFor(
         () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWith(
+          expect(mockLogger.error).toHaveBeenCalledWith(
             expect.stringContaining(
-              `Rerun modification job ${newJobId} failed:`,
+              `Rerun modification job ${newJobId} failed`,
             ),
-            expect.any(Error),
+            expect.objectContaining({ error: expect.any(Error) }),
           );
         },
         { timeout: 1000 },
       );
 
       fetchSpy.mockRestore();
-      consoleErrorSpy.mockRestore();
     });
   });
 });

@@ -10,6 +10,7 @@ import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import type { BrandGuardrail, BrandProfile, BrandVocabulary } from "@/types/brand-brain";
 import type { SocialPlatform } from "@prisma/client";
+import { formatGuardrails, formatVocabulary } from "../brand-brain/prompt-formatters";
 import {
   geminiDraftResponseSchema,
   type GeminiDraftResponseValidated,
@@ -34,64 +35,6 @@ const MAX_DRAFTS = 5;
 // ============================================
 // Prompt Building Functions
 // ============================================
-
-/**
- * Format guardrails for the system prompt.
- */
-function formatGuardrails(guardrails: BrandGuardrail[]): string {
-  if (!guardrails.length) return "No specific guardrails defined.";
-
-  const severityEmoji: Record<string, string> = {
-    LOW: "~",
-    MEDIUM: "-",
-    HIGH: "!",
-    CRITICAL: "!!",
-  };
-
-  return guardrails
-    .map((g) => {
-      const emoji = severityEmoji[g.severity] || "-";
-      return `${emoji} [${g.type}] ${g.name}: ${g.description || "No description"}`;
-    })
-    .join("\n");
-}
-
-/**
- * Format vocabulary rules for the system prompt.
- */
-function formatVocabulary(vocabulary: BrandVocabulary[]): string {
-  if (!vocabulary.length) return "No specific vocabulary rules defined.";
-
-  const grouped = {
-    PREFERRED: vocabulary.filter((v) => v.type === "PREFERRED"),
-    BANNED: vocabulary.filter((v) => v.type === "BANNED"),
-    REPLACEMENT: vocabulary.filter((v) => v.type === "REPLACEMENT"),
-  };
-
-  const parts: string[] = [];
-
-  if (grouped.PREFERRED.length) {
-    parts.push(
-      "**Preferred Terms:** " +
-        grouped.PREFERRED.map((v) => v.term).join(", "),
-    );
-  }
-  if (grouped.BANNED.length) {
-    parts.push(
-      "**Banned Terms (MUST avoid):** " +
-        grouped.BANNED.map((v) => v.context ? `${v.term} (${v.context})` : v.term).join(", "),
-    );
-  }
-  if (grouped.REPLACEMENT.length) {
-    parts.push(
-      "**Required Replacements:** " +
-        grouped.REPLACEMENT.map((v) => `"${v.term}" -> "${v.replacement}"`)
-          .join(", "),
-    );
-  }
-
-  return parts.join("\n") || "No specific vocabulary rules defined.";
-}
 
 /**
  * Get message type description for context.
@@ -160,10 +103,10 @@ The brand voice should fall within these ranges (0-100 scale):
 - Reserved <-> Enthusiastic: Target ${tone.reservedEnthusiastic ?? 50}
 
 ### Guardrails
-${formatGuardrails(guardrails)}
+${formatGuardrails(guardrails, "draft")}
 
 ### Vocabulary Rules
-${formatVocabulary(vocabulary)}
+${formatVocabulary(vocabulary, "draft")}
 
 `;
   } else {
@@ -528,6 +471,6 @@ export async function rejectDraft(draftId: string, reviewerId: string) {
 
 export { buildDraftGenerationSystemPrompt as _buildDraftGenerationSystemPrompt };
 export { buildUserPrompt as _buildUserPrompt };
-export { formatGuardrails as _formatGuardrails };
-export { formatVocabulary as _formatVocabulary };
+export { formatGuardrails as _formatGuardrails } from "../brand-brain/prompt-formatters";
+export { formatVocabulary as _formatVocabulary } from "../brand-brain/prompt-formatters";
 export { transformDrafts as _transformDrafts };

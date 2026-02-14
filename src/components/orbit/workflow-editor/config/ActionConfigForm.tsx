@@ -10,7 +10,7 @@ interface ActionConfigFormProps {
 }
 
 const ActionConfigForm = ({ data, onChange }: ActionConfigFormProps) => {
-  const config = data["config"] || {};
+  const config = (data["config"] || {}) as Record<string, string>;
   const actionType = data["actionType"];
 
   const handleChange = (key: string, value: unknown) => {

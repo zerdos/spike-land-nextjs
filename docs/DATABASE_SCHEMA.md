@@ -2456,6 +2456,44 @@ erDiagram
   String ipHash "nullable"
   DateTime createdAt
 }
+"bazdmeg_chat_messages" {
+  String id PK
+  String sessionId
+  String question
+  String answer "nullable"
+  String gitHubIssueUrl "nullable"
+  Int gitHubIssueNum "nullable"
+  String model
+  Int inputTokens
+  Int outputTokens
+  DateTime createdAt
+}
+"bazdmeg_faq_entries" {
+  String id PK
+  String question
+  String answer
+  String category
+  Int sortOrder
+  Boolean isPublished
+  Int viewCount
+  Int helpfulCount
+  DateTime createdAt
+  DateTime updatedAt
+}
+"page_engagements" {
+  String id PK
+  String visitorId
+  String page
+  String abVariant "nullable"
+  Int scrollDepthMax
+  Int timeOnPageMs
+  String sectionsViewed
+  Boolean chatOpened
+  String ctaClicked "nullable"
+  Int faqExpanded
+  DateTime createdAt
+  DateTime updatedAt
+}
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
 "campaign_briefs" }o--o| "workspaces" : workspace
@@ -5775,3 +5813,50 @@ Properties as follows:
 - `userId`:
 - `ipHash`:
 - `createdAt`:
+
+### `bazdmeg_chat_messages`
+
+Properties as follows:
+
+- `id`:
+- `sessionId`:
+- `question`:
+- `answer`:
+- `gitHubIssueUrl`:
+- `gitHubIssueNum`:
+- `model`:
+- `inputTokens`:
+- `outputTokens`:
+- `createdAt`:
+
+### `bazdmeg_faq_entries`
+
+Properties as follows:
+
+- `id`:
+- `question`:
+- `answer`:
+- `category`:
+- `sortOrder`:
+- `isPublished`:
+- `viewCount`:
+- `helpfulCount`:
+- `createdAt`:
+- `updatedAt`:
+
+### `page_engagements`
+
+Properties as follows:
+
+- `id`:
+- `visitorId`:
+- `page`:
+- `abVariant`:
+- `scrollDepthMax`:
+- `timeOnPageMs`:
+- `sectionsViewed`:
+- `chatOpened`:
+- `ctaClicked`:
+- `faqExpanded`:
+- `createdAt`:
+- `updatedAt`:

@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
-import { UserRole } from "@prisma/client";
+import { type Prisma, UserRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 async function ensureAdmin() {
@@ -42,11 +42,11 @@ export async function upsertAIProvider(data: {
     where: { name: rest.name },
     update: {
       ...rest,
-      config: config as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      config: config as Prisma.InputJsonValue,
     },
     create: {
       ...rest,
-      config: config as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      config: config as Prisma.InputJsonValue,
     },
   });
 

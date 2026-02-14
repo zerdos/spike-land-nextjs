@@ -9,6 +9,7 @@
  * where persistent file storage is not available.
  */
 
+import logger from "@/lib/logger";
 import type { AppState, HistoryEntry } from "@/types/app-factory";
 import * as fs from "fs";
 import * as path from "path";
@@ -75,7 +76,7 @@ interface StorageBackend {
 class FileStorageBackend implements StorageBackend {
   loadState(): Promise<StateFile | null> {
     if (!STATE_FILE) {
-      console.error("STATE_FILE not configured");
+      logger.error("STATE_FILE not configured");
       return Promise.resolve(null);
     }
     if (!fs.existsSync(STATE_FILE)) {
@@ -87,7 +88,7 @@ class FileStorageBackend implements StorageBackend {
 
   saveState(state: StateFile): Promise<void> {
     if (!STATE_FILE) {
-      console.error("STATE_FILE not configured");
+      logger.error("STATE_FILE not configured");
       return Promise.resolve();
     }
     // Ensure directory exists
@@ -102,11 +103,11 @@ class FileStorageBackend implements StorageBackend {
 
   logHistory(appName: string, entry: HistoryEntry): Promise<void> {
     if (!isValidAppName(appName)) {
-      console.error(`Invalid app name for logging: ${appName}`);
+      logger.error(`Invalid app name for logging: ${appName}`);
       return Promise.resolve();
     }
     if (!HISTORY_DIR) {
-      console.error("HISTORY_DIR not configured");
+      logger.error("HISTORY_DIR not configured");
       return Promise.resolve();
     }
     fs.mkdirSync(HISTORY_DIR, { recursive: true });
@@ -161,7 +162,7 @@ class RedisStorageBackend implements StorageBackend {
       const state = await redis.get<StateFile>(REDIS_KEYS.STATE);
       return state;
     } catch (error) {
-      console.error("Failed to load state from Redis:", error);
+      logger.error("Failed to load state from Redis", { error });
       return null;
     }
   }
@@ -171,13 +172,13 @@ class RedisStorageBackend implements StorageBackend {
       state.lastUpdated = new Date().toISOString();
       await redis.set(REDIS_KEYS.STATE, state);
     } catch (error) {
-      console.error("Failed to save state to Redis:", error);
+      logger.error("Failed to save state to Redis", { error });
     }
   }
 
   async logHistory(appName: string, entry: HistoryEntry): Promise<void> {
     if (!isValidAppName(appName)) {
-      console.error(`Invalid app name for logging: ${appName}`);
+      logger.error(`Invalid app name for logging: ${appName}`);
       return;
     }
     try {
@@ -186,7 +187,7 @@ class RedisStorageBackend implements StorageBackend {
       await redis.lpush(REDIS_KEYS.HISTORY(appName), JSON.stringify(entry));
       await redis.ltrim(REDIS_KEYS.HISTORY(appName), 0, 999);
     } catch (error) {
-      console.error("Failed to log history to Redis:", error);
+      logger.error("Failed to log history to Redis", { error });
     }
   }
 
@@ -222,7 +223,7 @@ class RedisStorageBackend implements StorageBackend {
         )
         .slice(0, limit);
     } catch (error) {
-      console.error("Failed to load history from Redis:", error);
+      logger.error("Failed to load history from Redis", { error });
       return [];
     }
   }
@@ -283,6 +284,6 @@ export function loadRecentHistory(limit?: number): Promise<HistoryEntry[]> {
 }
 
 // Log which storage backend is being used on module load
-console.log(
+logger.info(
   `[App Factory Storage] Using ${storage.getStorageType()} storage backend`,
 );

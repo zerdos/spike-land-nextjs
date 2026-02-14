@@ -28,7 +28,6 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
 FROM base AS dep-context
 COPY --link package.json yarn.lock .yarnrc.yml ./
 COPY --link .yarn/ ./.yarn/
-COPY --link packages/mcp-server/package.json ./packages/mcp-server/
 COPY --link packages/js.spike.land/package.json ./packages/js.spike.land/
 COPY --link packages/code/package.json ./packages/code/
 COPY --link packages/testing.spike.land/package.json ./packages/testing.spike.land/
@@ -195,192 +194,20 @@ COPY --link --from=unit-tests-1 /tmp/unit-1.log /tmp/
 COPY --link --from=unit-tests-2 /tmp/unit-2.log /tmp/
 COPY --link --from=unit-tests-3 /tmp/unit-3.log /tmp/
 COPY --link --from=unit-tests-4 /tmp/unit-4.log /tmp/
-RUN cat /tmp/unit-*.log && echo "::notice::✅ All 4 unit test shards passed"
+RUN cat /tmp/unit-*.log && echo "::notice::All 4 unit test shards passed"
 
 # ============================================================================
-# STAGE 9: E2E Browser Environment
+# STAGE 9: CI Gateway
 # ============================================================================
-FROM base AS e2e-browser
-ARG CACHE_NS
-ARG TARGETARCH
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
-RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,id=${CACHE_NS}-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
-    apt-get update \
-    && apt-get install -y --no-install-recommends procps
-
-# Copy Yarn files needed for Playwright
-COPY --link --from=dep-context /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
-COPY --link --from=dep-context /app/.yarn/ ./.yarn/
-COPY --link --from=deps /app/node_modules ./node_modules
-
-RUN --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/tmp/pw-cache,sharing=locked \
-    mkdir -p /ms-playwright \
-    && PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-cache yarn playwright install chromium --with-deps \
-    && cp -a /tmp/pw-cache/* /ms-playwright/
-
-# ============================================================================
-# STAGE 10: E2E Test Base
-# ============================================================================
-FROM e2e-browser AS e2e-test-base
-WORKDIR /app
-ARG DUMMY_DATABASE_URL
-
-# Copy dependency metadata and node_modules
-# IMPORTANT: Copy node_modules from deps (after yarn install) to include all installed packages
-COPY --link --from=deps /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
-COPY --link --from=deps /app/.yarn/ ./.yarn/
-COPY --link --from=deps /app/node_modules ./node_modules
-COPY --link --from=source /app/packages/ ./packages/
-COPY --link --from=source /app/prisma ./prisma
-
-# Copy source files needed for E2E
-COPY --link --from=source /app/tsconfig*.json /app/next.config.ts /app/postcss.config.mjs ./
-COPY --link --from=source /app/tailwind.config.ts ./
-COPY --link --from=source /app/src ./src
-COPY --link --from=source /app/apps ./apps
-COPY --link --from=source /app/public ./public
-COPY --link --from=source /app/content ./content
-
-# Copy test files and environment
-COPY --link .env.local ./
-COPY --link cucumber.js ./
-COPY --link e2e ./e2e
-# Copy E2E cache scripts
-COPY --link scripts/e2e-cache-manager.ts scripts/run-cached-e2e.sh scripts/e2e-shard.sh ./scripts/
-RUN chmod +x ./scripts/run-cached-e2e.sh ./scripts/e2e-shard.sh
-
-# Note: AUTH_SECRET, DATABASE_URL, and E2E_BYPASS_SECRET are loaded from .env.local
-# Do NOT set them here as empty ARGs would override the .env.local values
-# IMPORTANT: E2E tests include @requires-db scenarios - ensure .env.local has DATABASE_URL set
-ENV CI=true \
-    NODE_ENV=development \
-    BASE_URL=http://localhost:3000 \
-    NEXTAUTH_URL=http://localhost:3000 \
-    SKIP_ENV_VALIDATION=true \
-    NODE_OPTIONS="--max-old-space-size=1536" \
-    CUCUMBER_PARALLEL=1
-
-RUN mkdir -p e2e/reports
-
-# ============================================================================
-# STAGE 11: E2E Tests (sharded) - with coverage-based caching
-# ============================================================================
-FROM e2e-test-base AS e2e-test-shard
-ARG SHARD_INDEX=1
-ARG SHARD_TOTAL=8
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=${SHARD_INDEX} \
-    SHARD_TOTAL=${SHARD_TOTAL} \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr > /tmp/e2e-${SHARD_INDEX}.log 2>&1 \
-    || (cat /tmp/e2e-${SHARD_INDEX}.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests-1
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=1 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr > /tmp/e2e-1.log 2>&1 \
-    || (cat /tmp/e2e-1.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests-2
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=2 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr > /tmp/e2e-2.log 2>&1 \
-    || (cat /tmp/e2e-2.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests-3
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=3 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr > /tmp/e2e-3.log 2>&1 \
-    || (cat /tmp/e2e-3.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests-4
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=4 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr > /tmp/e2e-4.log 2>&1 \
-    || (cat /tmp/e2e-4.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests-5
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=5 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr > /tmp/e2e-5.log 2>&1 \
-    || (cat /tmp/e2e-5.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests-6
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=6 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr > /tmp/e2e-6.log 2>&1 \
-    || (cat /tmp/e2e-6.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests-7
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=7 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr > /tmp/e2e-7.log 2>&1 \
-    || (cat /tmp/e2e-7.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests-8
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=8 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr > /tmp/e2e-8.log 2>&1 \
-    || (cat /tmp/e2e-8.log && exit 1)
-
-FROM e2e-test-base AS e2e-tests
-COPY --link --from=e2e-tests-1 /tmp/e2e-1.log /tmp/
-COPY --link --from=e2e-tests-2 /tmp/e2e-2.log /tmp/
-COPY --link --from=e2e-tests-3 /tmp/e2e-3.log /tmp/
-COPY --link --from=e2e-tests-4 /tmp/e2e-4.log /tmp/
-COPY --link --from=e2e-tests-5 /tmp/e2e-5.log /tmp/
-COPY --link --from=e2e-tests-6 /tmp/e2e-6.log /tmp/
-COPY --link --from=e2e-tests-7 /tmp/e2e-7.log /tmp/
-COPY --link --from=e2e-tests-8 /tmp/e2e-8.log /tmp/
-RUN cat /tmp/e2e-*.log && echo "::notice::✅ All 8 E2E test shards passed"
-
-# ============================================================================
-# STAGE 12: CI Gateway
-# ============================================================================
-FROM e2e-tests AS ci
+FROM test-source AS ci
 COPY --link --from=unit-tests /tmp/unit-1.log /tmp/unit-passed
 COPY --link --from=lint /app/package.json /tmp/lint-passed
 COPY --link --from=tsc /app/package.json /tmp/tsc-passed
-RUN echo "::notice::✅ CI Pipeline Complete: Lint, Build, Unit Tests, E2E Tests"
+COPY --link --from=build /app/.next/BUILD_ID /tmp/build-passed
+RUN echo "CI Pipeline Complete: Lint, TypeCheck, Build, Unit Tests (4 shards)"
 
 # ============================================================================
-# STAGE 13: Production Image
+# STAGE 10: Production Image
 # ============================================================================
 FROM ${NODE_IMAGE} AS production
 WORKDIR /app

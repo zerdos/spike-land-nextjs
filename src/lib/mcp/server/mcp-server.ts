@@ -51,6 +51,7 @@ import { registerAudioTools } from "./tools/audio";
 import { registerChatTools } from "./tools/chat";
 import { registerNewsletterTools } from "./tools/newsletter";
 import { registerTtsTools } from "./tools/tts";
+import { registerBazdmegFaqTools } from "./tools/bazdmeg-faq";
 
 /**
  * Create a fully configured MCP server for a specific user.
@@ -206,6 +207,9 @@ export function createMcpServer(userId: string): McpServer {
 
   // TTS tools (discoverable)
   registerTtsTools(registry, userId);
+
+  // BAZDMEG FAQ tools (discoverable)
+  registerBazdmegFaqTools(registry, userId);
 
   return mcpServer;
 }

@@ -7,10 +7,8 @@ export interface WorkflowNodeData {
   label: string;
   type: WorkflowNodeType;
   actionType?: WorkflowActionType;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config?: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  config?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 export type WorkflowNode = Node<WorkflowNodeData>;

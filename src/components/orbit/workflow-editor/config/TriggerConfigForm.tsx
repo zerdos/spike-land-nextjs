@@ -16,7 +16,7 @@ interface TriggerConfigFormProps {
 }
 
 const TriggerConfigForm = ({ data, onChange }: TriggerConfigFormProps) => {
-  const config = data["config"] || {};
+  const config = (data["config"] || {}) as Record<string, string>;
 
   const handleTypeChange = (value: string) => {
     onChange({ ...data, config: { ...config, type: value } });
@@ -56,7 +56,7 @@ const TriggerConfigForm = ({ data, onChange }: TriggerConfigFormProps) => {
         <div className="rounded-md bg-muted p-3 text-sm">
           <p className="font-medium">Webhook URL</p>
           <code className="block mt-1 break-all text-xs">
-            https://api.example.com/hooks/workflow/{data["id"]}
+            https://api.example.com/hooks/workflow/{String(data["id"] ?? "")}
           </code>
         </div>
       )}

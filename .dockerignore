@@ -6,14 +6,15 @@
 .next
 node_modules
 coverage
-e2e/reports
 dist
 .cache
+.docker-cache
 
 # Yarn semi-zero-install: Include cache for faster installs
 # .yarn/cache is NOT ignored - it contains pre-downloaded packages
 .yarn/unplugged
 .yarn/install-state.gz
+.yarn/build-state.yml
 .pnp.*
 
 # Environment files
@@ -31,6 +32,8 @@ dist
 .vscode
 *.swp
 *.swo
+
+# TypeScript build info
 *.tsbuildinfo
 
 # Logs
@@ -40,13 +43,13 @@ yarn-debug.log*
 yarn-error.log*
 
 # Test artifacts
-coverage
 *.lcov
 .nyc_output
 
 # Playwright/E2E artifacts
 playwright-report
 test-results
+e2e/reports
 
 # Other
 .vercel
@@ -56,19 +59,11 @@ test-results
 packages/*/node_modules
 packages/*/.next
 packages/*/dist
-.git
-.next
-node_modules
-# .yarn/cache is NOT ignored (semi-zero-install)
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-coverage
-dist
 tmp
 
-
-tsconfig.tsbuildinfo
-tsconfig.e2e.tsbuildinfo
+# Claude/AI
+.claude/plans/
+.claude/teams/
+.claude/tasks/
 
 .well-known

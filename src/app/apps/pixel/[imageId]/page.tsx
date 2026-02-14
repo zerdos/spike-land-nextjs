@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import { EnhanceClient } from "./EnhanceClient";
+import { EnhanceClient, type EnhanceClientProps } from "./EnhanceClient";
 
 interface PixelImagePageProps {
   params: Promise<{
@@ -77,8 +77,7 @@ function createE2EMockImage(imageId: string) {
     ];
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return { ...base, enhancementJobs } as any;
+  return { ...base, enhancementJobs } as EnhanceClientProps["image"];
 }
 
 export default async function PixelImagePage({ params }: PixelImagePageProps) {

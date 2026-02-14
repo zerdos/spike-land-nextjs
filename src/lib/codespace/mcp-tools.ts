@@ -11,6 +11,7 @@ import {
 } from "@/lib/codespace/session-service";
 import { transpileCode } from "@/lib/codespace/transpile";
 import type { ICodeSession } from "@/lib/codespace/types";
+import logger from "@/lib/logger";
 
 // ---------------------------------------------------------------------------
 // MCP Protocol Types
@@ -477,7 +478,7 @@ async function executeUpdateCode(
   try {
     transpiled = await transpileCode(code, origin);
   } catch (error) {
-    console.error("[MCP] Transpilation error:", error);
+    logger.error("[MCP] Transpilation error", { error });
     transpilationFailed = true;
   }
 
@@ -517,7 +518,7 @@ async function executeEditCode(
   try {
     transpiled = await transpileCode(newCode, origin);
   } catch (error) {
-    console.error("[MCP] Transpilation error in edit_code:", error);
+    logger.error("[MCP] Transpilation error in edit_code", { error });
   }
 
   const updatedSession: ICodeSession = {
@@ -603,9 +604,9 @@ async function executeSearchAndReplace(
     try {
       transpiled = await transpileCode(newCode, origin);
     } catch (error) {
-      console.error(
-        "[MCP] Transpilation error in search_and_replace:",
-        error,
+      logger.error(
+        "[MCP] Transpilation error in search_and_replace",
+        { error },
       );
     }
     transpilationPending = !transpiled;
@@ -805,7 +806,7 @@ async function executeTool(
 
   const session = await getOrCreateSession(effectiveCodeSpace);
 
-  console.log(
+  logger.info(
     `[MCP] Tool '${toolName}' executing for codeSpace: ${effectiveCodeSpace}`,
   );
 

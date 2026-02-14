@@ -11,6 +11,7 @@
  * - Notifies SSE clients via the sync-status API for iframe reloads
  */
 
+import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import chokidar, { type FSWatcher } from "chokidar";
 import { existsSync, mkdirSync } from "fs";
@@ -97,7 +98,7 @@ export function startVibeWatcher(): void {
     mkdirSync(LIVE_DIR, { recursive: true });
   }
 
-  console.log("🎸 Vibe watcher started - watching live/*.tsx");
+  logger.info("Vibe watcher started - watching live/*.tsx");
 
   watcher = chokidar.watch(join(LIVE_DIR, "*.tsx"), {
     ignoreInitial: true,
@@ -110,7 +111,7 @@ export function startVibeWatcher(): void {
   watcher.on("change", handleFileChange);
   watcher.on("add", handleFileChange);
   watcher.on("error", (error) => {
-    console.error("❌ Vibe watcher error:", error);
+    logger.error("Vibe watcher error", { error });
   });
 }
 
@@ -148,7 +149,7 @@ async function syncFile(codespaceId: string, filePath: string): Promise<void> {
   try {
     const code = await readFile(filePath, "utf-8");
     await pushCode(codespaceId, code, true);
-    console.log(`✅ Synced ${codespaceId} (${code.length} bytes)`);
+    logger.info(`Synced ${codespaceId} (${code.length} bytes)`);
 
     // Notify code updated
     if (appId) {
@@ -156,7 +157,7 @@ async function syncFile(codespaceId: string, filePath: string): Promise<void> {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`❌ Sync failed for ${codespaceId}: ${message}`);
+    logger.error(`Sync failed for ${codespaceId}: ${message}`);
     if (appId) {
       await notifySyncStatus(appId, false);
     }
@@ -242,7 +243,7 @@ export async function ensureLocalFile(codespaceId: string): Promise<string> {
     "utf-8",
   );
 
-  console.log(`📥 Downloaded ${codespaceId} → ${filePath} (${code.length} bytes)`);
+  logger.info(`Downloaded ${codespaceId} -> ${filePath} (${code.length} bytes)`);
 
   return filePath;
 }
@@ -258,7 +259,7 @@ export function stopVibeWatcher(): void {
   debounceTimers.forEach(clearTimeout);
   debounceTimers.clear();
   appIdCache.clear();
-  console.log("🛑 Vibe watcher stopped");
+  logger.info("Vibe watcher stopped");
 }
 
 /**

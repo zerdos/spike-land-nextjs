@@ -1,6 +1,6 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { jsonSchema as aiJsonSchema, streamText, tool } from "ai";
-import type { ModelMessage } from "ai";
+import type { ModelMessage, Tool } from "ai";
 import type { Code } from "../chatRoom";
 import type Env from "../env";
 import type { McpTool } from "../mcp";
@@ -42,11 +42,9 @@ type CoreMessage = ModelMessage;
 
 /**
  * Type for the processed tools record
- * The AI SDK's ToolSet type uses `any` internally for flexibility with various tool configurations.
- * We use a compatible type here to avoid type conflicts while maintaining type safety in our code.
+ * The AI SDK's Tool type defaults to unknown for INPUT/OUTPUT when used with dynamic JSON schemas.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ProcessedToolsRecord = Record<string, ReturnType<typeof tool<any, any>>>;
+type ProcessedToolsRecord = Record<string, Tool<Record<string, unknown>, unknown>>;
 
 /**
  * Type guard for tool validation - checks if a tool has valid input schema format
@@ -634,8 +632,7 @@ export class PostHandler {
       const toolName = mcpTool.name;
 
       // Create the tool using the AI SDK's tool() function
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const aiTool = (tool as any)({
+      const aiTool = tool<Record<string, unknown>, unknown>({
         description: mcpTool.description,
         parameters: schemaDefinition,
         execute: async (args: Record<string, unknown>) => {

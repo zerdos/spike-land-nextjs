@@ -18,6 +18,7 @@ import type {
 
 import { sendEmail } from "@/lib/email/client";
 import { HealthAlertEmail } from "@/lib/email/templates/health-alert";
+import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 
 import { scoreToStatus } from "./health-calculator";
@@ -309,12 +310,12 @@ async function createHealthAlertNotification(params: {
         },
       },
     });
-    console.log(
+    logger.info(
       `[HealthAlerts] In-app notification created for ${params.accountName}`,
     );
   } catch (error) {
     // Log but don't throw - we don't want notification failures to break alert flow
-    console.error("[HealthAlerts] Failed to create in-app notification:", error);
+    logger.error("[HealthAlerts] Failed to create in-app notification", { error });
   }
 }
 

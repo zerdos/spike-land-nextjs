@@ -1,19 +1,25 @@
 "use client";
 
-import { 
-  BazdmegHero, 
-  PrincipleCard, 
-  EffortSplit, 
-  QualityCheckpoints, 
-  HourglassModel 
+import { useCallback, useState } from "react";
+import {
+  BazdmegHero,
+  PrincipleCard,
+  EffortSplit,
+  QualityCheckpoints,
+  HourglassModel,
+  BazdmegChat,
+  BazdmegFaq,
+  EngagementTracker,
+  SocialProof,
 } from "@/components/bazdmeg";
-import { 
-  FileText, 
-  Zap, 
-  Layers, 
-  ShieldCheck, 
-  GitPullRequest, 
-  Briefcase, 
+import { trackEngagement } from "@/components/bazdmeg/EngagementTracker";
+import {
+  FileText,
+  Zap,
+  Layers,
+  ShieldCheck,
+  GitPullRequest,
+  Briefcase,
   Box
 } from "lucide-react";
 import { TableOfContents } from "@/components/infographic/ai-tools/TableOfContents";
@@ -77,17 +83,51 @@ const SECTIONS = [
   { id: "effort", label: "Effort Split" },
   { id: "checkpoints", label: "Checkpoints" },
   { id: "hourglass", label: "Hourglass Model" },
+  { id: "faq", label: "FAQ" },
   { id: "cta", label: "Get Started" },
 ];
 
+const SECTION_IDS = SECTIONS.map((s) => s.id);
+
 export default function BazdmegPage() {
+  const [visitorId] = useState(() => {
+    if (typeof window === "undefined") return "ssr";
+    const stored = localStorage.getItem("bazdmeg-visitor-id");
+    if (stored) return stored;
+    const id = crypto.randomUUID();
+    localStorage.setItem("bazdmeg-visitor-id", id);
+    return id;
+  });
+
+  const handleChatOpened = useCallback(() => {
+    trackEngagement("chatOpened");
+  }, []);
+
+  const handleFaqExpanded = useCallback(() => {
+    trackEngagement("faqExpanded");
+  }, []);
+
+  const handleCtaClick = useCallback((cta: string) => {
+    trackEngagement("ctaClicked", cta);
+  }, []);
+
   return (
     <div className="relative text-white pb-32">
       <TableOfContents sections={SECTIONS} />
 
+      {/* Engagement Tracker (invisible) */}
+      <EngagementTracker
+        visitorId={visitorId}
+        page="/bazdmeg"
+        sectionIds={SECTION_IDS}
+      />
+
       <main>
         <section id="hero">
           <BazdmegHero />
+          <div className="flex justify-center -mt-8 mb-8">
+            <SocialProof />
+          </div>
         </section>
 
         <section id="principles" className="py-24 bg-zinc-950/50">
@@ -95,10 +135,10 @@ export default function BazdmegPage() {
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-4xl font-bold mb-4">The Seven Principles</h2>
               <p className="text-zinc-400">
-                Core values that separate "Agentic Developers" from those drowned in AI slop.
+                Core values that separate &quot;Agentic Developers&quot; from those drowned in AI slop.
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {PRINCIPLES.map((principle, i) => (
                 <PrincipleCard key={principle.id} principle={principle} index={i} />
@@ -125,6 +165,12 @@ export default function BazdmegPage() {
           </div>
         </section>
 
+        <section id="faq" className="py-24">
+          <div className="container mx-auto px-6">
+            <BazdmegFaq onFaqExpanded={handleFaqExpanded} />
+          </div>
+        </section>
+
         <section id="cta" className="py-24">
           <div className="container mx-auto px-6 text-center max-w-3xl">
             <div className="bg-gradient-to-br from-amber-500/20 to-indigo-500/20 border border-white/10 rounded-3xl p-12 backdrop-blur-xl">
@@ -136,12 +182,14 @@ export default function BazdmegPage() {
                 <Link
                   href="/store/skills/bazdmeg"
                   className="px-10 py-5 bg-white text-zinc-950 font-black rounded-2xl hover:bg-zinc-100 transition-all shadow-xl"
+                  onClick={() => handleCtaClick("adopt-skill")}
                 >
                   Adopt the Skill
                 </Link>
-                <a 
+                <a
                   href="https://github.com/zerdos/spike-land-nextjs"
                   className="px-10 py-5 bg-zinc-900 text-white font-black rounded-2xl border border-white/10 hover:bg-zinc-800 transition-all"
+                  onClick={() => handleCtaClick("join-community")}
                 >
                   Join the Community
                 </a>
@@ -151,9 +199,12 @@ export default function BazdmegPage() {
         </section>
       </main>
 
+      {/* Floating Chat Widget */}
+      <BazdmegChat onChatOpened={handleChatOpened} />
+
       <footer className="py-12 bg-zinc-950 border-t border-white/5 text-center text-zinc-500 text-sm">
         <div className="container mx-auto px-6">
-          <p>© {new Date().getFullYear()} Spike Land Ltd. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Spike Land Ltd. All rights reserved.</p>
           <div className="flex justify-center gap-6 mt-4">
             <Link href="/store/skills" className="hover:text-white transition-colors">Skill Store</Link>
             <a href="https://github.com/zerdos/spike-land-nextjs" className="hover:text-white transition-colors">GitHub</a>

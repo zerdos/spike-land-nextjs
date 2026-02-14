@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import {
   EscalationEventType,
@@ -32,7 +33,7 @@ export class EscalationService {
     const levelDef = settings.escalation.levels.find((l) => l.level === nextLevel);
     if (!levelDef) {
       // Max level reached or invalid
-      console.warn(`Cannot escalate item ${itemId} to level ${nextLevel}`);
+      logger.warn(`Cannot escalate item ${itemId} to level ${nextLevel}`);
       return;
     }
 
@@ -102,7 +103,7 @@ export class EscalationService {
 
   private async notifyEscalation(item: InboxItem, channels: string[]) {
     // Placeholder: Integration with NotificationSystem
-    console.log(`[Escalation] Notify channels ${channels} for item ${item.id}`);
+    logger.info(`[Escalation] Notify channels ${channels} for item ${item.id}`);
     // await notificationSystem.send(...)
   }
 }

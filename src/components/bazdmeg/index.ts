@@ -3,3 +3,8 @@ export * from "./PrincipleCard";
 export * from "./EffortSplit";
 export * from "./QualityCheckpoints";
 export * from "./HourglassModel";
+export * from "./BazdmegChat";
+export * from "./BazdmegFaq";
+export * from "./EngagementTracker";
+export * from "./AbTestProvider";
+export * from "./SocialProof";

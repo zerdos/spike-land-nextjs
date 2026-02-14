@@ -6,6 +6,7 @@
  * All subsequent users get USER role by default.
  */
 
+import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { UserRole } from "@prisma/client";
@@ -42,7 +43,7 @@ export async function bootstrapAdminIfNeeded(userId: string): Promise<boolean> {
   );
 
   if (checkError) {
-    console.error("Failed to bootstrap admin:", checkError);
+    logger.error("Failed to bootstrap admin", { error: checkError });
     return false;
   }
 
@@ -60,10 +61,10 @@ export async function bootstrapAdminIfNeeded(userId: string): Promise<boolean> {
   );
 
   if (updateError) {
-    console.error("Failed to bootstrap admin:", updateError);
+    logger.error("Failed to bootstrap admin", { error: updateError });
     return false;
   }
 
-  console.log(`First user ${userId} promoted to ADMIN role`);
+  logger.info(`First user ${userId} promoted to ADMIN role`);
   return true;
 }

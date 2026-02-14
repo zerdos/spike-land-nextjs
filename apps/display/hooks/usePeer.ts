@@ -6,7 +6,7 @@ import {
   generatePeerId,
   isWebRTCSupported,
 } from "@apps/display/lib/webrtc/utils";
-import Peer from "peerjs";
+import Peer, { type PeerOptions } from "peerjs";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
@@ -58,8 +58,7 @@ export function usePeer(config: PeerConfig) {
       const peerId = config.peerId || generatePeerId(config.role);
 
       // Create PeerJS configuration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const peerOptions: any = {
+      const peerOptions: PeerOptions = {
         debug: process.env.NODE_ENV === "development" ? 2 : 0,
       };
 

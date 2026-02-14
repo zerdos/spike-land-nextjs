@@ -1,5 +1,14 @@
 {
   "mcpServers": {
+    "spike-land-dev": {
+      "type": "url",
+      "url": "http://localhost:3000/api/mcp"
+    },
+    "vitest": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["vitest-mcp"]
+    },
     "playwright": {
       "type": "stdio",
       "command": "npx",
