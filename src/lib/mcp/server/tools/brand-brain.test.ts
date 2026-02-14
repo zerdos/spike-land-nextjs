@@ -44,7 +44,7 @@ describe("brand-brain tools", () => {
       const handler = registry.handlers.get("brand_score_content")!;
       const result = await handler({ workspace_slug: "my-ws", content: "Our innovative product is great" });
       expect(getText(result)).toContain("Brand Score: 100/100");
-      expect(getText(result)).toContain("Violations: 0");
+      expect(getText(result)).toContain("**Violations:** 0");
     });
 
     it("should detect banned terms", async () => {
@@ -156,8 +156,8 @@ describe("brand-brain tools", () => {
       expect(getText(result)).toContain("Make great things");
       expect(getText(result)).toContain("Quality, Innovation");
       expect(getText(result)).toContain("Professional, Friendly");
-      expect(getText(result)).toContain("Guardrails: 2");
-      expect(getText(result)).toContain("Vocabulary Terms: 3");
+      expect(getText(result)).toContain("**Guardrails:** 2");
+      expect(getText(result)).toContain("**Vocabulary Terms:** 3");
       expect(getText(result)).toContain("Banned: 2");
       expect(getText(result)).toContain("Preferred: 1");
     });
@@ -234,7 +234,7 @@ describe("brand-brain tools", () => {
       const handler = registry.handlers.get("brand_check_policy")!;
       const result = await handler({ workspace_slug: "my-ws", content: "All good here" });
       expect(getText(result)).toContain("PASSED");
-      expect(getText(result)).toContain("Violations: 0");
+      expect(getText(result)).toContain("**Violations:** 0");
     });
   });
 
