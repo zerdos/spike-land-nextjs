@@ -82,7 +82,7 @@ export function registerAllocatorTools(
         for (const e of executions) {
           const campaignName = e.campaign?.name ?? "Unknown";
           const platform = e.campaign?.platform ?? "N/A";
-          text += `- **${e.type}** — ${campaignName} (${platform})\n`;
+          text += `- **${e.recommendationType}** — ${campaignName} (${platform})\n`;
           text += `  ID: \`${e.id}\` | Budget change: ${e.budgetChange ?? "N/A"} | Created: ${e.executedAt?.toISOString() ?? "N/A"}\n\n`;
         }
         return textResult(text);
@@ -193,7 +193,7 @@ export function registerAllocatorTools(
           `**Execution Completed**\n\n` +
           `**ID:** \`${updated.id}\`\n` +
           `**Campaign:** ${execution.campaign?.name ?? "Unknown"}\n` +
-          `**Type:** ${execution.type}\n` +
+          `**Type:** ${execution.recommendationType}\n` +
           `**Budget Change:** ${execution.budgetChange ?? "N/A"}\n` +
           `**Status:** COMPLETED`,
         );
@@ -224,7 +224,7 @@ export function registerAllocatorTools(
         }
         let text = `**Audit Log** (${executions.length} entries)\n\n`;
         for (const e of executions) {
-          text += `- **${e.type}** — ${e.campaign?.name ?? "Unknown"}\n`;
+          text += `- **${e.recommendationType}** — ${e.campaign?.name ?? "Unknown"}\n`;
           text += `  ID: \`${e.id}\` | Status: ${e.status} | Budget Change: ${e.budgetChange ?? "N/A"} | At: ${e.executedAt?.toISOString() ?? "N/A"}\n\n`;
         }
         return textResult(text);
