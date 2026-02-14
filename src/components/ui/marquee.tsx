@@ -58,6 +58,7 @@ export function Marquee({
         .map((_, i) => (
           <div
             key={i}
+            aria-hidden={i > 0}
             className={cn("flex shrink-0 justify-around [gap:var(--gap)]", {
               "animate-marquee flex-row": !vertical,
               "animate-marquee-vertical flex-col": vertical,

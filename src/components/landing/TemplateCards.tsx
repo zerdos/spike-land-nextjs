@@ -76,6 +76,7 @@ export function TemplateCards({ onSelect }: TemplateCardsProps) {
         <motion.button
           key={template.label}
           type="button"
+          aria-label={`Create a ${template.label}`}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.08 * index }}

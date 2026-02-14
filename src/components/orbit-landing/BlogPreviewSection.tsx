@@ -127,7 +127,7 @@ export function BlogPreviewSection() {
                     <div
                       className={`h-48 w-full bg-gradient-to-br ${post.color} relative overflow-hidden`}
                     >
-                      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay" />
+                      <div aria-hidden="true" className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay" />
 
                       <div className="absolute top-4 left-4">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-xs font-medium text-white/90">

@@ -1,602 +1,360 @@
 # Spike Land - Development Roadmap
 
 > **Last Updated**: February 14, 2026
-> **Current Phase**: Pivot Phase 9 (Documentation)
-> **Business Structure**: UK Limited Company (SPIKE LAND LTD - Company #16906682) - Fully Established
-
-> **Operational Note (February 14, 2026)**: CI/CD and daily smoke tests are under active stabilization. 8 stale smoke test failure issues closed during BAZDMEG audit. Treat reliability work as release-blocking until green status is sustained.
-
----
-
-## 🔄 Strategic Pivot: January 2026
-
-**Pivot Summary**: Transitioning from "Vibe Coded Apps" platform to **"AI-Powered Social Media Command Center"** with Orbit as the core product.
-
-**Rationale**: Market research indicates stronger product-market fit in social media management (B2B SaaS) vs. code generation (developer tools).
-
-**New Positioning**:
-
-- **Primary Product**: Orbit (social media management)
-- **Secondary Tools**: Pixel (image enhancement), Vibe Coding (landing pages)
-- **Target Market**: Solo content creators, small business marketing managers, freelance social media managers
-- **Monetization**: Workspace subscriptions ($0 FREE / $29 PRO / $99 BUSINESS)
-
-See [#836 - Strategic Pivot Epic](https://github.com/zerdos/spike-land-nextjs/issues/836) for full details.
+> **Current Phase**: Monetization & Growth
+> **Business Structure**: UK Limited Company (SPIKE LAND LTD - Company #16906682)
+> **Branch**: `feature/new-mcp-tools`
 
 ---
 
-## Pivot Phases (2026)
+## Vision: The Agent-Native Social Media Platform
 
-### Current Status: Phase 9 (Documentation) - In Progress
+**Spike Land is the first social media management platform built for AI agents, not just humans.**
 
-| Phase | Name                   | Status             | Progress | Timeline    |
-| ----- | ---------------------- | ------------------ | -------- | ----------- |
-| 1     | Database Schema        | ✅ Complete        | 100%     | Week 1      |
-| 2     | Backend Infrastructure | ✅ Complete        | 100%     | Week 2      |
-| 3     | Frontend Development   | ✅ Complete        | 100%     | Week 3-4    |
-| 4     | Testing & QA           | ✅ Complete        | 100%     | Week 5      |
-| 5     | Stripe Integration     | 🔄 In Progress     | 75%      | Week 6      |
-| 6     | A/B Testing System     | 📋 Planned         | 0%       | Week 7      |
-| 7     | Polish & UX            | 📋 Planned         | 0%       | Week 8      |
-| 8     | Vibe Coding Support    | 📋 Planned         | 0%       | Week 9      |
-| **9** | **Documentation**      | **🔄 In Progress** | **90%**  | **Week 10** |
-| 10    | Blog & Launch          | 📋 Planned         | 0%       | Week 11     |
-| **11** | **Tech Debt Reduction** | **🔄 In Progress** | **15%** | **Week 12+** |
+While Buffer, Hootsuite, and Sprout Social are dashboards that humans click through, Orbit is infrastructure that AI agents can operate. Every feature is exposed as an MCP tool. Every workflow can be automated. Every action can be triggered by Claude, GPT, or any agent framework through the Model Context Protocol.
 
-### Phase 9: Documentation (Current - #845)
+**The moat is three things no competitor has together:**
 
-**Goal**: Update all documentation to reflect Orbit as core product
+1. **MCP-native architecture** - 35+ tools callable by any AI agent via standard protocol
+2. **Dual credit economy** - Workspace subscriptions + usage-based AI credits
+3. **UK Ltd with Stripe-first billing** - Global payments, VAT handling, SEIS/EIS eligible
 
-**Key Changes**:
+**Positioning**: AI-Powered Social Media Command Center
+**Core Product**: Orbit (social media management)
+**Supporting Tools**: Pixel (image enhancement), Vibe Coding (landing pages)
+**Target Market**: Solo creators, freelance social media managers, small business marketing teams
 
-- MARKETING_PERSONAS.md: 11 Pixel personas → 3 Orbit personas
-- SUBSCRIPTION_TIERS.md: Add visual comparison, FAQs, pricing rationale
-- ORBIT_USER_GUIDE.md: Review existing comprehensive guide
-- AB_TESTING_GUIDE.md: Create new guide for A/B testing feature
-- README.md: Update header to emphasize Orbit
-- USER_GUIDE.md: Complete rewrite (Orbit first, Pixel secondary)
-- ROADMAP.md: Add pivot phases section
-- FEATURES.md: Rewrite platform overview
+---
 
-**Status**:
+## Current State (February 2026)
 
-- [x] MARKETING_PERSONAS.md (Complete)
-- [x] SUBSCRIPTION_TIERS.md (Complete)
-- [x] ORBIT_USER_GUIDE.md (Verified - already comprehensive)
-- [x] AB_TESTING_GUIDE.md (Complete)
-- [x] README.md (Complete)
-- [x] USER_GUIDE.md (Complete)
-- [x] ROADMAP.md (Complete)
-- [ ] FEATURES.md (Pending)
+### What's Built
 
-**Timeline**: Week 10 (January 27-31, 2026)
+| Area | Status | Details |
+|------|--------|---------|
+| **Orbit Core** | Production | Pulse Dashboard, Unified Inbox, Smart Allocator, Competitive Scout, Brand Brain, Relay |
+| **MCP Server** | Production | 35+ tools, SDK 1.26.0, 98% business logic coverage |
+| **Pixel** | Production | AI image enhancement, tiered pricing (FREE/1K/2K/4K) |
+| **Workspace System** | Production | Multi-tenant, FREE/PRO/BUSINESS tiers |
+| **Auth** | Production | NextAuth v5 (GitHub, Google, Facebook, Apple) |
+| **Stripe** | 75% | Subscriptions + one-time payments |
+| **Dev Workflow Tools** | Production | 5 MCP tools for local development (dev_logs, dev_status, github_status, file_guard, notify_agent) |
+| **Security** | Hardened | Command injection prevention, input validation, 6 critical bugs fixed Feb 14 |
 
-**Dependencies**: Requires Phase 2 (Backend) and Phase 3 (Frontend) complete
-**Blocks**: Phase 10 (Blog Article & Launch)
+### Tech Stack
 
-### Phase 11: Tech Debt Reduction (Current - BAZDMEG Audit)
+- **Framework**: Next.js 16.1.6 (App Router) | **Language**: TypeScript 5.9.3 (strict)
+- **Database**: PostgreSQL + Prisma 7.4.0 | **Cache**: Upstash Redis
+- **AI**: Google Gemini (gemini-3-flash), Anthropic Claude (Agent SDK 0.2.42)
+- **Testing**: Vitest 4.0.18 (80% line/function coverage enforced in CI)
+- **Payments**: Stripe 20.3.1 | **Email**: Resend 6.9.2
+- **Infra**: Vercel (web) + Cloudflare Workers (code editor, transpiler, backend)
 
-**Goal**: Reduce accumulated technical debt identified by full repo audit
+### Scale
 
-**Key Findings (February 14, 2026)**:
-- 89 open GitHub issues (37 bugs, 30 features, 22 unlabeled)
-- 66 unused dependencies across all packages
-- 253 unused files (mostly unused shadcn/ui components)
-- Test coverage thresholds at 30/20/25/30% (target: 80%)
-- 8 consecutive daily smoke test failures (closed as stale)
-- Sentry MCP token has wrong permissions (403 on API calls)
+- 150+ Next.js page routes
+- 47 component directories
+- 35 MCP tool modules (23,777 lines)
+- 100+ Prisma models
 
-**Status**:
-- [x] Full repo audit completed (BAZDMEG method)
-- [x] Stale smoke test issues closed (8 issues)
-- [x] Root-level unused dependencies removed (7 deps)
-- [x] Documentation updated (ROADMAP, TECH_DEBT)
+---
+
+## Monetization Strategy
+
+### Tier 1: Workspace Subscriptions (Live)
+
+Current pricing, competitive against mid-market:
+
+| Tier | Price | Social Accounts | AI Credits/mo | Team Members |
+|------|-------|----------------|---------------|-------------|
+| FREE | $0 | 3 | 100 | 1 |
+| PRO | $29 | 10 | 1,000 | 3 |
+| BUSINESS | $99 | Unlimited | 5,000 | 10 |
+
+**Competitive positioning**: PRO undercuts Buffer ($60/mo) and Hootsuite ($99/mo). BUSINESS is 50% cheaper than Sprout Social ($249/mo).
+
+### Tier 2: MCP Agent Access (Q1-Q2 2026) - THE DIFFERENTIATOR
+
+No competitor offers this. Package the MCP server as a paid API product for AI agents.
+
+| Access Level | Price | API Calls/mo | Capabilities |
+|-------------|-------|-------------|-------------|
+| Included in BUSINESS | $0 extra | 1,000 | Read-only (reports, analytics) |
+| API PRO add-on | $49/mo | 10,000 | Full read/write (schedule, respond, test) |
+| API SCALE add-on | $149/mo | 100,000 | Webhooks, batch operations |
+
+**Call weighting**: Read = 1 call, Write = 5, AI operation = 10, Batch = 25
+
+**Why it works**: A freelancer builds a Claude agent that monitors 8 Orbit workspaces, auto-responds to low-priority messages, generates weekly reports, flags anomalies -- all through MCP. No competitor enables this. API users have 3-5x lower churn because integrations are costly to switch.
+
+**Implementation**: Low-medium effort. MCP tools already exist. Need rate limiting, metered billing, developer docs.
+
+### Tier 3: Agency SCALE Tier (Q2 2026)
+
+Volume pricing for freelancers/agencies managing multiple clients:
+
+| Configuration | Monthly | Per-Workspace |
+|--------------|---------|--------------|
+| 5 workspaces (base) | $149 | $29.80 |
+| 10 workspaces | $249 | $24.90 |
+| 20 workspaces | $399 | $19.95 |
+
+**Includes**: Cross-workspace dashboard, white-label reports, client billing pass-through, 10K API calls/mo.
+
+**Why it works**: Freelancers currently pay 5x$29=$145 with no volume discount, no cross-workspace view. SCALE gives actual client separation with unified management. Agencies have 24+ month retention -- LTV of $3,576-$9,576 per customer.
+
+### Tier 4: Outcome-Based Autopilot (Q3-Q4 2026)
+
+Charge per measurable outcome, not per feature:
+
+| Outcome | Price |
+|---------|-------|
+| AI-drafted post approved & published | $0.50 |
+| AI auto-response sent to inbox message | $0.25 |
+| Weekly performance report generated | $2.00 |
+| Competitor alert with actionable insight | $1.00 |
+| A/B test completed with winner declared | $3.00 |
+
+**Phase 1**: Autopilot Lite (AI drafts, human approves with one click)
+**Phase 2**: Full Autopilot (AI acts within Brand Brain guardrails, >90% approval rate threshold)
+
+**Why it works**: Aligns revenue with customer success. A creator publishing 60 posts + handling 200 DMs pays $80/mo in Autopilot on top of $29 PRO = $109/mo total. Pure upside with no feature-gating friction.
+
+### Tier 5: Unified Credit Economy (Ongoing)
+
+Merge Pixel tokens and Orbit AI credits into "Spike Credits":
+
+| Tier | Included Credits | Overage Rate |
+|------|-----------------|-------------|
+| FREE | 100 | N/A |
+| PRO | 2,000 | $0.008/credit |
+| BUSINESS | 10,000 | $0.006/credit |
+| SCALE | 50,000 | $0.004/credit |
+
+**Why**: Eliminates dual-system confusion (user-level Pixel tokens vs workspace-level Orbit credits). Overage revenue scales without adding features.
+
+---
+
+## UK Tax Advantages & Funding
+
+### Available Now
+
+| Scheme | Benefit | Estimated Value |
+|--------|---------|----------------|
+| R&D Tax Credits (RDEC) | 20% credit on qualifying AI/ML R&D spend | $6,000-8,100 on $30K spend |
+| SEIS | 50% investor tax relief, $250K lifetime | First funding round |
+| EIS | 30% investor tax relief, $5M annual | Follow-on rounds |
+| Patent Box | Reduces Corporation Tax to 10% on qualifying IP | When profitable |
+
+### Grants to Apply For
+
+| Grant | Amount | Timeline |
+|-------|--------|----------|
+| Sovereign AI PoC Grant | $50-84K | Applications open Aug 2025 |
+| British Business Bank Startup Loan | $25K at 6% fixed | Apply anytime |
+| Innovate UK Smart Grant | $25-500K | Rolling applications |
+
+**Year 1 estimated tax benefit**: $11,000-19,000
+
+---
+
+## Development Phases
+
+### Completed Phases
+
+| Phase | Name | Status | Notes |
+|-------|------|--------|-------|
+| 0 | Business Foundation | Done | UK Ltd incorporated Dec 2025, Monzo Business, UTR received |
+| 1 | Database Schema | Done | PostgreSQL + Prisma, 100+ models |
+| 2 | Backend Infrastructure | Done | Auth, MCP server, AI integration |
+| 3 | Frontend Development | Done | Orbit UI, 150+ routes, shadcn/ui |
+| 4 | Testing & QA | Done | Vitest, 80% coverage enforced |
+| 9 | Documentation | 95% | All docs updated except FEATURES.md |
+
+### In Progress
+
+#### Phase 5: Stripe Integration (75%)
+
+- [x] Payment intent creation
+- [x] Webhook handling
+- [x] Subscription management
+- [ ] Annual billing with 20% discount
+- [ ] Metered billing for API/Autopilot usage
+- [ ] Credit pack one-time purchases ($10 for 500 credits)
+
+#### Phase 11: Tech Debt Reduction (20%)
+
+- [x] Full repo audit (BAZDMEG method)
+- [x] 8 stale smoke test issues closed
+- [x] Root-level unused deps removed
+- [x] 6 critical security bugs fixed (command injection prevention)
+- [x] Dev workflow MCP tools added (5 tools, 25 tests)
 - [ ] Remove 38 unused deps from packages/code
 - [ ] Audit and remove 253 unused files
-- [ ] Increase test coverage to 80%
+- [ ] Increase test coverage to 80% (from ~30%)
 - [ ] Fix Sentry MCP API token permissions
-- [ ] Refactor files >1500 lines
 
-**Timeline**: Ongoing (February 2026+)
+### Upcoming
 
----
+#### Phase 12: MCP Agent Access Product (Q1-Q2 2026)
 
-## Legacy Phases (Superseded by Pivot)
+**Goal**: Package MCP server as paid API product
 
-**Note**: The following phases represent the original "Vibe Coded Apps" roadmap. They are marked as superseded but retained for historical reference.
+| Task | Priority | Status |
+|------|----------|--------|
+| API rate limiting per workspace | Critical | Planned |
+| API key management UI | Critical | Partially built |
+| Usage metering (calls tracked in DB) | Critical | Planned |
+| Developer documentation | High | Planned |
+| MCP marketplace listings (Apify, Glama, LobeHub) | High | Planned |
+| Webhook subscriptions for API SCALE | Medium | Planned |
 
-### Quick Status Overview (Legacy)
+**Exit criteria**: API PRO add-on purchasable, rate-limited, metered, documented.
 
-| Phase                                | Status              | Progress |
-| ------------------------------------ | ------------------- | -------- |
-| Phase 0: Business Foundation         | Complete            | 100%     |
-| Phase 1: Authentication & Foundation | Complete            | 100%     |
-| Phase 2: My Apps Platform            | Complete            | 100%     |
-| Marketing Phase (Pixel Launch)       | Complete (archived) | 100%     |
-| Phase 3: AI Agent Integration        | Superseded by Pivot | 45%      |
-| Phase 4: Deployment & Hosting        | Superseded by Pivot | 0%       |
-| Phase 5: Monetization                | Superseded by Pivot | 0%       |
+#### Phase 13: Agency SCALE Tier (Q2 2026)
 
----
+**Goal**: Multi-workspace volume pricing for agencies
 
-## Phase 0: Business Foundation (Priority)
+| Task | Priority | Status |
+|------|----------|--------|
+| Cross-workspace aggregation queries | Critical | Planned |
+| Volume pricing in WorkspaceSubscriptionService | Critical | Planned |
+| White-label report templates | High | Planned |
+| Consolidated Stripe billing | High | Planned |
+| Cross-workspace dashboard UI | High | Planned |
+| Client billing pass-through | Medium | Planned |
 
-### Company Formation - Complete ✅
+**Exit criteria**: SCALE tier purchasable, cross-workspace dashboard live, consolidated billing working.
 
-| Task                                 | Status       | Notes                      |
-| ------------------------------------ | ------------ | -------------------------- |
-| Check company name availability      | ✅ Complete  | "Spike Land Ltd" available |
-| Register at Companies House          | ✅ Submitted | Reference: 112-184507      |
-| Register for Corporation Tax         | ✅ Submitted | Reference: BRCT00003618256 |
-| Receive Certificate of Incorporation | ✅ Complete  | 12 December 2025           |
-| Receive UTR number                   | ✅ Complete  | January 2026               |
-| Open business bank account           | ✅ Complete  | Monzo Business             |
-| Update Stripe to company details     | 📋 Next      | After bank account         |
-| Update Terms of Service              | 📋 Queued    | After certificate received |
-| Update Privacy Policy                | 📋 Queued    | After certificate received |
+#### Phase 14: Orbit Autopilot (Q3-Q4 2026)
 
-### Why Phase 0?
+**Goal**: Outcome-based AI automation add-on
 
-With >£10k/year revenue and user data obligations:
+| Task | Priority | Status |
+|------|----------|--------|
+| Autopilot Lite (AI drafts, human approves) | Critical | Planned |
+| Outcome tracking and billing | Critical | Planned |
+| Brand Brain guardrail enforcement | High | Planned |
+| Confidence scoring for auto-actions | High | Planned |
+| Budget cap management | High | Planned |
+| Full Autopilot (>90% approval threshold) | Medium | Planned |
 
-- **Limited liability** protects personal assets
-- **GDPR compliance** - fines against company, not personally
-- **Tax efficiency** - Corporation Tax vs Income Tax + NI
-- **Professional credibility** for user trust
-
-See [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md) for full analysis.
+**Exit criteria**: Autopilot Lite purchasable, outcomes tracked, budget caps enforced.
 
 ---
 
-## Phase 2: My Apps Platform ✅ COMPLETE
+## Revenue Projections
 
-### Completed Tasks
+### Year 1 Targets (2026)
 
-- [x] Protected My Apps dashboard
-- [x] App creation wizard (4-step flow)
-- [x] Database schema (Prisma + PostgreSQL)
-- [x] App listing with grid layout
-- [x] Status badges (DRAFT, ACTIVE, ARCHIVED)
-- [x] Empty state for new users
-- [x] Requirements input during creation
-- [x] Monetization model selection
-- [x] Pixel app implementation (Phases 1-5 complete)
-- [x] Token economy platform infrastructure
-- [x] Admin dashboard and tools
-- [x] Job management system
-- [x] Featured gallery system
-- [x] Feedback collection system
+| Revenue Stream | Q1 | Q2 | Q3 | Q4 | Annual |
+|---------------|-----|-----|-----|-----|--------|
+| Workspace subscriptions | $2K | $5K | $10K | $18K | $35K |
+| MCP API access | - | $2K | $5K | $8K | $15K |
+| Agency SCALE tier | - | $3K | $8K | $12K | $23K |
+| Autopilot add-on | - | - | $2K | $5K | $7K |
+| Credit overages | $500 | $1K | $3K | $5K | $9.5K |
+| UK tax benefits | - | - | - | $15K | $15K |
+| **Total** | **$2.5K** | **$11K** | **$28K** | **$63K** | **$104.5K** |
 
-### Pixel App - Demonstration of Platform Capabilities
+### Key Metrics to Track
 
-The Pixel AI image enhancement app (https://spike.land/apps/pixel) demonstrates
-the complete platform functionality:
-
-**Phase 1: MVP** ✅ Complete
-
-- Image upload with drag-drop UI
-- Single-tier AI enhancement (TIER_1K)
-- Before/after comparison slider
-- Download functionality
-- Authentication integration
-
-**Phase 2: Token Consumption** ✅ Complete
-
-- Multi-tier enhancement (TIER_1K, TIER_2K, TIER_4K)
-- Platform token consumption (2/5/10 tokens per tier)
-- Low balance warnings and refunds on failure
-
-**Phase 3: Albums & Export** ✅ Complete
-
-- Album creation, editing, deletion
-- Batch image upload and organization
-- Album sharing with unlisted links
-- Export formats (JPEG, PNG, WebP)
-- Version history for enhanced images
-- Batch enhancement with queue processing
-
-**Phase 4: Referral Program** ✅ Complete
-
-- Unique referral links per user
-- Referrer and referee token rewards (50 each)
-- Referral dashboard with statistics
-- Anti-fraud measures (IP-based, email verification)
-- Sign-up attribution tracking
-
-**Phase 5: Admin Dashboard** ✅ Complete
-
-- User analytics (registrations, MAU, retention)
-- Token economy analytics (purchases, spend, burn rate)
-- System health monitoring (job queue, failure rates)
-- Admin tools (user search, voucher creation)
-- Job management dashboard
-- Legal pages (Terms, Privacy, Contact)
-- Email infrastructure (Resend integration)
-
-### Phase 2 Exit Criteria
-
-- [x] Users can create, view, edit, and delete apps
-- [x] Users can manage requirements on existing apps
-- [x] Platform infrastructure supports app monetization
-- [x] Token economy implemented and tested
-- [x] All features have 100% test coverage
-- [x] E2E tests cover main user flows
-- [x] Admin tools for platform management
-- [x] Production-ready showcase app (Pixel)
+- **Credit utilization rate** by tier (hitting limits? too much headroom?)
+- **Overage conversion rate** (% who hit limits and buy more vs. churn)
+- **MCP API adoption rate** (% of BUSINESS users enabling API access)
+- **Multi-workspace expansion rate** (agencies adding workspaces over time)
+- **Autopilot approval rate** (% of AI-drafted actions approved by humans)
+- **Net Revenue Retention** (target: >110%)
 
 ---
 
-## Phase 3: AI Agent Integration
+## Competitive Landscape
 
-### Core Tasks
+| Competitor | Price | Agents? | MCP? | Our Advantage |
+|-----------|-------|---------|------|--------------|
+| Buffer | $5-60/channel | No | No | Unified credits + AI automation |
+| Hootsuite | $99+/mo | No | No | 50% cheaper BUSINESS tier |
+| Later | $25-80/mo | No | No | Outcome-based pricing option |
+| Sprout Social | $199-399/seat | No | No | 75% cheaper + agent API |
+| SocialBee | $19-99/mo | No | No | Full MCP integration |
 
-| Task                       | Priority | Complexity | Description                                  |
-| -------------------------- | -------- | ---------- | -------------------------------------------- |
-| Agent Orchestration System | Critical | High       | Central system to manage AI agents           |
-| Requirement Parser         | Critical | High       | Convert natural language to structured specs |
-| Code Generator             | Critical | High       | Generate app code from specifications        |
-| App Sandbox                | High     | High       | Isolated environment for generated apps      |
-| Iterative Refinement       | High     | Medium     | Feedback loop for improvements               |
-
-### Detailed Breakdown
-
-#### 3.1 Agent Orchestration System
-
-```
-Tasks:
-- [ ] Design agent architecture
-- [ ] Implement agent lifecycle management
-- [ ] Create agent communication protocol
-- [ ] Build agent task queue
-- [ ] Implement rate limiting and quotas
-- [ ] Add monitoring and logging
-```
-
-#### 3.2 Requirement-to-Code Pipeline
-
-```
-Tasks:
-- [ ] Natural language processing for requirements
-- [ ] Requirement classification (UI, API, Database, etc.)
-- [ ] Dependency analysis
-- [ ] Code template selection
-- [ ] Component generation
-- [ ] Integration testing automation
-```
-
-#### 3.3 Quality Assurance
-
-```
-Tasks:
-- [ ] Automated code review
-- [ ] Security scanning
-- [ ] Performance benchmarking
-- [ ] Accessibility testing
-- [ ] Generated test coverage
-```
-
-### Phase 3 Exit Criteria
-
-- [ ] AI agent can generate simple apps from requirements
-- [ ] Generated apps pass automated quality checks
-- [ ] Users can provide feedback for improvements
-- [ ] System handles concurrent generation requests
-- [ ] Comprehensive logging and monitoring in place
+**No social media management tool offers programmatic AI agent access as a product.** This is the gap.
 
 ---
 
-## Phase 3.5: MCP Ecosystem Expansion
+## Growth Playbook (First 90 Days)
 
-> **Status**: Planned | **Priority**: High for AI-first distribution strategy
+### Month 1: Foundation
 
-### Strategic Context
+- [ ] List MCP server on Apify, Glama.ai, LobeHub
+- [ ] Create "Build a social media agent in 10 minutes" tutorial
+- [ ] Launch on Product Hunt (Orbit + MCP angle)
+- [ ] Set up referral program (existing infrastructure from Pixel)
 
-MCP servers are spike.land's primary distribution channel. Rather than competing
-for app store visibility, spike.land capabilities are delivered directly to AI
-agents (Claude Code, Claude Desktop). This phase expands the MCP tool ecosystem.
+### Month 2: Content & Community
 
-### Brand Brain MCP Integration
+- [ ] Publish weekly "Agent Automation" blog series
+- [ ] Create MCP tool development template for third-party devs
+- [ ] Launch Discord community for Orbit users
+- [ ] Partner with 3-5 AI tool creators for cross-promotion
 
-| Task                 | Priority | Status      | Description                       |
-| -------------------- | -------- | ----------- | --------------------------------- |
-| Brand Brain REST API | Critical | ✅ Complete | POST /api/brand-brain/apply       |
-| Brand Brain MCP Tool | Critical | 📋 Planned  | `apply_brand_style` in mcp-server |
-| Brand Voice Schema   | High     | 📋 Planned  | Zod schema for brand definitions  |
-| Multi-brand Support  | Medium   | 📋 Planned  | Multiple brand profiles per user  |
+### Month 3: Scale
 
-### Social Platform MCP Tools
-
-| Task               | Priority | Status     | Description                 |
-| ------------------ | -------- | ---------- | --------------------------- |
-| Post to platforms  | High     | 📋 Planned | `post_to_platform` MCP tool |
-| Schedule posts     | Medium   | 📋 Planned | `schedule_post` MCP tool    |
-| Analyze engagement | Low      | 📋 Planned | `get_engagement` MCP tool   |
-
-### MCP Developer Experience
-
-| Task                        | Priority | Status     | Description                         |
-| --------------------------- | -------- | ---------- | ----------------------------------- |
-| MCP tool execution feedback | High     | 📋 Planned | Show tool calls in My-Apps UI       |
-| Tool usage analytics        | Medium   | 📋 Planned | Track which MCP tools are used most |
-| MCP server documentation    | High     | 📋 Planned | Comprehensive tool documentation    |
-
-### Phase 3.5 Exit Criteria
-
-- [ ] Brand Brain available as MCP tool (`apply_brand_style`)
-- [ ] MCP server README documents all upcoming tools
-- [ ] My-Apps shows MCP tool execution feedback
-- [ ] Brand voice schema validated with real user brands
-- [ ] At least one social platform tool implemented
+- [ ] Launch Agency SCALE tier
+- [ ] Run first paid ads (target: freelance social media managers)
+- [ ] Apply for Sovereign AI PoC Grant
+- [ ] Begin SEIS funding round (target: $150K)
 
 ---
 
-## Phase 4: Deployment & Hosting
+## MCP Ecosystem Expansion
 
-### Core Tasks
+### Current MCP Tools (35)
 
-| Task                  | Priority | Complexity | Description                             |
-| --------------------- | -------- | ---------- | --------------------------------------- |
-| App Deployment System | Critical | High       | Deploy generated apps to infrastructure |
-| Preview Environments  | High     | Medium     | Temporary URLs for app preview          |
-| Production Deployment | High     | High       | Stable production hosting               |
-| Custom Domains        | Medium   | Medium     | User-owned domain support               |
-| SSL/TLS Automation    | Medium   | Low        | Automatic certificate management        |
+| Category | Count | Examples |
+|----------|-------|---------|
+| Auth & Admin | 5 | OAuth, user management, API keys |
+| Content & Media | 6 | Albums, images, chat, blog |
+| AI & Generation | 4 | Image gen, text-to-speech, enhancement |
+| Social & Workspace | 5 | Workspaces, settings, social accounts |
+| Billing & Credits | 3 | Subscriptions, credit management |
+| Arena & Skills | 3 | Challenges, skill store |
+| Dev Tools | 5 | Logs, status, file guard, notifications |
+| Other | 4 | Gateway, vault, codespace, pipelines |
 
-### Detailed Breakdown
+### Planned MCP Tools
 
-#### 4.1 Deployment Infrastructure
-
-```
-Tasks:
-- [ ] Container-based app isolation
-- [ ] Auto-scaling configuration
-- [ ] Health check implementation
-- [ ] Rollback mechanisms
-- [ ] Zero-downtime deployments
-```
-
-#### 4.2 Domain Management
-
-```
-Tasks:
-- [ ] Domain verification system
-- [ ] DNS record management
-- [ ] SSL certificate automation
-- [ ] Domain routing configuration
-- [ ] CDN integration
-```
-
-#### 4.3 Monitoring & Analytics
-
-```
-Tasks:
-- [ ] App performance monitoring
-- [ ] Error tracking integration
-- [ ] Usage analytics dashboard
-- [ ] Uptime monitoring
-- [ ] Alerting system
-```
-
-### Phase 4 Exit Criteria
-
-- [ ] Apps deploy automatically after generation
-- [ ] Preview URLs available within 2 minutes
-- [ ] Custom domains configurable by users
-- [ ] SSL automatically provisioned
-- [ ] Comprehensive monitoring dashboard
+| Tool | Priority | Phase |
+|------|----------|-------|
+| `apply_brand_style` | High | Phase 12 |
+| `post_to_platform` | High | Phase 12 |
+| `schedule_post` | High | Phase 12 |
+| `get_engagement` | Medium | Phase 12 |
+| `cross_workspace_report` | High | Phase 13 |
+| `autopilot_configure` | High | Phase 14 |
+| `autopilot_status` | Medium | Phase 14 |
 
 ---
 
-## Phase 5: Monetization
+## Legacy Phases (Historical Reference)
 
-### Core Tasks
+The following phases represent the original "Vibe Coded Apps" roadmap, superseded by the January 2026 strategic pivot:
 
-| Task                    | Priority | Complexity | Description        |
-| ----------------------- | -------- | ---------- | ------------------ |
-| Stripe Integration      | Critical | Medium     | Payment processing |
-| Subscription Management | Critical | Medium     | Recurring billing  |
-| Usage-Based Billing     | High     | High       | Pay-per-use model  |
-| Revenue Dashboard       | High     | Medium     | Earnings tracking  |
-| Payout System           | High     | High       | Creator payouts    |
-
-### Detailed Breakdown
-
-#### 5.1 Payment Processing
-
-```
-Tasks:
-- [ ] Stripe account setup
-- [ ] Payment intent creation
-- [ ] Webhook handling
-- [ ] Receipt generation
-- [ ] Refund processing
-```
-
-#### 5.2 Subscription Models
-
-```
-Tasks:
-- [ ] Plan creation UI
-- [ ] Trial period support
-- [ ] Plan upgrade/downgrade
-- [ ] Cancellation handling
-- [ ] Grace period logic
-```
-
-#### 5.3 Revenue Sharing
-
-```
-Tasks:
-- [ ] Platform fee calculation
-- [ ] Creator earnings tracking
-- [ ] Payout scheduling
-- [ ] Tax document generation
-- [ ] Multi-currency support
-```
-
-### Phase 5 Exit Criteria
-
-- [ ] Users can set pricing for apps
-- [ ] Stripe payments work end-to-end
-- [ ] Subscriptions auto-renew
-- [ ] Creators can view earnings
-- [ ] Payouts processed monthly
-
----
-
-## Marketing Phase (Pixel Launch)
-
-> **Status**: In Progress | **Priority**: Critical for user acquisition
-
-### M1: Analytics & Tracking
-
-| Task                                   | Priority | Status  |
-| -------------------------------------- | -------- | ------- |
-| Facebook Pixel integration             | Critical | Pending |
-| Google Analytics 4 integration         | Critical | Pending |
-| Google Analytics 4 events              | High     | Pending |
-| Conversion tracking (signup, purchase) | Critical | Pending |
-| UTM parameter capture                  | High     | Done    |
-
-### M2: Landing Page Optimization
-
-| Task                               | Priority | Status  |
-| ---------------------------------- | -------- | ------- |
-| Update hero copy (emotion-focused) | Critical | Done    |
-| Update feature benefits (Pixel)    | Critical | Done    |
-| Add persona-targeted landing pages | High     | Pending |
-| A/B testing framework              | Medium   | Done    |
-| Add social proof section           | High     | Pending |
-| Add testimonial component          | Medium   | Pending |
-
-### M3: Persona-Based Campaigns
-
-| Task                                | Priority | Status  |
-| ----------------------------------- | -------- | ------- |
-| Create 10 persona profiles          | High     | Done    |
-| Design 3 initial campaign creatives | High     | Pending |
-| Set up Facebook Ads Manager         | Critical | Pending |
-| Create Instagram content calendar   | Medium   | Pending |
-| TikTok content strategy             | Medium   | Pending |
-
-### Priority Personas (Initial Focus)
-
-1. **Tech-Savvy Grandson** (25-35) - Instagram/TikTok
-2. **Social Media Historian** (18-30) - TikTok/Instagram
-3. **iPhone Upgrader** (25-45) - Instagram/TikTok
-
-See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for full persona
-documentation.
-
----
-
-## Technical Debt & Improvements
-
-### Completed (Sprint #1)
-
-✅ **January 2026 - Tech Stabilization Sprint #1**
-
-See [TECH_STABILIZATION_SPRINT_1.md](./TECH_STABILIZATION_SPRINT_1.md) for full details.
-
-| Task                         | Priority | Completed  | Impact                    |
-| ---------------------------- | -------- | ---------- | ------------------------- |
-| Upgrade to Next.js 16        | Medium   | 2026-01-19 | Better performance        |
-| Upgrade to Vitest 4          | Medium   | 2026-01-19 | Improved testing          |
-| Security vulnerability fixes | Critical | 2026-01-19 | P0 issues eliminated      |
-| API response standardization | High     | 2026-01-19 | Consistent error handling |
-| Shared package exports fix   | Critical | 2026-01-19 | Build chain fixed         |
-
-**Sprint #1 Metrics:**
-
-- P0 security issues: 2 → 0 ✅
-- Next.js: 15.x → 16.1.4 ✅
-- Vitest: 3.x → 4.0.17 ✅
-- New test coverage: +64 tests (100% coverage for new utilities)
-
----
-
-### In Progress (Sprint #2)
-
-🚧 **January 2026 - Tech Stabilization Sprint #2**
-
-See [TECH_STABILIZATION_SPRINT_2.md](./TECH_STABILIZATION_SPRINT_2.md) for full details.
-
-**Focus Areas:**
-
-- Smoke test stabilization (#794) - P0
-- Database backup reliability (#795) - P0
-- Empty catch block remediation (#796) - P1
-- Type safety improvements (#797) - P1
-- Skipped tests investigation (#798) - P1
-- TODO/FIXME cleanup (#799) - P1
-- Scout/Inbox test coverage (#800) - P1
-- Documentation updates (#801) - P1
-
-**Target Completion**: January 27, 2026
-
----
-
-### Code Quality
-
-| Task                    | Priority | Impact                |
-| ----------------------- | -------- | --------------------- |
-| Add error boundaries    | High     | Better error handling |
-| Implement caching layer | Medium   | Faster responses      |
-| Add request validation  | High     | Security improvement  |
-
-### Performance
-
-| Task                        | Priority | Impact              |
-| --------------------------- | -------- | ------------------- |
-| Database query optimization | Medium   | Faster loading      |
-| Image optimization          | Low      | Better LCP          |
-| Bundle size reduction       | Low      | Faster initial load |
-| API response caching        | Medium   | Reduced server load |
-
-### Security
-
-| Task                        | Priority | Impact                  |
-| --------------------------- | -------- | ----------------------- |
-| Rate limiting               | High     | Abuse prevention        |
-| Input sanitization audit    | High     | XSS prevention          |
-| CSRF protection review      | Medium   | Security hardening      |
-| Dependency audit automation | Medium   | Vulnerability detection |
-
----
-
-## Milestone Targets
-
-### Q1 2026 (Current)
-
-- ✅ Phase 2 (My Apps Platform) - Complete
-- 🚧 Phase 3 (AI Agent Integration) - Superseded by Pivot
-- 🚧 Phase 9 (Documentation) - 90% complete
-- 🚧 Phase 11 (Tech Debt Reduction) - 15% complete
-- 🚧 Marketing Phase - 25% complete
-
-### Q2 2026
-
-- Complete Phase 3 (AI Agent Integration)
-- Complete Marketing Phase (GA4, Facebook Pixel)
-- Begin Phase 4 (Deployment & Hosting)
-
-### Q3 2026
-
-- Complete Phase 4 (Deployment & Hosting)
-- Begin Phase 5 (Monetization)
-
-### Q4 2026
-
-- Complete Phase 5 (Monetization)
-- Public launch
+| Phase | Name | Status |
+|-------|------|--------|
+| Phase 2: My Apps Platform | Complete | Pixel app, token economy, admin tools |
+| Phase 3: AI Agent Integration | Superseded | Partially evolved into MCP tools |
+| Phase 4: Deployment & Hosting | Superseded | Vercel + Cloudflare covers this |
+| Phase 5: Monetization (original) | Superseded | Replaced by multi-stream strategy above |
+| Marketing Phase (Pixel Launch) | Archived | Persona work reused for Orbit targeting |
 
 ---
 
 ## How to Contribute
 
-1. Pick a task from the "In Progress" or "Upcoming" sections
+1. Pick a task from "In Progress" or "Upcoming" phases
 2. Create a feature branch: `git checkout -b feature/task-name`
-3. Implement with tests (must satisfy current CI coverage thresholds)
+3. Implement with tests (must satisfy CI coverage thresholds: 80% lines/functions, 75% branches)
 4. Submit PR with detailed description
 5. Wait for CI checks and code review
 
