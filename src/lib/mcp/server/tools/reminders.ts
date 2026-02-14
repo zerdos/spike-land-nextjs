@@ -15,7 +15,7 @@ const CreateReminderSchema = z.object({
   description: z.string().optional(),
   type: z.enum(["FOLLOW_UP", "RECONNECT", "OTHER"]).default("OTHER"),
   dueDate: z.string().datetime().describe("ISO 8601 date."),
-  connectionId: z.string().optional(),
+  connectionId: z.string().min(1).describe("Connection ID to associate this reminder with."),
 });
 
 const ReminderIdSchema = z.object({
@@ -64,17 +64,15 @@ export function registerRemindersTools(registry: ToolRegistry, userId: string): 
       safeToolCall("reminders_create", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         const workspace = await resolveWorkspace(userId, args.workspace_slug);
-        const baseData = {
-          workspaceId: workspace.id,
-          title: args.title,
-          description: args.description,
-          type: args.type as ReminderType,
-          dueDate: new Date(args.dueDate),
-        };
         const reminder = await prisma.connectionReminder.create({
-          data: args.connectionId
-            ? { ...baseData, connectionId: args.connectionId }
-            : baseData,
+          data: {
+            workspaceId: workspace.id,
+            title: args.title,
+            description: args.description,
+            type: args.type as ReminderType,
+            dueDate: new Date(args.dueDate),
+            connectionId: args.connectionId,
+          },
         });
         return textResult(`**Reminder Created!**\n\nID: \`${reminder.id}\`\nTitle: ${reminder.title}`);
       }),
