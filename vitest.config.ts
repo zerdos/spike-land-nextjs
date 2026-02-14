@@ -17,6 +17,8 @@ export default defineConfig({
     },
     include: [
       "src/lib/mcp/**/*.{test,spec}.{ts,tsx}",
+      "src/lib/agents/**/*.{test,spec}.{ts,tsx}",
+      "src/lib/chat/**/*.{test,spec}.{ts,tsx}",
     ],
     exclude: [
       "**/node_modules/**",
@@ -41,9 +43,10 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html", "lcov"],
-      // MCP-only coverage: all business logic tested via MCP tools
+      // Coverage: MCP business logic + agent capability system
       include: [
         "src/lib/mcp/**/*.ts",
+        "src/lib/agents/**/*.ts",
       ],
       exclude: [
         "src/**/*.d.ts",

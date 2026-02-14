@@ -78,6 +78,31 @@ describe("gateway-meta tools", () => {
       const result = await handler({ query: "nonexistent", limit: 10 });
       expect(getText(result)).toContain("No tools found");
     });
+
+    it("should not show (now activated) for already-enabled tools", async () => {
+      registry._searchResults = [
+        { name: "generate_image", category: "image", description: "Generate AI images", tier: "free", enabled: true },
+      ];
+      // enableTools returns empty array (no newly enabled tools)
+      registry._enabledTools = [];
+      const handler = registry.handlers.get("search_tools")!;
+      const result = await handler({ query: "image", limit: 10 });
+      expect(getText(result)).toContain("generate_image");
+      expect(getText(result)).not.toContain("now activated");
+      expect(getText(result)).not.toContain("(inactive)");
+      // No newly enabled message
+      expect(getText(result)).not.toContain("tool(s) activated and ready to use");
+    });
+
+    it("should show (inactive) for disabled tools not newly enabled", async () => {
+      registry._searchResults = [
+        { name: "old_tool", category: "legacy", description: "An old tool", tier: "free", enabled: false },
+      ];
+      registry._enabledTools = [];
+      const handler = registry.handlers.get("search_tools")!;
+      const result = await handler({ query: "old", limit: 10 });
+      expect(getText(result)).toContain("(inactive)");
+    });
   });
 
   describe("list_categories", () => {
@@ -89,6 +114,56 @@ describe("gateway-meta tools", () => {
       const result = await handler({});
       expect(getText(result)).toContain("image");
       expect(getText(result)).toContain("3 tools");
+    });
+
+    it("should list workspace-tier categories under Workspace Required heading", async () => {
+      registry._categories = [
+        { name: "image", description: "Image tools", tier: "free", toolCount: 3, enabledCount: 0, tools: [] },
+        { name: "billing", description: "Billing tools", tier: "workspace", toolCount: 2, enabledCount: 0, tools: [] },
+      ];
+      const handler = registry.handlers.get("list_categories")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("Workspace Required");
+      expect(getText(result)).toContain("billing");
+    });
+
+    it("should exclude gateway-meta category from the list", async () => {
+      registry._categories = [
+        { name: "gateway-meta", description: "Discovery tools", tier: "free", toolCount: 5, enabledCount: 5, tools: [] },
+        { name: "image", description: "Image tools", tier: "free", toolCount: 3, enabledCount: 0, tools: [] },
+      ];
+      const handler = registry.handlers.get("list_categories")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("image");
+      // gateway-meta is skipped in the free categories listing
+      expect(getText(result)).not.toContain("- **gateway-meta**");
+    });
+
+    it("should show active count when enabledCount > 0", async () => {
+      registry._categories = [
+        { name: "image", description: "Image tools", tier: "free", toolCount: 5, enabledCount: 2, tools: [] },
+      ];
+      const handler = registry.handlers.get("list_categories")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("(2/5 active)");
+    });
+
+    it("should show active count for workspace-tier categories", async () => {
+      registry._categories = [
+        { name: "billing", description: "Billing tools", tier: "workspace", toolCount: 4, enabledCount: 3, tools: [] },
+      ];
+      const handler = registry.handlers.get("list_categories")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("(3/4 active)");
+    });
+
+    it("should handle empty categories list", async () => {
+      registry._categories = [];
+      registry._toolCount = 0;
+      const handler = registry.handlers.get("list_categories")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("0 total tools");
+      expect(getText(result)).toContain("search_tools");
     });
   });
 
@@ -131,6 +206,15 @@ describe("gateway-meta tools", () => {
       const handler = registry.handlers.get("get_balance")!;
       const result = await handler({});
       expect(getText(result)).toContain("Error getting balance");
+      expect(getText(result)).toContain("DB down");
+    });
+
+    it("should handle non-Error thrown value in get_balance", async () => {
+      mockGetBalance.mockRejectedValue("string failure");
+      const handler = registry.handlers.get("get_balance")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("Error getting balance");
+      expect(getText(result)).toContain("Unknown error");
     });
   });
 
@@ -144,6 +228,39 @@ describe("gateway-meta tools", () => {
       const result = await handler({});
       expect(getText(result)).toContain("Platform Status");
       expect(getText(result)).toContain("Total Tools:** 10");
+    });
+
+    it("should show status with no active categories", async () => {
+      registry._categories = [
+        { name: "image", description: "", tier: "free", toolCount: 3, enabledCount: 0, tools: [] },
+        { name: "codespace", description: "", tier: "free", toolCount: 6, enabledCount: 0, tools: [] },
+      ];
+      const handler = registry.handlers.get("get_status")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("Platform Status");
+      expect(getText(result)).not.toContain("**Active:**");
+      expect(getText(result)).toContain("**Available:**");
+    });
+
+    it("should show status with no inactive categories", async () => {
+      registry._categories = [
+        { name: "image", description: "", tier: "free", toolCount: 3, enabledCount: 3, tools: [] },
+      ];
+      const handler = registry.handlers.get("get_status")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("Platform Status");
+      expect(getText(result)).toContain("**Active:**");
+      expect(getText(result)).not.toContain("**Available:**");
+    });
+
+    it("should exclude gateway-meta from inactive categories", async () => {
+      registry._categories = [
+        { name: "gateway-meta", description: "", tier: "free", toolCount: 5, enabledCount: 0, tools: [] },
+      ];
+      const handler = registry.handlers.get("get_status")!;
+      const result = await handler({});
+      // gateway-meta with enabledCount=0 is excluded from inactive list
+      expect(getText(result)).not.toContain("**Available:**");
     });
   });
 });

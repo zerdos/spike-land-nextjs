@@ -134,6 +134,19 @@ describe("chat tools", () => {
       expect(getText(result)).not.toContain("tool_use");
     });
 
+    it("should fall back to sonnet model for invalid model name", async () => {
+      mockCreate.mockResolvedValue({
+        content: [{ type: "text", text: "Fallback response" }],
+        usage: { input_tokens: 5, output_tokens: 10 },
+      });
+      const handler = registry.handlers.get("chat_send_message")!;
+      const result = await handler({ message: "Test fallback", model: "nonexistent" });
+      expect(getText(result)).toContain("Fallback response");
+      expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({
+        model: "claude-sonnet-4-5-20250929",
+      }));
+    });
+
     it("should handle API errors gracefully via safeToolCall", async () => {
       mockCreate.mockRejectedValue(new Error("rate limit exceeded"));
       const handler = registry.handlers.get("chat_send_message")!;

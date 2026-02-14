@@ -37,6 +37,7 @@ const {
   mockRegisterNewsletterTools,
   mockRegisterTtsTools,
   mockRegisterBazdmegFaqTools,
+  mockRegisterCapabilitiesTools,
   mockRegisterDevTools,
   mockRegistryInstance,
 } = vi.hoisted(() => ({
@@ -82,6 +83,7 @@ const {
   mockRegisterNewsletterTools: vi.fn(),
   mockRegisterTtsTools: vi.fn(),
   mockRegisterBazdmegFaqTools: vi.fn(),
+  mockRegisterCapabilitiesTools: vi.fn(),
   mockRegisterDevTools: vi.fn(),
 }));
 
@@ -134,7 +136,14 @@ vi.mock("./tools/chat", () => ({ registerChatTools: mockRegisterChatTools }));
 vi.mock("./tools/newsletter", () => ({ registerNewsletterTools: mockRegisterNewsletterTools }));
 vi.mock("./tools/tts", () => ({ registerTtsTools: mockRegisterTtsTools }));
 vi.mock("./tools/bazdmeg-faq", () => ({ registerBazdmegFaqTools: mockRegisterBazdmegFaqTools }));
+vi.mock("./tools/capabilities", () => ({ registerCapabilitiesTools: mockRegisterCapabilitiesTools }));
 vi.mock("./tools/dev", () => ({ registerDevTools: mockRegisterDevTools }));
+vi.mock("./capability-filtered-registry", () => {
+  const MockCapabilityFilteredRegistry = vi.fn(function CapabilityFilteredRegistry() {
+    return mockRegistryInstance;
+  });
+  return { CapabilityFilteredRegistry: MockCapabilityFilteredRegistry };
+});
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ToolRegistry } from "./tool-registry";
@@ -216,6 +225,7 @@ describe("createMcpServer", () => {
       mockRegisterNewsletterTools,
       mockRegisterTtsTools,
       mockRegisterBazdmegFaqTools,
+      mockRegisterCapabilitiesTools,
     ];
 
     for (const registerFn of unconditionalRegisters) {

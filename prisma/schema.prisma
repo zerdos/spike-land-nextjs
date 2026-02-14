@@ -91,6 +91,10 @@ model User {
   toolInvocations          ToolInvocation[]
   createdSkills            Skill[]                   @relation("SkillCreator")
   skillInstallations       SkillInstallation[]       @relation("SkillInstallations")
+  grantedCapabilityTokens  AgentCapabilityToken[]    @relation("GrantedTokens")
+  permissionRequests       PermissionRequest[]
+  agentAuditLogs           AgentAuditLog[]
+  agentTrustScores         AgentTrustScore[]
 
   @@map("users")
 }
@@ -851,6 +855,10 @@ model ClaudeCodeAgent {
   totalTasksCompleted Int            @default(0)
   totalSessionTime    Int            @default(0)
   messages            AgentMessage[]
+  capabilityTokens    AgentCapabilityToken[]
+  permissionRequests  PermissionRequest[]
+  auditLogs           AgentAuditLog[]
+  trustScore          AgentTrustScore?
   user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, machineId, sessionId])
@@ -5045,4 +5053,169 @@ model PageEngagement {
   @@index([visitorId, page])
   @@index([page, createdAt])
   @@map("page_engagements")
+}
+
+// ─── Agent Capability System ─────────────────────────────────────────────────
+
+enum CapabilityTokenStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum PermissionRequestStatus {
+  PENDING
+  APPROVED
+  DENIED
+  EXPIRED
+}
+
+enum FallbackBehavior {
+  QUEUE
+  SKIP
+  FAIL
+}
+
+enum TrustLevel {
+  SANDBOX
+  BASIC
+  TRUSTED
+  AUTONOMOUS
+}
+
+model AgentCapabilityToken {
+  id                 String                @id @default(cuid())
+  tokenHash          String                @unique
+  agentId            String
+  grantedByUserId    String
+  grantedByAgentId   String?
+  allowedTools       String[]
+  allowedCategories  String[]
+  deniedTools        String[]
+  workspaceIds       String[]
+  maxTokenBudget     Int                   @default(100000)
+  usedTokenBudget    Int                   @default(0)
+  maxApiCalls        Int                   @default(1000)
+  usedApiCalls       Int                   @default(0)
+  parentTokenId      String?
+  delegationDepth    Int                   @default(0)
+  maxDelegationDepth Int                   @default(2)
+  revisionVersion    Int                   @default(1)
+  status             CapabilityTokenStatus @default(ACTIVE)
+  expiresAt          DateTime?
+  revokedAt          DateTime?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  agent              ClaudeCodeAgent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  grantedByUser      User                  @relation("GrantedTokens", fields: [grantedByUserId], references: [id], onDelete: Cascade)
+  parentToken        AgentCapabilityToken? @relation("TokenDelegation", fields: [parentTokenId], references: [id])
+  childTokens        AgentCapabilityToken[] @relation("TokenDelegation")
+  permissionRequests PermissionRequest[]   @relation("GrantedByToken")
+  auditLogs          AgentAuditLog[]
+
+  @@index([agentId])
+  @@index([grantedByUserId])
+  @@index([parentTokenId])
+  @@index([status])
+  @@map("agent_capability_tokens")
+}
+
+model PermissionTemplate {
+  id                String              @id @default(cuid())
+  name              String              @unique
+  displayName       String
+  description       String
+  allowedTools      String[]
+  allowedCategories String[]
+  deniedTools       String[]
+  maxTokenBudget    Int                 @default(100000)
+  maxApiCalls       Int                 @default(1000)
+  maxStorageMb      Int                 @default(0)
+  isSystem          Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  permissionRequests PermissionRequest[]
+
+  @@index([isSystem])
+  @@map("permission_templates")
+}
+
+model PermissionRequest {
+  id               String                  @id @default(cuid())
+  agentId          String
+  userId           String
+  requestType      String
+  requestPayload   Json
+  templateId       String?
+  status           PermissionRequestStatus @default(PENDING)
+  fallbackBehavior FallbackBehavior        @default(QUEUE)
+  grantedTokenId   String?
+  denialReason     String?
+  expiresAt        DateTime?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  agent            ClaudeCodeAgent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user             User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template         PermissionTemplate?      @relation(fields: [templateId], references: [id])
+  grantedToken     AgentCapabilityToken?    @relation("GrantedByToken", fields: [grantedTokenId], references: [id])
+
+  @@index([agentId])
+  @@index([userId, status])
+  @@index([status])
+  @@index([templateId])
+  @@map("permission_requests")
+}
+
+model AgentAuditLog {
+  id                 String                @id @default(cuid())
+  agentId            String
+  userId             String
+  workspaceId        String?
+  action             String
+  actionType         String
+  capabilityTokenId  String?
+  input              Json?
+  output             Json?
+  durationMs         Int                   @default(0)
+  isError            Boolean               @default(false)
+  error              String?
+  delegationChain    String[]
+  delegationDepth    Int                   @default(0)
+  tokensConsumed     Int                   @default(0)
+  budgetRemaining    Int                   @default(0)
+  createdAt          DateTime              @default(now())
+
+  agent              ClaudeCodeAgent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user               User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  capabilityToken    AgentCapabilityToken? @relation(fields: [capabilityTokenId], references: [id])
+
+  @@index([agentId, createdAt])
+  @@index([userId, createdAt])
+  @@index([capabilityTokenId])
+  @@index([action])
+  @@index([actionType, createdAt])
+  @@map("agent_audit_logs")
+}
+
+model AgentTrustScore {
+  id               String     @id @default(cuid())
+  agentId          String     @unique
+  userId           String
+  totalSuccessful  Int        @default(0)
+  totalFailed      Int        @default(0)
+  totalRevocations Int        @default(0)
+  trustLevel       TrustLevel @default(SANDBOX)
+  autoApproveTools String[]
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  agent            ClaudeCodeAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([trustLevel])
+  @@map("agent_trust_scores")
 }

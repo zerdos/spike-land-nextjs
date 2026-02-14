@@ -484,5 +484,119 @@ describe("enhancement-jobs tools", () => {
         expect.objectContaining({ take: 5 }),
       );
     });
+
+    it("should filter by both image_id and status", async () => {
+      mockPrisma.imageEnhancementJob.findMany.mockResolvedValue([]);
+
+      const handler = registry.handlers.get("list_enhancement_jobs")!;
+      await handler({ image_id: "img-1", status: "PROCESSING", limit: 10 });
+
+      expect(mockPrisma.imageEnhancementJob.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            userId,
+            imageId: "img-1",
+            status: "PROCESSING",
+          }),
+        }),
+      );
+    });
+  });
+
+  describe("cancel_enhancement_job - REFUNDED status", () => {
+    it("should return error for REFUNDED job", async () => {
+      mockPrisma.imageEnhancementJob.findUnique.mockResolvedValue({
+        id: "job-8",
+        userId,
+        status: "REFUNDED",
+        creditsCost: 5,
+      });
+
+      const handler = registry.handlers.get("cancel_enhancement_job")!;
+      const result = await handler({ job_id: "job-8" });
+
+      expect(getText(result)).toContain("INVALID_STATUS");
+      expect(getText(result)).toContain("REFUNDED");
+    });
+  });
+
+  describe("enhance_image - credit consumption failure with no error message", () => {
+    it("should show fallback error when consumeResult.error is undefined", async () => {
+      mockPrisma.enhancedImage.findUnique.mockResolvedValue({
+        id: "img-1",
+        userId,
+      });
+      mockHasEnoughCredits.mockResolvedValue(true);
+      mockConsumeCredits.mockResolvedValue({
+        success: false,
+        remaining: 0,
+      });
+
+      const handler = registry.handlers.get("enhance_image")!;
+      const result = await handler({
+        image_id: "img-1",
+        tier: "TIER_1K",
+      });
+
+      expect(getText(result)).toContain("CREDIT_CONSUMPTION_FAILED");
+      expect(getText(result)).toContain("Failed to consume credits");
+    });
+  });
+
+  describe("get_enhancement_job - minimal job details", () => {
+    it("should show job without optional fields", async () => {
+      mockPrisma.imageEnhancementJob.findUnique.mockResolvedValue({
+        id: "job-min",
+        userId,
+        status: "PENDING",
+        tier: "FREE",
+        creditsCost: 0,
+        enhancedUrl: null,
+        enhancedWidth: null,
+        enhancedHeight: null,
+        errorMessage: null,
+        createdAt: new Date("2025-06-01"),
+        processingStartedAt: null,
+        processingCompletedAt: null,
+        image: {
+          id: "img-3",
+          name: "Simple Photo",
+          originalUrl: "https://example.com/simple.jpg",
+        },
+      });
+
+      const handler = registry.handlers.get("get_enhancement_job")!;
+      const result = await handler({ job_id: "job-min" });
+
+      const text = getText(result);
+      expect(text).toContain("Status:** PENDING");
+      expect(text).toContain("Simple Photo");
+      expect(text).not.toContain("Enhanced URL");
+      expect(text).not.toContain("Enhanced Size");
+      expect(text).not.toContain("Error:**");
+      expect(text).not.toContain("Processing Started");
+      expect(text).not.toContain("Processing Completed");
+    });
+  });
+
+  describe("cancel_enhancement_job - null balance on refund", () => {
+    it("should show 0 when getBalance returns null after refund", async () => {
+      mockPrisma.imageEnhancementJob.findUnique.mockResolvedValue({
+        id: "job-9",
+        userId,
+        status: "PROCESSING",
+        creditsCost: 5,
+      });
+      mockPrisma.imageEnhancementJob.update.mockResolvedValue({});
+      mockRefundCredits.mockResolvedValue(true);
+      mockGetBalance.mockResolvedValue(null);
+
+      const handler = registry.handlers.get("cancel_enhancement_job")!;
+      const result = await handler({ job_id: "job-9" });
+
+      const text = getText(result);
+      expect(text).toContain("Job Cancelled!");
+      expect(text).toContain("New Balance:** 0");
+    });
   });
 });

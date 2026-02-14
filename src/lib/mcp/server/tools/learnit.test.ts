@@ -136,6 +136,32 @@ describe("learnit tools", () => {
         data: { viewCount: { increment: 1 } },
       });
     });
+
+    it("should swallow view count increment errors silently", async () => {
+      mockPrisma.learnItContent.findUnique.mockResolvedValue({
+        id: "topic-4",
+        slug: "go/goroutines",
+        title: "Go Goroutines",
+        description: "Concurrency in Go",
+        content: "Goroutines are lightweight threads.",
+        parentSlug: null,
+        wikiLinks: [],
+        viewCount: 3,
+        status: "PUBLISHED",
+        generatedAt: new Date("2025-06-01"),
+      });
+      // Make update reject — the catch(() => {}) at L81 should swallow it
+      mockPrisma.learnItContent.update.mockRejectedValue(new Error("DB write failed"));
+
+      const handler = registry.handlers.get("learnit_get_topic")!;
+      const result = await handler({ slug: "go/goroutines" });
+
+      // Should still return the topic successfully despite the update failure
+      const text = getText(result);
+      expect(text).toContain("Go Goroutines");
+      // Wait for async catch to fire
+      await new Promise((r) => setTimeout(r, 10));
+    });
   });
 
   describe("learnit_search_topics", () => {
@@ -276,6 +302,38 @@ describe("learnit tools", () => {
       expect(text).toContain("Memory & Closures");
       expect(text).not.toContain("Related");
       expect(text).not.toContain("Prerequisites");
+    });
+
+    it("should show (none) for empty related list", async () => {
+      mockGetRelatedTopics.mockResolvedValue([]);
+
+      const handler = registry.handlers.get("learnit_get_relations")!;
+      const result = await handler({ slug: "javascript/closures", type: "related" });
+
+      const text = getText(result);
+      expect(text).toContain("Related (0):");
+      expect(text).toContain("(none)");
+    });
+
+    it("should show (none) for empty prerequisites list", async () => {
+      mockGetPrerequisites.mockResolvedValue([]);
+
+      const handler = registry.handlers.get("learnit_get_relations")!;
+      const result = await handler({ slug: "javascript/closures", type: "prerequisites" });
+
+      const text = getText(result);
+      expect(text).toContain("Prerequisites (0):");
+      expect(text).toContain("(none)");
+    });
+
+    it("should show (none) when parent is null", async () => {
+      mockGetParentTopic.mockResolvedValue(null);
+
+      const handler = registry.handlers.get("learnit_get_relations")!;
+      const result = await handler({ slug: "javascript/closures", type: "parent" });
+
+      const text = getText(result);
+      expect(text).toContain("Parent:** (none)");
     });
 
     it("should return NOT_FOUND for missing topic", async () => {
@@ -448,6 +506,129 @@ describe("learnit tools", () => {
       expect(text).toContain("Children (0):");
       expect(text).toContain("Related (0):");
       expect(text).toContain("Prerequisites (0):");
+    });
+
+    it("should expand depth-2 neighbors with children and related", async () => {
+      const parent = {
+        id: "p1",
+        slug: "javascript",
+        title: "JavaScript",
+        description: "...",
+      };
+      const child1 = {
+        id: "c1",
+        slug: "javascript/closures/patterns",
+        title: "Patterns",
+        description: "...",
+      };
+      const related1 = {
+        id: "r1",
+        slug: "javascript/scope",
+        title: "Scope",
+        description: "...",
+      };
+
+      // First call (depth-1): center topic relations
+      mockGetParentTopic.mockResolvedValueOnce(parent);
+      mockGetChildTopics.mockResolvedValueOnce([child1]);
+      mockGetRelatedTopics.mockResolvedValueOnce([related1]);
+      mockGetPrerequisites.mockResolvedValueOnce([]);
+
+      // Depth-2 expansions: parent, child1, related1 = 3 neighbors
+      // For parent
+      mockGetChildTopics.mockResolvedValueOnce([
+        { id: "pc1", slug: "javascript/basics", title: "Basics", description: "..." },
+      ]);
+      mockGetRelatedTopics.mockResolvedValueOnce([]);
+      // For child1
+      mockGetChildTopics.mockResolvedValueOnce([]);
+      mockGetRelatedTopics.mockResolvedValueOnce([
+        { id: "cr1", slug: "javascript/closures/advanced", title: "Advanced", description: "..." },
+      ]);
+      // For related1
+      mockGetChildTopics.mockResolvedValueOnce([]);
+      mockGetRelatedTopics.mockResolvedValueOnce([]);
+
+      const handler = registry.handlers.get("learnit_get_topic_graph")!;
+      const result = await handler({ slug: "javascript/closures", depth: 2 });
+
+      const text = getText(result);
+      expect(text).toContain("Depth-2 Expansions (3)");
+      expect(text).toContain("JavaScript");
+      expect(text).toContain("Children: Basics");
+      expect(text).toContain("Related: Advanced");
+    });
+
+    it("should not show depth-2 section when no neighbors exist", async () => {
+      mockGetParentTopic.mockResolvedValue(null);
+      mockGetChildTopics.mockResolvedValue([]);
+      mockGetRelatedTopics.mockResolvedValue([]);
+      mockGetPrerequisites.mockResolvedValue([]);
+
+      const handler = registry.handlers.get("learnit_get_topic_graph")!;
+      const result = await handler({ slug: "javascript/closures", depth: 2 });
+
+      const text = getText(result);
+      expect(text).not.toContain("Depth-2 Expansions");
+    });
+
+    it("should cap depth-2 expansions at 3 neighbors", async () => {
+      const parent = { id: "p1", slug: "javascript", title: "JavaScript", description: "..." };
+      const children = [
+        { id: "c1", slug: "js/a", title: "A", description: "..." },
+        { id: "c2", slug: "js/b", title: "B", description: "..." },
+      ];
+      const related = [
+        { id: "r1", slug: "js/c", title: "C", description: "..." },
+        { id: "r2", slug: "js/d", title: "D", description: "..." },
+      ];
+
+      mockGetParentTopic.mockResolvedValueOnce(parent);
+      mockGetChildTopics.mockResolvedValueOnce(children);
+      mockGetRelatedTopics.mockResolvedValueOnce(related);
+      mockGetPrerequisites.mockResolvedValueOnce([]);
+
+      // Only 3 neighbors: parent + children[0] + related[0] (capped at 3)
+      mockGetChildTopics.mockResolvedValueOnce([]);
+      mockGetRelatedTopics.mockResolvedValueOnce([]);
+      mockGetChildTopics.mockResolvedValueOnce([]);
+      mockGetRelatedTopics.mockResolvedValueOnce([]);
+      mockGetChildTopics.mockResolvedValueOnce([]);
+      mockGetRelatedTopics.mockResolvedValueOnce([]);
+
+      const handler = registry.handlers.get("learnit_get_topic_graph")!;
+      const result = await handler({ slug: "javascript/closures", depth: 2 });
+
+      const text = getText(result);
+      expect(text).toContain("Depth-2 Expansions (3)");
+    });
+  });
+
+  describe("learnit_get_relations - filter by prerequisites", () => {
+    beforeEach(() => {
+      mockPrisma.learnItContent.findUnique.mockResolvedValue({
+        id: "topic-1",
+        title: "JavaScript Closures",
+      });
+    });
+
+    it("should filter by type=prerequisites", async () => {
+      mockGetPrerequisites.mockResolvedValue([
+        { id: "t3", slug: "javascript/functions", title: "Functions", description: "..." },
+      ]);
+
+      const handler = registry.handlers.get("learnit_get_relations")!;
+      const result = await handler({
+        slug: "javascript/closures",
+        type: "prerequisites",
+      });
+
+      const text = getText(result);
+      expect(text).toContain("Prerequisites (1):");
+      expect(text).toContain("Functions");
+      expect(text).not.toContain("Related");
+      expect(text).not.toContain("Children");
+      expect(text).not.toContain("Parent:**");
     });
   });
 });

@@ -1,5 +1,4 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import type { Assertion, AsymmetricMatchersContaining } from "vitest";
 
 declare module "vitest" {
   interface Assertion<T> {

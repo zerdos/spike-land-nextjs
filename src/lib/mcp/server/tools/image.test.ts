@@ -86,6 +86,117 @@ describe("image tools", () => {
       expect((result as { isError?: boolean }).isError).toBe(true);
       expect(getText(result)).toContain("Service unavailable");
     });
+
+    it("should return error when result.success is false but jobId exists", async () => {
+      mockCreateGenerationJob.mockResolvedValue({ success: false, jobId: "job-orphan", error: "Quota exceeded" });
+      const handler = registry.handlers.get("generate_image")!;
+      const result = await handler({ prompt: "test" });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Quota exceeded");
+    });
+
+    it("should return 'Unknown error' when generate result has no error message", async () => {
+      mockCreateGenerationJob.mockResolvedValue({ success: false, jobId: null, error: "" });
+      const handler = registry.handlers.get("generate_image")!;
+      const result = await handler({ prompt: "test" });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Unknown error");
+    });
+
+    it("should return 'Unknown error' when FAILED status has no errorMessage", async () => {
+      mockCreateGenerationJob.mockResolvedValue({ success: true, jobId: "job-no-msg", creditsCost: 2 });
+      mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue({
+        id: "job-no-msg", status: "FAILED", outputImageUrl: null,
+        outputWidth: null, outputHeight: null, creditsCost: 0, errorMessage: null, type: "GENERATE", prompt: "test",
+      });
+      const handler = registry.handlers.get("generate_image")!;
+      const result = await handler({ prompt: "test", wait_for_completion: true });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Unknown error");
+    });
+
+    it("should handle non-Error throw in catch block", async () => {
+      mockCreateGenerationJob.mockRejectedValue("string error");
+      const handler = registry.handlers.get("generate_image")!;
+      const result = await handler({ prompt: "test" });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Unknown");
+    });
+
+    it("should pass negative_prompt to createGenerationJob", async () => {
+      mockCreateGenerationJob.mockResolvedValue({ success: true, jobId: "job-neg", creditsCost: 2 });
+      mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue({
+        id: "job-neg", status: "COMPLETED", outputImageUrl: "https://example.com/img.jpg",
+        outputWidth: 1024, outputHeight: 1024, creditsCost: 2, errorMessage: null, type: "GENERATE", prompt: "a cat",
+      });
+      const handler = registry.handlers.get("generate_image")!;
+      await handler({ prompt: "a cat", negative_prompt: "no blur", wait_for_completion: true });
+      expect(mockCreateGenerationJob).toHaveBeenCalledWith(
+        expect.objectContaining({ negativePrompt: "no blur" }),
+      );
+    });
+
+    it("should pass aspect_ratio to createGenerationJob", async () => {
+      mockCreateGenerationJob.mockResolvedValue({ success: true, jobId: "job-ar", creditsCost: 2 });
+      mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue({
+        id: "job-ar", status: "COMPLETED", outputImageUrl: "https://example.com/img.jpg",
+        outputWidth: 1920, outputHeight: 1080, creditsCost: 2, errorMessage: null, type: "GENERATE", prompt: "landscape",
+      });
+      const handler = registry.handlers.get("generate_image")!;
+      await handler({ prompt: "landscape", aspect_ratio: "16:9", wait_for_completion: true });
+      expect(mockCreateGenerationJob).toHaveBeenCalledWith(
+        expect.objectContaining({ aspectRatio: "16:9" }),
+      );
+    });
+
+    it("should handle waitForJobCompletion timeout", async () => {
+      vi.useFakeTimers();
+      try {
+        mockCreateGenerationJob.mockResolvedValue({ success: true, jobId: "job-timeout", creditsCost: 2 });
+        // Always return PENDING status, causing timeout after maxAttempts
+        mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue({
+          id: "job-timeout", status: "PENDING", outputImageUrl: null,
+          outputWidth: null, outputHeight: null, creditsCost: 2, errorMessage: null, type: "GENERATE", prompt: "test",
+        });
+        const handler = registry.handlers.get("generate_image")!;
+        const resultPromise = handler({ prompt: "test", wait_for_completion: true, tier: "TIER_1K" });
+
+        // Advance timers to get through all 60 iterations (60 * 2000ms)
+        for (let i = 0; i < 60; i++) {
+          await vi.advanceTimersByTimeAsync(2000);
+        }
+
+        const result = await resultPromise;
+        expect((result as { isError?: boolean }).isError).toBe(true);
+        expect(getText(result)).toContain("Job timed out");
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("should handle waitForJobCompletion job not found", async () => {
+      mockCreateGenerationJob.mockResolvedValue({ success: true, jobId: "job-missing", creditsCost: 2 });
+      mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue(null);
+      const handler = registry.handlers.get("generate_image")!;
+      const result = await handler({ prompt: "test", wait_for_completion: true });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Job not found");
+    });
+
+    it("should handle waitForJobCompletion with REFUNDED status", async () => {
+      mockCreateGenerationJob.mockResolvedValue({ success: true, jobId: "job-refund", creditsCost: 2 });
+      mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue({
+        id: "job-refund", status: "REFUNDED", outputImageUrl: null,
+        outputWidth: null, outputHeight: null, creditsCost: 0, errorMessage: "Refunded due to safety filter", type: "GENERATE", prompt: "test",
+      });
+      const handler = registry.handlers.get("generate_image")!;
+      const result = await handler({ prompt: "test", wait_for_completion: true });
+      // REFUNDED is a terminal status (not FAILED), so it returns the success path
+      expect(getText(result)).toContain("Image generated");
+      expect(getText(result)).toContain("job-refund");
+      // Not an error
+      expect((result as { isError?: boolean }).isError).toBeUndefined();
+    });
   });
 
   describe("modify_image", () => {
@@ -168,6 +279,62 @@ describe("image tools", () => {
       expect((result as { isError?: boolean }).isError).toBe(true);
       expect(getText(result)).toContain("Modification service down");
     });
+
+    it("should return error when modify result.success is false but jobId exists", async () => {
+      mockCreateModificationJob.mockResolvedValue({ success: false, jobId: "job-mod-orphan", error: "Rate limited" });
+      const handler = registry.handlers.get("modify_image")!;
+      const result = await handler({ prompt: "test", image_base64: "base64data", wait_for_completion: false });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Rate limited");
+    });
+
+    it("should return 'Unknown error' when modify result has no error message", async () => {
+      mockCreateModificationJob.mockResolvedValue({ success: false, jobId: null, error: "" });
+      const handler = registry.handlers.get("modify_image")!;
+      const result = await handler({ prompt: "test", image_base64: "base64data" });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Unknown error");
+    });
+
+    it("should return 'Unknown error' when modify FAILED status has no errorMessage", async () => {
+      mockCreateModificationJob.mockResolvedValue({ success: true, jobId: "job-mod-nomsg", creditsCost: 2 });
+      mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue({
+        id: "job-mod-nomsg", status: "FAILED", outputImageUrl: null,
+        outputWidth: null, outputHeight: null, creditsCost: 0, errorMessage: null, type: "MODIFY", prompt: "test",
+      });
+      const handler = registry.handlers.get("modify_image")!;
+      const result = await handler({ prompt: "test", image_base64: "base64data", wait_for_completion: true });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Unknown error");
+    });
+
+    it("should handle non-Error throw in modify catch block", async () => {
+      mockCreateModificationJob.mockRejectedValue("string error");
+      const handler = registry.handlers.get("modify_image")!;
+      const result = await handler({ prompt: "test", image_base64: "base64data" });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Unknown");
+    });
+
+    it("should fallback to mime_type when content-type header returns null", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        arrayBuffer: () => Promise.resolve(new Uint8Array([0xff, 0xd8]).buffer),
+        headers: { get: () => null },
+      });
+      mockCreateModificationJob.mockResolvedValue({ success: true, jobId: "job-ct", creditsCost: 2 });
+      mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue({
+        id: "job-ct", status: "COMPLETED", outputImageUrl: "https://example.com/modified.jpg",
+        outputWidth: 512, outputHeight: 512, creditsCost: 2, errorMessage: null, type: "MODIFY", prompt: "sharpen",
+      });
+      const handler = registry.handlers.get("modify_image")!;
+      const result = await handler({ prompt: "sharpen", image_url: "https://example.com/input.jpg", mime_type: "image/jpeg", wait_for_completion: true });
+      expect(getText(result)).toContain("Image modified");
+      // When content-type is null, falls back to mime_type (image/jpeg)
+      expect(mockCreateModificationJob).toHaveBeenCalledWith(
+        expect.objectContaining({ mimeType: "image/jpeg" }),
+      );
+    });
   });
 
   describe("check_job", () => {
@@ -221,6 +388,14 @@ describe("image tools", () => {
       const result = await handler({ job_id: "job-err" });
       expect((result as { isError?: boolean }).isError).toBe(true);
       expect(getText(result)).toContain("DB connection lost");
+    });
+
+    it("should handle non-Error throw in check_job catch block", async () => {
+      mockPrisma.mcpGenerationJob.findUnique.mockRejectedValue("db string error");
+      const handler = registry.handlers.get("check_job")!;
+      const result = await handler({ job_id: "job-str-err" });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Unknown");
     });
   });
 });

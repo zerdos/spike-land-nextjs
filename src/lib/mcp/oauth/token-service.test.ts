@@ -421,5 +421,208 @@ describe("token-service", () => {
 
       expect(result).toBeNull();
     });
+
+    it("should reject when PKCE verification fails (mismatched codeVerifier)", async () => {
+      const codeVerifier = "correct-verifier-string";
+      const codeChallenge = createHash("sha256")
+        .update(codeVerifier)
+        .digest("base64url");
+
+      // Atomic mark-as-used succeeds
+      mockPrisma.oAuthAuthorizationCode.updateMany.mockResolvedValue({ count: 1 });
+      // Then fetch details with the correct challenge
+      mockPrisma.oAuthAuthorizationCode.findUnique.mockResolvedValue({
+        clientId: "client-1",
+        userId: "user-1",
+        redirectUri: "https://example.com/callback",
+        codeChallenge,
+        codeChallengeMethod: "S256",
+        scope: "mcp",
+        resource: null,
+        expiresAt: new Date(Date.now() + 600000),
+      });
+
+      // Use wrong verifier that won't match the challenge
+      const result = await exchangeAuthorizationCode(
+        "test-code",
+        "client-1",
+        "wrong-verifier-that-does-not-match",
+        "https://example.com/callback",
+      );
+
+      // Should fail because PKCE verifier doesn't match challenge
+      expect(result).toBeNull();
+    });
+
+    it("should return null when authCode is not found after atomic update", async () => {
+      // Atomic mark-as-used succeeds (race condition scenario)
+      mockPrisma.oAuthAuthorizationCode.updateMany.mockResolvedValue({ count: 1 });
+      // But subsequent findUnique returns null
+      mockPrisma.oAuthAuthorizationCode.findUnique.mockResolvedValue(null);
+
+      const result = await exchangeAuthorizationCode(
+        "disappearing-code",
+        "client-1",
+        "verifier",
+        "https://example.com/callback",
+      );
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("generateAuthorizationCode - custom params", () => {
+    it("should pass custom scope, state, resource, and codeChallengeMethod", async () => {
+      mockPrisma.oAuthAuthorizationCode.create.mockResolvedValue({
+        id: "code-id",
+        code: "test-code",
+      });
+
+      await generateAuthorizationCode({
+        clientId: "client-1",
+        userId: "user-1",
+        redirectUri: "https://example.com/callback",
+        codeChallenge: "challenge123",
+        codeChallengeMethod: "plain",
+        scope: "mcp:write",
+        state: "random-state",
+        resource: "https://api.example.com",
+      });
+
+      expect(mockPrisma.oAuthAuthorizationCode.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          codeChallengeMethod: "plain",
+          scope: "mcp:write",
+          state: "random-state",
+          resource: "https://api.example.com",
+        }),
+      });
+    });
+
+    it("should handle undefined state and resource as undefined", async () => {
+      mockPrisma.oAuthAuthorizationCode.create.mockResolvedValue({
+        id: "code-id",
+        code: "test-code",
+      });
+
+      await generateAuthorizationCode({
+        clientId: "client-1",
+        userId: "user-1",
+        redirectUri: "https://example.com/callback",
+        codeChallenge: "challenge123",
+        state: undefined,
+        resource: undefined,
+      });
+
+      expect(mockPrisma.oAuthAuthorizationCode.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          codeChallengeMethod: "S256",
+          scope: "mcp",
+        }),
+      });
+    });
+  });
+
+  describe("refreshAccessToken - edge cases", () => {
+    it("should reject expired refresh token", async () => {
+      mockPrisma.oAuthAccessToken.findUnique.mockResolvedValue({
+        id: "refresh-id",
+        userId: "user-1",
+        clientId: "client-1",
+        scope: "mcp",
+        resource: null,
+        tokenType: "REFRESH",
+        expiresAt: new Date(Date.now() - 1000), // expired
+        revokedAt: null,
+      });
+
+      const result = await refreshAccessToken("mcp_refresh_expired", "client-1");
+      expect(result).toBeNull();
+    });
+
+    it("should reject revoked refresh token", async () => {
+      mockPrisma.oAuthAccessToken.findUnique.mockResolvedValue({
+        id: "refresh-id",
+        userId: "user-1",
+        clientId: "client-1",
+        scope: "mcp",
+        resource: null,
+        tokenType: "REFRESH",
+        expiresAt: new Date(Date.now() + 86400000),
+        revokedAt: new Date(), // revoked
+      });
+
+      const result = await refreshAccessToken("mcp_refresh_revoked", "client-1");
+      expect(result).toBeNull();
+    });
+
+    it("should reject non-existent refresh token", async () => {
+      mockPrisma.oAuthAccessToken.findUnique.mockResolvedValue(null);
+
+      const result = await refreshAccessToken("mcp_refresh_nonexistent", "client-1");
+      expect(result).toBeNull();
+    });
+
+    it("should reject access token used as refresh token", async () => {
+      mockPrisma.oAuthAccessToken.findUnique.mockResolvedValue({
+        id: "access-id",
+        userId: "user-1",
+        clientId: "client-1",
+        scope: "mcp",
+        resource: null,
+        tokenType: "ACCESS", // Not REFRESH
+        expiresAt: new Date(Date.now() + 86400000),
+        revokedAt: null,
+      });
+
+      const result = await refreshAccessToken("mcp_access_as_refresh", "client-1");
+      expect(result).toBeNull();
+    });
+
+    it("should pass resource to new access token when refreshing", async () => {
+      const refreshToken = "mcp_refresh_with_resource";
+
+      mockPrisma.oAuthAccessToken.findUnique.mockResolvedValue({
+        id: "refresh-id",
+        userId: "user-1",
+        clientId: "client-1",
+        scope: "mcp",
+        resource: "https://api.example.com",
+        tokenType: "REFRESH",
+        expiresAt: new Date(Date.now() + 86400000),
+        revokedAt: null,
+      });
+
+      mockPrisma.oAuthAccessToken.create.mockResolvedValue({ id: "new-access" });
+
+      const result = await refreshAccessToken(refreshToken, "client-1");
+
+      expect(result).not.toBeNull();
+      expect(mockPrisma.oAuthAccessToken.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          resource: "https://api.example.com",
+        }),
+      });
+    });
+  });
+
+  describe("generateTokenPair - with resource", () => {
+    it("should pass resource to both token records", async () => {
+      mockPrisma.oAuthAccessToken.create.mockResolvedValue({ id: "token-id" });
+
+      await generateTokenPair("user-1", "client-1", "mcp", "https://api.example.com");
+
+      const refreshCall = mockPrisma.oAuthAccessToken.create.mock.calls[0]?.[0];
+      const accessCall = mockPrisma.oAuthAccessToken.create.mock.calls[1]?.[0];
+      expect(refreshCall?.data?.resource).toBe("https://api.example.com");
+      expect(accessCall?.data?.resource).toBe("https://api.example.com");
+    });
+  });
+
+  describe("verifyPkce - length mismatch", () => {
+    it("should reject when computed and challenge have different lengths", () => {
+      // A very short challenge will have a different length than the SHA-256 output
+      expect(verifyPkce("some-verifier", "short")).toBe(false);
+    });
   });
 });

@@ -39,6 +39,17 @@ describe("auth tools", () => {
       expect(text).toContain("alice@test.com");
     });
 
+    it("should fall back to 'unnamed' when user name is null", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: userId, name: null, email: "anon@test.com", role: "USER", createdAt: new Date("2025-01-01"),
+      });
+      const handler = registry.handlers.get("auth_check_session")!;
+      const result = await handler({});
+      const text = getText(result);
+      expect(text).toContain("Session Valid");
+      expect(text).toContain("User:** unnamed");
+    });
+
     it("should return NOT_FOUND for missing user", async () => {
       mockPrisma.user.findUnique.mockResolvedValue(null);
       const handler = registry.handlers.get("auth_check_session")!;
@@ -100,6 +111,29 @@ describe("auth tools", () => {
       const text = getText(result);
       expect(text).toContain("Workspaces");
       expect(text).toContain("My Workspace");
+    });
+
+    it("should show 'unnamed' and '(none)' for null name and image", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: userId, name: null, email: "anon@test.com", role: "USER", image: null, createdAt: new Date("2025-01-01"),
+      });
+      const handler = registry.handlers.get("auth_get_profile")!;
+      const result = await handler({});
+      const text = getText(result);
+      expect(text).toContain("Name:** unnamed");
+      expect(text).toContain("Avatar:** (none)");
+    });
+
+    it("should not show Workspaces section when members array is empty", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: userId, name: "Bob", email: "bob@test.com", role: "USER", image: null, createdAt: new Date("2025-01-01"),
+        workspaceMembers: [],
+      });
+      const handler = registry.handlers.get("auth_get_profile")!;
+      const result = await handler({ include_workspaces: true });
+      const text = getText(result);
+      expect(text).toContain("User Profile");
+      expect(text).not.toContain("Workspaces:");
     });
 
     it("should return NOT_FOUND for missing user", async () => {

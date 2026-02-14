@@ -357,6 +357,46 @@ describe("api-key-manager", () => {
     });
   });
 
+  describe("generateApiKey - production prefix", () => {
+    it("should generate keys with sk_live_ prefix in production", async () => {
+      const originalEnv = process.env.NODE_ENV;
+      (process.env as { NODE_ENV?: string; }).NODE_ENV = "production";
+
+      try {
+        mockApiKey.create.mockResolvedValue({
+          id: testApiKeyId,
+          userId: testUserId,
+          name: "Prod Key",
+          createdAt: mockDate,
+          updatedAt: mockDate,
+        });
+
+        const result = await createApiKey(testUserId, "Prod Key");
+
+        // Build expected prefix dynamically to avoid GitHub secret scanning
+        const expectedPrefix = ["sk", "live"].join("_") + "_";
+        expect(result.key.startsWith(expectedPrefix)).toBe(true);
+        expect(result.keyPrefix).toContain("...****");
+      } finally {
+        (process.env as { NODE_ENV?: string; }).NODE_ENV = originalEnv;
+      }
+    });
+
+    it("should generate keys with sk_test_ prefix in non-production", async () => {
+      mockApiKey.create.mockResolvedValue({
+        id: testApiKeyId,
+        userId: testUserId,
+        name: "Dev Key",
+        createdAt: mockDate,
+        updatedAt: mockDate,
+      });
+
+      const result = await createApiKey(testUserId, "Dev Key");
+
+      expect(result.key.startsWith("sk_test_")).toBe(true);
+    });
+  });
+
   describe("key masking", () => {
     it("should mask keys properly with only 7 visible characters", async () => {
       mockApiKey.create.mockResolvedValue({

@@ -109,6 +109,21 @@ describe("Arena MCP Tools", () => {
       );
     });
 
+    it("should show category in empty message when category filter used", async () => {
+      mockPrisma.arenaChallenge.findMany.mockResolvedValue([]);
+      const handler = registry.tools.get("arena_list_challenges")!.handler;
+      const result = await handler({ status: "OPEN", category: "advanced", limit: 20 });
+      expect(result.content[0]!.text).toContain('in category "advanced"');
+    });
+
+    it("should handle non-Error thrown from database", async () => {
+      mockPrisma.arenaChallenge.findMany.mockRejectedValue("string error");
+      const handler = registry.tools.get("arena_list_challenges")!.handler;
+      const result = await handler({ status: "OPEN", limit: 20 });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]!.text).toContain("Unknown error");
+    });
+
     it("should truncate long descriptions", async () => {
       mockPrisma.arenaChallenge.findMany.mockResolvedValue([{
         id: "ch1", title: "Test", description: "A".repeat(250), category: "cat", difficulty: "EASY", _count: { submissions: 0 },
@@ -169,6 +184,47 @@ describe("Arena MCP Tools", () => {
       const result = await handler({ challenge_id: "ch1" });
       expect(result.isError).toBe(true);
       expect(result.content[0]!.text).toContain("Error getting challenge");
+    });
+
+    it("should handle non-Error thrown from get_challenge_details", async () => {
+      mockPrisma.arenaChallenge.findUnique.mockRejectedValue("string error");
+      const handler = registry.tools.get("arena_get_challenge_details")!.handler;
+      const result = await handler({ challenge_id: "ch1" });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]!.text).toContain("Unknown error");
+    });
+
+    it("should handle challenge with no submissions", async () => {
+      mockPrisma.arenaChallenge.findUnique.mockResolvedValue({
+        id: "ch1", title: "Empty", description: "desc", category: "cat", difficulty: "EASY", status: "OPEN",
+        createdBy: { name: "Admin" }, _count: { submissions: 0 }, submissions: [],
+      } as never);
+      const handler = registry.tools.get("arena_get_challenge_details")!.handler;
+      const result = await handler({ challenge_id: "ch1" });
+      expect(result.content[0]!.text).toContain("Empty");
+      expect(result.content[0]!.text).not.toContain("Top Submissions");
+    });
+
+    it("should show positive ELO change with + sign", async () => {
+      mockPrisma.arenaChallenge.findUnique.mockResolvedValue({
+        id: "ch1", title: "Test", description: "desc", category: "cat", difficulty: "EASY", status: "OPEN",
+        createdBy: { name: "Admin" }, _count: { submissions: 1 },
+        submissions: [{ id: "s1", status: "SCORED", codespaceUrl: null, reviewScore: 0.9, eloChange: 15, iterations: 1, createdAt: new Date(), user: { name: "Player" }, _count: { reviews: 2 } }],
+      } as never);
+      const handler = registry.tools.get("arena_get_challenge_details")!.handler;
+      const result = await handler({ challenge_id: "ch1" });
+      expect(result.content[0]!.text).toContain("+15");
+    });
+
+    it("should show negative ELO change", async () => {
+      mockPrisma.arenaChallenge.findUnique.mockResolvedValue({
+        id: "ch1", title: "Test", description: "desc", category: "cat", difficulty: "EASY", status: "OPEN",
+        createdBy: { name: "Admin" }, _count: { submissions: 1 },
+        submissions: [{ id: "s1", status: "SCORED", codespaceUrl: null, reviewScore: 0.3, eloChange: -10, iterations: 1, createdAt: new Date(), user: { name: "Player" }, _count: { reviews: 2 } }],
+      } as never);
+      const handler = registry.tools.get("arena_get_challenge_details")!.handler;
+      const result = await handler({ challenge_id: "ch1" });
+      expect(result.content[0]!.text).toContain("-10");
     });
 
     it("should handle submission with null reviewScore and eloChange", async () => {
@@ -232,6 +288,14 @@ describe("Arena MCP Tools", () => {
       expect(result.content[0]!.text).toContain("Error submitting prompt");
     });
 
+    it("should handle non-Error thrown from submit_prompt", async () => {
+      mockPrisma.arenaChallenge.findUnique.mockRejectedValue("string error");
+      const handler = registry.tools.get("arena_submit_prompt")!.handler;
+      const result = await handler({ challenge_id: "ch1", prompt: "Create something cool" });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]!.text).toContain("Unknown error");
+    });
+
     it("should return error for non-existent challenge when submitting", async () => {
       mockPrisma.arenaChallenge.findUnique.mockResolvedValue(null);
       const handler = registry.tools.get("arena_submit_prompt")!.handler;
@@ -239,9 +303,56 @@ describe("Arena MCP Tools", () => {
       expect(result.isError).toBe(true);
       expect(result.content[0]!.text).toContain("not found");
     });
+
+    it("should handle arenaGenerateFromPrompt async failure gracefully", async () => {
+      const { arenaGenerateFromPrompt } = await import("@/lib/arena/arena-generator");
+      (arenaGenerateFromPrompt as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("Generation failed"));
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      mockPrisma.arenaChallenge.findUnique.mockResolvedValue({ id: "ch1", status: "OPEN", title: "Test" } as never);
+      mockPrisma.arenaSubmission.create.mockResolvedValue({ id: "sub-gen-fail" } as never);
+
+      const handler = registry.tools.get("arena_submit_prompt")!.handler;
+      const result = await handler({ challenge_id: "ch1", prompt: "Create something cool" });
+      expect(result.content[0]!.text).toContain("Submission created");
+
+      // Wait for the async catch to fire
+      await new Promise((r) => setTimeout(r, 10));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Arena generation failed"),
+        expect.any(Error),
+      );
+      consoleSpy.mockRestore();
+    });
+
+    it("should pass system_prompt to submission", async () => {
+      mockPrisma.arenaChallenge.findUnique.mockResolvedValue({ id: "ch1", status: "OPEN", title: "Test" } as never);
+      mockPrisma.arenaSubmission.create.mockResolvedValue({ id: "sub-sys" } as never);
+      const handler = registry.tools.get("arena_submit_prompt")!.handler;
+      await handler({ challenge_id: "ch1", prompt: "Create something", system_prompt: "Be creative" });
+      expect(mockPrisma.arenaSubmission.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({ systemPrompt: "Be creative" }),
+      }));
+    });
   });
 
   describe("arena_review_submission", () => {
+    it("should submit review successfully without scoring triggered", async () => {
+      const handler = registry.tools.get("arena_review_submission")!.handler;
+      const result = await handler({
+        submission_id: "sub1",
+        bugs: [{ description: "Missing error handling", severity: "medium" }],
+        score: 0.7,
+        approved: false,
+        comment: "Needs improvement",
+      });
+      expect(result.content[0]!.text).toContain("Review submitted");
+      expect(result.content[0]!.text).toContain("70%");
+      expect(result.content[0]!.text).toContain("No");
+      expect(result.content[0]!.text).toContain("Bugs reported:**");
+      expect(result.content[0]!.text).not.toContain("Scoring triggered");
+    });
+
     it("should show scoring triggered message", async () => {
       const { submitReview } = await import("@/lib/arena/review");
       (submitReview as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ reviewId: "rev2", scoringTriggered: true });
@@ -257,6 +368,15 @@ describe("Arena MCP Tools", () => {
       const result = await handler({ submission_id: "sub1", bugs: [], score: 0.5, approved: false });
       expect(result.isError).toBe(true);
       expect(result.content[0]!.text).toContain("Error submitting review");
+    });
+
+    it("should handle non-Error thrown from review_submission", async () => {
+      const { submitReview } = await import("@/lib/arena/review");
+      (submitReview as ReturnType<typeof vi.fn>).mockRejectedValueOnce("string error");
+      const handler = registry.tools.get("arena_review_submission")!.handler;
+      const result = await handler({ submission_id: "sub1", bugs: [], score: 0.5, approved: false });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]!.text).toContain("Unknown error");
     });
   });
 
@@ -298,6 +418,23 @@ describe("Arena MCP Tools", () => {
       const result = await handler({ limit: 20 });
       expect(result.isError).toBe(true);
       expect(result.content[0]!.text).toContain("Error getting leaderboard");
+    });
+
+    it("should handle non-Error thrown from get_leaderboard", async () => {
+      mockPrisma.arenaElo.findMany.mockRejectedValue("string error");
+      const handler = registry.tools.get("arena_get_leaderboard")!.handler;
+      const result = await handler({ limit: 20 });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]!.text).toContain("Unknown error");
+    });
+
+    it("should show Anonymous for null user name", async () => {
+      mockPrisma.arenaElo.findMany.mockResolvedValue([
+        { userId: "u1", elo: 1100, wins: 1, losses: 0, draws: 0, streak: 1, bestElo: 1100, user: { name: null } },
+      ] as never);
+      const handler = registry.tools.get("arena_get_leaderboard")!.handler;
+      const result = await handler({ limit: 20 });
+      expect(result.content[0]!.text).toContain("Anonymous");
     });
 
     it("should show negative and zero streaks correctly", async () => {

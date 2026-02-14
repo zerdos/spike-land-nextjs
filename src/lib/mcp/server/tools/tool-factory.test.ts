@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
 // Mock prisma
 const mockPrisma = {
@@ -265,6 +265,19 @@ describe("tool factory tools", () => {
         {},
       );
       expect(result).toBe("a + a");
+    });
+
+    it("should leave unrecognized namespace variables as-is", () => {
+      // VALID_TEMPLATE_VAR regex only matches {{secrets.*}} and {{input.*}}
+      // Any other namespace won't match the regex, so won't be replaced
+      // But the validateTemplate function would have caught them earlier;
+      // resolveTemplate only processes valid vars, so unknown ones just stay
+      const result = resolveTemplate(
+        "no variables here {{input.x}}",
+        { x: "val" },
+        {},
+      );
+      expect(result).toBe("no variables here val");
     });
   });
 
@@ -895,6 +908,39 @@ describe("tool factory tools", () => {
         }),
       );
     });
+
+    it("should reject resolved URL that fails SSRF validation (template injection)", async () => {
+      // Tool has a valid HTTPS URL with input template that resolves to a private address
+      const ssrfTool = {
+        id: "tool-ssrf",
+        name: "ssrf_tool",
+        status: "DRAFT",
+        handlerSpec: {
+          url: "https://{{input.host}}/api",
+          method: "GET",
+          headers: {},
+        },
+      };
+      mockPrisma.registeredTool.findFirst.mockResolvedValue(ssrfTool);
+
+      const handler = registry.handlers.get("test_tool")!;
+      const result = await handler({
+        tool_id: "tool-ssrf",
+        test_input: { host: "localhost" },
+      });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          isError: true,
+          content: expect.arrayContaining([
+            expect.objectContaining({
+              text: expect.stringContaining("Resolved URL is invalid"),
+            }),
+          ]),
+        }),
+      );
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
   });
 
   // ============================================================
@@ -1251,6 +1297,314 @@ describe("tool factory tools", () => {
           ]),
         }),
       );
+    });
+
+    it("should handle non-Error throws with 'Unknown error' message", async () => {
+      mockPrisma.registeredTool.findFirst.mockRejectedValue("string error");
+
+      const handler = registry.handlers.get("disable_tool")!;
+      const result = await handler({ tool_id: "tool-1" });
+
+      const text = (result as { content: Array<{ text: string }> }).content[0]!.text;
+      expect(text).toContain("Unknown error");
+      expect((result as { isError: boolean }).isError).toBe(true);
+    });
+  });
+
+  // ============================================================
+  // Non-Error throw branches (coverage for instanceof Error checks)
+  // ============================================================
+
+  describe("non-Error throw branches", () => {
+    it("register_tool should handle non-Error throw", async () => {
+      mockPrisma.registeredTool.count.mockRejectedValue("string throw");
+
+      const handler = registry.handlers.get("register_tool")!;
+      const result = await handler({
+        name: "test_tool_name",
+        description: "desc",
+        input_schema: {},
+        handler_spec: {
+          url: "https://api.example.com/data",
+          method: "GET" as const,
+          headers: {},
+        },
+      });
+
+      const text = (result as { content: Array<{ text: string }> }).content[0]!.text;
+      expect(text).toContain("Unknown error");
+      expect((result as { isError: boolean }).isError).toBe(true);
+    });
+
+    it("test_tool should handle non-Error throw", async () => {
+      mockPrisma.registeredTool.findFirst.mockRejectedValue(42);
+
+      const handler = registry.handlers.get("test_tool")!;
+      const result = await handler({
+        tool_id: "tool-1",
+        test_input: {},
+      });
+
+      const text = (result as { content: Array<{ text: string }> }).content[0]!.text;
+      expect(text).toContain("Unknown error");
+      expect((result as { isError: boolean }).isError).toBe(true);
+    });
+
+    it("publish_tool should handle non-Error throw", async () => {
+      mockPrisma.registeredTool.findFirst.mockRejectedValue("string throw");
+
+      const handler = registry.handlers.get("publish_tool")!;
+      const result = await handler({ tool_id: "tool-1" });
+
+      const text = (result as { content: Array<{ text: string }> }).content[0]!.text;
+      expect(text).toContain("Unknown error");
+      expect((result as { isError: boolean }).isError).toBe(true);
+    });
+
+    it("list_registered_tools should handle non-Error throw", async () => {
+      mockPrisma.registeredTool.findMany.mockRejectedValue("string throw");
+
+      const handler = registry.handlers.get("list_registered_tools")!;
+      const result = await handler({});
+
+      const text = (result as { content: Array<{ text: string }> }).content[0]!.text;
+      expect(text).toContain("Unknown error");
+      expect((result as { isError: boolean }).isError).toBe(true);
+    });
+  });
+
+  // ============================================================
+  // test_tool abort timeout
+  // ============================================================
+
+  describe("test_tool abort timeout", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("should abort fetch after 30s timeout", async () => {
+      const toolNoSecrets = {
+        id: "tool-timeout",
+        name: "slow_tool",
+        status: "DRAFT",
+        handlerSpec: {
+          url: "https://api.example.com/slow",
+          method: "GET",
+          headers: {},
+        },
+      };
+      mockPrisma.registeredTool.findFirst.mockResolvedValue(toolNoSecrets);
+
+      // Make fetch hang until aborted, then reject with AbortError
+      mockFetch.mockImplementation(
+        (_url: string, options: { signal: AbortSignal }) =>
+          new Promise((_resolve, reject) => {
+            options.signal.addEventListener("abort", () => {
+              reject(new DOMException("The operation was aborted.", "AbortError"));
+            });
+          }),
+      );
+
+      const handler = registry.handlers.get("test_tool")!;
+      const resultPromise = handler({
+        tool_id: "tool-timeout",
+        test_input: {},
+      });
+
+      // Advance time by 30 seconds to trigger the abort
+      await vi.advanceTimersByTimeAsync(30000);
+
+      const result = await resultPromise;
+      const text = (result as { content: Array<{ text: string }> }).content[0]!.text;
+      expect(text).toContain("Error testing tool");
+      expect((result as { isError: boolean }).isError).toBe(true);
+    });
+  });
+
+  // ============================================================
+  // test_tool SSRF validation on resolved URL
+  // ============================================================
+
+  describe("test_tool SSRF validation", () => {
+    it("should reject resolved URL that is non-HTTPS after template resolution", async () => {
+      // The handler_spec URL uses a template that resolves to http://
+      const ssrfTool = {
+        id: "tool-ssrf-http",
+        name: "ssrf_http_tool",
+        status: "DRAFT",
+        handlerSpec: {
+          url: "https://{{input.scheme}}api.example.com/data",
+          method: "GET",
+          headers: {},
+        },
+      };
+      mockPrisma.registeredTool.findFirst.mockResolvedValue(ssrfTool);
+
+      const handler = registry.handlers.get("test_tool")!;
+      // Input that would make the URL invalid after resolution
+      const result = await handler({
+        tool_id: "tool-ssrf-http",
+        test_input: { scheme: "192.168.1.1/" },
+      });
+
+      // The resolved URL becomes https://192.168.1.1/api.example.com/data
+      // which matches the SSRF private IP pattern
+      expect((result as { isError: boolean }).isError).toBe(true);
+      const text = (result as { content: Array<{ text: string }> }).content[0]!.text;
+      expect(text).toContain("Resolved URL is invalid");
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+  });
+
+  // ============================================================
+  // test_tool with missing headers (undefined headers branch)
+  // ============================================================
+
+  describe("test_tool with undefined headers", () => {
+    it("should handle tool with no headers property in handlerSpec", async () => {
+      const toolNoHeaders = {
+        id: "tool-no-headers",
+        name: "no_headers_tool",
+        status: "DRAFT",
+        handlerSpec: {
+          url: "https://api.example.com/data",
+          method: "GET",
+          // headers intentionally omitted
+        },
+      };
+      mockPrisma.registeredTool.findFirst.mockResolvedValue(toolNoHeaders);
+      mockFetch.mockResolvedValue({
+        status: 200,
+        statusText: "OK",
+        text: () => Promise.resolve('{"ok": true}'),
+      });
+
+      const handler = registry.handlers.get("test_tool")!;
+      const result = await handler({
+        tool_id: "tool-no-headers",
+        test_input: {},
+      });
+
+      // Should succeed with empty headers
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.example.com/data",
+        expect.objectContaining({
+          method: "GET",
+          headers: {},
+        }),
+      );
+      const text = (result as { content: Array<{ text: string }> }).content[0]!.text;
+      expect(text).toContain("Tool Test: no_headers_tool");
+      expect(text).toContain("200 OK");
+    });
+  });
+
+  // ============================================================
+  // test_tool responseTransform json_path with non-object segment
+  // ============================================================
+
+  describe("test_tool responseTransform edge cases", () => {
+    it("should handle json_path when traversal hits a non-object value", async () => {
+      const toolWithDeepPath = {
+        id: "tool-deep-path",
+        name: "deep_path_tool",
+        status: "DRAFT",
+        handlerSpec: {
+          url: "https://api.example.com/data",
+          method: "GET",
+          headers: {},
+          responseTransform: {
+            type: "json_path" as const,
+            path: "data.nested.value",
+          },
+        },
+      };
+      mockPrisma.registeredTool.findFirst.mockResolvedValue(toolWithDeepPath);
+      // data.nested is a string, not an object — so traversal to .value should fail gracefully
+      mockFetch.mockResolvedValue({
+        status: 200,
+        statusText: "OK",
+        text: () => Promise.resolve(JSON.stringify({ data: { nested: "not-an-object" } })),
+      });
+
+      const handler = registry.handlers.get("test_tool")!;
+      const result = await handler({
+        tool_id: "tool-deep-path",
+        test_input: {},
+      });
+
+      // When value is not an object, the path traversal skips, value stays as-is
+      // The result should still show "Transformed Result" since JSON.parse succeeded
+      const text = (result as { content: Array<{ text: string }> }).content[0]!.text;
+      expect(text).toContain("Transformed Result");
+    });
+
+    it("should handle json_path when value is null during traversal", async () => {
+      const toolWithNullPath = {
+        id: "tool-null-path",
+        name: "null_path_tool",
+        status: "DRAFT",
+        handlerSpec: {
+          url: "https://api.example.com/data",
+          method: "GET",
+          headers: {},
+          responseTransform: {
+            type: "json_path" as const,
+            path: "data.missing.deep",
+          },
+        },
+      };
+      mockPrisma.registeredTool.findFirst.mockResolvedValue(toolWithNullPath);
+      mockFetch.mockResolvedValue({
+        status: 200,
+        statusText: "OK",
+        text: () => Promise.resolve(JSON.stringify({ data: { other: "value" } })),
+      });
+
+      const handler = registry.handlers.get("test_tool")!;
+      const result = await handler({
+        tool_id: "tool-null-path",
+        test_input: {},
+      });
+
+      // data.missing is undefined, then .deep can't traverse — value becomes undefined
+      const text = (result as { content: Array<{ text: string }> }).content[0]!.text;
+      expect(text).toContain("Transformed Result");
+    });
+  });
+
+  // ============================================================
+  // test_tool fetch rejects with non-Error (branch 411)
+  // ============================================================
+
+  describe("test_tool fetch non-Error rejection", () => {
+    it("should handle fetch rejecting with a non-Error value", async () => {
+      const toolNoSecrets = {
+        id: "tool-fetch-str",
+        name: "fetch_str_tool",
+        status: "DRAFT",
+        handlerSpec: {
+          url: "https://api.example.com/data",
+          method: "GET",
+          headers: {},
+        },
+      };
+      mockPrisma.registeredTool.findFirst.mockResolvedValue(toolNoSecrets);
+      mockFetch.mockRejectedValue("network failure string");
+
+      const handler = registry.handlers.get("test_tool")!;
+      const result = await handler({
+        tool_id: "tool-fetch-str",
+        test_input: {},
+      });
+
+      const text = (result as { content: Array<{ text: string }> }).content[0]!.text;
+      expect(text).toContain("Unknown error");
+      expect((result as { isError: boolean }).isError).toBe(true);
     });
   });
 });

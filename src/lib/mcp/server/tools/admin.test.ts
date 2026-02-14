@@ -56,6 +56,35 @@ describe("admin tools", () => {
       const result = await handler({});
       expect(getText(result)).toContain("No agents found");
     });
+
+    it("should filter by ACTIVE status (isDefault: true)", async () => {
+      mockPrisma.aIProvider.findMany.mockResolvedValue([
+        { id: "a1", name: "Claude", isDefault: true, createdAt: new Date() },
+      ]);
+      const handler = registry.handlers.get("admin_list_agents")!;
+      await handler({ status: "ACTIVE" });
+      expect(mockPrisma.aIProvider.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { isDefault: true } }),
+      );
+    });
+
+    it("should filter by INACTIVE status (isDefault: false)", async () => {
+      mockPrisma.aIProvider.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_agents")!;
+      await handler({ status: "INACTIVE" });
+      expect(mockPrisma.aIProvider.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { isDefault: false } }),
+      );
+    });
+
+    it("should show STANDBY for agent with isDefault: false", async () => {
+      mockPrisma.aIProvider.findMany.mockResolvedValue([
+        { id: "a2", name: "Backup", isDefault: false, createdAt: new Date() },
+      ]);
+      const handler = registry.handlers.get("admin_list_agents")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("STANDBY");
+    });
   });
 
   describe("admin_manage_agent", () => {
@@ -77,6 +106,16 @@ describe("admin tools", () => {
         expect.objectContaining({ data: { isDefault: false } }),
       );
     });
+
+    it("should restart an agent (isDefault: true)", async () => {
+      mockPrisma.aIProvider.update.mockResolvedValue({});
+      const handler = registry.handlers.get("admin_manage_agent")!;
+      const result = await handler({ agent_id: "a1", action: "restart" });
+      expect(getText(result)).toContain("restart completed");
+      expect(mockPrisma.aIProvider.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { isDefault: true } }),
+      );
+    });
   });
 
   describe("admin_list_emails", () => {
@@ -88,6 +127,31 @@ describe("admin tools", () => {
       const result = await handler({});
       expect(getText(result)).toContain("Welcome");
       expect(getText(result)).toContain("SENT");
+    });
+
+    it("should filter by SENT status", async () => {
+      mockPrisma.emailLog.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_emails")!;
+      await handler({ status: "SENT" });
+      expect(mockPrisma.emailLog.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { status: "SENT" } }),
+      );
+    });
+
+    it("should return empty message when no emails found", async () => {
+      mockPrisma.emailLog.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_emails")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("No emails found");
+    });
+
+    it("should show 'pending' for email with sentAt: null", async () => {
+      mockPrisma.emailLog.findMany.mockResolvedValue([
+        { id: "e2", to: "test@test.com", subject: "Queued", status: "PENDING", sentAt: null },
+      ]);
+      const handler = registry.handlers.get("admin_list_emails")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("pending");
     });
   });
 
@@ -110,6 +174,31 @@ describe("admin tools", () => {
       expect(getText(result)).toContain("Sunset");
       expect(getText(result)).toContain("ACTIVE");
     });
+
+    it("should filter by featured: true (isActive: true)", async () => {
+      mockPrisma.featuredGalleryItem.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_gallery")!;
+      await handler({ featured: true });
+      expect(mockPrisma.featuredGalleryItem.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { isActive: true } }),
+      );
+    });
+
+    it("should return empty message when no gallery items found", async () => {
+      mockPrisma.featuredGalleryItem.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_gallery")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("No gallery items found");
+    });
+
+    it("should show INACTIVE for gallery item with isActive: false", async () => {
+      mockPrisma.featuredGalleryItem.findMany.mockResolvedValue([
+        { id: "g2", title: "Hidden", enhancedUrl: "https://example.com/hidden.jpg", isActive: false, createdAt: new Date() },
+      ]);
+      const handler = registry.handlers.get("admin_list_gallery")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("INACTIVE");
+    });
   });
 
   describe("admin_manage_gallery", () => {
@@ -126,6 +215,16 @@ describe("admin tools", () => {
       const result = await handler({ item_id: "g1", action: "feature" });
       expect(getText(result)).toContain("feature completed");
     });
+
+    it("should unfeature a gallery item (isActive: false)", async () => {
+      mockPrisma.featuredGalleryItem.update.mockResolvedValue({});
+      const handler = registry.handlers.get("admin_manage_gallery")!;
+      const result = await handler({ item_id: "g1", action: "unfeature" });
+      expect(getText(result)).toContain("unfeature completed");
+      expect(mockPrisma.featuredGalleryItem.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { isActive: false } }),
+      );
+    });
   });
 
   describe("admin_list_jobs", () => {
@@ -138,6 +237,22 @@ describe("admin tools", () => {
       expect(getText(result)).toContain("GENERATE");
       expect(getText(result)).toContain("COMPLETED");
     });
+
+    it("should filter by PENDING status", async () => {
+      mockPrisma.mcpGenerationJob.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_jobs")!;
+      await handler({ status: "PENDING" });
+      expect(mockPrisma.mcpGenerationJob.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { status: "PENDING" } }),
+      );
+    });
+
+    it("should return empty message when no jobs found", async () => {
+      mockPrisma.mcpGenerationJob.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_jobs")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("No jobs found");
+    });
   });
 
   describe("admin_manage_job", () => {
@@ -146,6 +261,18 @@ describe("admin tools", () => {
       const handler = registry.handlers.get("admin_manage_job")!;
       const result = await handler({ job_id: "j1", action: "cancel" });
       expect(getText(result)).toContain("cancel completed");
+      expect(getText(result)).toContain("FAILED");
+    });
+
+    it("should retry a job (newStatus: PENDING)", async () => {
+      mockPrisma.mcpGenerationJob.update.mockResolvedValue({});
+      const handler = registry.handlers.get("admin_manage_job")!;
+      const result = await handler({ job_id: "j1", action: "retry" });
+      expect(getText(result)).toContain("retry completed");
+      expect(getText(result)).toContain("PENDING");
+      expect(mockPrisma.mcpGenerationJob.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { status: "PENDING" } }),
+      );
     });
 
     it("should delete a job", async () => {
@@ -165,6 +292,49 @@ describe("admin tools", () => {
       const result = await handler({});
       expect(getText(result)).toContain("Beach");
       expect(getText(result)).toContain("PUBLIC");
+    });
+
+    it("should filter by PUBLIC status (isPublic: true)", async () => {
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_photos")!;
+      await handler({ status: "PUBLIC" });
+      expect(mockPrisma.enhancedImage.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { isPublic: true } }),
+      );
+    });
+
+    it("should filter by PRIVATE status (isPublic: false)", async () => {
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_photos")!;
+      await handler({ status: "PRIVATE" });
+      expect(mockPrisma.enhancedImage.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { isPublic: false } }),
+      );
+    });
+
+    it("should return empty message when no photos found", async () => {
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_photos")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("No photos found");
+    });
+
+    it("should show 'Untitled' for photo with name: null", async () => {
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([
+        { id: "p2", name: null, originalUrl: "https://example.com/unnamed.jpg", isPublic: true, createdAt: new Date() },
+      ]);
+      const handler = registry.handlers.get("admin_list_photos")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("Untitled");
+    });
+
+    it("should show PRIVATE for non-public photo", async () => {
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([
+        { id: "p3", name: "Secret", originalUrl: "https://example.com/secret.jpg", isPublic: false, createdAt: new Date() },
+      ]);
+      const handler = registry.handlers.get("admin_list_photos")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("PRIVATE");
     });
   });
 

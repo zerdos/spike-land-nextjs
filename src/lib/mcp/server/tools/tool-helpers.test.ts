@@ -556,5 +556,92 @@ describe("tool-helpers", () => {
         expect((error as McpError).message).toBe("plain text error");
       }
     });
+
+    it("should fall back to raw body when JSON has no error field", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        text: () => Promise.resolve(JSON.stringify({ detail: "not the error key" })),
+      });
+
+      try {
+        await apiRequest("/api/test");
+      } catch (error) {
+        // json.error is undefined, so falls back to the raw body string
+        expect((error as McpError).message).toBe(JSON.stringify({ detail: "not the error key" }));
+      }
+    });
+
+    it("should fall back to SPIKE_LAND_API_KEY when SPIKE_LAND_SERVICE_TOKEN is not set", async () => {
+      const origServiceToken = process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      const origApiKey = process.env["SPIKE_LAND_API_KEY"];
+      delete process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      process.env["SPIKE_LAND_API_KEY"] = "fallback-api-key";
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+
+      await apiRequest("/api/test");
+
+      const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+      expect((options.headers as Record<string, string>)["Authorization"]).toBe(
+        "Bearer fallback-api-key",
+      );
+
+      // Restore env
+      if (origServiceToken === undefined) {
+        delete process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      } else {
+        process.env["SPIKE_LAND_SERVICE_TOKEN"] = origServiceToken;
+      }
+      if (origApiKey === undefined) {
+        delete process.env["SPIKE_LAND_API_KEY"];
+      } else {
+        process.env["SPIKE_LAND_API_KEY"] = origApiKey;
+      }
+    });
+
+    it("should not include Authorization header when no tokens are set", async () => {
+      const origServiceToken = process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      const origApiKey = process.env["SPIKE_LAND_API_KEY"];
+      delete process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      delete process.env["SPIKE_LAND_API_KEY"];
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+
+      await apiRequest("/api/test");
+
+      const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+      expect((options.headers as Record<string, string>)["Authorization"]).toBeUndefined();
+
+      // Restore env
+      if (origServiceToken !== undefined) {
+        process.env["SPIKE_LAND_SERVICE_TOKEN"] = origServiceToken;
+      }
+      if (origApiKey !== undefined) {
+        process.env["SPIKE_LAND_API_KEY"] = origApiKey;
+      }
+    });
+
+    it("should pass custom options through to fetch", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ data: "test" }),
+      });
+
+      await apiRequest("/api/test", {
+        method: "POST",
+        body: JSON.stringify({ key: "value" }),
+      });
+
+      const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+      expect(options.method).toBe("POST");
+      expect(options.body).toBe(JSON.stringify({ key: "value" }));
+    });
   });
 });

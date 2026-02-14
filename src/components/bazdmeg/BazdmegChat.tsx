@@ -62,7 +62,7 @@ export function BazdmegChat({ onChatOpened }: BazdmegChatProps) {
       <button
         onClick={handleOpen}
         className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 text-zinc-950 shadow-lg transition-all hover:bg-amber-400 hover:scale-110"
-        aria-label="Ask about BAZDMEG"
+        aria-label="Ask spike.land"
       >
         <MessageCircle className="h-6 w-6" />
         <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -79,7 +79,7 @@ export function BazdmegChat({ onChatOpened }: BazdmegChatProps) {
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-5 w-5 text-amber-500" />
-          <span className="font-semibold text-white">Ask BAZDMEG</span>
+          <span className="font-semibold text-white">Ask spike.land</span>
         </div>
         <button
           onClick={() => setIsOpen(false)}
@@ -94,9 +94,9 @@ export function BazdmegChat({ onChatOpened }: BazdmegChatProps) {
       <div className="flex max-h-[400px] min-h-[200px] flex-col gap-3 overflow-y-auto p-4">
         {messages.length === 0 && (
           <div className="text-center text-sm text-zinc-500">
-            <p className="mb-2">Ask anything about the BAZDMEG method.</p>
+            <p className="mb-2">Ask anything about spike.land.</p>
             <p className="text-xs text-zinc-600">
-              e.g. &quot;What is the hourglass testing model?&quot;
+              e.g. &quot;What can I build on spike.land?&quot;
             </p>
           </div>
         )}
@@ -147,7 +147,7 @@ export function BazdmegChat({ onChatOpened }: BazdmegChatProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about BAZDMEG..."
+            placeholder="Ask about spike.land..."
             className="min-h-[40px] max-h-[100px] resize-none border-white/10 bg-white/5 text-sm text-white placeholder:text-zinc-500"
             rows={1}
             disabled={isStreaming}

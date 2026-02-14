@@ -36,6 +36,14 @@ describe("vault crypto", () => {
       expect(key).toBeInstanceOf(Buffer);
       expect(key.toString("hex")).toBe(buf.toString("hex"));
     });
+
+    it("should throw in production when VAULT_MASTER_KEY is missing", () => {
+      vi.stubEnv("NODE_ENV", "production");
+      vi.stubEnv("VAULT_MASTER_KEY", "");
+      expect(() => getMasterKey()).toThrow(
+        "VAULT_MASTER_KEY environment variable is required in production",
+      );
+    });
   });
 
   describe("deriveUserKey", () => {

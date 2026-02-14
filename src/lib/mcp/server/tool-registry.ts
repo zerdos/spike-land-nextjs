@@ -77,6 +77,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   chat: "AI chat: send messages and get AI responses",
   newsletter: "Newsletter: email subscription management",
   tts: "Text-to-speech: convert text to audio using ElevenLabs",
+  capabilities: "Agent permission management: check capabilities, request permissions, track approvals",
 };
 
 export class ToolRegistry {

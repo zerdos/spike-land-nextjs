@@ -5,11 +5,13 @@ import type { NextRequest } from "next/server";
 import type { ApiKeyValidationResult } from "./api-key-manager";
 import { validateApiKey } from "./api-key-manager";
 
-interface McpAuthResult {
+export interface McpAuthResult {
   success: boolean;
   userId?: string;
   apiKeyId?: string;
   oauthClientId?: string;
+  agentId?: string;
+  capabilityTokenId?: string;
   error?: string;
 }
 
@@ -59,6 +61,37 @@ export async function authenticateMcpRequest(
     return {
       success: false,
       error: "Missing API key or token",
+    };
+  }
+
+  // Check if this is an agent capability token (prefixed with "cap_")
+  if (token.startsWith("cap_")) {
+    const { verifyCapabilityToken } = await import(
+      "@/lib/agents/capability-token-service"
+    );
+    const { data: capResult, error: capError } = await tryCatch(
+      verifyCapabilityToken(token),
+    );
+
+    if (capError) {
+      return {
+        success: false,
+        error: "Capability token verification failed",
+      };
+    }
+
+    if (!capResult) {
+      return {
+        success: false,
+        error: "Invalid or expired capability token",
+      };
+    }
+
+    return {
+      success: true,
+      userId: capResult.userId,
+      agentId: capResult.agentId,
+      capabilityTokenId: capResult.tokenId,
     };
   }
 

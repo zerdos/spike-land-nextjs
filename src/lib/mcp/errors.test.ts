@@ -190,6 +190,30 @@ describe("McpError", () => {
       expect(error.stack).toBeDefined();
       expect(error.stack).toContain("McpError");
     });
+
+    it("should use Error.captureStackTrace when available", () => {
+      // Error.captureStackTrace is available in V8 environments (Node.js)
+      expect(Error.captureStackTrace).toBeDefined();
+      const error = new McpError("Stack test", McpErrorCode.TIMEOUT);
+      // Stack should not include McpError constructor frame
+      expect(error.stack).toBeDefined();
+      expect(error.stack).toContain("Stack test");
+    });
+
+    it("should still work if Error.captureStackTrace is not available", () => {
+      const originalCapture = Error.captureStackTrace;
+      // Temporarily remove captureStackTrace
+      (Error as { captureStackTrace?: typeof Error.captureStackTrace }).captureStackTrace = undefined;
+      try {
+        const error = new McpError("No capture", McpErrorCode.UNKNOWN);
+        expect(error.message).toBe("No capture");
+        expect(error.code).toBe(McpErrorCode.UNKNOWN);
+        // Stack may still exist from the super() call
+        expect(error.name).toBe("McpError");
+      } finally {
+        Error.captureStackTrace = originalCapture;
+      }
+    });
   });
 });
 

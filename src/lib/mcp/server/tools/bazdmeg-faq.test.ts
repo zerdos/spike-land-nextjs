@@ -127,6 +127,85 @@ describe("bazdmeg-faq tools", () => {
       const result = await handler({ id: "f1", question: "Nope" });
       expect(getText(result)).toContain("Forbidden");
     });
+
+    it("should only include defined fields in update data", async () => {
+      mockPrisma.bazdmegFaqEntry.update.mockResolvedValue({
+        id: "f1",
+        question: "Original question",
+      });
+      const handler = registry.handlers.get("bazdmeg_faq_update")!;
+      // Only pass answer — question, category, sort_order, is_published should be omitted
+      await handler({ id: "f1", answer: "New answer" });
+      expect(mockPrisma.bazdmegFaqEntry.update).toHaveBeenCalledWith({
+        where: { id: "f1" },
+        data: { answer: "New answer" },
+      });
+    });
+
+    it("should include all fields when all are provided", async () => {
+      mockPrisma.bazdmegFaqEntry.update.mockResolvedValue({
+        id: "f1",
+        question: "Updated Q",
+      });
+      const handler = registry.handlers.get("bazdmeg_faq_update")!;
+      await handler({
+        id: "f1",
+        question: "Updated Q",
+        answer: "Updated A",
+        category: "testing",
+        sort_order: 5,
+        is_published: false,
+      });
+      expect(mockPrisma.bazdmegFaqEntry.update).toHaveBeenCalledWith({
+        where: { id: "f1" },
+        data: {
+          question: "Updated Q",
+          answer: "Updated A",
+          category: "testing",
+          sortOrder: 5,
+          isPublished: false,
+        },
+      });
+    });
+
+    it("should handle update with only category", async () => {
+      mockPrisma.bazdmegFaqEntry.update.mockResolvedValue({
+        id: "f1",
+        question: "Some Q",
+      });
+      const handler = registry.handlers.get("bazdmeg_faq_update")!;
+      await handler({ id: "f1", category: "methodology" });
+      expect(mockPrisma.bazdmegFaqEntry.update).toHaveBeenCalledWith({
+        where: { id: "f1" },
+        data: { category: "methodology" },
+      });
+    });
+
+    it("should handle update with only sort_order", async () => {
+      mockPrisma.bazdmegFaqEntry.update.mockResolvedValue({
+        id: "f1",
+        question: "Some Q",
+      });
+      const handler = registry.handlers.get("bazdmeg_faq_update")!;
+      await handler({ id: "f1", sort_order: 10 });
+      expect(mockPrisma.bazdmegFaqEntry.update).toHaveBeenCalledWith({
+        where: { id: "f1" },
+        data: { sortOrder: 10 },
+      });
+    });
+
+    it("should handle update with only is_published", async () => {
+      mockPrisma.bazdmegFaqEntry.update.mockResolvedValue({
+        id: "f1",
+        question: "Some Q",
+      });
+      const handler = registry.handlers.get("bazdmeg_faq_update")!;
+      await handler({ id: "f1", is_published: true });
+      expect(mockPrisma.bazdmegFaqEntry.update).toHaveBeenCalledWith({
+        where: { id: "f1" },
+        data: { isPublished: true },
+      });
+    });
   });
 
   describe("bazdmeg_faq_delete", () => {
@@ -142,6 +221,49 @@ describe("bazdmeg-faq tools", () => {
       const handler = registry.handlers.get("bazdmeg_faq_delete")!;
       const result = await handler({ id: "f1" });
       expect(getText(result)).toContain("Forbidden");
+    });
+  });
+
+  describe("bazdmeg_faq_list - include_unpublished for admin", () => {
+    it("should show unpublished entries when admin requests", async () => {
+      mockIsAdminByUserId.mockResolvedValue(true);
+      mockPrisma.bazdmegFaqEntry.findMany.mockResolvedValue([
+        { id: "f1", question: "Published?", answer: "Yes", category: "general", isPublished: true, helpfulCount: 1 },
+        { id: "f2", question: "Draft?", answer: "No", category: "general", isPublished: false, helpfulCount: 0 },
+      ]);
+      const handler = registry.handlers.get("bazdmeg_faq_list")!;
+      const result = await handler({ include_unpublished: true });
+      expect(getText(result)).toContain("2 entries");
+      // Should NOT filter by isPublished when admin requests unpublished
+      expect(mockPrisma.bazdmegFaqEntry.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {},
+        }),
+      );
+    });
+
+    it("should include unpublished when admin and category filter", async () => {
+      mockIsAdminByUserId.mockResolvedValue(true);
+      mockPrisma.bazdmegFaqEntry.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("bazdmeg_faq_list")!;
+      await handler({ include_unpublished: true, category: "testing" });
+      expect(mockPrisma.bazdmegFaqEntry.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { category: "testing" },
+        }),
+      );
+    });
+
+    it("should not include_unpublished when flag is false even for admin", async () => {
+      mockIsAdminByUserId.mockResolvedValue(true);
+      mockPrisma.bazdmegFaqEntry.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("bazdmeg_faq_list")!;
+      await handler({ include_unpublished: false });
+      expect(mockPrisma.bazdmegFaqEntry.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { isPublished: true },
+        }),
+      );
     });
   });
 });

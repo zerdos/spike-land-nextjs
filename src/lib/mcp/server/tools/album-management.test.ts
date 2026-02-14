@@ -383,6 +383,31 @@ describe("album-management tools", () => {
       expect(getText(result)).toContain("Cover image must be in the album");
     });
 
+    it("should set cover image when image is in album", async () => {
+      mockPrisma.album.findUnique.mockResolvedValue({
+        userId,
+        shareToken: null,
+      });
+      mockPrisma.albumImage.findFirst.mockResolvedValue({ albumId: "album-1", imageId: "img-1" });
+      mockPrisma.album.update.mockResolvedValue({
+        name: "With Cover",
+        privacy: "PRIVATE",
+        defaultTier: "TIER_1K",
+      });
+
+      const handler = registry.handlers.get("album_update")!;
+      const result = await handler({
+        album_id: "album-1",
+        cover_image_id: "img-1",
+      });
+
+      expect(getText(result)).toContain("Album Updated!");
+      expect(mockPrisma.album.update).toHaveBeenCalledWith({
+        where: { id: "album-1" },
+        data: { coverImageId: "img-1" },
+      });
+    });
+
     it("should allow clearing cover image with null", async () => {
       mockPrisma.album.findUnique.mockResolvedValue({
         userId,
@@ -445,6 +470,103 @@ describe("album-management tools", () => {
         where: { id: "album-1" },
         data: { pipelineId: "pipe-1" },
       });
+    });
+
+    it("should allow system default pipeline (userId null)", async () => {
+      mockPrisma.album.findUnique.mockResolvedValue({
+        userId,
+        shareToken: null,
+      });
+      mockPrisma.enhancementPipeline.findUnique.mockResolvedValue({
+        userId: null,
+        visibility: "PRIVATE",
+      });
+      mockPrisma.album.update.mockResolvedValue({
+        name: "With System Pipeline",
+        privacy: "PRIVATE",
+        defaultTier: "TIER_1K",
+      });
+
+      const handler = registry.handlers.get("album_update")!;
+      await handler({ album_id: "album-1", pipeline_id: "system-pipe" });
+
+      expect(mockPrisma.album.update).toHaveBeenCalledWith({
+        where: { id: "album-1" },
+        data: { pipelineId: "system-pipe" },
+      });
+    });
+
+    it("should clear pipeline with null pipeline_id", async () => {
+      mockPrisma.album.findUnique.mockResolvedValue({
+        userId,
+        shareToken: null,
+      });
+      mockPrisma.album.update.mockResolvedValue({
+        name: "No Pipeline",
+        privacy: "PRIVATE",
+        defaultTier: "TIER_1K",
+      });
+
+      const handler = registry.handlers.get("album_update")!;
+      await handler({ album_id: "album-1", pipeline_id: null });
+
+      expect(mockPrisma.album.update).toHaveBeenCalledWith({
+        where: { id: "album-1" },
+        data: { pipelineId: null },
+      });
+    });
+
+    it("should update default_tier", async () => {
+      mockPrisma.album.findUnique.mockResolvedValue({
+        userId,
+        shareToken: null,
+      });
+      mockPrisma.album.update.mockResolvedValue({
+        name: "Upgraded",
+        privacy: "PRIVATE",
+        defaultTier: "TIER_4K",
+      });
+
+      const handler = registry.handlers.get("album_update")!;
+      const result = await handler({ album_id: "album-1", default_tier: "TIER_4K" });
+
+      expect(getText(result)).toContain("Album Updated!");
+      expect(mockPrisma.album.update).toHaveBeenCalledWith({
+        where: { id: "album-1" },
+        data: { defaultTier: "TIER_4K" },
+      });
+    });
+
+    it("should update description to null when empty string", async () => {
+      mockPrisma.album.findUnique.mockResolvedValue({
+        userId,
+        shareToken: null,
+      });
+      mockPrisma.album.update.mockResolvedValue({
+        name: "Cleared Desc",
+        privacy: "PRIVATE",
+        defaultTier: "TIER_1K",
+      });
+
+      const handler = registry.handlers.get("album_update")!;
+      await handler({ album_id: "album-1", description: "" });
+
+      expect(mockPrisma.album.update).toHaveBeenCalledWith({
+        where: { id: "album-1" },
+        data: { description: null },
+      });
+    });
+
+    it("should return error if album not found", async () => {
+      mockPrisma.album.findUnique.mockResolvedValue(null);
+
+      const handler = registry.handlers.get("album_update")!;
+      const result = await handler({
+        album_id: "no-album",
+        name: "Ghost",
+      });
+
+      expect(getText(result)).toContain("ALBUM_NOT_FOUND");
     });
 
     it("should return error if not album owner", async () => {

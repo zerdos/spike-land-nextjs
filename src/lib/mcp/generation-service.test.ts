@@ -383,6 +383,24 @@ describe("generation-service", () => {
 
       expect(result.hasMore).toBe(true);
     });
+
+    it("should use default options when none provided", async () => {
+      mockMcpGenerationJob.findMany.mockResolvedValue([]);
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+
+      const result = await getJobHistory(testUserId);
+
+      expect(result.jobs).toHaveLength(0);
+      expect(result.total).toBe(0);
+      expect(result.hasMore).toBe(false);
+      // Verify default limit=20 and offset=0
+      expect(mockMcpGenerationJob.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          take: 20,
+          skip: 0,
+        }),
+      );
+    });
   });
 
   describe("concurrent job limit enforcement", () => {
@@ -589,6 +607,104 @@ describe("generation-service", () => {
       });
     });
 
+    it("should handle R2 upload failure in generation job", async () => {
+      const mockImageBuffer = Buffer.from("fake-image-data");
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+        success: true,
+      });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.GENERATE,
+        tier: "TIER_1K",
+        creditsCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+      // Generation succeeds but upload fails
+      mockGeminiClient.generateImageWithGemini.mockResolvedValue(
+        mockImageBuffer,
+      );
+      mockUploadToR2.mockRejectedValue(new Error("R2 upload error"));
+      mockMcpGenerationJob.update.mockResolvedValue({});
+      mockMcpGenerationJob.findUnique.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        creditsCost: 2,
+      });
+      mockWorkspaceCreditManager.refundCredits.mockResolvedValue({ success: true });
+
+      await createGenerationJob({
+        userId: testUserId,
+        prompt: "A beautiful sunset",
+        tier: "TIER_1K",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify job was marked as failed
+      expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        data: expect.objectContaining({
+          status: JobStatus.FAILED,
+        }),
+      });
+
+      // Verify credits were refunded
+      expect(mockWorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
+        testUserId,
+        2,
+      );
+    });
+
+    it("should handle DB update failure after successful generation upload", async () => {
+      const mockImageBuffer = Buffer.from("fake-image-data");
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+        success: true,
+      });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.GENERATE,
+        tier: "TIER_1K",
+        creditsCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+      mockGeminiClient.generateImageWithGemini.mockResolvedValue(
+        mockImageBuffer,
+      );
+      mockUploadToR2.mockResolvedValue({
+        url: "https://r2.example.com/image.jpg",
+      });
+      // DB update for COMPLETED status fails
+      mockMcpGenerationJob.update.mockRejectedValueOnce(
+        new Error("DB error on completion update"),
+      ).mockResolvedValue({});
+      mockMcpGenerationJob.findUnique.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        creditsCost: 2,
+      });
+      mockWorkspaceCreditManager.refundCredits.mockResolvedValue({ success: true });
+
+      await createGenerationJob({
+        userId: testUserId,
+        prompt: "A beautiful sunset",
+        tier: "TIER_1K",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify credits were refunded after the DB update failure
+      expect(mockWorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
+        testUserId,
+        2,
+      );
+    });
+
     it("should not refund when job not found after failure", async () => {
       mockMcpGenerationJob.count.mockResolvedValue(0);
       mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
@@ -775,6 +891,219 @@ describe("generation-service", () => {
         where: { id: testJobId },
         data: { status: JobStatus.REFUNDED },
       });
+    });
+
+    it("should not refund when modification job not found after failure", async () => {
+      const inputBase64 = Buffer.from("original-image").toString("base64");
+
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+        success: true,
+      });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_2K",
+        creditsCost: 5,
+        status: JobStatus.PROCESSING,
+      });
+      // Input upload succeeds
+      mockUploadToR2.mockResolvedValueOnce({
+        url: "https://r2.example.com/input.jpg",
+      });
+      mockMcpGenerationJob.update.mockResolvedValue({});
+      // Modification fails
+      mockGeminiClient.modifyImageWithGemini.mockRejectedValue(
+        new Error("Content blocked by policy"),
+      );
+      // Job not found when trying to refund
+      mockMcpGenerationJob.findUnique.mockResolvedValue(null);
+
+      await createModificationJob({
+        userId: testUserId,
+        prompt: "Inappropriate content",
+        tier: "TIER_2K",
+        imageData: inputBase64,
+        mimeType: "image/jpeg",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify job was updated with failure
+      expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        data: expect.objectContaining({
+          status: JobStatus.FAILED,
+        }),
+      });
+
+      // Verify refund was NOT called since job not found
+      expect(mockWorkspaceCreditManager.refundCredits).not.toHaveBeenCalled();
+    });
+
+    it("should handle R2 upload failure for output image in modification job", async () => {
+      const inputBase64 = Buffer.from("original-image").toString("base64");
+      const mockImageBuffer = Buffer.from("fake-modified-image-data");
+
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+        success: true,
+      });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_2K",
+        creditsCost: 5,
+        status: JobStatus.PROCESSING,
+      });
+      // Input upload succeeds, output upload fails
+      mockUploadToR2
+        .mockResolvedValueOnce({ url: "https://r2.example.com/input.jpg" })
+        .mockRejectedValueOnce(new Error("R2 upload failed for output"));
+      mockGeminiClient.modifyImageWithGemini.mockResolvedValue(mockImageBuffer);
+      mockMcpGenerationJob.update.mockResolvedValue({});
+      mockMcpGenerationJob.findUnique.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        creditsCost: 5,
+      });
+      mockWorkspaceCreditManager.refundCredits.mockResolvedValue({ success: true });
+
+      await createModificationJob({
+        userId: testUserId,
+        prompt: "Add effect",
+        tier: "TIER_2K",
+        imageData: inputBase64,
+        mimeType: "image/jpeg",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify job was marked as failed due to output upload failure
+      expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+        where: { id: testJobId },
+        data: expect.objectContaining({
+          status: JobStatus.FAILED,
+        }),
+      });
+
+      // Verify credits were refunded
+      expect(mockWorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
+        testUserId,
+        5,
+      );
+    });
+
+    it("should handle DB update failure after successful modification output upload", async () => {
+      const inputBase64 = Buffer.from("original-image").toString("base64");
+      const mockImageBuffer = Buffer.from("fake-modified-image-data");
+
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+        success: true,
+      });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_1K",
+        creditsCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+      // Both uploads succeed
+      mockUploadToR2
+        .mockResolvedValueOnce({ url: "https://r2.example.com/input.jpg" })
+        .mockResolvedValueOnce({ url: "https://r2.example.com/output.jpg" });
+      mockGeminiClient.modifyImageWithGemini.mockResolvedValue(mockImageBuffer);
+
+      // processModificationJob calls update multiple times:
+      // 1. Update input image URL (succeeds)
+      // 2. Update with COMPLETED status (fails - triggers handleModificationJobFailure)
+      // 3+ handleModificationJobFailure also calls update (FAILED, REFUNDED status)
+      let updateCallCount = 0;
+      mockMcpGenerationJob.update.mockImplementation(() => {
+        updateCallCount++;
+        // Fail on the 2nd call (COMPLETED status update)
+        if (updateCallCount === 2) {
+          return Promise.reject(new Error("DB write failed on completion"));
+        }
+        return Promise.resolve({});
+      });
+      mockMcpGenerationJob.findUnique.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        creditsCost: 2,
+      });
+      mockWorkspaceCreditManager.refundCredits.mockResolvedValue({ success: true });
+
+      await createModificationJob({
+        userId: testUserId,
+        prompt: "Add effect",
+        tier: "TIER_1K",
+        imageData: inputBase64,
+        mimeType: "image/jpeg",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify the failure handler was called and credits refunded
+      expect(mockWorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
+        testUserId,
+        2,
+      );
+    });
+
+    it("should handle input image update failure in modification job", async () => {
+      const inputBase64 = Buffer.from("original-image").toString("base64");
+
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+        success: true,
+      });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_1K",
+        creditsCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+      // Input upload succeeds
+      mockUploadToR2.mockResolvedValueOnce({
+        url: "https://r2.example.com/input.jpg",
+      });
+      // But DB update for input image URL fails
+      mockMcpGenerationJob.update.mockRejectedValueOnce(
+        new Error("DB error updating input URL"),
+      ).mockResolvedValue({});
+      mockMcpGenerationJob.findUnique.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        creditsCost: 2,
+      });
+      mockWorkspaceCreditManager.refundCredits.mockResolvedValue({ success: true });
+
+      await createModificationJob({
+        userId: testUserId,
+        prompt: "Add effect",
+        tier: "TIER_1K",
+        imageData: inputBase64,
+        mimeType: "image/jpeg",
+      });
+
+      // Wait for background processing
+      await vi.advanceTimersByTimeAsync(100);
+
+      // Verify credits were refunded after the input update failure
+      expect(mockWorkspaceCreditManager.refundCredits).toHaveBeenCalledWith(
+        testUserId,
+        2,
+      );
     });
 
     it("should use jpg extension when mimeType has no slash", async () => {
@@ -1635,6 +1964,385 @@ describe("generation-service", () => {
           );
         },
         { timeout: 1000 },
+      );
+
+      fetchSpy.mockRestore();
+    });
+
+    it("should use mimeType fallback to image/jpeg when content-type header is missing", async () => {
+      const newJobId = "new-modify-no-content-type";
+      const inputUrl = "https://r2.example.com/input.jpg";
+      mockMcpGenerationJob.findUnique.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_1K",
+        creditsCost: 2,
+        prompt: "Add effect",
+        apiKeyId: null,
+        inputImageUrl: inputUrl,
+        inputImageR2Key: "mcp-input/key.jpg",
+        geminiModel: "gemini-3-pro-image-preview",
+      });
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+        success: true,
+      });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: newJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_1K",
+        creditsCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+
+      // Mock fetch to return a response with NO content-type header
+      const originalImageData = Buffer.from("original-image-data");
+      const mockResponse = new Response(originalImageData, {
+        status: 200,
+        // No content-type header set
+      });
+      // Remove the content-type header that Response auto-sets
+      mockResponse.headers.delete("content-type");
+      const fetchSpy = vi
+        .spyOn(global, "fetch")
+        .mockResolvedValue(mockResponse);
+
+      // Set up mocks for the modification processing pipeline
+      const mockModifiedBuffer = Buffer.from("modified-image-data");
+      mockUploadToR2
+        .mockResolvedValueOnce({ url: "https://r2.example.com/input.jpg" })
+        .mockResolvedValueOnce({ url: "https://r2.example.com/output.jpg" });
+      mockGeminiClient.modifyImageWithGemini.mockResolvedValue(
+        mockModifiedBuffer,
+      );
+      mockMcpGenerationJob.update.mockResolvedValue({});
+
+      const result = await rerunMcpJob(testJobId);
+
+      expect(result.success).toBe(true);
+      expect(result.newJobId).toBe(newJobId);
+
+      // Wait for background processing to complete
+      await vi.waitFor(
+        () => {
+          expect(mockGeminiClient.modifyImageWithGemini).toHaveBeenCalled();
+        },
+        { timeout: 1000 },
+      );
+
+      // Verify the mimeType fallback to "image/jpeg" was used
+      expect(mockGeminiClient.modifyImageWithGemini).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mimeType: "image/jpeg",
+        }),
+      );
+
+      fetchSpy.mockRestore();
+    });
+
+    it("should log outer catch when rerun GENERATE processGenerationJob throws", async () => {
+      const newJobId = "new-gen-outer-catch";
+      // First findUnique call is from rerunMcpJob itself (L650)
+      mockMcpGenerationJob.findUnique
+        .mockResolvedValueOnce({
+          id: testJobId,
+          userId: testUserId,
+          type: McpJobType.GENERATE,
+          tier: "TIER_1K",
+          creditsCost: 2,
+          prompt: "A sunset",
+          apiKeyId: null,
+          inputImageUrl: null,
+          inputImageR2Key: null,
+          geminiModel: "gemini-3-pro-image-preview",
+        })
+        // Second findUnique call is from handleGenerationJobFailure (L326)
+        // Return a job so we enter the refund block
+        .mockResolvedValueOnce({
+          id: newJobId,
+          userId: testUserId,
+          creditsCost: 2,
+        });
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+        success: true,
+      });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: newJobId,
+        userId: testUserId,
+        type: McpJobType.GENERATE,
+        tier: "TIER_1K",
+        creditsCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+
+      // Make generation fail to trigger handleGenerationJobFailure
+      mockGeminiClient.generateImageWithGemini.mockRejectedValue(
+        new Error("Generation API error"),
+      );
+      mockMcpGenerationJob.update.mockResolvedValue({});
+      // Make refundCredits throw — this is NOT wrapped in tryCatch in
+      // handleGenerationJobFailure (L333), so the error propagates to
+      // the outer .catch() at L707-709
+      mockWorkspaceCreditManager.refundCredits.mockRejectedValue(
+        new Error("Credit service down"),
+      );
+
+      const result = await rerunMcpJob(testJobId);
+
+      expect(result.success).toBe(true);
+      expect(result.newJobId).toBe(newJobId);
+
+      // Wait for the outer catch to fire
+      await vi.waitFor(
+        () => {
+          expect(mockLogger.error).toHaveBeenCalledWith(
+            expect.stringContaining(`Rerun generation job ${newJobId} failed`),
+            expect.objectContaining({ error: expect.any(Error) }),
+          );
+        },
+        { timeout: 1000 },
+      );
+    });
+
+    it("should log outer catch when processModificationJob throws inside fetchAndProcessModification", async () => {
+      const newJobId = "new-modify-inner-throw";
+      const inputUrl = "https://r2.example.com/input.jpg";
+      // First findUnique is from rerunMcpJob (L650)
+      mockMcpGenerationJob.findUnique
+        .mockResolvedValueOnce({
+          id: testJobId,
+          userId: testUserId,
+          type: McpJobType.MODIFY,
+          tier: "TIER_1K",
+          creditsCost: 2,
+          prompt: "Add effect",
+          apiKeyId: null,
+          inputImageUrl: inputUrl,
+          inputImageR2Key: "mcp-input/key.jpg",
+          geminiModel: "gemini-3-pro-image-preview",
+        })
+        // Second findUnique is from handleModificationJobFailure (L490)
+        // Return a job so we enter the refund block
+        .mockResolvedValueOnce({
+          id: newJobId,
+          userId: testUserId,
+          creditsCost: 2,
+        });
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+        success: true,
+      });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: newJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_1K",
+        creditsCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+
+      // Mock fetch to return a valid response so we get past the fetch step
+      const originalImageData = Buffer.from("original-image-data");
+      const mockFetchResponse = new Response(originalImageData, {
+        status: 200,
+        headers: { "content-type": "image/jpeg" },
+      });
+      const fetchSpy = vi
+        .spyOn(global, "fetch")
+        .mockResolvedValue(mockFetchResponse);
+
+      // Make input upload fail in processModificationJob to trigger
+      // handleModificationJobFailure
+      mockUploadToR2.mockRejectedValue(new Error("R2 completely down"));
+      mockMcpGenerationJob.update.mockResolvedValue({});
+      // Make refundCredits throw — this is NOT wrapped in tryCatch in
+      // handleModificationJobFailure (L497), so the error propagates to
+      // processModificationJob, then to the outer .catch() at L763-765
+      mockWorkspaceCreditManager.refundCredits.mockRejectedValue(
+        new Error("Credit service down"),
+      );
+
+      const result = await rerunMcpJob(testJobId);
+
+      expect(result.success).toBe(true);
+      expect(result.newJobId).toBe(newJobId);
+
+      // Wait for the outer catch to fire
+      await vi.waitFor(
+        () => {
+          expect(mockLogger.error).toHaveBeenCalledWith(
+            expect.stringContaining(
+              `Rerun modification job ${newJobId} failed`,
+            ),
+            expect.objectContaining({ error: expect.any(Error) }),
+          );
+        },
+        { timeout: 1000 },
+      );
+
+      fetchSpy.mockRestore();
+    });
+
+    it("should call handleGenerationJobFailure when inputImageUrl is null in fetchAndProcessModification", async () => {
+      // This test covers the defensive null guard at L732-737.
+      // We use a getter that returns truthy for the first two accesses
+      // (L694 in create data, L710 condition check) and null for the third
+      // (L732 inside fetchAndProcessModification).
+      const newJobId = "new-modify-null-guard";
+      let inputImageUrlCallCount = 0;
+      const jobWithDynamicUrl = {
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_1K",
+        creditsCost: 2,
+        prompt: "Add effect",
+        apiKeyId: null,
+        get inputImageUrl(): string | null {
+          inputImageUrlCallCount++;
+          // Accesses 1-2 (L694 create data + L710 condition) return truthy
+          // Access 3 (L732 null guard inside fetchAndProcessModification) returns null
+          return inputImageUrlCallCount <= 2
+            ? "https://r2.example.com/input.jpg"
+            : null;
+        },
+        inputImageR2Key: "mcp-input/key.jpg",
+        geminiModel: "gemini-3-pro-image-preview",
+      };
+
+      // Reset findUnique to clear any leftover mockResolvedValueOnce queue
+      // from previous tests (vi.clearAllMocks doesn't clear implementations)
+      mockMcpGenerationJob.findUnique.mockReset();
+      mockMcpGenerationJob.findUnique
+        .mockResolvedValueOnce(jobWithDynamicUrl)
+        // For handleGenerationJobFailure's findUnique call
+        .mockResolvedValueOnce({
+          id: newJobId,
+          userId: testUserId,
+          creditsCost: 2,
+        });
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+        success: true,
+      });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: newJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_1K",
+        creditsCost: 2,
+        status: JobStatus.PROCESSING,
+      });
+      mockMcpGenerationJob.update.mockResolvedValue({});
+      mockWorkspaceCreditManager.refundCredits.mockResolvedValue({
+        success: true,
+      });
+
+      const result = await rerunMcpJob(testJobId);
+
+      expect(result.success).toBe(true);
+      expect(result.newJobId).toBe(newJobId);
+
+      // Wait for the null guard to trigger handleGenerationJobFailure
+      // and the full refund flow to complete
+      await vi.waitFor(
+        () => {
+          expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+            where: { id: newJobId },
+            data: expect.objectContaining({
+              status: JobStatus.FAILED,
+              errorMessage: expect.stringContaining(
+                "No input image URL available",
+              ),
+            }),
+          });
+          // Verify credits were refunded (inside waitFor to handle async timing)
+          expect(
+            mockWorkspaceCreditManager.refundCredits,
+          ).toHaveBeenCalledWith(testUserId, 2);
+        },
+        { timeout: 1000 },
+      );
+    });
+
+    it("should process successful modification rerun flow end-to-end", async () => {
+      const newJobId = "new-modify-success-flow";
+      const inputUrl = "https://r2.example.com/original-input.jpg";
+      mockMcpGenerationJob.findUnique.mockResolvedValue({
+        id: testJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_2K",
+        creditsCost: 5,
+        prompt: "Add a rainbow",
+        apiKeyId: testApiKeyId,
+        inputImageUrl: inputUrl,
+        inputImageR2Key: "mcp-input/test-user/original.jpg",
+        geminiModel: "gemini-3-pro-image-preview",
+      });
+      mockMcpGenerationJob.count.mockResolvedValue(0);
+      mockWorkspaceCreditManager.consumeCredits.mockResolvedValue({
+        success: true,
+      });
+      mockMcpGenerationJob.create.mockResolvedValue({
+        id: newJobId,
+        userId: testUserId,
+        type: McpJobType.MODIFY,
+        tier: "TIER_2K",
+        creditsCost: 5,
+        status: JobStatus.PROCESSING,
+      });
+
+      // Mock fetch to return original image data
+      const originalImageData = Buffer.from("original-image-data");
+      const mockFetchResponse = new Response(originalImageData, {
+        status: 200,
+        headers: { "content-type": "image/png" },
+      });
+      const fetchSpy = vi
+        .spyOn(global, "fetch")
+        .mockResolvedValue(mockFetchResponse);
+
+      // Set up mocks for the full modification pipeline
+      const mockModifiedBuffer = Buffer.from("modified-image-data");
+      mockUploadToR2
+        .mockResolvedValueOnce({ url: "https://r2.example.com/new-input.jpg" })
+        .mockResolvedValueOnce({
+          url: "https://r2.example.com/new-output.jpg",
+        });
+      mockGeminiClient.modifyImageWithGemini.mockResolvedValue(
+        mockModifiedBuffer,
+      );
+      mockMcpGenerationJob.update.mockResolvedValue({});
+
+      const result = await rerunMcpJob(testJobId);
+
+      expect(result.success).toBe(true);
+      expect(result.newJobId).toBe(newJobId);
+
+      // Wait for full background processing
+      await vi.waitFor(
+        () => {
+          expect(mockMcpGenerationJob.update).toHaveBeenCalledWith({
+            where: { id: newJobId },
+            data: expect.objectContaining({
+              status: JobStatus.COMPLETED,
+            }),
+          });
+        },
+        { timeout: 1000 },
+      );
+
+      // Verify processModificationJob was called via modifyImageWithGemini
+      expect(mockGeminiClient.modifyImageWithGemini).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prompt: "Add a rainbow",
+          tier: "2K",
+          mimeType: "image/png",
+        }),
       );
 
       fetchSpy.mockRestore();

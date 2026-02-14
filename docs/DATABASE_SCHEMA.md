@@ -2494,6 +2494,91 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
+"agent_capability_tokens" {
+  String id PK
+  String tokenHash UK
+  String agentId FK
+  String grantedByUserId FK
+  String grantedByAgentId "nullable"
+  String allowedTools
+  String allowedCategories
+  String deniedTools
+  String workspaceIds
+  Int maxTokenBudget
+  Int usedTokenBudget
+  Int maxApiCalls
+  Int usedApiCalls
+  String parentTokenId FK "nullable"
+  Int delegationDepth
+  Int maxDelegationDepth
+  Int revisionVersion
+  CapabilityTokenStatus status
+  DateTime expiresAt "nullable"
+  DateTime revokedAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"permission_templates" {
+  String id PK
+  String name UK
+  String displayName
+  String description
+  String allowedTools
+  String allowedCategories
+  String deniedTools
+  Int maxTokenBudget
+  Int maxApiCalls
+  Int maxStorageMb
+  Boolean isSystem
+  DateTime createdAt
+  DateTime updatedAt
+}
+"permission_requests" {
+  String id PK
+  String agentId FK
+  String userId FK
+  String requestType
+  Json requestPayload
+  String templateId FK "nullable"
+  PermissionRequestStatus status
+  FallbackBehavior fallbackBehavior
+  String grantedTokenId FK "nullable"
+  String denialReason "nullable"
+  DateTime expiresAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"agent_audit_logs" {
+  String id PK
+  String agentId FK
+  String userId FK
+  String workspaceId "nullable"
+  String action
+  String actionType
+  String capabilityTokenId FK "nullable"
+  Json input "nullable"
+  Json output "nullable"
+  Int durationMs
+  Boolean isError
+  String error "nullable"
+  String delegationChain
+  Int delegationDepth
+  Int tokensConsumed
+  Int budgetRemaining
+  DateTime createdAt
+}
+"agent_trust_scores" {
+  String id PK
+  String agentId FK,UK
+  String userId FK
+  Int totalSuccessful
+  Int totalFailed
+  Int totalRevocations
+  TrustLevel trustLevel
+  String autoApproveTools
+  DateTime createdAt
+  DateTime updatedAt
+}
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
 "campaign_briefs" }o--o| "workspaces" : workspace
@@ -2736,6 +2821,18 @@ erDiagram
 "skill_features" }o--|| "skills" : skill
 "skill_installations" }o--|| "skills" : skill
 "skill_installations" }o--o| "users" : user
+"agent_capability_tokens" }o--|| "claude_code_agents" : agent
+"agent_capability_tokens" }o--|| "users" : grantedByUser
+"agent_capability_tokens" }o--o| "agent_capability_tokens" : parentToken
+"permission_requests" }o--|| "claude_code_agents" : agent
+"permission_requests" }o--|| "users" : user
+"permission_requests" }o--o| "permission_templates" : template
+"permission_requests" }o--o| "agent_capability_tokens" : grantedToken
+"agent_audit_logs" }o--|| "claude_code_agents" : agent
+"agent_audit_logs" }o--|| "users" : user
+"agent_audit_logs" }o--o| "agent_capability_tokens" : capabilityToken
+"agent_trust_scores" |o--|| "claude_code_agents" : agent
+"agent_trust_scores" }o--|| "users" : user
 ```
 
 ### `users`
@@ -5858,5 +5955,105 @@ Properties as follows:
 - `chatOpened`:
 - `ctaClicked`:
 - `faqExpanded`:
+- `createdAt`:
+- `updatedAt`:
+
+### `agent_capability_tokens`
+
+Properties as follows:
+
+- `id`:
+- `tokenHash`:
+- `agentId`:
+- `grantedByUserId`:
+- `grantedByAgentId`:
+- `allowedTools`:
+- `allowedCategories`:
+- `deniedTools`:
+- `workspaceIds`:
+- `maxTokenBudget`:
+- `usedTokenBudget`:
+- `maxApiCalls`:
+- `usedApiCalls`:
+- `parentTokenId`:
+- `delegationDepth`:
+- `maxDelegationDepth`:
+- `revisionVersion`:
+- `status`:
+- `expiresAt`:
+- `revokedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `permission_templates`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `displayName`:
+- `description`:
+- `allowedTools`:
+- `allowedCategories`:
+- `deniedTools`:
+- `maxTokenBudget`:
+- `maxApiCalls`:
+- `maxStorageMb`:
+- `isSystem`:
+- `createdAt`:
+- `updatedAt`:
+
+### `permission_requests`
+
+Properties as follows:
+
+- `id`:
+- `agentId`:
+- `userId`:
+- `requestType`:
+- `requestPayload`:
+- `templateId`:
+- `status`:
+- `fallbackBehavior`:
+- `grantedTokenId`:
+- `denialReason`:
+- `expiresAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `agent_audit_logs`
+
+Properties as follows:
+
+- `id`:
+- `agentId`:
+- `userId`:
+- `workspaceId`:
+- `action`:
+- `actionType`:
+- `capabilityTokenId`:
+- `input`:
+- `output`:
+- `durationMs`:
+- `isError`:
+- `error`:
+- `delegationChain`:
+- `delegationDepth`:
+- `tokensConsumed`:
+- `budgetRemaining`:
+- `createdAt`:
+
+### `agent_trust_scores`
+
+Properties as follows:
+
+- `id`:
+- `agentId`:
+- `userId`:
+- `totalSuccessful`:
+- `totalFailed`:
+- `totalRevocations`:
+- `trustLevel`:
+- `autoApproveTools`:
 - `createdAt`:
 - `updatedAt`:

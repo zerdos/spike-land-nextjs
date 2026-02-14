@@ -249,6 +249,25 @@ describe("pipelines tools", () => {
       expect(getText(result)).toContain("PERMISSION_DENIED");
       expect(getText(result)).toContain("Access denied");
     });
+
+    it("should show all configs as set when all are provided", async () => {
+      const now = new Date("2024-06-15T12:00:00Z");
+      mockPrisma.enhancementPipeline.findUnique.mockResolvedValue({
+        id: "p-all", name: "All Configs", description: "Full config pipeline",
+        userId, visibility: "PRIVATE", tier: "PRO", usageCount: 5,
+        analysisConfig: { model: "gpt-4" }, autoCropConfig: { enabled: true },
+        promptConfig: { template: "enhance" }, generationConfig: { quality: "high" },
+        createdAt: now, updatedAt: now,
+        _count: { albums: 1, jobs: 10 },
+      });
+      const handler = registry.handlers.get("pipelines_get")!;
+      const result = await handler({ pipeline_id: "p-all" });
+      const text = getText(result);
+      expect(text).toContain("analysis=set");
+      expect(text).toContain("autoCrop=set");
+      expect(text).toContain("prompt=set");
+      expect(text).toContain("generation=set");
+    });
   });
 
   describe("pipelines_update", () => {

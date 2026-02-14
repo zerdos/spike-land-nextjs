@@ -184,6 +184,37 @@ describe("auth", () => {
       expect(result.error).toBe("Invalid or expired OAuth token");
     });
 
+    it("should return error when OAuth token verification throws", async () => {
+      mockVerifyAccessToken.mockRejectedValue(
+        new Error("OAuth service unavailable"),
+      );
+
+      const request = createMockRequest({
+        Authorization: "Bearer mcp_crashing_token",
+      });
+
+      const result = await authenticateMcpRequest(request);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("OAuth token verification failed");
+    });
+
+    it("should return default error when API key validation returns isValid false without error string", async () => {
+      mockValidateApiKey.mockResolvedValue({
+        isValid: false,
+        // No error property
+      });
+
+      const request = createMockRequest({
+        Authorization: "Bearer sk_test_noerror",
+      });
+
+      const result = await authenticateMcpRequest(request);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Invalid API key");
+    });
+
     it("should return error when validateApiKey throws an exception", async () => {
       mockValidateApiKey.mockRejectedValue(
         new Error("Database connection failed"),

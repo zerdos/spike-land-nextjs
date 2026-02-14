@@ -83,6 +83,58 @@ describe("classifyError", () => {
       expect(result.code).toBe(McpErrorCode.INVALID_INPUT);
     });
 
+    it("should classify SAFETY code as CONTENT_POLICY", () => {
+      const error = new Error("Safety filter triggered") as Error & {
+        code: string;
+      };
+      error.code = "SAFETY";
+
+      const result = classifyError(error);
+      expect(result.code).toBe(McpErrorCode.CONTENT_POLICY);
+    });
+
+    it("should classify BLOCKED code as CONTENT_POLICY", () => {
+      const error = new Error("Content was blocked") as Error & {
+        code: string;
+      };
+      error.code = "BLOCKED";
+
+      const result = classifyError(error);
+      expect(result.code).toBe(McpErrorCode.CONTENT_POLICY);
+    });
+
+    it("should classify QUOTA_EXCEEDED code as RATE_LIMITED", () => {
+      const error = new Error("Quota exceeded") as Error & { code: string; };
+      error.code = "QUOTA_EXCEEDED";
+
+      const result = classifyError(error);
+      expect(result.code).toBe(McpErrorCode.RATE_LIMITED);
+    });
+
+    it("should classify ECONNRESET as GEMINI_API_ERROR", () => {
+      const error = new Error("Connection reset") as Error & { code: string; };
+      error.code = "ECONNRESET";
+
+      const result = classifyError(error);
+      expect(result.code).toBe(McpErrorCode.GEMINI_API_ERROR);
+    });
+
+    it("should classify ENOTFOUND as GEMINI_API_ERROR", () => {
+      const error = new Error("DNS lookup failed") as Error & { code: string; };
+      error.code = "ENOTFOUND";
+
+      const result = classifyError(error);
+      expect(result.code).toBe(McpErrorCode.GEMINI_API_ERROR);
+    });
+
+    it("should classify INVALID_REQUEST as INVALID_INPUT", () => {
+      const error = new Error("Invalid request") as Error & { code: string; };
+      error.code = "INVALID_REQUEST";
+
+      const result = classifyError(error);
+      expect(result.code).toBe(McpErrorCode.INVALID_INPUT);
+    });
+
     it("should handle partial code matches", () => {
       const error = new Error("Custom timeout error") as Error & {
         code: string;
@@ -208,6 +260,68 @@ describe("classifyError", () => {
 
       const result = classifyError(error);
       expect(result.code).toBe(McpErrorCode.RATE_LIMITED);
+    });
+
+    it("should use response.statusCode when response.status is not available", () => {
+      const error = new Error("Error with response statusCode") as Error & {
+        response: { statusCode: number; };
+      };
+      error.response = { statusCode: 401 };
+
+      const result = classifyError(error);
+      expect(result.code).toBe(McpErrorCode.AUTH_ERROR);
+    });
+
+    it("should fall through when error has status property but both status and statusCode are undefined", () => {
+      const error = new Error("Some unrecognized error") as Error & {
+        status: undefined;
+        statusCode: undefined;
+      };
+      Object.assign(error, { status: undefined, statusCode: undefined });
+
+      const result = classifyError(error);
+      // Falls through status check (returns null) to message pattern or default
+      expect(result.code).toBe(McpErrorCode.GENERATION_ERROR);
+    });
+
+    it("should fall through when error has response but both response.status and response.statusCode are undefined", () => {
+      const error = new Error("Some odd response error") as Error & {
+        response: { status: undefined; statusCode: undefined };
+      };
+      error.response = { status: undefined, statusCode: undefined };
+
+      const result = classifyError(error);
+      // Falls through response check (returns null) to message pattern or default
+      expect(result.code).toBe(McpErrorCode.GENERATION_ERROR);
+    });
+
+    it("should fall through when status is not in HTTP_STATUS_MAP", () => {
+      const error = new Error("Some completely unexpected error") as Error & {
+        status: number;
+      };
+      error.status = 999; // Not in map
+
+      const result = classifyError(error);
+      // Falls through to message pattern or default
+      expect(result.code).toBe(McpErrorCode.GENERATION_ERROR);
+    });
+
+    it("should classify status 415 as INVALID_IMAGE", () => {
+      const error = new Error("Unsupported media type") as Error & {
+        status: number;
+      };
+      error.status = 415;
+
+      const result = classifyError(error);
+      expect(result.code).toBe(McpErrorCode.INVALID_IMAGE);
+    });
+
+    it("should classify status 502 as GEMINI_API_ERROR", () => {
+      const error = new Error("Bad gateway") as Error & { status: number; };
+      error.status = 502;
+
+      const result = classifyError(error);
+      expect(result.code).toBe(McpErrorCode.GEMINI_API_ERROR);
     });
   });
 

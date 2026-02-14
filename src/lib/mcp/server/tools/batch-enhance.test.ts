@@ -140,6 +140,26 @@ describe("batch-enhance tools", () => {
       expect(text).toContain("Workspace billing error");
     });
 
+    it("should fallback error message when consumeResult.error is undefined", async () => {
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([{ id: "img-1" }]);
+      mockHasEnoughCredits.mockResolvedValue(true);
+      mockConsumeCredits.mockResolvedValue({
+        success: false,
+        remaining: 0,
+        error: undefined,
+      });
+
+      const handler = registry.handlers.get("batch_enhance_images")!;
+      const result = await handler({
+        image_ids: ["img-1"],
+        tier: "TIER_1K",
+      });
+
+      const text = getText(result);
+      expect(text).toContain("CREDIT_CONSUMPTION_FAILED");
+      expect(text).toContain("Failed to consume credits");
+    });
+
     it("should handle FREE tier with zero cost", async () => {
       mockPrisma.enhancedImage.findMany.mockResolvedValue([{ id: "img-1" }]);
       mockHasEnoughCredits.mockResolvedValue(true);

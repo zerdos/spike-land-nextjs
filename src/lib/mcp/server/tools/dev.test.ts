@@ -207,6 +207,22 @@ describe("dev tools", () => {
       expect(text).toContain("Git & CI Status");
       expect(text).toContain("**Branch:**");
     });
+
+    it("should report dirty=yes when working tree has changes", async () => {
+      mockExecSync
+        .mockReturnValueOnce("feature/test\n")     // branch
+        .mockReturnValueOnce("def5678\n")           // short commit
+        .mockReturnValueOnce("def5678901234\n")     // full commit
+        .mockReturnValueOnce("def5678 some commit\n") // log
+        .mockReturnValueOnce(" M src/app/page.tsx\n") // porcelain (dirty)
+        .mockReturnValueOnce("completed:success\n")   // CI status
+        .mockReturnValueOnce("");                      // PRs
+
+      const handler = registry.handlers.get("github_status")!;
+      const result = await handler({});
+      const text = getText(result);
+      expect(text).toContain("**Dirty:** yes");
+    });
   });
 
   // ── file_guard ────────────────────────────────────────────────
@@ -436,6 +452,86 @@ describe("dev tools", () => {
       const result = await handler({ event: "test", message: "test" });
       // Should not throw, creates fresh array
       expect(isError(result)).toBe(false);
+    });
+  });
+
+  // ── git ref validation edge cases ────────────────────────────
+
+  describe("file_guard - git ref validation", () => {
+    it("should reject commit hash exceeding 100 characters", async () => {
+      const handler = registry.handlers.get("file_guard")!;
+      const result = await handler({ commit_hash: "a".repeat(101) });
+      expect(isError(result)).toBe(true);
+      expect(getText(result)).toContain("Invalid commit hash format");
+    });
+
+    it("should reject commit hash with pipe character", async () => {
+      const handler = registry.handlers.get("file_guard")!;
+      const result = await handler({ commit_hash: "HEAD|echo" });
+      expect(isError(result)).toBe(true);
+      expect(getText(result)).toContain("Invalid commit hash format");
+    });
+
+    it("should accept HEAD~N syntax", async () => {
+      mockExecSync
+        .mockReturnValueOnce("src/app/page.tsx\n")
+        .mockReturnValueOnce("Tests passed\n");
+
+      const handler = registry.handlers.get("file_guard")!;
+      await handler({ commit_hash: "HEAD~3" });
+      expect(mockExecSync).toHaveBeenCalledWith(
+        expect.stringContaining("--changed HEAD~3"),
+        expect.objectContaining({ timeout: 120_000 }),
+      );
+    });
+
+    it("should accept HEAD^2 syntax", async () => {
+      mockExecSync
+        .mockReturnValueOnce("src/app/page.tsx\n")
+        .mockReturnValueOnce("Tests passed\n");
+
+      const handler = registry.handlers.get("file_guard")!;
+      await handler({ commit_hash: "HEAD^2" });
+      expect(mockExecSync).toHaveBeenCalledWith(
+        expect.stringContaining("--changed HEAD^2"),
+        expect.objectContaining({ timeout: 120_000 }),
+      );
+    });
+  });
+
+  // ── file_guard error path without stdout ─────────────────────
+
+  describe("file_guard - error path", () => {
+    it("should handle error without stdout property", async () => {
+      const err = new Error("Tests crashed");
+      mockExecSync
+        .mockReturnValueOnce("src/app/page.tsx\n")
+        .mockImplementationOnce(() => {
+          throw err;
+        });
+
+      const handler = registry.handlers.get("file_guard")!;
+      const result = await handler({});
+      const text = getText(result);
+      expect(text).toContain("File Guard: FAIL");
+      expect(isError(result)).toBe(true);
+    });
+  });
+
+  // ── github_status - invalid git ref path ─────────────────────
+
+  describe("github_status - invalid commitFull", () => {
+    it("should skip CI check when commitFull is empty (safeExec failed)", async () => {
+      // When all exec calls fail (safeExec returns ""), commitFull is ""
+      // isValidGitRef("") returns false, so CI is skipped
+      mockExecSync.mockImplementation(() => {
+        throw new Error("git not found");
+      });
+
+      const handler = registry.handlers.get("github_status")!;
+      const result = await handler({});
+      const text = getText(result);
+      expect(text).toContain("CI:** unknown");
     });
   });
 });

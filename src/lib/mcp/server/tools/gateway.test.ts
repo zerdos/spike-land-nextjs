@@ -420,6 +420,47 @@ describe("gateway tools", () => {
       expect(textOf(result)).toContain("Tasks (0)");
     });
 
+    it("bridgemind_list_tasks — task without labels property", async () => {
+      mockBridgeMindClient.listTasks.mockResolvedValue({
+        data: [
+          {
+            id: "t3",
+            title: "No Labels Task",
+            status: "open",
+            priority: "low",
+          },
+        ],
+        error: null,
+      });
+
+      const handler = registry.getHandler("bridgemind_list_tasks");
+      const result = await handler({});
+      expect(textOf(result)).toContain("No Labels Task");
+      expect(textOf(result)).not.toContain("Labels:");
+    });
+
+    it("bridgemind_get_knowledge — empty data returns empty list", async () => {
+      mockBridgeMindClient.getKnowledge.mockResolvedValue({
+        data: null,
+        error: null,
+      });
+
+      const handler = registry.getHandler("bridgemind_get_knowledge");
+      const result = await handler({ query: "nothing" });
+      expect(textOf(result)).toContain("Knowledge Results (0)");
+    });
+
+    it("bridgemind_list_sprints — null data returns empty list", async () => {
+      mockBridgeMindClient.listSprints.mockResolvedValue({
+        data: null,
+        error: null,
+      });
+
+      const handler = registry.getHandler("bridgemind_list_sprints");
+      const result = await handler({});
+      expect(textOf(result)).toContain("Sprints (0)");
+    });
+
     it("bridgemind_list_sprints — sprint without goals", async () => {
       mockBridgeMindClient.listSprints.mockResolvedValue({
         data: [
@@ -564,6 +605,17 @@ describe("gateway tools", () => {
       expect(result.isError).toBe(true);
     });
 
+    it("github_list_issues — data with missing items key", async () => {
+      mockGitHubProjectsClient.listItems.mockResolvedValue({
+        data: {},
+        error: null,
+      });
+
+      const handler = registry.getHandler("github_list_issues");
+      const result = await handler({});
+      expect(textOf(result)).toContain("GitHub Project Items (0)");
+    });
+
     it("github_get_pr_status — with linked PR", async () => {
       mockGitHubProjectsClient.getPRStatus.mockResolvedValue({
         data: {
@@ -609,6 +661,24 @@ describe("gateway tools", () => {
       const handler = registry.getHandler("github_get_pr_status");
       const result = await handler({ issue_number: 50 });
       expect(textOf(result)).toContain("Merged:");
+    });
+
+    it("github_get_pr_status — null ciStatus and reviewDecision", async () => {
+      mockGitHubProjectsClient.getPRStatus.mockResolvedValue({
+        data: {
+          prNumber: 70,
+          prState: "OPEN",
+          ciStatus: null,
+          reviewDecision: null,
+          mergedAt: null,
+        },
+        error: null,
+      });
+
+      const handler = registry.getHandler("github_get_pr_status");
+      const result = await handler({ issue_number: 70 });
+      expect(textOf(result)).toContain("CI:** unknown");
+      expect(textOf(result)).toContain("Review:** none");
     });
 
     it("github_get_pr_status — error", async () => {
@@ -748,6 +818,24 @@ describe("gateway tools", () => {
       const handler = registry.getHandler("sync_status");
       const result = await handler({});
       expect(textOf(result)).toContain("database unavailable");
+    });
+
+    it("sync_status — with null itemsSynced and null lastSuccessfulSync", async () => {
+      mockBridgeMindClient.getCircuitBreakerState.mockReturnValue({
+        status: "closed",
+        failures: 0,
+      });
+      mockGitHubProjectsClient.getRateLimitInfo.mockReturnValue(null);
+      mockPrisma.syncState.findFirst.mockResolvedValue({
+        lastSuccessfulSync: null,
+        itemsSynced: null,
+        errorMessage: null,
+      });
+
+      const handler = registry.getHandler("sync_status");
+      const result = await handler({});
+      expect(textOf(result)).toContain("Last Sync:** never");
+      expect(textOf(result)).toContain("Items Synced:** 0");
     });
 
     it("sync_status — with error message from last sync", async () => {

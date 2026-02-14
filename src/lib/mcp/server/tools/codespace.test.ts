@@ -38,6 +38,23 @@ describe("codespace tools", () => {
     expect(registry.handlers.has("codespace_list_my_apps")).toBe(true);
   });
 
+  describe("validateCodeSpaceId", () => {
+    it("should throw on invalid codespace ID", async () => {
+      const handler = registry.handlers.get("codespace_update")!;
+      await expect(handler({ codespace_id: "bad id!@#", code: "hello" })).rejects.toThrow("Invalid codespace ID format");
+    });
+
+    it("should throw on codespace ID with spaces", async () => {
+      const handler = registry.handlers.get("codespace_run")!;
+      await expect(handler({ codespace_id: "bad space" })).rejects.toThrow("Invalid codespace ID format");
+    });
+
+    it("should throw on codespace ID with special chars", async () => {
+      const handler = registry.handlers.get("codespace_get")!;
+      await expect(handler({ codespace_id: "../../etc/passwd" })).rejects.toThrow("Invalid codespace ID format");
+    });
+  });
+
   describe("codespace_update", () => {
     it("should update codespace", async () => {
       mockFetch.mockResolvedValue(mockJsonResponse({ codeSpace: "test-app", hash: "abc123", updated: [] }));
@@ -151,6 +168,104 @@ describe("codespace tools", () => {
     });
   });
 
+  describe("codespace_update without service token", () => {
+    it("should make request without Authorization header when no service token is set", async () => {
+      const origServiceToken = process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      const origApiKey = process.env["SPIKE_LAND_API_KEY"];
+      delete process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      delete process.env["SPIKE_LAND_API_KEY"];
+
+      try {
+        mockFetch.mockResolvedValue(mockJsonResponse({ codeSpace: "test-app", hash: "abc", updated: [] }));
+        const handler = registry.handlers.get("codespace_update")!;
+        await handler({ codespace_id: "test-app", code: "export default () => <div/>" });
+
+        const [, fetchOptions] = mockFetch.mock.calls[0] as [string, RequestInit];
+        const headers = fetchOptions.headers as Record<string, string>;
+        expect(headers["Authorization"]).toBeUndefined();
+      } finally {
+        if (origServiceToken !== undefined) process.env["SPIKE_LAND_SERVICE_TOKEN"] = origServiceToken;
+        if (origApiKey !== undefined) process.env["SPIKE_LAND_API_KEY"] = origApiKey;
+      }
+    });
+  });
+
+  describe("registerCodeSpaceTools with env token variants", () => {
+    it("should use SPIKE_LAND_SERVICE_TOKEN when set", () => {
+      const origST = process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      const origAK = process.env["SPIKE_LAND_API_KEY"];
+      process.env["SPIKE_LAND_SERVICE_TOKEN"] = "test-service-token";
+      delete process.env["SPIKE_LAND_API_KEY"];
+
+      try {
+        const freshRegistry = createMockRegistry();
+        registerCodeSpaceTools(freshRegistry, userId);
+        expect(freshRegistry.register).toHaveBeenCalledTimes(6);
+      } finally {
+        if (origST !== undefined) process.env["SPIKE_LAND_SERVICE_TOKEN"] = origST;
+        else delete process.env["SPIKE_LAND_SERVICE_TOKEN"];
+        if (origAK !== undefined) process.env["SPIKE_LAND_API_KEY"] = origAK;
+        else delete process.env["SPIKE_LAND_API_KEY"];
+      }
+    });
+
+    it("should fall back to SPIKE_LAND_API_KEY when SERVICE_TOKEN is not set", () => {
+      const origST = process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      const origAK = process.env["SPIKE_LAND_API_KEY"];
+      delete process.env["SPIKE_LAND_SERVICE_TOKEN"];
+      process.env["SPIKE_LAND_API_KEY"] = "test-api-key";
+
+      try {
+        const freshRegistry = createMockRegistry();
+        registerCodeSpaceTools(freshRegistry, userId);
+        expect(freshRegistry.register).toHaveBeenCalledTimes(6);
+      } finally {
+        if (origST !== undefined) process.env["SPIKE_LAND_SERVICE_TOKEN"] = origST;
+        else delete process.env["SPIKE_LAND_SERVICE_TOKEN"];
+        if (origAK !== undefined) process.env["SPIKE_LAND_API_KEY"] = origAK;
+        else delete process.env["SPIKE_LAND_API_KEY"];
+      }
+    });
+  });
+
+  describe("codespaceRequest error JSON without error field", () => {
+    it("should fall back to status code when error field is missing", async () => {
+      mockFetch.mockResolvedValue(mockJsonResponse({ message: "bad request" }, false, 400));
+      const handler = registry.handlers.get("codespace_update")!;
+      const result = await handler({ codespace_id: "test-app", code: "code" });
+      expect(getText(result)).toContain("Error");
+      expect(getText(result)).toContain("API error: 400");
+    });
+  });
+
+  describe("codespaceRequest non-Error throw", () => {
+    it("should handle non-Error thrown from codespaceRequest", async () => {
+      mockFetch.mockRejectedValue("raw string error");
+      const handler = registry.handlers.get("codespace_run")!;
+      const result = await handler({ codespace_id: "test-app" });
+      expect(getText(result)).toContain("Error");
+      expect(getText(result)).toContain("Unknown error");
+    });
+  });
+
+  describe("codespace_run error paths", () => {
+    it("should return error on API failure", async () => {
+      mockFetch.mockResolvedValue(mockJsonResponse({ error: "Server error" }, false, 500));
+      const handler = registry.handlers.get("codespace_run")!;
+      const result = await handler({ codespace_id: "test-app" });
+      expect(getText(result)).toContain("Error");
+    });
+  });
+
+  describe("codespace_get error paths", () => {
+    it("should return error on API failure", async () => {
+      mockFetch.mockResolvedValue(mockJsonResponse({ error: "Not found" }, false, 404));
+      const handler = registry.handlers.get("codespace_get")!;
+      const result = await handler({ codespace_id: "test-app" });
+      expect(getText(result)).toContain("Error");
+    });
+  });
+
   describe("codespace_list_my_apps", () => {
     it("should list apps", async () => {
       mockFetch.mockResolvedValue(mockJsonResponse([
@@ -175,6 +290,45 @@ describe("codespace tools", () => {
       const result = await handler({});
       expect(getText(result)).toContain("Error");
       expect(getText(result)).toContain("Service unavailable");
+    });
+
+    it("should list apps without codespaceId", async () => {
+      mockFetch.mockResolvedValue(mockJsonResponse([
+        { id: "app-1", name: "App No CS", status: "ACTIVE" },
+      ]));
+      const handler = registry.handlers.get("codespace_list_my_apps")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("App No CS");
+      expect(getText(result)).not.toContain("Codespace:");
+    });
+
+    it("should handle non-Error thrown from spikeLandRequest", async () => {
+      mockFetch.mockRejectedValue("string error");
+      const handler = registry.handlers.get("codespace_list_my_apps")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("Error");
+      expect(getText(result)).toContain("Unknown error");
+    });
+
+    it("should handle API error without error field in response", async () => {
+      mockFetch.mockResolvedValue(mockJsonResponse({}, false, 500));
+      const handler = registry.handlers.get("codespace_list_my_apps")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("Error");
+      expect(getText(result)).toContain("API error: 500");
+    });
+
+    it("should handle null data by defaulting to empty array", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(null),
+        text: () => Promise.resolve("null"),
+      });
+      const handler = registry.handlers.get("codespace_list_my_apps")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("My Apps (0)");
+      expect(getText(result)).toContain("No apps found");
     });
   });
 });

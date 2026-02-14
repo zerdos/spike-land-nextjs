@@ -80,6 +80,28 @@ describe("audio tools", () => {
       expect(getText(result)).toContain("ogg");
     });
 
+    it("should fall back to 'wav' when filename has no extension and content_type has no subtype", async () => {
+      mockPrisma.audioMixerProject.findFirst.mockResolvedValue({ id: "p1", name: "My Project", userId });
+      mockPrisma.audioTrack.count.mockResolvedValue(0);
+      mockPrisma.audioTrack.create.mockResolvedValue({ id: "t5" });
+      const handler = registry.handlers.get("audio_upload")!;
+      const result = await handler({ project_id: "p1", filename: "noextension", content_type: "audio" });
+      expect(getText(result)).toContain("Audio Track Created!");
+      // When content_type.split("/")[1] is undefined, falls back to "wav"
+      // but "audio".split("/")[1] is undefined, so ?? "wav" kicks in
+      expect(mockPrisma.audioTrack.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({ fileFormat: "wav" }),
+      }));
+    });
+
+    it("should handle database error via safeToolCall", async () => {
+      mockPrisma.audioMixerProject.findFirst.mockRejectedValue(new Error("Database connection failed"));
+      const handler = registry.handlers.get("audio_upload")!;
+      const result = await handler({ project_id: "p1", filename: "track.wav", content_type: "audio/wav" });
+      expect(getText(result)).toContain("Error");
+      expect(getText(result)).toContain("Database connection failed");
+    });
+
     it("should use sortOrder based on existing track count", async () => {
       mockPrisma.audioMixerProject.findFirst.mockResolvedValue({ id: "p1", name: "My Project", userId });
       mockPrisma.audioTrack.count.mockResolvedValue(5);

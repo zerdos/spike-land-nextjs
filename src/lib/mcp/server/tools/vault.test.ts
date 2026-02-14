@@ -406,5 +406,219 @@ describe("vault tools", () => {
         }),
       );
     });
+
+    it("should reject approval of REVOKED secret", async () => {
+      mockPrisma.vaultSecret.findFirst.mockResolvedValue({
+        id: "s1",
+        name: "API_KEY",
+        status: "REVOKED",
+        userId,
+      });
+
+      const handler = registry.handlers.get("vault_approve_secret")!;
+      const result = await handler({ secret_id: "s1" });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          isError: true,
+          content: expect.arrayContaining([
+            expect.objectContaining({
+              text: expect.stringContaining("REVOKED"),
+            }),
+          ]),
+        }),
+      );
+    });
+  });
+
+  describe("vault_store_secret - FREE tier subscription", () => {
+    it("should enforce free tier limit when subscription exists with tier FREE", async () => {
+      mockPrisma.vaultSecret.count.mockResolvedValue(5);
+      mockPrisma.subscription.findUnique.mockResolvedValue({
+        tier: "FREE",
+      });
+
+      const handler = registry.handlers.get("vault_store_secret")!;
+      const result = await handler({
+        name: "KEY",
+        value: "val",
+        allowed_urls: [],
+      });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          isError: true,
+          content: expect.arrayContaining([
+            expect.objectContaining({
+              text: expect.stringContaining("5/5"),
+            }),
+          ]),
+        }),
+      );
+    });
+
+    it("should allow storing when subscription tier is FREE and under limit", async () => {
+      mockPrisma.vaultSecret.count.mockResolvedValue(3);
+      mockPrisma.subscription.findUnique.mockResolvedValue({
+        tier: "FREE",
+      });
+      mockEncryptSecret.mockReturnValue({
+        encryptedValue: "enc",
+        iv: "iv",
+        tag: "tag",
+      });
+      mockPrisma.vaultSecret.upsert.mockResolvedValue({
+        id: "secret-free",
+        name: "KEY",
+        status: "PENDING",
+      });
+
+      const handler = registry.handlers.get("vault_store_secret")!;
+      const result = await handler({
+        name: "KEY",
+        value: "val",
+        allowed_urls: [],
+      });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          content: expect.arrayContaining([
+            expect.objectContaining({
+              text: expect.stringContaining("Secret Stored"),
+            }),
+          ]),
+        }),
+      );
+    });
+  });
+
+  describe("vault_store_secret - premium quota edge", () => {
+    it("should enforce premium quota at 100 secrets", async () => {
+      mockPrisma.vaultSecret.count.mockResolvedValue(100);
+      mockPrisma.subscription.findUnique.mockResolvedValue({
+        tier: "PREMIUM",
+      });
+
+      const handler = registry.handlers.get("vault_store_secret")!;
+      const result = await handler({
+        name: "KEY",
+        value: "val",
+        allowed_urls: [],
+      });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          isError: true,
+          content: expect.arrayContaining([
+            expect.objectContaining({
+              text: expect.stringContaining("100/100"),
+            }),
+          ]),
+        }),
+      );
+    });
+
+    it("should handle non-Error throws in store", async () => {
+      mockPrisma.vaultSecret.count.mockRejectedValue("string error");
+
+      const handler = registry.handlers.get("vault_store_secret")!;
+      const result = await handler({
+        name: "KEY",
+        value: "val",
+        allowed_urls: [],
+      });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          isError: true,
+          content: expect.arrayContaining([
+            expect.objectContaining({
+              text: expect.stringContaining("Unknown error"),
+            }),
+          ]),
+        }),
+      );
+    });
+  });
+
+  describe("vault_list_secrets - error handling", () => {
+    it("should handle non-Error throws in list", async () => {
+      mockPrisma.vaultSecret.findMany.mockRejectedValue(42);
+
+      const handler = registry.handlers.get("vault_list_secrets")!;
+      const result = await handler({});
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          isError: true,
+          content: expect.arrayContaining([
+            expect.objectContaining({
+              text: expect.stringContaining("Unknown error"),
+            }),
+          ]),
+        }),
+      );
+    });
+
+    it("should show secrets with allowed URLs as 'any' when empty", async () => {
+      mockPrisma.vaultSecret.findMany.mockResolvedValue([
+        {
+          id: "s1",
+          name: "API_KEY",
+          status: "APPROVED",
+          allowedUrls: [],
+          createdAt: new Date("2025-01-01"),
+        },
+      ]);
+      mockPrisma.vaultSecret.count.mockResolvedValue(1);
+      mockPrisma.subscription.findUnique.mockResolvedValue(null);
+
+      const handler = registry.handlers.get("vault_list_secrets")!;
+      const result = await handler({});
+
+      const text = (result as { content: Array<{ text: string }> }).content[0]!
+        .text;
+      expect(text).toContain("URLs: any");
+    });
+  });
+
+  describe("vault_delete_secret - error handling", () => {
+    it("should handle non-Error throws in delete", async () => {
+      mockPrisma.vaultSecret.findFirst.mockRejectedValue(null);
+
+      const handler = registry.handlers.get("vault_delete_secret")!;
+      const result = await handler({ secret_id: "s1" });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          isError: true,
+          content: expect.arrayContaining([
+            expect.objectContaining({
+              text: expect.stringContaining("Unknown error"),
+            }),
+          ]),
+        }),
+      );
+    });
+  });
+
+  describe("vault_approve_secret - error handling", () => {
+    it("should handle non-Error throws in approve", async () => {
+      mockPrisma.vaultSecret.findFirst.mockRejectedValue(undefined);
+
+      const handler = registry.handlers.get("vault_approve_secret")!;
+      const result = await handler({ secret_id: "s1" });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          isError: true,
+          content: expect.arrayContaining([
+            expect.objectContaining({
+              text: expect.stringContaining("Unknown error"),
+            }),
+          ]),
+        }),
+      );
+    });
   });
 });

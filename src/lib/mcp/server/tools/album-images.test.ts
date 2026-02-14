@@ -121,6 +121,24 @@ describe("album-images tools", () => {
       expect(getText(result)).toContain("FORBIDDEN");
     });
 
+    it("should re-throw non-P2002 errors during add", async () => {
+      mockPrisma.album.findUnique.mockResolvedValue({ userId });
+      mockPrisma.enhancedImage.findMany.mockResolvedValue([{ id: "img-1" }]);
+      mockPrisma.albumImage.aggregate.mockResolvedValue({
+        _max: { sortOrder: null },
+      });
+      mockPrisma.albumImage.create.mockRejectedValue(new Error("DB connection lost"));
+
+      const handler = registry.handlers.get("album_images_add")!;
+      const result = await handler({
+        album_id: "album-1",
+        image_ids: ["img-1"],
+      });
+
+      // safeToolCall wraps the error
+      expect(result).toEqual(expect.objectContaining({ isError: true }));
+    });
+
     it("should return error if images don't belong to user", async () => {
       mockPrisma.album.findUnique.mockResolvedValue({ userId });
       mockPrisma.enhancedImage.findMany.mockResolvedValue([]); // No matching images
@@ -185,6 +203,21 @@ describe("album-images tools", () => {
 
       expect(getText(result)).toContain("ALBUM_NOT_FOUND");
     });
+
+    it("should return FORBIDDEN if not album owner", async () => {
+      mockPrisma.album.findUnique.mockResolvedValue({
+        userId: "other-user",
+        coverImageId: null,
+      });
+
+      const handler = registry.handlers.get("album_images_remove")!;
+      const result = await handler({
+        album_id: "album-1",
+        image_ids: ["img-1"],
+      });
+
+      expect(getText(result)).toContain("FORBIDDEN");
+    });
   });
 
   describe("album_images_reorder", () => {
@@ -214,6 +247,18 @@ describe("album-images tools", () => {
       });
 
       expect(getText(result)).toContain("FORBIDDEN");
+    });
+
+    it("should return error if album not found", async () => {
+      mockPrisma.album.findUnique.mockResolvedValue(null);
+
+      const handler = registry.handlers.get("album_images_reorder")!;
+      const result = await handler({
+        album_id: "no-album",
+        image_order: ["img-1"],
+      });
+
+      expect(getText(result)).toContain("ALBUM_NOT_FOUND");
     });
   });
 

@@ -24,7 +24,7 @@ vi.mock("@/lib/app-lookup", () => ({
     mockFindAppByIdentifierSimple(...args),
 }));
 
-import { createMockRegistry } from "../__test-utils__";
+import { createMockRegistry, getText } from "../__test-utils__";
 import { registerAppsTools } from "./apps";
 
 const mockFetch = vi.fn();
@@ -197,6 +197,50 @@ describe("apps tools", () => {
         expect.objectContaining({ isError: true }),
       );
     });
+
+    it("should fall back to slug when codespaceId is null", async () => {
+      mockPrisma.app.findMany.mockResolvedValue([
+        {
+          id: "app-1",
+          name: "Slug App",
+          slug: "slug-only",
+          status: "LIVE",
+          codespaceId: null,
+          lastAgentActivity: null,
+          createdAt: new Date("2025-01-01"),
+          updatedAt: new Date("2025-01-02"),
+          _count: { messages: 1, images: 0, codeVersions: 1 },
+        },
+      ]);
+
+      const handler = registry.handlers.get("apps_list")!;
+      const result = await handler({ limit: 20 });
+
+      const text = getText(result);
+      expect(text).toContain("ID: `slug-only`");
+    });
+
+    it("should fall back to id when both codespaceId and slug are falsy", async () => {
+      mockPrisma.app.findMany.mockResolvedValue([
+        {
+          id: "app-fallback-id",
+          name: "ID App",
+          slug: "",
+          status: "LIVE",
+          codespaceId: null,
+          lastAgentActivity: null,
+          createdAt: new Date("2025-01-01"),
+          updatedAt: new Date("2025-01-02"),
+          _count: { messages: 0, images: 0, codeVersions: 0 },
+        },
+      ]);
+
+      const handler = registry.handlers.get("apps_list")!;
+      const result = await handler({ limit: 20 });
+
+      const text = getText(result);
+      expect(text).toContain("ID: `app-fallback-id`");
+    });
   });
 
   describe("apps_get", () => {
@@ -243,6 +287,74 @@ describe("apps tools", () => {
         expect.objectContaining({ isError: true }),
       );
     });
+
+    it("should show dash when slug is falsy", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            id: "app-no-slug",
+            name: "No Slug App",
+            slug: "",
+            description: null,
+            status: "BUILDING",
+            codespaceId: null,
+            codespaceUrl: null,
+            agentWorking: false,
+            lastAgentActivity: null,
+            createdAt: "2025-01-01T00:00:00Z",
+            updatedAt: "2025-01-02T00:00:00Z",
+          }),
+      });
+
+      const handler = registry.handlers.get("apps_get")!;
+      const result = await handler({ app_id: "app-no-slug" });
+
+      const text = getText(result);
+      expect(text).toContain("Slug:** \u2014");
+      expect(text).not.toContain("Description:");
+      expect(text).not.toContain("Codespace:");
+      expect(text).not.toContain("Preview:");
+    });
+
+    it("should display all optional fields including _count, statusHistory, description, codespaceUrl", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            id: "app-full",
+            name: "Full App",
+            slug: "full-app",
+            description: "A fully-featured app",
+            status: "LIVE",
+            codespaceId: "full-app",
+            codespaceUrl: "/api/codespace/full-app/embed",
+            agentWorking: true,
+            lastAgentActivity: "2025-01-02T00:00:00Z",
+            createdAt: "2025-01-01T00:00:00Z",
+            updatedAt: "2025-01-02T00:00:00Z",
+            _count: { messages: 10, images: 3 },
+            statusHistory: [
+              { status: "LIVE", message: "Deployed successfully", createdAt: "2025-01-02T00:00:00Z" },
+              { status: "BUILDING", message: null, createdAt: "2025-01-01T12:00:00Z" },
+            ],
+          }),
+      });
+
+      const handler = registry.handlers.get("apps_get")!;
+      const result = await handler({ app_id: "full-app" });
+
+      const text = getText(result);
+      expect(text).toContain("Description:** A fully-featured app");
+      expect(text).toContain("Codespace:** full-app");
+      expect(text).toContain("Preview:** https://testing.spike.land/live/full-app");
+      expect(text).toContain("Messages:** 10");
+      expect(text).toContain("Images:** 3");
+      expect(text).toContain("Agent Working:** Yes");
+      expect(text).toContain("Recent Status History");
+      expect(text).toContain("Deployed successfully");
+      expect(text).toContain("BUILDING");
+    });
   });
 
   describe("apps_chat", () => {
@@ -268,6 +380,30 @@ describe("apps tools", () => {
         .text;
       expect(text).toContain("Message Sent!");
       expect(text).toContain("msg-1");
+    });
+
+    it("should pass image_ids to API when provided", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            id: "msg-2",
+            content: "With image",
+            role: "USER",
+            createdAt: "2025-01-01T00:00:00Z",
+          }),
+      });
+
+      const handler = registry.handlers.get("apps_chat")!;
+      await handler({
+        app_id: "my-app",
+        message: "Use this design",
+        image_ids: ["img-1"],
+      });
+
+      const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+      const body = JSON.parse(options.body as string);
+      expect(body.imageIds).toEqual(["img-1"]);
     });
   });
 
@@ -330,6 +466,86 @@ describe("apps tools", () => {
         .text;
       expect(text).toContain("No messages yet");
     });
+
+    it("should use cursor for pagination", async () => {
+      mockFindAppByIdentifierSimple.mockResolvedValue({
+        id: "app-1",
+        slug: "my-app",
+      });
+      mockPrisma.appMessage.findMany.mockResolvedValue([
+        {
+          id: "msg-old",
+          role: "USER",
+          content: "Old message",
+          createdAt: new Date("2024-12-31"),
+          codeVersion: null,
+        },
+      ]);
+
+      const handler = registry.handlers.get("apps_get_messages")!;
+      await handler({ app_id: "my-app", cursor: "2025-01-01T00:00:00Z", limit: 20 });
+
+      expect(mockPrisma.appMessage.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: { lt: new Date("2025-01-01T00:00:00Z") },
+          }),
+        }),
+      );
+    });
+
+    it("should show 'More messages available' when messages.length === limit", async () => {
+      mockFindAppByIdentifierSimple.mockResolvedValue({
+        id: "app-1",
+        slug: "my-app",
+      });
+      const messages = [
+        {
+          id: "msg-1",
+          role: "USER",
+          content: "Hello",
+          createdAt: new Date("2025-01-02"),
+          codeVersion: null,
+        },
+        {
+          id: "msg-2",
+          role: "AGENT",
+          content: "Hi there",
+          createdAt: new Date("2025-01-01"),
+          codeVersion: null,
+        },
+      ];
+      mockPrisma.appMessage.findMany.mockResolvedValue(messages);
+
+      const handler = registry.handlers.get("apps_get_messages")!;
+      const result = await handler({ app_id: "my-app", limit: 2 });
+
+      expect(getText(result)).toContain("More messages available");
+    });
+
+    it("should truncate messages with content > 300 chars", async () => {
+      mockFindAppByIdentifierSimple.mockResolvedValue({
+        id: "app-1",
+        slug: "my-app",
+      });
+      const longContent = "A".repeat(400);
+      mockPrisma.appMessage.findMany.mockResolvedValue([
+        {
+          id: "msg-long",
+          role: "USER",
+          content: longContent,
+          createdAt: new Date("2025-01-01"),
+          codeVersion: null,
+        },
+      ]);
+
+      const handler = registry.handlers.get("apps_get_messages")!;
+      const result = await handler({ app_id: "my-app", limit: 20 });
+
+      const text = getText(result);
+      expect(text).toContain("...");
+      expect(text).not.toContain("A".repeat(400));
+    });
   });
 
   describe("apps_set_status", () => {
@@ -349,6 +565,25 @@ describe("apps tools", () => {
         .text;
       expect(text).toContain("Status Updated!");
       expect(text).toContain("ARCHIVED");
+      expect(text).toContain("apps_bin");
+    });
+
+    it("should set status to PROMPTING without archive message", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ success: true }),
+      });
+
+      const handler = registry.handlers.get("apps_set_status")!;
+      const result = await handler({
+        app_id: "my-app",
+        status: "PROMPTING",
+      });
+
+      const text = getText(result);
+      expect(text).toContain("Status Updated!");
+      expect(text).toContain("PROMPTING");
+      expect(text).not.toContain("removed from your active list");
     });
   });
 
@@ -445,6 +680,42 @@ describe("apps tools", () => {
         .text;
       expect(text).toContain("APP_NOT_FOUND");
     });
+
+    it("should list version without description", async () => {
+      mockFindAppByIdentifierSimple.mockResolvedValue({
+        id: "app-1",
+        slug: "my-app",
+      });
+      mockPrisma.appCodeVersion.findMany.mockResolvedValue([
+        {
+          id: "v-no-desc",
+          hash: "xyz789abcdef",
+          description: null,
+          createdAt: new Date("2025-01-01"),
+        },
+      ]);
+
+      const handler = registry.handlers.get("apps_list_versions")!;
+      const result = await handler({ app_id: "my-app", limit: 10 });
+
+      const text = getText(result);
+      expect(text).toContain("xyz789ab");
+      expect(text).not.toContain("\u2014");
+    });
+
+    it("should show empty message when app has no versions", async () => {
+      mockFindAppByIdentifierSimple.mockResolvedValue({
+        id: "app-1",
+        slug: "my-app",
+      });
+      mockPrisma.appCodeVersion.findMany.mockResolvedValue([]);
+
+      const handler = registry.handlers.get("apps_list_versions")!;
+      const result = await handler({ app_id: "my-app", limit: 10 });
+
+      const text = getText(result);
+      expect(text).toContain("No code versions yet");
+    });
   });
 
   describe("apps_batch_status", () => {
@@ -495,6 +766,25 @@ describe("apps tools", () => {
       expect(text).toContain("Succeeded:** 1/2");
       expect(text).toContain("Failed:");
       expect(text).toContain("app-2");
+    });
+
+    it("should handle non-Error thrown in batch", async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ success: true }),
+        })
+        .mockRejectedValueOnce("string error");
+
+      const handler = registry.handlers.get("apps_batch_status")!;
+      const result = await handler({
+        app_ids: ["app-1", "app-2"],
+        status: "ARCHIVED",
+      });
+
+      const text = getText(result);
+      expect(text).toContain("Succeeded:** 1/2");
+      expect(text).toContain("Unknown error");
     });
   });
 });

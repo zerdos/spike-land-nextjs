@@ -7,6 +7,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ToolRegistry } from "./tool-registry";
+import { CapabilityFilteredRegistry } from "./capability-filtered-registry";
 import { registerGatewayMetaTools } from "./tools/gateway-meta";
 import { registerImageTools } from "./tools/image";
 import { registerCodeSpaceTools } from "./tools/codespace";
@@ -39,13 +40,31 @@ import { registerChatTools } from "./tools/chat";
 import { registerNewsletterTools } from "./tools/newsletter";
 import { registerTtsTools } from "./tools/tts";
 import { registerBazdmegFaqTools } from "./tools/bazdmeg-faq";
+import { registerCapabilitiesTools } from "./tools/capabilities";
 import { registerDevTools } from "./tools/dev";
+
+/**
+ * Options for creating an MCP server with capability restrictions.
+ * When capabilityTokenId is provided, all tool calls are filtered
+ * through the capability evaluator.
+ */
+export interface CreateMcpServerOptions {
+  capabilityTokenId?: string;
+  agentId?: string;
+}
 
 /**
  * Create a fully configured MCP server for a specific user.
  * All tools are registered with the user's identity for authorization.
+ *
+ * When `options.capabilityTokenId` is provided, tools are wrapped with
+ * capability evaluation, audit logging, and budget deduction.
+ * Without it, behavior is identical to before (full access).
  */
-export function createMcpServer(userId: string): McpServer {
+export function createMcpServer(
+  userId: string,
+  options?: CreateMcpServerOptions,
+): McpServer {
   const mcpServer = new McpServer(
     {
       name: "spike-land",
@@ -58,7 +77,14 @@ export function createMcpServer(userId: string): McpServer {
     },
   );
 
-  const registry = new ToolRegistry(mcpServer);
+  const registry = options?.capabilityTokenId
+    ? new CapabilityFilteredRegistry(
+        mcpServer,
+        options.capabilityTokenId,
+        options.agentId ?? "",
+        userId,
+      )
+    : new ToolRegistry(mcpServer);
 
   // Always-on gateway meta tools (5 tools)
   registerGatewayMetaTools(registry, userId);
@@ -159,6 +185,9 @@ export function createMcpServer(userId: string): McpServer {
 
   // BAZDMEG FAQ tools (discoverable)
   registerBazdmegFaqTools(registry, userId);
+
+  // Capabilities tools (discoverable)
+  registerCapabilitiesTools(registry, userId);
 
   // Dev workflow tools (localhost only)
   if (process.env.NODE_ENV === "development") {
