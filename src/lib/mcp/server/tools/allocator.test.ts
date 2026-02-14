@@ -32,7 +32,7 @@ describe("allocator tools", () => {
       mockPrisma.allocatorAutopilotExecution.findMany.mockResolvedValue([
         {
           id: "exec1",
-          type: "INCREASE_BUDGET",
+          recommendationType: "INCREASE_BUDGET",
           budgetChange: 50,
           executedAt: new Date("2024-06-01"),
           campaign: { name: "Summer Sale", platform: "FACEBOOK_ADS" },
@@ -149,7 +149,7 @@ describe("allocator tools", () => {
     it("should execute a pending move", async () => {
       mockPrisma.allocatorAutopilotExecution.findFirst.mockResolvedValue({
         id: "exec1",
-        type: "DECREASE_BUDGET",
+        recommendationType: "DECREASE_BUDGET",
         budgetChange: -30,
         campaign: { name: "Fall Sale" },
       });
@@ -184,7 +184,7 @@ describe("allocator tools", () => {
       mockPrisma.allocatorAutopilotExecution.findMany.mockResolvedValue([
         {
           id: "exec1",
-          type: "INCREASE_BUDGET",
+          recommendationType: "INCREASE_BUDGET",
           status: "COMPLETED",
           budgetChange: 100,
           executedAt: new Date("2024-06-15"),
@@ -192,7 +192,7 @@ describe("allocator tools", () => {
         },
         {
           id: "exec2",
-          type: "PAUSE",
+          recommendationType: "PAUSE",
           status: "PENDING",
           budgetChange: null,
           executedAt: null,
