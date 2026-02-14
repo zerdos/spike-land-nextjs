@@ -33,11 +33,11 @@ interface NeonBranchDetail extends NeonBranch {
 }
 
 function getAuth(): string | null {
-  return process.env.NEON_API_KEY ?? null;
+  return process.env["NEON_API_KEY"] ?? null;
 }
 
 function getProjectId(): string | null {
-  return process.env.NEON_PROJECT_ID ?? null;
+  return process.env["NEON_PROJECT_ID"] ?? null;
 }
 
 async function neonFetch<T>(path: string, timeoutMs = 10_000): Promise<T | null> {

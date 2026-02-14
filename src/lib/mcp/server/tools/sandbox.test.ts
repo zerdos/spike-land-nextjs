@@ -275,6 +275,107 @@ describe("sandbox tools", () => {
     });
   });
 
+  describe("sandbox_write_file limits (SEC-SANDBOX-02)", () => {
+    it("should reject files exceeding 1MB", async () => {
+      const createHandler = registry.handlers.get("sandbox_create")!;
+      const createResult = await createHandler({ language: "typescript" });
+      const sandboxId = extractId(getText(createResult));
+
+      const writeHandler = registry.handlers.get("sandbox_write_file")!;
+      // 1MB + 1 byte
+      const largeContent = "x".repeat(1_048_577);
+      const result = await writeHandler({
+        sandbox_id: sandboxId,
+        file_path: "big.ts",
+        content: largeContent,
+      });
+
+      expect(isError(result)).toBe(true);
+      expect(getText(result)).toContain("1MB limit");
+    });
+
+    it("should reject when file count exceeds 100", async () => {
+      const createHandler = registry.handlers.get("sandbox_create")!;
+      const createResult = await createHandler({ language: "typescript" });
+      const sandboxId = extractId(getText(createResult));
+
+      const writeHandler = registry.handlers.get("sandbox_write_file")!;
+      // Write 100 files
+      for (let i = 0; i < 100; i++) {
+        await writeHandler({
+          sandbox_id: sandboxId,
+          file_path: `file-${i}.ts`,
+          content: "x",
+        });
+      }
+
+      // 101st file should fail
+      const result = await writeHandler({
+        sandbox_id: sandboxId,
+        file_path: "file-100.ts",
+        content: "x",
+      });
+
+      expect(isError(result)).toBe(true);
+      expect(getText(result)).toContain("file limit");
+    });
+
+    it("should allow overwriting existing file even at file count limit", async () => {
+      const createHandler = registry.handlers.get("sandbox_create")!;
+      const createResult = await createHandler({ language: "typescript" });
+      const sandboxId = extractId(getText(createResult));
+
+      const writeHandler = registry.handlers.get("sandbox_write_file")!;
+      for (let i = 0; i < 100; i++) {
+        await writeHandler({
+          sandbox_id: sandboxId,
+          file_path: `file-${i}.ts`,
+          content: "x",
+        });
+      }
+
+      // Overwriting existing file should succeed
+      const result = await writeHandler({
+        sandbox_id: sandboxId,
+        file_path: "file-0.ts",
+        content: "updated",
+      });
+
+      expect(isError(result)).toBe(false);
+      expect(getText(result)).toContain("File written");
+    });
+
+    it("should reject when total sandbox size exceeds 50MB", async () => {
+      const createHandler = registry.handlers.get("sandbox_create")!;
+      const createResult = await createHandler({ language: "typescript" });
+      const sandboxId = extractId(getText(createResult));
+
+      const writeHandler = registry.handlers.get("sandbox_write_file")!;
+      // Write files just under 1MB each (max per-file) to approach 50MB (52,428,800 bytes)
+      const nearMaxFile = "x".repeat(1_048_000);
+      // 52 files * 1,048,000 bytes = 54,496,000 > 52,428,800
+      // But we need to stay under 100 file limit, so write 50 files first
+      // 50 * 1,048,000 = 52,400,000 (just under 50MB)
+      for (let i = 0; i < 50; i++) {
+        await writeHandler({
+          sandbox_id: sandboxId,
+          file_path: `file-${i}.ts`,
+          content: nearMaxFile,
+        });
+      }
+
+      // This file would push total to 52,400,000 + 1,048,000 = 53,448,000 > 52,428,800
+      const result = await writeHandler({
+        sandbox_id: sandboxId,
+        file_path: "overflow.ts",
+        content: nearMaxFile,
+      });
+
+      expect(isError(result)).toBe(true);
+      expect(getText(result)).toContain("50MB");
+    });
+  });
+
   describe("full lifecycle", () => {
     it("should support create -> write -> read -> exec -> destroy", async () => {
       // Create

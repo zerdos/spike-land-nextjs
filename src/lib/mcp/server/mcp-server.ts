@@ -51,6 +51,12 @@ import { registerReqInterviewTools } from "./tools/req-interview";
 import { registerCodebaseExplainTools } from "./tools/codebase-explain";
 import { registerDecisionsTools } from "./tools/decisions";
 import { registerMcpRegistryTools } from "./tools/mcp-registry";
+import { registerSwarmTools } from "./tools/swarm";
+import { registerDashboardTools } from "./tools/dashboard";
+import { registerEnvironmentTools } from "./tools/environment";
+import { registerSentryBridgeTools } from "./tools/sentry-bridge";
+import { registerVercelBridgeTools } from "./tools/vercel-bridge";
+import { registerGitHubAdminTools } from "./tools/github-admin";
 
 /**
  * Options for creating an MCP server with capability restrictions.
@@ -212,6 +218,22 @@ export function createMcpServer(
 
   // MCP Registry tools (discoverable)
   registerMcpRegistryTools(registry, userId);
+
+  // Swarm dashboard tools (discoverable)
+  registerSwarmTools(registry, userId);
+  registerDashboardTools(registry, userId);
+  registerEnvironmentTools(registry, userId);
+
+  // External service bridge tools (conditional on env vars)
+  if (process.env.SENTRY_AUTH_TOKEN) {
+    registerSentryBridgeTools(registry, userId);
+  }
+  if (process.env["VERCEL_TOKEN"]) {
+    registerVercelBridgeTools(registry, userId);
+  }
+  if (process.env.GH_PAT_TOKEN) {
+    registerGitHubAdminTools(registry, userId);
+  }
 
   // Dev workflow tools (localhost only)
   if (process.env.NODE_ENV === "development") {

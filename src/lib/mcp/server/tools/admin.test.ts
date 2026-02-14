@@ -356,4 +356,50 @@ describe("admin tools", () => {
       expect(getText(result)).toContain("rejected");
     });
   });
+
+  describe("requireAdminRole (SEC-AUTHZ-01)", () => {
+    it("should deny access when user has USER role", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ role: "USER" });
+      const handler = registry.handlers.get("admin_list_agents")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("PERMISSION_DENIED");
+    });
+
+    it("should deny access when user is not found", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+      const handler = registry.handlers.get("admin_list_agents")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("PERMISSION_DENIED");
+    });
+
+    it("should allow access for ADMIN role", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ role: "ADMIN" });
+      mockPrisma.aIProvider.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_agents")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("No agents found");
+    });
+
+    it("should allow access for SUPER_ADMIN role", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ role: "SUPER_ADMIN" });
+      mockPrisma.aIProvider.findMany.mockResolvedValue([]);
+      const handler = registry.handlers.get("admin_list_agents")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("No agents found");
+    });
+
+    it("should check admin role on every admin tool handler", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ role: "USER" });
+      const toolNames = [
+        "admin_list_agents", "admin_manage_agent", "admin_list_emails",
+        "admin_send_email", "admin_list_gallery", "admin_manage_gallery",
+        "admin_list_jobs", "admin_manage_job", "admin_list_photos", "admin_moderate_photo",
+      ];
+      for (const toolName of toolNames) {
+        const handler = registry.handlers.get(toolName)!;
+        const result = await handler({});
+        expect(getText(result)).toContain("PERMISSION_DENIED");
+      }
+    });
+  });
 });

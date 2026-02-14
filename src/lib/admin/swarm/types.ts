@@ -152,6 +152,25 @@ export interface WidgetConfig {
   enabled: boolean;
 }
 
+// Chat types
+export type ChatMessageRole = "user" | "assistant" | "system";
+
+export interface AgentChatMessage {
+  id: string;
+  agentId: string;
+  role: ChatMessageRole;
+  content: string;
+  timestamp: Date;
+}
+
+// Environment metrics types
+export interface EnvironmentMetricsData {
+  requestsPerMinute: number;
+  avgResponseMs: number;
+  errorCount: number;
+  uptimePercent: number;
+}
+
 // Analytics types
 export interface AnalyticsData {
   period: {

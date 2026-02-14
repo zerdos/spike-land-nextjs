@@ -30,7 +30,7 @@ interface VercelAnalytics {
 }
 
 function getAuth(): string | null {
-  return process.env.VERCEL_TOKEN ?? null;
+  return process.env["VERCEL_TOKEN"] ?? null;
 }
 
 function getTeamId(): string | null {

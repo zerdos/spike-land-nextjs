@@ -46,6 +46,14 @@ const {
   mockRegisterReqInterviewTools,
   mockRegisterCodebaseExplainTools,
   mockRegisterDecisionsTools,
+  mockRegisterMcpRegistryTools,
+  mockRegisterCareerTools,
+  mockRegisterSwarmTools,
+  mockRegisterDashboardTools,
+  mockRegisterEnvironmentTools,
+  mockRegisterSentryBridgeTools,
+  mockRegisterVercelBridgeTools,
+  mockRegisterGitHubAdminTools,
   mockRegistryInstance,
 } = vi.hoisted(() => ({
   mockRegistryInstance: {} as Record<string, unknown>,
@@ -99,6 +107,14 @@ const {
   mockRegisterReqInterviewTools: vi.fn(),
   mockRegisterCodebaseExplainTools: vi.fn(),
   mockRegisterDecisionsTools: vi.fn(),
+  mockRegisterMcpRegistryTools: vi.fn(),
+  mockRegisterCareerTools: vi.fn(),
+  mockRegisterSwarmTools: vi.fn(),
+  mockRegisterDashboardTools: vi.fn(),
+  mockRegisterEnvironmentTools: vi.fn(),
+  mockRegisterSentryBridgeTools: vi.fn(),
+  mockRegisterVercelBridgeTools: vi.fn(),
+  mockRegisterGitHubAdminTools: vi.fn(),
 }));
 
 // Mock McpServer constructor - must use function keyword for `new` support
@@ -159,6 +175,14 @@ vi.mock("./tools/lie-detector", () => ({ registerLieDetectorTools: mockRegisterL
 vi.mock("./tools/req-interview", () => ({ registerReqInterviewTools: mockRegisterReqInterviewTools }));
 vi.mock("./tools/codebase-explain", () => ({ registerCodebaseExplainTools: mockRegisterCodebaseExplainTools }));
 vi.mock("./tools/decisions", () => ({ registerDecisionsTools: mockRegisterDecisionsTools }));
+vi.mock("./tools/mcp-registry", () => ({ registerMcpRegistryTools: mockRegisterMcpRegistryTools }));
+vi.mock("./tools/career", () => ({ registerCareerTools: mockRegisterCareerTools }));
+vi.mock("./tools/swarm", () => ({ registerSwarmTools: mockRegisterSwarmTools }));
+vi.mock("./tools/dashboard", () => ({ registerDashboardTools: mockRegisterDashboardTools }));
+vi.mock("./tools/environment", () => ({ registerEnvironmentTools: mockRegisterEnvironmentTools }));
+vi.mock("./tools/sentry-bridge", () => ({ registerSentryBridgeTools: mockRegisterSentryBridgeTools }));
+vi.mock("./tools/vercel-bridge", () => ({ registerVercelBridgeTools: mockRegisterVercelBridgeTools }));
+vi.mock("./tools/github-admin", () => ({ registerGitHubAdminTools: mockRegisterGitHubAdminTools }));
 vi.mock("./capability-filtered-registry", () => {
   const MockCapabilityFilteredRegistry = vi.fn(function CapabilityFilteredRegistry() {
     return mockRegistryInstance;
@@ -254,11 +278,52 @@ describe("createMcpServer", () => {
       mockRegisterReqInterviewTools,
       mockRegisterCodebaseExplainTools,
       mockRegisterDecisionsTools,
+      mockRegisterMcpRegistryTools,
+      mockRegisterCareerTools,
+      mockRegisterSwarmTools,
+      mockRegisterDashboardTools,
+      mockRegisterEnvironmentTools,
     ];
 
     for (const registerFn of unconditionalRegisters) {
       expect(registerFn).toHaveBeenCalledWith(mockRegistryInstance, userId);
     }
+  });
+
+  it("should register sentry bridge tools when SENTRY_AUTH_TOKEN is set", () => {
+    vi.stubEnv("SENTRY_AUTH_TOKEN", "test-sentry-token");
+    createMcpServer(userId);
+    expect(mockRegisterSentryBridgeTools).toHaveBeenCalledWith(mockRegistryInstance, userId);
+  });
+
+  it("should skip sentry bridge tools when SENTRY_AUTH_TOKEN is not set", () => {
+    delete process.env["SENTRY_AUTH_TOKEN"];
+    createMcpServer(userId);
+    expect(mockRegisterSentryBridgeTools).not.toHaveBeenCalled();
+  });
+
+  it("should register vercel bridge tools when VERCEL_TOKEN is set", () => {
+    vi.stubEnv("VERCEL_TOKEN", "test-vercel-token");
+    createMcpServer(userId);
+    expect(mockRegisterVercelBridgeTools).toHaveBeenCalledWith(mockRegistryInstance, userId);
+  });
+
+  it("should skip vercel bridge tools when VERCEL_TOKEN is not set", () => {
+    delete process.env["VERCEL_TOKEN"];
+    createMcpServer(userId);
+    expect(mockRegisterVercelBridgeTools).not.toHaveBeenCalled();
+  });
+
+  it("should register github admin tools when GH_PAT_TOKEN is set", () => {
+    vi.stubEnv("GH_PAT_TOKEN", "test-gh-token");
+    createMcpServer(userId);
+    expect(mockRegisterGitHubAdminTools).toHaveBeenCalledWith(mockRegistryInstance, userId);
+  });
+
+  it("should skip github admin tools when GH_PAT_TOKEN is not set", () => {
+    delete process.env["GH_PAT_TOKEN"];
+    createMcpServer(userId);
+    expect(mockRegisterGitHubAdminTools).not.toHaveBeenCalled();
   });
 
   it("should register jules tools when isJulesAvailable returns true", () => {

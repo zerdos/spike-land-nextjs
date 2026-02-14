@@ -81,6 +81,12 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   capabilities: "Agent permission management: check capabilities, request permissions, track approvals",
   orchestration: "Cloud-native code orchestration: context packing, sandboxed execution, task decomposition, verification, and decision tracking",
   "mcp-registry": "MCP server discovery: search, evaluate, and auto-configure MCP servers from Smithery, Official Registry, and Glama",
+  swarm: "AI agent swarm management: list, spawn, stop, redirect, broadcast, and monitor agents",
+  dash: "CEO dashboard: system overview, health checks, error feed, activity stream, and widget data",
+  env: "Environment management: list, status, compare, and track deployments across dev/preview/prod",
+  sentry: "Sentry error tracking: issues, details, and project stats",
+  vercel: "Vercel deployments: list, details, and analytics",
+  "github-admin": "GitHub project management: roadmap, issues summary, and PR status",
 };
 
 export class ToolRegistry {
