@@ -18,7 +18,8 @@ export default async function Home() {
   try {
     [showcaseApps, publicPhotos, stats] = await Promise.all([
       getLatestShowcaseApps(10),
-      getRecentPublicPhotos(100),
+      // Only fetch 12 photos as that's the maximum displayed in PublicGallerySection
+      getRecentPublicPhotos(12),
       getCreationStats(),
     ]);
   } catch (e) {
