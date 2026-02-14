@@ -6,7 +6,7 @@
 
 import { z } from "zod";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { BoxStatus } from "@prisma/client";
+import type { BoxStatus } from "@prisma/client";
 import type { ToolRegistry } from "../tool-registry";
 import { safeToolCall, textResult } from "./tool-helpers";
 
