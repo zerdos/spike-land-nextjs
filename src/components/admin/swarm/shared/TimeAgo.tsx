@@ -1,0 +1,43 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+interface TimeAgoProps {
+  date: Date | string | number;
+  className?: string;
+}
+
+function formatTimeAgo(date: Date): string {
+  const now = Date.now();
+  const diffMs = now - date.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+
+  if (diffSeconds < 60) return "just now";
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays}d ago`;
+}
+
+export function TimeAgo({ date, className }: TimeAgoProps) {
+  const [text, setText] = useState(() => formatTimeAgo(new Date(date)));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setText(formatTimeAgo(new Date(date)));
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, [date]);
+
+  return (
+    <time
+      className={className}
+      dateTime={new Date(date).toISOString()}
+      title={new Date(date).toLocaleString()}
+    >
+      {text}
+    </time>
+  );
+}
