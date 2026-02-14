@@ -163,8 +163,14 @@ export async function POST(request: NextRequest) {
         },
       };
 
-      // Fire-and-forget: transport writes to the stream asynchronously
-      transport.handleRequest(mockReq as unknown as import("http").IncomingMessage, mockRes as unknown as import("http").ServerResponse);
+      // Transport writes to the stream asynchronously; catch errors to close the stream gracefully
+      transport.handleRequest(
+        mockReq as unknown as import("http").IncomingMessage,
+        mockRes as unknown as import("http").ServerResponse,
+      ).catch((err: unknown) => {
+        console.error("SSE transport error:", err);
+        writer.close().catch(() => { /* already closed */ });
+      });
 
       return new NextResponse(readable, {
         status: statusCode,

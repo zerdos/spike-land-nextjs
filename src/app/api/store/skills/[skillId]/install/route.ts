@@ -46,50 +46,82 @@ export async function POST(
   const ip = forwarded?.split(",")[0]?.trim() ?? "unknown";
   const ipHash = createHash("sha256").update(ip).digest("hex").slice(0, 16);
 
-  // Create installation record (skip duplicates for authenticated users)
+  // Use a transaction to atomically record installation + increment count.
+  // This prevents the race condition where rapid clicks inflate the count
+  // while the upsert is a no-op.
   if (userId) {
-    const { error: installError } = await tryCatch(
-      prisma.skillInstallation.upsert({
-        where: {
-          skillId_userId: {
+    const { error: txError } = await tryCatch(
+      prisma.$transaction(async (tx) => {
+        // Check if already installed by this user
+        const existing = await tx.skillInstallation.findUnique({
+          where: {
+            skillId_userId: {
+              skillId: skill.id,
+              userId,
+            },
+          },
+        });
+
+        if (existing) {
+          // Already installed — don't increment count
+          return;
+        }
+
+        await tx.skillInstallation.create({
+          data: {
             skillId: skill.id,
             userId,
+            ipHash,
           },
-        },
-        update: {},
-        create: {
-          skillId: skill.id,
-          userId,
-          ipHash,
-        },
+        });
+
+        await tx.skill.update({
+          where: { id: skill.id },
+          data: { installCount: { increment: 1 } },
+        });
       }),
     );
 
-    if (installError) {
-      console.error("Error recording installation:", installError);
+    if (txError) {
+      console.error("Error recording installation:", txError);
     }
   } else {
-    const { error: installError } = await tryCatch(
-      prisma.skillInstallation.create({
-        data: {
-          skillId: skill.id,
-          ipHash,
-        },
+    // Anonymous installs: deduplicate by ipHash within the last 24 hours
+    const { error: txError } = await tryCatch(
+      prisma.$transaction(async (tx) => {
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const recentAnonymous = await tx.skillInstallation.findFirst({
+          where: {
+            skillId: skill.id,
+            userId: null,
+            ipHash,
+            createdAt: { gte: oneDayAgo },
+          },
+        });
+
+        if (recentAnonymous) {
+          // Same anonymous user within 24h — don't inflate count
+          return;
+        }
+
+        await tx.skillInstallation.create({
+          data: {
+            skillId: skill.id,
+            ipHash,
+          },
+        });
+
+        await tx.skill.update({
+          where: { id: skill.id },
+          data: { installCount: { increment: 1 } },
+        });
       }),
     );
 
-    if (installError) {
-      console.error("Error recording anonymous installation:", installError);
+    if (txError) {
+      console.error("Error recording anonymous installation:", txError);
     }
   }
-
-  // Increment install count
-  await tryCatch(
-    prisma.skill.update({
-      where: { id: skill.id },
-      data: { installCount: { increment: 1 } },
-    }),
-  );
 
   return NextResponse.json({
     success: true,

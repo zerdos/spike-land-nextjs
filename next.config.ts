@@ -159,7 +159,7 @@ const nextConfig: NextConfig = {
       {
         source: "/docs/SKILLS",
         destination: "/store/skills/bazdmeg",
-        permanent: true,
+        permanent: false,
       },
     ];
   },

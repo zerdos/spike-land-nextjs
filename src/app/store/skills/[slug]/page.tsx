@@ -14,6 +14,8 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { InstallButton } from "./install-button";
 
 interface PageProps {
@@ -227,21 +229,9 @@ export default async function SkillDetailPage({ params }: PageProps) {
           <div className="container mx-auto px-6 max-w-4xl">
             <h2 className="text-2xl font-bold mb-8">About</h2>
             <div className="prose prose-invert prose-zinc max-w-none">
-              {skill.longDescription.split("\n").map((line, i) => {
-                if (line.startsWith("# ")) {
-                  return <h2 key={i} className="text-2xl font-bold text-white mt-8 mb-4">{line.slice(2)}</h2>;
-                }
-                if (line.startsWith("## ")) {
-                  return <h3 key={i} className="text-xl font-bold text-white mt-6 mb-3">{line.slice(3)}</h3>;
-                }
-                if (line.startsWith("- ") || line.match(/^\d+\.\s/)) {
-                  return <li key={i} className="text-zinc-400 ml-4">{line.replace(/^[-\d.]+\s*/, "").replace(/\*\*(.*?)\*\*/g, "$1")}</li>;
-                }
-                if (line.trim() === "") {
-                  return <div key={i} className="h-2" />;
-                }
-                return <p key={i} className="text-zinc-400">{line}</p>;
-              })}
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {skill.longDescription}
+              </ReactMarkdown>
             </div>
           </div>
         </section>

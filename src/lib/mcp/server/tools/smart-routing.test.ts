@@ -44,12 +44,13 @@ describe("smart-routing tools", () => {
   describe("routing_get_config", () => {
     it("should return routing rules", async () => {
       mockPrisma.policyRule.findMany.mockResolvedValue([
-        { id: "r1", name: "API Route", pattern: "/api/*", target: "backend-1", weight: 80, enabled: true },
+        { id: "r1", name: "API Route", description: "Routes API traffic", category: "api", ruleType: "route", severity: "WARNING", isBlocking: false, isActive: true },
       ]);
       const handler = registry.handlers.get("routing_get_config")!;
       const result = await handler({});
       expect(getText(result)).toContain("API Route");
-      expect(getText(result)).toContain("80%");
+      expect(getText(result)).toContain("[ON]");
+      expect(getText(result)).toContain("[WARNING]");
     });
 
     it("should return message when no rules", async () => {
@@ -63,11 +64,13 @@ describe("smart-routing tools", () => {
   describe("routing_update_rule", () => {
     it("should update a rule", async () => {
       mockPrisma.policyRule.update.mockResolvedValue({
-        id: "r1", name: "API Route", enabled: false, weight: 50, target: "backend-2",
+        id: "r1", name: "API Route", isActive: false, severity: "ERROR", isBlocking: true,
       });
       const handler = registry.handlers.get("routing_update_rule")!;
-      const result = await handler({ rule_id: "r1", enabled: false, weight: 50 });
+      const result = await handler({ rule_id: "r1", is_active: false, severity: "ERROR" });
       expect(getText(result)).toContain("Rule Updated");
+      expect(getText(result)).toContain("API Route");
+      expect(getText(result)).toContain("false");
     });
 
     it("should return message when no updates provided", async () => {
@@ -80,12 +83,14 @@ describe("smart-routing tools", () => {
   describe("routing_get_stats", () => {
     it("should return routing stats", async () => {
       mockPrisma.policyRule.findMany.mockResolvedValue([
-        { id: "r1", name: "API Route", weight: 80, requestCount: 1000 },
+        { id: "r1", name: "API Route", category: "api", severity: "WARNING", isBlocking: false, version: 3 },
       ]);
       const handler = registry.handlers.get("routing_get_stats")!;
       const result = await handler({});
       expect(getText(result)).toContain("Routing Stats");
-      expect(getText(result)).toContain("1000");
+      expect(getText(result)).toContain("Active Rules:** 1");
+      expect(getText(result)).toContain("API Route");
+      expect(getText(result)).toContain("v3");
     });
   });
 });

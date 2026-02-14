@@ -6,6 +6,7 @@
  */
 
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { Prisma } from "@/generated/prisma";
 import { McpError, McpErrorCode, MCP_ERROR_MESSAGES, MCP_ERROR_RETRYABLE } from "../../errors";
 
 const SPIKE_LAND_BASE_URL =
@@ -198,8 +199,8 @@ async function recordInvocation(data: {
       userId: data.userId,
       sessionId: data.sessionId,
       tool: data.tool,
-      input: data.input as never,
-      output: (data.output ?? undefined) as never,
+      input: data.input as Prisma.InputJsonValue,
+      output: (data.output ?? undefined) as Prisma.InputJsonValue | undefined,
       durationMs: data.durationMs,
       isError: data.isError,
       error: data.error,

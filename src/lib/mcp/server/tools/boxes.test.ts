@@ -36,12 +36,12 @@ describe("boxes tools", () => {
   describe("boxes_list", () => {
     it("should list boxes", async () => {
       mockPrisma.box.findMany.mockResolvedValue([
-        { id: "b1", name: "My Box", description: "Stuff", status: "ACTIVE", itemCount: 3, createdAt: new Date() },
+        { id: "b1", name: "My Box", description: "Stuff", status: "RUNNING", createdAt: new Date(), _count: { messages: 3 } },
       ]);
       const handler = registry.handlers.get("boxes_list")!;
       const result = await handler({});
       expect(getText(result)).toContain("My Box");
-      expect(getText(result)).toContain("3 items");
+      expect(getText(result)).toContain("3 messages");
     });
 
     it("should return empty message", async () => {
@@ -64,8 +64,8 @@ describe("boxes tools", () => {
   describe("boxes_get", () => {
     it("should return box details", async () => {
       mockPrisma.box.findUnique.mockResolvedValue({
-        id: "b1", name: "My Box", description: "Stuff", category: "storage",
-        status: "ACTIVE", itemCount: 3, createdAt: new Date(),
+        id: "b1", name: "My Box", description: "Stuff",
+        status: "RUNNING", createdAt: new Date(), _count: { messages: 3 },
       });
       const handler = registry.handlers.get("boxes_get")!;
       const result = await handler({ box_id: "b1" });
@@ -82,15 +82,15 @@ describe("boxes tools", () => {
 
   describe("boxes_update", () => {
     it("should update box", async () => {
-      mockPrisma.box.update.mockResolvedValue({ name: "Updated Box", status: "ARCHIVED" });
+      mockPrisma.box.update.mockResolvedValue({ name: "Updated Box", status: "STOPPED" });
       const handler = registry.handlers.get("boxes_update")!;
-      const result = await handler({ box_id: "b1", status: "ARCHIVED" });
+      const result = await handler({ box_id: "b1", status: "STOPPED" });
       expect(getText(result)).toContain("Box Updated");
     });
   });
 
   describe("boxes_delete", () => {
-    it("should delete box and items", async () => {
+    it("should delete box and messages", async () => {
       mockPrisma.boxMessage.deleteMany.mockResolvedValue({});
       mockPrisma.box.delete.mockResolvedValue({});
       const handler = registry.handlers.get("boxes_delete")!;
@@ -99,31 +99,30 @@ describe("boxes tools", () => {
     });
   });
 
-  describe("boxes_add_item", () => {
-    it("should add item to box", async () => {
-      mockPrisma.boxMessage.create.mockResolvedValue({ id: "bi1" });
-      mockPrisma.box.update.mockResolvedValue({});
-      const handler = registry.handlers.get("boxes_add_item")!;
-      const result = await handler({ box_id: "b1", item_name: "Widget" });
-      expect(getText(result)).toContain("Item Added");
+  describe("boxes_add_message", () => {
+    it("should add message to box", async () => {
+      mockPrisma.boxMessage.create.mockResolvedValue({ id: "bm1" });
+      const handler = registry.handlers.get("boxes_add_message")!;
+      const result = await handler({ box_id: "b1", role: "USER", content: "Hello world" });
+      expect(getText(result)).toContain("Message Added");
     });
   });
 
-  describe("boxes_list_items", () => {
-    it("should list items", async () => {
+  describe("boxes_list_messages", () => {
+    it("should list messages", async () => {
       mockPrisma.boxMessage.findMany.mockResolvedValue([
-        { id: "bi1", name: "Widget", type: "gadget", createdAt: new Date() },
+        { id: "bm1", role: "USER", content: "Hello world", createdAt: new Date() },
       ]);
-      const handler = registry.handlers.get("boxes_list_items")!;
+      const handler = registry.handlers.get("boxes_list_messages")!;
       const result = await handler({ box_id: "b1" });
-      expect(getText(result)).toContain("Widget");
+      expect(getText(result)).toContain("Hello world");
     });
 
     it("should return empty message", async () => {
       mockPrisma.boxMessage.findMany.mockResolvedValue([]);
-      const handler = registry.handlers.get("boxes_list_items")!;
+      const handler = registry.handlers.get("boxes_list_messages")!;
       const result = await handler({ box_id: "b1" });
-      expect(getText(result)).toContain("Box is empty");
+      expect(getText(result)).toContain("Box has no messages.");
     });
   });
 });
