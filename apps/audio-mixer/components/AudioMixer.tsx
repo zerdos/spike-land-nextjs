@@ -182,8 +182,8 @@ export function AudioMixer() {
     };
 
     loadSavedProject();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasUserGesture]); // Only run once on mount after user gesture
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only run once on mount after user gesture. audioContext, trackManager, setIsInitialized, and setMasterVolume are stable refs from hooks.
+  }, [hasUserGesture]);
 
   // Initialize audio context on first interaction
   const handleInitialize = useCallback(async () => {
