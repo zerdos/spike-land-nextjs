@@ -62,9 +62,10 @@ const nextConfig: NextConfig = {
     },
   },
   // Transpile ESM packages to avoid runtime resolution issues with PnP
-  // NOTE: @spike-npm-land/code is excluded because it's a dev-only tool (Vite app) and its build artifacts
-  // might be missing in production/CI builds where SKIP_TS_BUILD_CHECK=true, causing "Cannot read properties of undefined (reading 'length')"
-  transpilePackages: ["next-mdx-remote", "@spike-npm-land/video", "@spike-npm-land/shared"],
+  // NOTE: @spike-npm-land/code and @spike-npm-land/video are excluded because they are standalone tools
+  // (Vite app / Remotion) whose build artifacts might be missing in production/CI builds where
+  // SKIP_TS_BUILD_CHECK=true, causing "Cannot read properties of undefined (reading 'length')"
+  transpilePackages: ["next-mdx-remote", "@spike-npm-land/shared"],
   typescript: {
     // TypeScript checking is handled by CI's `tsc --noEmit` step
     // Skip during build to reduce memory usage when SKIP_TS_BUILD_CHECK=true

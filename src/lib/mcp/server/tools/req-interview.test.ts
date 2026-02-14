@@ -476,7 +476,7 @@ describe("req-interview tools", () => {
           value !== null &&
           typeof value === "object" &&
           "questions" in value &&
-          Array.isArray((value as Record<string, unknown>).questions)
+          Array.isArray((value as Record<string, unknown>)["questions"])
         ) {
           captured = value as typeof captured;
         }
