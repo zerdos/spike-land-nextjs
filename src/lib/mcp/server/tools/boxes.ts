@@ -1,8 +1,8 @@
-import prisma from "@/lib/prisma";
 import { z } from "zod";
 import type { ToolRegistry } from "../tool-registry";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { BoxActionType, BoxStatus } from "@prisma/client";
+import { safeToolCall, textResult } from "./tool-helpers";
 
 const CreateBoxSchema = z.object({
   name: z.string().min(1).max(50),
@@ -29,21 +29,16 @@ export function registerBoxesTools(registry: ToolRegistry, userId: string): void
     category: "boxes",
     tier: "workspace",
     inputSchema: {},
-    handler: async (): Promise<CallToolResult> => {
-      try {
+    handler: async (): Promise<CallToolResult> =>
+      safeToolCall("boxes_list", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const boxes = await prisma.box.findMany({
           where: { userId, deletedAt: null },
           include: { tier: true },
           orderBy: { createdAt: "desc" },
         });
-        return { content: [{ type: "text", text: JSON.stringify(boxes) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify(boxes));
+      }, { userId }),
   });
 
   registry.register({
@@ -52,9 +47,9 @@ export function registerBoxesTools(registry: ToolRegistry, userId: string): void
     category: "boxes",
     tier: "workspace",
     inputSchema: CreateBoxSchema.shape,
-    handler: async (args: z.infer<typeof CreateBoxSchema>): Promise<CallToolResult> => {
-      try {
-        // Logic from src/app/api/boxes/route.ts
+    handler: async (args: z.infer<typeof CreateBoxSchema>): Promise<CallToolResult> =>
+      safeToolCall("boxes_create", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const tier = await prisma.boxTier.findUnique({ where: { id: args.tierId } });
         if (!tier) throw new Error("Invalid tier");
 
@@ -70,27 +65,27 @@ export function registerBoxesTools(registry: ToolRegistry, userId: string): void
           sourceId: "pending",
         });
 
-        const box = await prisma.box.create({
-          data: {
-            name: args.name,
-            userId,
-            tierId: args.tierId,
-            status: BoxStatus.CREATING,
-          },
-        });
+        let box;
+        try {
+          box = await prisma.box.create({
+            data: {
+              name: args.name,
+              userId,
+              tierId: args.tierId,
+              status: BoxStatus.CREATING,
+            },
+          });
+        } catch (createError) {
+          await WorkspaceCreditManager.refundCredits(userId, cost);
+          throw createError;
+        }
 
         // Trigger provisioning async
         const { triggerBoxProvisioning } = await import("@/lib/boxes/provisioning");
         triggerBoxProvisioning(box.id).catch(console.error);
 
-        return { content: [{ type: "text", text: JSON.stringify(box) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify(box));
+      }, { userId, input: args }),
   });
 
   registry.register({
@@ -99,8 +94,9 @@ export function registerBoxesTools(registry: ToolRegistry, userId: string): void
     category: "boxes",
     tier: "workspace",
     inputSchema: BoxActionSchema.shape,
-    handler: async ({ id, action }: z.infer<typeof BoxActionSchema>): Promise<CallToolResult> => {
-      try {
+    handler: async ({ id, action }: z.infer<typeof BoxActionSchema>): Promise<CallToolResult> =>
+      safeToolCall("boxes_action", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const box = await prisma.box.findUnique({ where: { id, userId } });
         if (!box) throw new Error("Box not found");
 
@@ -114,18 +110,12 @@ export function registerBoxesTools(registry: ToolRegistry, userId: string): void
         if (action === BoxActionType.RESTART) newStatus = BoxStatus.STARTING;
 
         const updatedBox = await prisma.box.update({
-          where: { id },
+          where: { id, userId },
           data: { status: newStatus },
         });
 
-        return { content: [{ type: "text", text: JSON.stringify(updatedBox) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify(updatedBox));
+      }, { userId, input: { id, action } }),
   });
 
   registry.register({
@@ -134,20 +124,15 @@ export function registerBoxesTools(registry: ToolRegistry, userId: string): void
     category: "boxes",
     tier: "workspace",
     inputSchema: BoxIdSchema.shape,
-    handler: async ({ id }: z.infer<typeof BoxIdSchema>): Promise<CallToolResult> => {
-      try {
+    handler: async ({ id }: z.infer<typeof BoxIdSchema>): Promise<CallToolResult> =>
+      safeToolCall("boxes_get", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const box = await prisma.box.findUnique({
           where: { id, userId },
           include: { tier: true },
         });
         if (!box) throw new Error("Box not found");
-        return { content: [{ type: "text", text: JSON.stringify(box) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify(box));
+      }, { userId, input: { id } }),
   });
 }

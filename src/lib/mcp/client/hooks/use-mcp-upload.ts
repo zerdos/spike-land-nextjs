@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef } from "react";
 import { callTool } from "../mcp-client";
 
 export interface UseMcpUploadOptions {
@@ -17,6 +17,9 @@ export function useMcpUpload(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | undefined>();
   const [result, setResult] = useState<unknown>(null);
+
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   const upload = useCallback(async (file: File, metadata: unknown = {}) => {
     setIsLoading(true);
@@ -39,7 +42,7 @@ export function useMcpUpload(
           if (event.lengthComputable) {
             const p = Math.round((event.loaded / event.total) * 100);
             setProgress(p);
-            options.onProgress?.(p);
+            optionsRef.current.onProgress?.(p);
           }
         };
 
@@ -69,17 +72,17 @@ export function useMcpUpload(
       });
 
       setResult(registrationResult);
-      options.onSuccess?.(registrationResult);
+      optionsRef.current.onSuccess?.(registrationResult);
       return registrationResult;
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Unknown error");
       setError(error);
-      options.onError?.(error);
+      optionsRef.current.onError?.(error);
       throw error;
     } finally {
       setIsLoading(false);
     }
-  }, [purpose, options]);
+  }, [purpose]);
 
   return {
     upload,

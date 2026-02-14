@@ -1,7 +1,7 @@
-import prisma from "@/lib/prisma";
 import { z } from "zod";
 import type { ToolRegistry } from "../tool-registry";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { safeToolCall, textResult } from "./tool-helpers";
 
 const CreateShareSchema = z.object({
   imageId: z.string().describe("ID of the image to share."),
@@ -18,15 +18,16 @@ export function registerShareTools(registry: ToolRegistry, userId: string): void
     category: "share",
     tier: "workspace",
     inputSchema: CreateShareSchema.shape,
-    handler: async ({ imageId }: z.infer<typeof CreateShareSchema>): Promise<CallToolResult> => {
-      try {
+    handler: async ({ imageId }: z.infer<typeof CreateShareSchema>): Promise<CallToolResult> =>
+      safeToolCall("share_create_token", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const image = await prisma.enhancedImage.findUnique({
           where: { id: imageId, userId },
         });
         if (!image) throw new Error("Image not found");
 
         if (image.shareToken) {
-          return { content: [{ type: "text", text: JSON.stringify({ token: image.shareToken }) }] };
+          return textResult(JSON.stringify({ token: image.shareToken }));
         }
 
         const token = (await import("crypto")).randomBytes(16).toString("hex");
@@ -35,14 +36,8 @@ export function registerShareTools(registry: ToolRegistry, userId: string): void
           data: { shareToken: token },
         });
 
-        return { content: [{ type: "text", text: JSON.stringify({ token: updated.shareToken }) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify({ token: updated.shareToken }));
+      }, { userId, input: { imageId } }),
   });
 
   registry.register({
@@ -51,8 +46,9 @@ export function registerShareTools(registry: ToolRegistry, userId: string): void
     category: "share",
     tier: "free",
     inputSchema: GetShareSchema.shape,
-    handler: async ({ token }: z.infer<typeof GetShareSchema>): Promise<CallToolResult> => {
-      try {
+    handler: async ({ token }: z.infer<typeof GetShareSchema>): Promise<CallToolResult> =>
+      safeToolCall("share_get_info", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const image = await prisma.enhancedImage.findUnique({
           where: { shareToken: token },
           include: {
@@ -67,13 +63,7 @@ export function registerShareTools(registry: ToolRegistry, userId: string): void
 
         if (!image) throw new Error("Shared item not found");
 
-        return { content: [{ type: "text", text: JSON.stringify(image) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify(image));
+      }, { userId, input: { token } }),
   });
 }

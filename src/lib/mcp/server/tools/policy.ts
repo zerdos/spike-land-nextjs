@@ -25,7 +25,7 @@ const CreateRuleSchema = z.object({
   platform: z.enum(["TWITTER", "LINKEDIN", "FACEBOOK", "INSTAGRAM", "TIKTOK", "YOUTUBE", "DISCORD", "SNAPCHAT", "PINTEREST"]).optional(),
   category: z.string().min(1),
   ruleType: z.string().min(1),
-  conditions: z.any(),
+  conditions: z.record(z.string(), z.unknown()),
   severity: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL", "WARNING", "ERROR"]).optional().default("MEDIUM"),
   isBlocking: z.boolean().optional().default(false),
   isActive: z.boolean().optional().default(true),
@@ -36,7 +36,7 @@ const CheckPolicySchema = z.object({
   workspace_slug: z.string().min(1).describe("Workspace slug."),
   content: z.string().min(1),
   platform: z.enum(["TWITTER", "LINKEDIN", "FACEBOOK", "INSTAGRAM", "TIKTOK", "YOUTUBE", "DISCORD", "SNAPCHAT", "PINTEREST"]).optional(),
-  metadata: z.any().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export function registerPolicyTools(registry: ToolRegistry, userId: string): void {

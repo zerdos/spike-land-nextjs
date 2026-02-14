@@ -2,6 +2,7 @@ import { getPresignedUploadUrl } from "@/lib/storage/r2-client";
 import { z } from "zod";
 import type { ToolRegistry } from "../tool-registry";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { safeToolCall, textResult } from "./tool-helpers";
 
 const StorageGetUploadUrlSchema = z.object({
   filename: z.string().describe("Original filename"),
@@ -22,8 +23,8 @@ export function registerStorageTools(registry: ToolRegistry, userId: string): vo
     category: "storage",
     tier: "workspace",
     inputSchema: StorageGetUploadUrlSchema.shape,
-    handler: async (args: z.infer<typeof StorageGetUploadUrlSchema>): Promise<CallToolResult> => {
-      try {
+    handler: async (args: z.infer<typeof StorageGetUploadUrlSchema>): Promise<CallToolResult> =>
+      safeToolCall("storage_get_upload_url", async () => {
         const timestamp = Date.now();
         const random = Math.random().toString(36).substring(7);
         const extension = args.filename.split(".").pop() || "bin";
@@ -31,23 +32,12 @@ export function registerStorageTools(registry: ToolRegistry, userId: string): vo
 
         const upload_url = await getPresignedUploadUrl(key, args.content_type);
 
-        return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              upload_url,
-              r2_key: key,
-              expires_in: 3600,
-            }),
-          }],
-        };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify({
+          upload_url,
+          r2_key: key,
+          expires_in: 3600,
+        }));
+      }, { userId, input: args }),
   });
 
   registry.register({
@@ -56,13 +46,15 @@ export function registerStorageTools(registry: ToolRegistry, userId: string): vo
     category: "storage",
     tier: "workspace",
     inputSchema: StorageRegisterUploadSchema.shape,
-    handler: async (args: z.infer<typeof StorageRegisterUploadSchema>): Promise<CallToolResult> => {
-      try {
+    handler: async (args: z.infer<typeof StorageRegisterUploadSchema>): Promise<CallToolResult> =>
+      safeToolCall("storage_register_upload", async () => {
+        // Ownership check: R2 key must belong to the current user
+        if (!args.r2_key.startsWith(`uploads/${userId}/`)) {
+          throw new Error("Access denied: R2 key does not belong to this user");
+        }
+
         const publicUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${args.r2_key}`;
 
-        // Return upload info — actual DB record creation (e.g. enhancedImage)
-        // is handled by the dedicated image upload/enhance flows which collect
-        // all required metadata (dimensions, format, size, etc.).
         const result = {
           id: args.r2_key,
           url: publicUrl,
@@ -70,18 +62,7 @@ export function registerStorageTools(registry: ToolRegistry, userId: string): vo
           metadata: args.metadata,
         };
 
-        return {
-          content: [{
-            type: "text",
-            text: JSON.stringify(result),
-          }],
-        };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify(result));
+      }, { userId, input: args }),
   });
 }

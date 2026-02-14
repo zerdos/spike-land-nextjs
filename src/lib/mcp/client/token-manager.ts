@@ -1,3 +1,5 @@
+"use client";
+
 import type { McpToken } from "./types";
 
 class TokenManager {

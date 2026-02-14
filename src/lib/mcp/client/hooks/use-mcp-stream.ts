@@ -19,10 +19,16 @@ export function useMcpStream(
   const [error, setError] = useState<Error | undefined>();
   const eventSourceRef = useRef<EventSource | null>(null);
 
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
+  const fullTextRef = useRef("");
+
   const start = useCallback(async (args: unknown = {}) => {
     // Reset state
     setChunks([]);
     setFullText("");
+    fullTextRef.current = "";
     setIsDone(false);
     setError(undefined);
 
@@ -30,7 +36,7 @@ export function useMcpStream(
     if (!token) {
       const err = new Error("Unauthorized");
       setError(err);
-      options.onError?.(err);
+      optionsRef.current.onError?.(err);
       return;
     }
 
@@ -50,33 +56,26 @@ export function useMcpStream(
           result?: { content?: Array<{ type: string; text?: string; }>; };
           isDone?: boolean;
         };
-        
+
         // Handle MCP result content
         if (data.result?.content) {
           const text = data.result.content
             .filter((c) => c.type === "text")
             .map((c) => c.text)
             .join("");
-          
+
           if (text) {
             setChunks((prev) => [...prev, text]);
-            setFullText((prev) => {
-              const newFull = prev + text;
-              options.onChunk?.(text);
-              return newFull;
-            });
+            fullTextRef.current += text;
+            setFullText(fullTextRef.current);
+            optionsRef.current.onChunk?.(text);
           }
         }
 
-        // Check for end of stream (standard MCP servers might not have a clear EOF in the tool call result,
-        // but our implementation should send a specific message or close the connection)
         if (data.isDone) {
           es.close();
           setIsDone(true);
-          setFullText((prev) => {
-            options.onDone?.(prev);
-            return prev;
-          });
+          optionsRef.current.onDone?.(fullTextRef.current);
         }
       } catch (err) {
         console.error("Error parsing SSE message:", err);
@@ -88,11 +87,11 @@ export function useMcpStream(
       es.close();
       const error = new Error("Stream connection failed");
       setError(error);
-      options.onError?.(error);
+      optionsRef.current.onError?.(error);
     };
 
     return () => es.close();
-  }, [name, options]);
+  }, [name]);
 
   const stop = useCallback(() => {
     if (eventSourceRef.current) {

@@ -1,7 +1,7 @@
-import prisma from "@/lib/prisma";
 import { z } from "zod";
 import type { ToolRegistry } from "../tool-registry";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { safeToolCall, textResult } from "./tool-helpers";
 
 const JobIdSchema = z.object({
   jobId: z.string(),
@@ -23,20 +23,15 @@ export function registerJobsTools(registry: ToolRegistry, userId: string): void 
     category: "jobs",
     tier: "workspace",
     inputSchema: JobIdSchema.shape,
-    handler: async ({ jobId }: z.infer<typeof JobIdSchema>): Promise<CallToolResult> => {
-      try {
+    handler: async ({ jobId }: z.infer<typeof JobIdSchema>): Promise<CallToolResult> =>
+      safeToolCall("jobs_get", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const job = await prisma.imageEnhancementJob.findUnique({
           where: { id: jobId, userId },
         });
         if (!job) throw new Error("Job not found");
-        return { content: [{ type: "text", text: JSON.stringify(job) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify(job));
+      }, { userId, input: { jobId } }),
   });
 
   registry.register({
@@ -45,20 +40,15 @@ export function registerJobsTools(registry: ToolRegistry, userId: string): void 
     category: "jobs",
     tier: "workspace",
     inputSchema: BatchStatusSchema.shape,
-    handler: async ({ jobIds }: z.infer<typeof BatchStatusSchema>): Promise<CallToolResult> => {
-      try {
+    handler: async ({ jobIds }: z.infer<typeof BatchStatusSchema>): Promise<CallToolResult> =>
+      safeToolCall("jobs_batch_status", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const jobs = await prisma.imageEnhancementJob.findMany({
           where: { id: { in: jobIds }, userId },
           select: { id: true, status: true, errorMessage: true },
         });
-        return { content: [{ type: "text", text: JSON.stringify({ jobs }) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify({ jobs }));
+      }, { userId, input: { jobIds } }),
   });
 
   registry.register({
@@ -67,22 +57,17 @@ export function registerJobsTools(registry: ToolRegistry, userId: string): void 
     category: "jobs",
     tier: "workspace",
     inputSchema: MixHistorySchema.shape,
-    handler: async ({ limit, offset }: z.infer<typeof MixHistorySchema>): Promise<CallToolResult> => {
-      try {
+    handler: async ({ limit, offset }: z.infer<typeof MixHistorySchema>): Promise<CallToolResult> =>
+      safeToolCall("jobs_mix_history", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const history = await prisma.imageEnhancementJob.findMany({
           where: { userId, enhancementType: "BLEND" },
           orderBy: { createdAt: "desc" },
           take: limit,
           skip: offset,
         });
-        return { content: [{ type: "text", text: JSON.stringify(history) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify(history));
+      }, { userId, input: { limit, offset } }),
   });
 
   registry.register({
@@ -91,29 +76,31 @@ export function registerJobsTools(registry: ToolRegistry, userId: string): void 
     category: "jobs",
     tier: "workspace",
     inputSchema: JobIdSchema.shape,
-    handler: async ({ jobId }: z.infer<typeof JobIdSchema>): Promise<CallToolResult> => {
-      try {
-        const job = await prisma.imageEnhancementJob.findUnique({
-          where: { id: jobId, userId },
-        });
-        if (!job) throw new Error("Job not found");
-        
-        if (job.status !== "PENDING" && job.status !== "PROCESSING") {
-          throw new Error(`Job cannot be cancelled in state: ${job.status}`);
-        }
+    handler: async ({ jobId }: z.infer<typeof JobIdSchema>): Promise<CallToolResult> =>
+      safeToolCall("jobs_cancel", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
 
-        const updatedJob = await prisma.imageEnhancementJob.update({
-          where: { id: jobId },
+        // Atomic update: only cancel if job belongs to user AND is in a cancellable state
+        const result = await prisma.imageEnhancementJob.updateMany({
+          where: {
+            id: jobId,
+            userId,
+            status: { in: ["PENDING", "PROCESSING"] },
+          },
           data: { status: "CANCELLED" },
         });
 
-        return { content: [{ type: "text", text: JSON.stringify(updatedJob) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        if (result.count === 0) {
+          // Determine why: not found or wrong state
+          const job = await prisma.imageEnhancementJob.findUnique({
+            where: { id: jobId, userId },
+            select: { status: true },
+          });
+          if (!job) throw new Error("Job not found");
+          throw new Error(`Job cannot be cancelled in state: ${job.status}`);
+        }
+
+        return textResult(JSON.stringify({ jobId, status: "CANCELLED" }));
+      }, { userId, input: { jobId } }),
   });
 }

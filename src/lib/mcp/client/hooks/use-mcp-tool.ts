@@ -19,7 +19,6 @@ export function useMcpTool<T = unknown, R = T>(
   const {
     enabled = true,
     refetchInterval,
-    transform,
   } = options;
 
   const [data, setData] = useState<R | undefined>();
@@ -30,17 +29,24 @@ export function useMcpTool<T = unknown, R = T>(
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  const fetch = useCallback(async (isManual = false) => {
+  const argsRef = useRef(args);
+  argsRef.current = args;
+
+  const isRefetchingRef = useRef(isRefetching);
+  isRefetchingRef.current = isRefetching;
+
+  const fetchData = useCallback(async (isManual = false) => {
     if (!isManual) {
-      if (!isRefetching) setIsLoading(true);
+      if (!isRefetchingRef.current) setIsLoading(true);
     } else {
       setIsRefetching(true);
     }
 
     try {
-      const rawData = await callTool<T>(name, args);
+      const rawData = await callTool<T>(name, argsRef.current);
+      const transform = optionsRef.current.transform;
       const processedData = transform ? transform(rawData) : (rawData as unknown as R);
-      
+
       setData(processedData);
       setError(undefined);
       optionsRef.current.onSuccess?.(processedData);
@@ -52,27 +58,29 @@ export function useMcpTool<T = unknown, R = T>(
       setIsLoading(false);
       setIsRefetching(false);
     }
-  }, [name, args, transform, isRefetching]);
+  }, [name]);
+
+  const argsKey = JSON.stringify(args);
 
   useEffect(() => {
     if (enabled) {
-      fetch();
+      fetchData();
     }
-  }, [enabled, fetch]);
+  }, [enabled, fetchData, argsKey]);
 
   useEffect(() => {
     if (enabled && refetchInterval) {
-      const interval = setInterval(() => fetch(true), refetchInterval);
+      const interval = setInterval(() => fetchData(true), refetchInterval);
       return () => clearInterval(interval);
     }
     return undefined;
-  }, [enabled, refetchInterval, fetch]);
+  }, [enabled, refetchInterval, fetchData]);
 
   return {
     data,
     error,
     isLoading,
     isRefetching,
-    refetch: () => fetch(true),
+    refetch: () => fetchData(true),
   };
 }

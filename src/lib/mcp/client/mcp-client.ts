@@ -13,6 +13,7 @@ export async function callTool<T = unknown>(
   name: string,
   args: unknown = {},
   options: CallToolOptions = {},
+  _retried = false,
 ): Promise<T> {
   const token = await tokenManager.getToken();
   if (!token) throw new McpAuthError();
@@ -36,13 +37,11 @@ export async function callTool<T = unknown>(
   });
 
   if (response.status === 401) {
+    if (_retried) throw new McpAuthError();
     tokenManager.clear();
-    // Retry once
     const newToken = await tokenManager.getToken();
     if (!newToken) throw new McpAuthError();
-    
-    // Re-call with new token
-    return callTool(name, args, options);
+    return callTool(name, args, options, true);
   }
 
   if (response.status === 429) {
@@ -74,7 +73,7 @@ export async function callTool<T = unknown>(
   // MCP results are wrapped in a content array. By convention, we return the parsed JSON
   // if the first content item is text that looks like JSON, or the raw content if not.
   const textContent = rpcResponse.result?.content.find((c) => c.type === "text")?.text;
-  
+
   if (textContent) {
     try {
       return JSON.parse(textContent);
@@ -84,18 +83,4 @@ export async function callTool<T = unknown>(
   }
 
   return rpcResponse.result as T;
-}
-
-/**
- * SSE streaming tool call
- */
-export function callToolStream(
-  name: string,
-  args: unknown = {},
-): EventSource {
-  // We'll need a way to pass the token to EventSource. 
-  // Custom headers are not supported, so we'll use a query param.
-  // The server implementation of /api/mcp should be updated to handle SSE and query param tokens.
-  const queryToken = Date.now(); // Placeholder, we'll get real token in hook
-  return new EventSource(`/api/mcp?method=tools/call&name=${name}&arguments=${encodeURIComponent(JSON.stringify(args))}&token=${queryToken}`);
 }

@@ -1,10 +1,10 @@
-import prisma from "@/lib/prisma";
 import { z } from "zod";
 import type { ToolRegistry } from "../tool-registry";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { JobStatus, AlbumPrivacy, type EnhancementTier } from "@prisma/client";
+import { safeToolCall, textResult } from "./tool-helpers";
 
-const SUPER_ADMIN_EMAIL = "zolika84@gmail.com";
+const SUPER_ADMIN_EMAIL = process.env["SPIKE_LAND_SUPER_ADMIN_EMAIL"] || "zolika84@gmail.com";
 
 const GalleryListSchema = z.object({
   activeOnly: z.boolean().optional().default(true),
@@ -21,15 +21,16 @@ const GalleryPublicAlbumsSchema = z.object({
   limit: z.number().optional().default(12),
 });
 
-export function registerGalleryTools(registry: ToolRegistry, _userId: string): void {
+export function registerGalleryTools(registry: ToolRegistry, userId: string): void {
   registry.register({
     name: "gallery_list",
     description: "Returns active featured gallery items for the landing page",
     category: "gallery",
     tier: "free",
     inputSchema: GalleryListSchema.shape,
-    handler: async ({ activeOnly }: z.infer<typeof GalleryListSchema>): Promise<CallToolResult> => {
-      try {
+    handler: async ({ activeOnly }: z.infer<typeof GalleryListSchema>): Promise<CallToolResult> =>
+      safeToolCall("gallery_list", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const items = await prisma.featuredGalleryItem.findMany({
           where: activeOnly ? { isActive: true } : {},
           select: {
@@ -46,14 +47,8 @@ export function registerGalleryTools(registry: ToolRegistry, _userId: string): v
           orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
         });
 
-        return { content: [{ type: "text", text: JSON.stringify({ items }) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify({ items }));
+      }, { userId, input: { activeOnly } }),
   });
 
   registry.register({
@@ -62,8 +57,9 @@ export function registerGalleryTools(registry: ToolRegistry, _userId: string): v
     category: "gallery",
     tier: "free",
     inputSchema: GalleryPublicSchema.shape,
-    handler: async ({ page, limit, tags, tier }: z.infer<typeof GalleryPublicSchema>): Promise<CallToolResult> => {
-      try {
+    handler: async ({ page, limit, tags, tier }: z.infer<typeof GalleryPublicSchema>): Promise<CallToolResult> =>
+      safeToolCall("gallery_public", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const where = {
           isPublic: true,
           ...(tags.length > 0 && { tags: { hasSome: tags } }),
@@ -97,27 +93,16 @@ export function registerGalleryTools(registry: ToolRegistry, _userId: string): v
           prisma.enhancedImage.count({ where }),
         ]);
 
-        return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              items: images,
-              pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-              },
-            }),
-          }],
-        };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify({
+          items: images,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+          },
+        }));
+      }, { userId, input: { page, limit, tags, tier } }),
   });
 
   registry.register({
@@ -126,15 +111,16 @@ export function registerGalleryTools(registry: ToolRegistry, _userId: string): v
     category: "gallery",
     tier: "free",
     inputSchema: GalleryPublicAlbumsSchema.shape,
-    handler: async ({ limit }: z.infer<typeof GalleryPublicAlbumsSchema>): Promise<CallToolResult> => {
-      try {
+    handler: async ({ limit }: z.infer<typeof GalleryPublicAlbumsSchema>): Promise<CallToolResult> =>
+      safeToolCall("gallery_public_albums", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
         const superAdmin = await prisma.user.findFirst({
           where: { email: SUPER_ADMIN_EMAIL },
           select: { id: true },
         });
 
         if (!superAdmin) {
-          return { content: [{ type: "text", text: "Super admin user not found" }], isError: true };
+          throw new Error("Super admin user not found");
         }
 
         const albums = await prisma.album.findMany({
@@ -187,13 +173,7 @@ export function registerGalleryTools(registry: ToolRegistry, _userId: string): v
           if (items.length >= limit) break;
         }
 
-        return { content: [{ type: "text", text: JSON.stringify({ items }) }] };
-      } catch (error) {
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : "Unknown"}` }],
-          isError: true,
-        };
-      }
-    },
+        return textResult(JSON.stringify({ items }));
+      }, { userId, input: { limit } }),
   });
 }
