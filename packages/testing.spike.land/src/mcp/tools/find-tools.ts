@@ -1,7 +1,7 @@
 import type { ICodeSession } from "@spike-npm-land/code";
-import type { FindLinesResult, LineMatch, McpTool } from "../types";
+import type { FindLinesResult, LineMatch, Tool } from "../types";
 
-export const findLinesTool: McpTool = {
+export const findLinesTool: Tool = {
   name: "find_lines",
   description:
     "Find line numbers containing a search pattern. Use before edit_code to locate target lines.",
@@ -25,7 +25,7 @@ export const findLinesTool: McpTool = {
   },
 };
 
-export const findTools: McpTool[] = [findLinesTool];
+export const findTools: Tool[] = [findLinesTool];
 
 export function executeFindLines(
   session: ICodeSession,

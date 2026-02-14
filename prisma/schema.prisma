@@ -88,6 +88,7 @@ model User {
   arenaSubmissions         ArenaSubmission[]         @relation("ArenaSubmissions")
   arenaReviews             ArenaReview[]             @relation("ArenaReviews")
   arenaElo                 ArenaElo?                 @relation("ArenaElo")
+  toolInvocations          ToolInvocation[]
 
   @@map("users")
 }
@@ -4883,4 +4884,29 @@ model ArenaElo {
 
   @@index([elo(sort: Desc)])
   @@map("arena_elos")
+}
+
+model ToolInvocation {
+  id                 String   @id @default(cuid())
+  userId             String
+  sessionId          String?
+  tool               String
+  input              Json
+  output             Json?
+  durationMs         Int
+  tokensConsumed     Int      @default(0)
+  error              String?
+  isError            Boolean  @default(false)
+  parentInvocationId String?
+  createdAt          DateTime @default(now())
+
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent             ToolInvocation?  @relation("InvocationTree", fields: [parentInvocationId], references: [id])
+  children           ToolInvocation[] @relation("InvocationTree")
+
+  @@index([userId, createdAt])
+  @@index([tool, createdAt])
+  @@index([sessionId])
+  @@index([parentInvocationId])
+  @@map("tool_invocations")
 }

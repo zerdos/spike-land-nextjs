@@ -2401,6 +2401,20 @@ erDiagram
   Int bestElo
   DateTime updatedAt
 }
+"tool_invocations" {
+  String id PK
+  String userId FK
+  String sessionId "nullable"
+  String tool
+  Json input
+  Json output "nullable"
+  Int durationMs
+  Int tokensConsumed
+  String error "nullable"
+  Boolean isError
+  String parentInvocationId FK "nullable"
+  DateTime createdAt
+}
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
 "campaign_briefs" }o--o| "workspaces" : workspace
@@ -2637,6 +2651,8 @@ erDiagram
 "arena_reviews" }o--|| "arena_submissions" : submission
 "arena_reviews" }o--|| "users" : reviewer
 "arena_elos" |o--|| "users" : user
+"tool_invocations" }o--|| "users" : user
+"tool_invocations" }o--o| "tool_invocations" : parent
 ```
 
 ### `users`
@@ -5647,3 +5663,20 @@ Properties as follows:
 - `streak`:
 - `bestElo`:
 - `updatedAt`:
+
+### `tool_invocations`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `sessionId`:
+- `tool`:
+- `input`:
+- `output`:
+- `durationMs`:
+- `tokensConsumed`:
+- `error`:
+- `isError`:
+- `parentInvocationId`:
+- `createdAt`:

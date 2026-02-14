@@ -1,5 +1,19 @@
 import type { ICodeSession } from "@spike-npm-land/code";
 
+// Re-export SDK types used across the MCP module
+export type {
+  CallToolResult,
+  Resource,
+  ResourceContents,
+  ResourceTemplate,
+  TextContent,
+  Tool,
+} from "@modelcontextprotocol/sdk/types.js";
+
+// Backward-compatible alias for consumers still importing McpTool
+export type { Tool as McpTool } from "@modelcontextprotocol/sdk/types.js";
+
+// JSON-RPC types for manual protocol handling (Cloudflare Workers can't use SDK transports)
 export interface McpRequest {
   jsonrpc: string;
   id: string | number;
@@ -18,16 +32,7 @@ export interface McpResponse {
   };
 }
 
-export interface McpTool {
-  name: string;
-  description: string;
-  inputSchema: {
-    type: string;
-    properties: Record<string, Record<string, unknown>>;
-    required?: string[];
-  };
-}
-
+// Codebase-specific types
 export interface LineEdit {
   startLine: number;
   endLine: number;
