@@ -11,8 +11,8 @@ import { safeToolCall, textResult, resolveWorkspace } from "./tool-helpers";
 
 const GenerateVariantsSchema = z.object({
   workspace_slug: z.string().min(1).describe("Workspace slug."),
+  name: z.string().min(1).describe("Creative set name."),
   content: z.string().min(1).describe("Original creative content."),
-  platform: z.string().optional().describe("Target platform (e.g., INSTAGRAM, TWITTER)."),
   variant_count: z.number().optional().default(3).describe("Number of variants to generate (default 3)."),
 });
 
@@ -44,13 +44,15 @@ export function registerCreativeTools(
     handler: async (args: z.infer<typeof GenerateVariantsSchema>): Promise<CallToolResult> =>
       safeToolCall("creative_generate_variants", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        await resolveWorkspace(userId, args.workspace_slug);
 
         const creativeSet = await prisma.creativeSet.create({
           data: {
-            workspaceId: workspace.id,
-            originalContent: args.content,
-            platform: args.platform ?? null,
+            name: args.name,
+            generatedById: userId,
+            modelVersion: "v1",
+            generationPrompt: args.content,
+            seedContent: args.content,
           },
         });
 
@@ -58,10 +60,10 @@ export function registerCreativeTools(
         for (let i = 0; i < args.variant_count; i++) {
           const variant = await prisma.creativeVariant.create({
             data: {
-              creativeSetId: creativeSet.id,
-              content: args.content,
+              setId: creativeSet.id,
+              variantType: "TEXT_ONLY",
+              variantNumber: i,
               status: "PENDING",
-              variantIndex: i,
             },
           });
           variantIds.push(variant.id);
@@ -69,8 +71,7 @@ export function registerCreativeTools(
 
         let text = `**Creative Set Created**\n\n`;
         text += `**Set ID:** \`${creativeSet.id}\`\n`;
-        text += `**Workspace:** ${workspace.name}\n`;
-        text += `**Platform:** ${args.platform || "all"}\n`;
+        text += `**Name:** ${args.name}\n`;
         text += `**Variants:** ${variantIds.length}\n\n`;
         text += `| # | Variant ID | Status |\n`;
         text += `|---|-----------|--------|\n`;
@@ -91,10 +92,10 @@ export function registerCreativeTools(
     handler: async (args: z.infer<typeof DetectFatigueSchema>): Promise<CallToolResult> =>
       safeToolCall("creative_detect_fatigue", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        await resolveWorkspace(userId, args.workspace_slug);
 
         const alerts = await prisma.creativeFatigueAlert.findMany({
-          where: { workspaceId: workspace.id, isResolved: false },
+          where: { isResolved: false },
           orderBy: { detectedAt: "desc" },
           take: args.limit,
         });
@@ -104,10 +105,10 @@ export function registerCreativeTools(
         }
 
         let text = `**Creative Fatigue Alerts** (${alerts.length})\n\n`;
-        text += `| Creative ID | Fatigue Type | Metrics Decline | Recommendation |\n`;
-        text += `|------------|-------------|----------------|----------------|\n`;
+        text += `| Variant ID | CTR Decay | Days Active | Recommendation |\n`;
+        text += `|-----------|-----------|-------------|----------------|\n`;
         for (const a of alerts) {
-          text += `| \`${a.creativeId}\` | ${a.fatigueType} | ${a.metricsDecline}% | ${a.recommendation} |\n`;
+          text += `| \`${a.variantId}\` | ${a.ctrDecayPercent}% | ${a.daysActive} | ${a.recommendedAction} |\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),
@@ -123,13 +124,13 @@ export function registerCreativeTools(
     handler: async (args: z.infer<typeof GetPerformanceSchema>): Promise<CallToolResult> =>
       safeToolCall("creative_get_performance", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        await resolveWorkspace(userId, args.workspace_slug);
 
         const creativeSet = await prisma.creativeSet.findFirst({
-          where: { id: args.creative_set_id, workspaceId: workspace.id },
+          where: { id: args.creative_set_id },
           include: {
             variants: {
-              include: { performance: true },
+              include: { performanceHistory: true },
             },
           },
         });
@@ -145,15 +146,10 @@ export function registerCreativeTools(
         text += `|---------|------------|--------|-----|-------------|\n`;
 
         for (const v of creativeSet.variants) {
-          const perf = v.performance;
-          if (perf) {
-            const ctr = perf.impressions > 0
-              ? ((perf.clicks / perf.impressions) * 100).toFixed(2)
-              : "0.00";
-            text += `| \`${v.id}\` | ${perf.impressions} | ${perf.clicks} | ${ctr}% | ${perf.conversions} |\n`;
-          } else {
-            text += `| \`${v.id}\` | - | - | - | - |\n`;
-          }
+          const ctr = v.impressions > 0
+            ? ((v.clicks / v.impressions) * 100).toFixed(2)
+            : "0.00";
+          text += `| \`${v.id}\` | ${v.impressions} | ${v.clicks} | ${ctr}% | ${v.conversions} |\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),
@@ -161,7 +157,7 @@ export function registerCreativeTools(
 
   registry.register({
     name: "creative_list_sets",
-    description: "List creative sets in a workspace with variant counts, ordered by creation date.",
+    description: "List creative sets with variant counts, ordered by creation date.",
     category: "creative",
     tier: "free",
     inputSchema: ListSetsSchema.shape,
@@ -169,10 +165,10 @@ export function registerCreativeTools(
     handler: async (args: z.infer<typeof ListSetsSchema>): Promise<CallToolResult> =>
       safeToolCall("creative_list_sets", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        await resolveWorkspace(userId, args.workspace_slug);
 
         const sets = await prisma.creativeSet.findMany({
-          where: { workspaceId: workspace.id },
+          where: { generatedById: userId },
           include: { _count: { select: { variants: true } } },
           orderBy: { createdAt: "desc" },
           take: args.limit,
@@ -183,10 +179,10 @@ export function registerCreativeTools(
         }
 
         let text = `**Creative Sets** (${sets.length})\n\n`;
-        text += `| Set ID | Variants | Platform | Created |\n`;
-        text += `|--------|---------|----------|---------|\n`;
+        text += `| Set ID | Name | Variants | Status | Created |\n`;
+        text += `|--------|------|---------|--------|---------|\n`;
         for (const s of sets) {
-          text += `| \`${s.id}\` | ${s._count.variants} | ${s.platform || "all"} | ${s.createdAt.toISOString()} |\n`;
+          text += `| \`${s.id}\` | ${s.name} | ${s._count.variants} | ${s.status} | ${s.createdAt.toISOString()} |\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),

@@ -1,7 +1,7 @@
 /**
  * Email MCP Tools
  *
- * Email sending, template-based sending, and delivery status tracking.
+ * Email sending and delivery status tracking.
  */
 
 import { z } from "zod";
@@ -13,20 +13,17 @@ const EmailSendSchema = z.object({
   workspace_slug: z.string().min(1).describe("Workspace slug."),
   to: z.string().min(1).describe("Recipient email address."),
   subject: z.string().min(1).describe("Email subject line."),
-  body: z.string().min(1).describe("Email body content."),
-  reply_to: z.string().optional().describe("Optional reply-to email address."),
-});
-
-const EmailSendTemplateSchema = z.object({
-  workspace_slug: z.string().min(1).describe("Workspace slug."),
-  template_name: z.string().min(1).describe("Name of the email template to use."),
-  to: z.string().min(1).describe("Recipient email address."),
-  variables: z.string().min(1).describe("JSON object of template variables."),
+  template: z.string().min(1).describe("Email template name."),
 });
 
 const EmailGetStatusSchema = z.object({
   workspace_slug: z.string().min(1).describe("Workspace slug."),
-  email_id: z.string().min(1).describe("Email record ID."),
+  email_id: z.string().min(1).describe("Email log ID."),
+});
+
+const EmailListSchema = z.object({
+  workspace_slug: z.string().min(1).describe("Workspace slug."),
+  limit: z.number().optional().default(20).describe("Max records to return (default 20)."),
 });
 
 export function registerEmailTools(
@@ -35,23 +32,21 @@ export function registerEmailTools(
 ): void {
   registry.register({
     name: "email_send",
-    description: "Send an email from the workspace. Records the send intent with PENDING status.",
+    description: "Send an email from the workspace. Records the send intent with SENT status.",
     category: "email",
     tier: "free",
     inputSchema: EmailSendSchema.shape,
     handler: async (args: z.infer<typeof EmailSendSchema>): Promise<CallToolResult> =>
       safeToolCall("email_send", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const ws = await resolveWorkspace(userId, args.workspace_slug);
-        const email = await prisma.emailRecord.create({
+        await resolveWorkspace(userId, args.workspace_slug);
+        const email = await prisma.emailLog.create({
           data: {
-            workspaceId: ws.id,
-            senderId: userId,
+            userId,
             to: args.to,
             subject: args.subject,
-            body: args.body,
-            replyTo: args.reply_to ?? null,
-            status: "PENDING",
+            template: args.template,
+            status: "SENT",
           },
         });
         return textResult(
@@ -59,47 +54,7 @@ export function registerEmailTools(
           `**ID:** ${email.id}\n` +
           `**To:** ${args.to}\n` +
           `**Subject:** ${args.subject}\n` +
-          `**Status:** PENDING`,
-        );
-      }, { timeoutMs: 30_000 }),
-  });
-
-  registry.register({
-    name: "email_send_template",
-    description: "Send a templated email. Looks up the template by name and applies variables.",
-    category: "email",
-    tier: "free",
-    inputSchema: EmailSendTemplateSchema.shape,
-    handler: async (args: z.infer<typeof EmailSendTemplateSchema>): Promise<CallToolResult> =>
-      safeToolCall("email_send_template", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
-        const ws = await resolveWorkspace(userId, args.workspace_slug);
-        const template = await prisma.emailTemplate.findFirst({
-          where: { workspaceId: ws.id, name: args.template_name },
-        });
-        if (!template) {
-          return textResult(
-            `**Error: NOT_FOUND**\nTemplate "${args.template_name}" not found.\n**Retryable:** false`,
-          );
-        }
-        const email = await prisma.emailRecord.create({
-          data: {
-            workspaceId: ws.id,
-            senderId: userId,
-            to: args.to,
-            subject: template.subject,
-            body: template.body,
-            templateId: template.id,
-            variables: args.variables,
-            status: "PENDING",
-          },
-        });
-        return textResult(
-          `**Templated Email Queued**\n\n` +
-          `**ID:** ${email.id}\n` +
-          `**Template:** ${args.template_name}\n` +
-          `**To:** ${args.to}\n` +
-          `**Status:** PENDING`,
+          `**Status:** SENT`,
         );
       }, { timeoutMs: 30_000 }),
   });
@@ -109,13 +64,13 @@ export function registerEmailTools(
     description: "Get the delivery status of a sent email.",
     category: "email",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: EmailGetStatusSchema.shape,
     handler: async (args: z.infer<typeof EmailGetStatusSchema>): Promise<CallToolResult> =>
       safeToolCall("email_get_status", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         await resolveWorkspace(userId, args.workspace_slug);
-        const email = await prisma.emailRecord.findFirst({
+        const email = await prisma.emailLog.findFirst({
           where: { id: args.email_id },
         });
         if (!email) {
@@ -129,10 +84,38 @@ export function registerEmailTools(
           `**To:** ${email.to}\n` +
           `**Subject:** ${email.subject}\n` +
           `**Status:** ${email.status}\n` +
-          `**Opened:** ${email.opened ?? false}\n` +
-          `**Clicked:** ${email.clicked ?? false}\n` +
-          `**Bounced:** ${email.bounced ?? false}`,
+          `**Opened:** ${email.openedAt ? email.openedAt.toISOString() : "No"}\n` +
+          `**Clicked:** ${email.clickedAt ? email.clickedAt.toISOString() : "No"}\n` +
+          `**Bounced:** ${email.bouncedAt ? email.bouncedAt.toISOString() : "No"}`,
         );
+      }, { timeoutMs: 30_000 }),
+  });
+
+  registry.register({
+    name: "email_list",
+    description: "List recent email logs for the current user.",
+    category: "email",
+    tier: "free",
+    annotations: { readOnlyHint: true },
+    inputSchema: EmailListSchema.shape,
+    handler: async (args: z.infer<typeof EmailListSchema>): Promise<CallToolResult> =>
+      safeToolCall("email_list", async () => {
+        const prisma = (await import("@/lib/prisma")).default;
+        await resolveWorkspace(userId, args.workspace_slug);
+        const emails = await prisma.emailLog.findMany({
+          where: { userId },
+          orderBy: { sentAt: "desc" },
+          take: args.limit ?? 20,
+        });
+        if (emails.length === 0) {
+          return textResult("**No email records found.**");
+        }
+        let text = `**Email Logs (${emails.length})**\n\n`;
+        for (const e of emails) {
+          text += `- **${e.subject}** to ${e.to} — ${e.status} — ${e.sentAt.toISOString()}\n`;
+          text += `  ID: ${e.id}\n`;
+        }
+        return textResult(text);
       }, { timeoutMs: 30_000 }),
   });
 }

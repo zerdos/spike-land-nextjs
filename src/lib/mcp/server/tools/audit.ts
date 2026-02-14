@@ -12,7 +12,7 @@ import { safeToolCall, textResult, resolveWorkspace } from "./tool-helpers";
 const AuditQueryLogsSchema = z.object({
   workspace_slug: z.string().min(1).describe("Workspace slug."),
   action: z.string().optional().describe("Filter by action type."),
-  entity_type: z.string().optional().describe("Filter by entity type."),
+  target_type: z.string().optional().describe("Filter by target type."),
   days: z.number().optional().default(7).describe("Number of days to look back (default 7)."),
   limit: z.number().optional().default(50).describe("Max records to return (default 50)."),
 });
@@ -42,10 +42,10 @@ export function registerAuditTools(
 ): void {
   registry.register({
     name: "audit_query_logs",
-    description: "Query workspace audit logs with optional filters for action and entity type.",
+    description: "Query workspace audit logs with optional filters for action and target type.",
     category: "audit",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: AuditQueryLogsSchema.shape,
     handler: async (args: z.infer<typeof AuditQueryLogsSchema>): Promise<CallToolResult> =>
       safeToolCall("audit_query_logs", async () => {
@@ -58,7 +58,7 @@ export function registerAuditTools(
           createdAt: { gte: since },
         };
         if (args.action) where["action"] = args.action;
-        if (args.entity_type) where["entityType"] = args.entity_type;
+        if (args.target_type) where["targetType"] = args.target_type;
         const logs = await prisma.workspaceAuditLog.findMany({
           where,
           orderBy: { createdAt: "desc" },
@@ -67,8 +67,8 @@ export function registerAuditTools(
         if (logs.length === 0) {
           return textResult("**No audit logs found** matching the given filters.");
         }
-        const lines = logs.map((log: { action: string; entityType: string; userId: string | null; createdAt: Date; details: string | null }) =>
-          `- [${log.createdAt.toISOString()}] **${log.action}** on ${log.entityType} by ${log.userId ?? "system"} — ${log.details ?? ""}`,
+        const lines = logs.map((log) =>
+          `- [${log.createdAt.toISOString()}] **${log.action}** on ${log.targetType ?? "unknown"} by ${log.userId ?? "system"}`,
         );
         return textResult(
           `**Audit Logs (${logs.length})**\n\n${lines.join("\n")}`,
@@ -81,7 +81,7 @@ export function registerAuditTools(
     description: "Export audit logs for a date range as a JSON summary.",
     category: "audit",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: AuditExportSchema.shape,
     handler: async (args: z.infer<typeof AuditExportSchema>): Promise<CallToolResult> =>
       safeToolCall("audit_export", async () => {
@@ -111,7 +111,7 @@ export function registerAuditTools(
     description: "Retrieve AI decision logs for the workspace.",
     category: "audit",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: AuditGetAIDecisionsSchema.shape,
     handler: async (args: z.infer<typeof AuditGetAIDecisionsSchema>): Promise<CallToolResult> =>
       safeToolCall("audit_get_ai_decisions", async () => {
@@ -130,8 +130,8 @@ export function registerAuditTools(
         if (decisions.length === 0) {
           return textResult("**No AI decisions found** in the given time range.");
         }
-        const lines = decisions.map((d: { decisionType: string; inputSummary: string | null; outputSummary: string | null; confidence: number | null; createdAt: Date }) =>
-          `- [${d.createdAt.toISOString()}] **${d.decisionType}** — input: ${d.inputSummary ?? "n/a"} — output: ${d.outputSummary ?? "n/a"} — confidence: ${d.confidence ?? "n/a"}`,
+        const lines = decisions.map((d) =>
+          `- [${d.createdAt.toISOString()}] **${d.requestType}** — input: ${d.inputPrompt ?? "n/a"} — output: ${d.outputResult ?? "n/a"}`,
         );
         return textResult(
           `**AI Decisions (${decisions.length})**\n\n${lines.join("\n")}`,
@@ -144,7 +144,7 @@ export function registerAuditTools(
     description: "Retrieve agent activity audit trail.",
     category: "audit",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: AuditGetAgentTrailSchema.shape,
     handler: async (args: z.infer<typeof AuditGetAgentTrailSchema>): Promise<CallToolResult> =>
       safeToolCall("audit_get_agent_trail", async () => {
@@ -160,8 +160,8 @@ export function registerAuditTools(
         if (trail.length === 0) {
           return textResult("**No agent activity found** matching the given filters.");
         }
-        const lines = trail.map((t: { action: string; toolUsed: string | null; result: string | null; durationMs: number | null; createdAt: Date }) =>
-          `- [${t.createdAt.toISOString()}] **${t.action}** — tool: ${t.toolUsed ?? "n/a"} — result: ${t.result ?? "n/a"} — ${t.durationMs ?? 0}ms`,
+        const lines = trail.map((t) =>
+          `- [${t.createdAt.toISOString()}] **${t.action}** — ${t.durationMs}ms`,
         );
         return textResult(
           `**Agent Trail (${trail.length})**\n\n${lines.join("\n")}`,

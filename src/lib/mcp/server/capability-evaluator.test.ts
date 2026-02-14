@@ -197,7 +197,7 @@ describe("createPermissionRequest", () => {
     await createPermissionRequest("agent-1", "user-1", "tool", "cat", {}, "SKIP");
     const after = Date.now();
 
-    const callData = mockPrisma.permissionRequest.create.mock.calls[0][0].data;
+    const callData = mockPrisma.permissionRequest.create.mock.calls[0]![0].data;
     const expiresAt = callData.expiresAt as Date;
     const expectedMin = before + 24 * 60 * 60 * 1000;
     const expectedMax = after + 24 * 60 * 60 * 1000;

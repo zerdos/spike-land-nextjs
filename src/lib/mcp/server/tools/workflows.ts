@@ -65,7 +65,6 @@ export function registerWorkflowsTools(
             workspaceId: workspace.id,
             name: args.name,
             description: args.description ?? null,
-            triggerType: args.trigger_type,
             createdById: userId,
           },
         });
@@ -80,11 +79,11 @@ export function registerWorkflowsTools(
         if (parsedSteps.length > 0) {
           await prisma.workflowStep.createMany({
             data: parsedSteps.map((step, index) => ({
-              versionId: version.id,
+              workflowVersionId: version.id,
               name: step.name,
-              type: step.type,
-              config: step.config ?? {},
-              order: index,
+              type: step.type as "TRIGGER" | "ACTION" | "CONDITION",
+              config: (step.config ?? {}) as Record<string, string>,
+              sequence: index,
             })),
           });
         }
@@ -119,31 +118,26 @@ export function registerWorkflowsTools(
           return textResult("**Error: NOT_FOUND**\nWorkflow not found.\n**Retryable:** false");
         }
 
-        let inputData: Record<string, unknown> = {};
         if (args.input) {
           try {
-            inputData = JSON.parse(args.input) as Record<string, unknown>;
+            JSON.parse(args.input);
           } catch {
             return textResult("**Error: VALIDATION_ERROR**\nInvalid JSON in input field.\n**Retryable:** false");
           }
         }
 
-        const workflowData = workflow as typeof workflow & { name: string };
-
         const run = await prisma.workflowRun.create({
           data: {
             workflowId: args.workflow_id,
-            status: "PENDING",
-            input: inputData,
-            triggeredById: userId,
+            status: "RUNNING",
           },
         });
 
         return textResult(
           `**Workflow Run Started**\n\n` +
           `**Run ID:** ${run.id}\n` +
-          `**Workflow:** ${workflowData.name}\n` +
-          `**Status:** PENDING`,
+          `**Workflow:** ${workflow.name}\n` +
+          `**Status:** RUNNING`,
         );
       }, { timeoutMs: 30_000 }),
   });
@@ -164,8 +158,8 @@ export function registerWorkflowsTools(
           where: { id: args.run_id },
           include: {
             workflow: { select: { name: true } },
-            stepExecutions: {
-              orderBy: { startedAt: "asc" },
+            logs: {
+              orderBy: { timestamp: "asc" },
             },
           },
         });
@@ -174,36 +168,14 @@ export function registerWorkflowsTools(
           return textResult("**Error: NOT_FOUND**\nWorkflow run not found.\n**Retryable:** false");
         }
 
-        const runData = run as typeof run & {
-          status: string;
-          workflow: { name: string };
-          stepExecutions: Array<{
-            stepName?: string;
-            status: string;
-            startedAt?: Date;
-            completedAt?: Date;
-          }>;
-          startedAt?: Date;
-          completedAt?: Date;
-        };
-
-        const totalSteps = runData.stepExecutions.length;
-        const completedSteps = runData.stepExecutions.filter((s) => s.status === "COMPLETED").length;
-        const currentStep = runData.stepExecutions.find((s) => s.status === "RUNNING");
-
         let text = `**Workflow Run Status**\n\n`;
-        text += `**Run ID:** ${runData.id}\n`;
-        text += `**Workflow:** ${runData.workflow.name}\n`;
-        text += `**Status:** ${runData.status}\n`;
-        text += `**Progress:** ${completedSteps}/${totalSteps} steps\n`;
-        if (currentStep) {
-          text += `**Current Step:** ${currentStep.stepName ?? "unknown"}\n`;
-        }
-        if (runData.startedAt) {
-          text += `**Started:** ${runData.startedAt.toISOString()}\n`;
-        }
-        if (runData.completedAt) {
-          text += `**Completed:** ${runData.completedAt.toISOString()}\n`;
+        text += `**Run ID:** ${run.id}\n`;
+        text += `**Workflow:** ${run.workflow.name}\n`;
+        text += `**Status:** ${run.status}\n`;
+        text += `**Log entries:** ${run.logs.length}\n`;
+        text += `**Started:** ${run.startedAt.toISOString()}\n`;
+        if (run.endedAt) {
+          text += `**Ended:** ${run.endedAt.toISOString()}\n`;
         }
 
         return textResult(text);
@@ -242,18 +214,11 @@ export function registerWorkflowsTools(
 
         let text = `**Workflows (${workflows.length}):**\n\n`;
         for (const w of workflows) {
-          const wf = w as typeof w & {
-            name: string;
-            triggerType?: string;
-            _count: { runs: number };
-            versions: Array<{ version: number }>;
-            updatedAt: Date;
-          };
-          const latestVersion = wf.versions[0]?.version ?? 1;
-          text += `- **${wf.name}** (v${latestVersion})\n`;
-          text += `  Trigger: ${wf.triggerType ?? "manual"} | Runs: ${wf._count.runs}\n`;
-          text += `  Updated: ${wf.updatedAt.toISOString()}\n`;
-          text += `  ID: ${wf.id}\n\n`;
+          const latestVersion = w.versions[0]?.version ?? 1;
+          text += `- **${w.name}** (v${latestVersion})\n`;
+          text += `  Status: ${w.status} | Runs: ${w._count.runs}\n`;
+          text += `  Updated: ${w.updatedAt.toISOString()}\n`;
+          text += `  ID: ${w.id}\n\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),
@@ -275,8 +240,8 @@ export function registerWorkflowsTools(
           where: { id: args.run_id },
           include: {
             workflow: { select: { name: true } },
-            stepExecutions: {
-              orderBy: { startedAt: "asc" },
+            logs: {
+              orderBy: { timestamp: "asc" },
             },
           },
         });
@@ -285,39 +250,22 @@ export function registerWorkflowsTools(
           return textResult("**Error: NOT_FOUND**\nWorkflow run not found.\n**Retryable:** false");
         }
 
-        const runData = run as typeof run & {
-          status: string;
-          workflow: { name: string };
-          stepExecutions: Array<{
-            stepName?: string;
-            status: string;
-            startedAt?: Date;
-            completedAt?: Date;
-            output?: string | null;
-            error?: string | null;
-          }>;
-        };
+        let text = `**Execution Logs: ${run.workflow.name}**\n\n`;
+        text += `**Run ID:** ${run.id}\n`;
+        text += `**Status:** ${run.status}\n\n`;
 
-        let text = `**Execution Logs: ${runData.workflow.name}**\n\n`;
-        text += `**Run ID:** ${runData.id}\n`;
-        text += `**Status:** ${runData.status}\n\n`;
-
-        if (runData.stepExecutions.length === 0) {
-          text += "No step executions recorded yet.";
+        if (run.logs.length === 0) {
+          text += "No log entries recorded yet.";
           return textResult(text);
         }
 
-        text += `**Steps:**\n\n`;
-        for (let i = 0; i < runData.stepExecutions.length; i++) {
-          const step = runData.stepExecutions[i]!;
-          const duration = step.startedAt && step.completedAt
-            ? `${Math.round((step.completedAt.getTime() - step.startedAt.getTime()) / 1000)}s`
-            : "N/A";
-
-          text += `${i + 1}. **${step.stepName ?? `Step ${i + 1}`}** [${step.status}]\n`;
-          text += `   Duration: ${duration}\n`;
-          if (step.output) text += `   Output: ${step.output}\n`;
-          if (step.error) text += `   Error: ${step.error}\n`;
+        text += `**Log Entries:**\n\n`;
+        for (let i = 0; i < run.logs.length; i++) {
+          const log = run.logs[i]!;
+          text += `${i + 1}. ${log.message}\n`;
+          text += `   Step: ${log.stepId ?? "N/A"} | Status: ${log.stepStatus ?? "N/A"}\n`;
+          text += `   Time: ${log.timestamp.toISOString()}\n`;
+          if (log.metadata) text += `   Metadata: ${JSON.stringify(log.metadata)}\n`;
           text += `\n`;
         }
         return textResult(text);

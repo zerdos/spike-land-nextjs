@@ -29,7 +29,7 @@ const PauseAutomationSchema = z.object({
 
 const GetTemplatesSchema = z.object({
   workspace_slug: z.string().min(1).describe("Workspace slug."),
-  crisis_type: z.string().optional().describe("Filter templates by crisis type."),
+  category: z.string().optional().describe("Filter templates by category."),
 });
 
 const RespondSchema = z.object({
@@ -57,7 +57,7 @@ export function registerCrisisTools(
 
         const where: Record<string, unknown> = {
           workspaceId: workspace.id,
-          isResolved: false,
+          resolvedAt: null,
         };
         if (args.severity) where["severity"] = args.severity;
 
@@ -71,10 +71,10 @@ export function registerCrisisTools(
         }
 
         let text = `**Active Crises** (${events.length})\n\n`;
-        text += `| Crisis ID | Type | Severity | Affected Accounts | Detected |\n`;
-        text += `|-----------|------|----------|-------------------|----------|\n`;
+        text += `| Crisis ID | Trigger Type | Severity | Affected Accounts | Detected |\n`;
+        text += `|-----------|-------------|----------|-------------------|----------|\n`;
         for (const e of events) {
-          text += `| \`${e.id}\` | ${e.crisisType} | ${e.severity} | ${e.affectedAccounts ?? 0} | ${e.detectedAt.toISOString()} |\n`;
+          text += `| \`${e.id}\` | ${e.triggerType} | ${e.severity} | ${e.affectedAccountIds.length} | ${e.detectedAt.toISOString()} |\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),
@@ -82,7 +82,7 @@ export function registerCrisisTools(
 
   registry.register({
     name: "crisis_get_timeline",
-    description: "Get the timeline of a crisis event including related events, response actions, and escalations.",
+    description: "Get the timeline of a crisis event including status and notes.",
     category: "crisis",
     tier: "free",
     inputSchema: GetTimelineSchema.shape,
@@ -94,11 +94,6 @@ export function registerCrisisTools(
 
         const crisis = await prisma.crisisDetectionEvent.findFirst({
           where: { id: args.crisis_id },
-          include: {
-            responses: {
-              orderBy: { respondedAt: "asc" },
-            },
-          },
         });
 
         if (!crisis) {
@@ -107,21 +102,18 @@ export function registerCrisisTools(
 
         let text = `**Crisis Timeline**\n\n`;
         text += `**Crisis ID:** \`${crisis.id}\`\n`;
-        text += `**Type:** ${crisis.crisisType}\n`;
+        text += `**Trigger Type:** ${crisis.triggerType}\n`;
         text += `**Severity:** ${crisis.severity}\n`;
-        text += `**Status:** ${crisis.isResolved ? "Resolved" : "Active"}\n`;
-        text += `**Detected:** ${crisis.detectedAt.toISOString()}\n\n`;
-
-        if (crisis.responses && crisis.responses.length > 0) {
-          text += `**Response Timeline:**\n\n`;
-          text += `| Time | Action | Content |\n`;
-          text += `|------|--------|--------|\n`;
-          for (const r of crisis.responses) {
-            const preview = r.content.slice(0, 80) + (r.content.length > 80 ? "..." : "");
-            text += `| ${r.respondedAt.toISOString()} | ${r.action} | ${preview} |\n`;
-          }
-        } else {
-          text += `**Response Timeline:** No responses yet.\n`;
+        text += `**Status:** ${crisis.status}\n`;
+        text += `**Detected:** ${crisis.detectedAt.toISOString()}\n`;
+        if (crisis.acknowledgedAt) {
+          text += `**Acknowledged:** ${crisis.acknowledgedAt.toISOString()}\n`;
+        }
+        if (crisis.resolvedAt) {
+          text += `**Resolved:** ${crisis.resolvedAt.toISOString()}\n`;
+        }
+        if (crisis.responseNotes) {
+          text += `**Response Notes:** ${crisis.responseNotes}\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),
@@ -143,29 +135,25 @@ export function registerCrisisTools(
         const prisma = (await import("@/lib/prisma")).default;
         const workspace = await resolveWorkspace(userId, args.workspace_slug);
 
-        const accountWhere: Record<string, unknown> = { workspaceId: workspace.id };
-        if (args.account_ids && args.account_ids.length > 0) {
-          accountWhere["id"] = { in: args.account_ids };
-        }
-
-        const updateResult = await prisma.socialAccount.updateMany({
-          where: accountWhere,
-          data: { automationPaused: true },
-        });
-
         const autopilotWhere: Record<string, unknown> = { workspaceId: workspace.id };
         if (args.account_ids && args.account_ids.length > 0) {
-          autopilotWhere["socialAccountId"] = { in: args.account_ids };
+          // Filter autopilot configs by campaign's associated accounts
+          autopilotWhere["campaignId"] = { not: null };
         }
 
-        await prisma.allocatorAutopilotConfig.updateMany({
+        const updateResult = await prisma.allocatorAutopilotConfig.updateMany({
           where: autopilotWhere,
-          data: { isPaused: true },
+          data: {
+            isEmergencyStopped: true,
+            emergencyStoppedAt: new Date(),
+            emergencyStoppedBy: userId,
+            emergencyStopReason: args.reason,
+          },
         });
 
         let text = `**Automation Paused**\n\n`;
         text += `**Workspace:** ${workspace.name}\n`;
-        text += `**Accounts Paused:** ${updateResult.count}\n`;
+        text += `**Autopilot Configs Paused:** ${updateResult.count}\n`;
         text += `**Scope:** ${args.account_ids && args.account_ids.length > 0 ? "Selected accounts" : "All accounts"}\n`;
         text += `**Reason:** ${args.reason}\n`;
         return textResult(text);
@@ -174,7 +162,7 @@ export function registerCrisisTools(
 
   registry.register({
     name: "crisis_get_templates",
-    description: "Get crisis response templates with optional crisis type filtering.",
+    description: "Get crisis response templates with optional category filtering.",
     category: "crisis",
     tier: "free",
     inputSchema: GetTemplatesSchema.shape,
@@ -185,7 +173,7 @@ export function registerCrisisTools(
         await resolveWorkspace(userId, args.workspace_slug);
 
         const where: Record<string, unknown> = { isActive: true };
-        if (args.crisis_type) where["crisisType"] = args.crisis_type;
+        if (args.category) where["category"] = args.category;
 
         const templates = await prisma.crisisResponseTemplate.findMany({
           where,
@@ -196,10 +184,10 @@ export function registerCrisisTools(
         }
 
         let text = `**Crisis Response Templates** (${templates.length})\n\n`;
-        text += `| Template ID | Type | Name | Tone |\n`;
-        text += `|------------|------|------|------|\n`;
+        text += `| Template ID | Category | Name | Platform |\n`;
+        text += `|------------|---------|------|----------|\n`;
         for (const t of templates) {
-          text += `| \`${t.id}\` | ${t.crisisType} | ${t.name} | ${t.tone} |\n`;
+          text += `| \`${t.id}\` | ${t.category} | ${t.name} | ${t.platform ?? "all"} |\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),
@@ -240,26 +228,21 @@ export function registerCrisisTools(
           return textResult("**Error: VALIDATION_ERROR**\nProvide either template_id or custom_response.\n**Retryable:** false");
         }
 
-        await prisma.crisisResponse.create({
-          data: {
-            crisisEventId: args.crisis_id,
-            content: responseContent,
-            action: args.template_id ? "TEMPLATE_RESPONSE" : "CUSTOM_RESPONSE",
-            respondedBy: userId,
-            respondedAt: new Date(),
-          },
-        });
-
         await prisma.crisisDetectionEvent.update({
           where: { id: args.crisis_id },
-          data: { status: "RESPONDED" },
+          data: {
+            status: "ACKNOWLEDGED",
+            acknowledgedAt: new Date(),
+            acknowledgedById: userId,
+            responseNotes: responseContent,
+          },
         });
 
         let text = `**Crisis Response Recorded**\n\n`;
         text += `**Crisis ID:** \`${args.crisis_id}\`\n`;
         text += `**Response Type:** ${args.template_id ? "Template" : "Custom"}\n`;
         text += `**Content:** ${responseContent.slice(0, 200)}${responseContent.length > 200 ? "..." : ""}\n`;
-        text += `**Status:** RESPONDED\n`;
+        text += `**Status:** ACKNOWLEDGED\n`;
         return textResult(text);
       }, { timeoutMs: 30_000 }),
   });

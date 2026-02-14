@@ -44,7 +44,7 @@ function makeToolDef(overrides?: Partial<ToolDefinition>): ToolDefinition {
 }
 
 function getRegisteredHandler(mockMcpServer: ReturnType<typeof createMockMcpServer>) {
-  const registerCall = mockMcpServer.registerTool.mock.calls[0];
+  const registerCall = mockMcpServer.registerTool.mock.calls[0]!;
   // The handler is the 3rd argument to registerTool
   return registerCall[2] as (input: never) => Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }>;
 }
@@ -83,7 +83,7 @@ describe("CapabilityFilteredRegistry", () => {
     const result = await handler({} as never);
 
     expect(originalHandler).toHaveBeenCalledOnce();
-    expect(result.content[0].text).toBe("success");
+    expect(result.content[0]!.text).toBe("success");
   });
 
   it("should return PERMISSION_DENIED when capability is denied", async () => {
@@ -107,8 +107,8 @@ describe("CapabilityFilteredRegistry", () => {
     const result = await handler({} as never);
 
     expect(originalHandler).not.toHaveBeenCalled();
-    expect(result.content[0].text).toContain("PERMISSION_DENIED");
-    expect(result.content[0].text).toContain("explicitly denied");
+    expect(result.content[0]!.text).toContain("PERMISSION_DENIED");
+    expect(result.content[0]!.text).toContain("explicitly denied");
   });
 
   it("should return PERMISSION_NEEDED and create request when action is request_permission", async () => {
@@ -133,8 +133,8 @@ describe("CapabilityFilteredRegistry", () => {
     const result = await handler({} as never);
 
     expect(originalHandler).not.toHaveBeenCalled();
-    expect(result.content[0].text).toContain("PERMISSION_NEEDED");
-    expect(result.content[0].text).toContain("vault_store");
+    expect(result.content[0]!.text).toContain("PERMISSION_NEEDED");
+    expect(result.content[0]!.text).toContain("vault_store");
     expect(mockCreatePermissionRequest).toHaveBeenCalledWith(
       agentId,
       userId,
@@ -189,7 +189,7 @@ describe("CapabilityFilteredRegistry", () => {
 
     expect(mockPrisma.agentAuditLog.create).toHaveBeenCalledOnce();
 
-    const auditData = mockPrisma.agentAuditLog.create.mock.calls[0][0].data;
+    const auditData = mockPrisma.agentAuditLog.create.mock.calls[0]![0].data;
     expect(auditData.agentId).toBe(agentId);
     expect(auditData.userId).toBe(userId);
     expect(auditData.capabilityTokenId).toBe(tokenId);

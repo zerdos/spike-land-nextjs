@@ -82,7 +82,7 @@ describe("inbox tools", () => {
       const handler = registry.handlers.get("inbox_list_items")!;
       await handler({ workspace_slug: "my-ws", status: "UNREAD", platform: "twitter" });
 
-      const where = mockPrisma.inboxItem.findMany.mock.calls[0][0].where;
+      const where = mockPrisma.inboxItem.findMany.mock.calls[0]![0].where;
       expect(where).toMatchObject({
         workspaceId: "ws-1",
         status: "UNREAD",

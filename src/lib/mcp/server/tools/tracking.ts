@@ -51,12 +51,12 @@ export function registerTrackingTools(
         const since = new Date();
         since.setDate(since.getDate() - (args.days ?? 7));
 
+        void workspace; // workspace resolved for auth
         const sessions = await prisma.visitorSession.findMany({
           where: {
-            workspaceId: workspace.id,
-            startedAt: { gte: since },
+            sessionStart: { gte: since },
           },
-          orderBy: { startedAt: "desc" },
+          orderBy: { sessionStart: "desc" },
           take: args.limit ?? 20,
         });
 
@@ -66,17 +66,10 @@ export function registerTrackingTools(
 
         let text = `**Visitor Sessions (${sessions.length}):**\n\n`;
         for (const s of sessions) {
-          const session = s as typeof s & {
-            visitorId?: string;
-            source?: string;
-            duration?: number;
-            pageCount?: number;
-            startedAt: Date;
-          };
-          text += `- **Session:** ${session.id}\n`;
-          text += `  Visitor: ${session.visitorId ?? "anonymous"} | Source: ${session.source ?? "direct"}\n`;
-          text += `  Duration: ${session.duration ?? 0}s | Pages: ${session.pageCount ?? 0}\n`;
-          text += `  Started: ${session.startedAt.toISOString()}\n\n`;
+          text += `- **Session:** ${s.id}\n`;
+          text += `  Visitor: ${s.visitorId} | Source: ${s.utmSource ?? "direct"}\n`;
+          text += `  Pages: ${s.pageViewCount} | Landing: ${s.landingPage}\n`;
+          text += `  Started: ${s.sessionStart.toISOString()}\n\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),
@@ -97,11 +90,11 @@ export function registerTrackingTools(
         const since = new Date();
         since.setDate(since.getDate() - (args.days ?? 30));
 
+        void workspace; // workspace resolved for auth
         const groups = await prisma.visitorSession.groupBy({
-          by: ["source", "medium", "campaign"],
+          by: ["utmSource", "utmMedium", "utmCampaign"],
           where: {
-            workspaceId: workspace.id,
-            startedAt: { gte: since },
+            sessionStart: { gte: since },
           },
           _count: { id: true },
         });
@@ -115,13 +108,7 @@ export function registerTrackingTools(
         text += `|--------|--------|----------|----------|\n`;
 
         for (const g of groups) {
-          const group = g as typeof g & {
-            source: string | null;
-            medium: string | null;
-            campaign: string | null;
-            _count: { id: number };
-          };
-          text += `| ${group.source ?? "direct"} | ${group.medium ?? "-"} | ${group.campaign ?? "-"} | ${group._count.id} |\n`;
+          text += `| ${g.utmSource ?? "direct"} | ${g.utmMedium ?? "-"} | ${g.utmCampaign ?? "-"} | ${g._count.id} |\n`;
         }
 
         return textResult(text);
@@ -142,7 +129,7 @@ export function registerTrackingTools(
 
         const pageViews = await prisma.pageView.findMany({
           where: { sessionId: args.session_id },
-          orderBy: { viewedAt: "asc" },
+          orderBy: { timestamp: "asc" },
         });
 
         if (pageViews.length === 0) {
@@ -151,13 +138,9 @@ export function registerTrackingTools(
 
         let text = `**Session Journey (${pageViews.length} pages):**\n\n`;
         for (let i = 0; i < pageViews.length; i++) {
-          const pv = pageViews[i] as (typeof pageViews)[number] & {
-            path: string;
-            duration?: number;
-            viewedAt: Date;
-          };
+          const pv = pageViews[i]!;
           text += `${i + 1}. **${pv.path}**\n`;
-          text += `   Duration: ${pv.duration ?? 0}s | Viewed: ${pv.viewedAt.toISOString()}\n`;
+          text += `   Time on page: ${pv.timeOnPage ?? 0}s | Viewed: ${pv.timestamp.toISOString()}\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),
@@ -178,15 +161,15 @@ export function registerTrackingTools(
         const since = new Date();
         since.setDate(since.getDate() - (args.days ?? 7));
 
+        void workspace; // workspace resolved for auth
         const where: Record<string, unknown> = {
-          workspaceId: workspace.id,
-          createdAt: { gte: since },
+          timestamp: { gte: since },
         };
         if (args.event_name) where["name"] = args.event_name;
 
         const events = await prisma.analyticsEvent.findMany({
           where,
-          orderBy: { createdAt: "desc" },
+          orderBy: { timestamp: "desc" },
           take: args.limit ?? 50,
         });
 
@@ -196,14 +179,10 @@ export function registerTrackingTools(
 
         let text = `**Analytics Events (${events.length}):**\n\n`;
         for (const e of events) {
-          const event = e as typeof e & {
-            name: string;
-            properties?: Record<string, unknown> | null;
-            createdAt: Date;
-          };
-          const props = event.properties ? JSON.stringify(event.properties) : "{}";
-          text += `- **${event.name}** at ${event.createdAt.toISOString()}\n`;
-          text += `  Properties: ${props}\n\n`;
+          const props = e.metadata ? JSON.stringify(e.metadata) : "{}";
+          text += `- **${e.name}** at ${e.timestamp.toISOString()}\n`;
+          text += `  Category: ${e.category ?? "N/A"} | Value: ${e.value ?? "N/A"}\n`;
+          text += `  Metadata: ${props}\n\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),

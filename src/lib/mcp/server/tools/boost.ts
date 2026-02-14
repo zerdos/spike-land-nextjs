@@ -123,8 +123,11 @@ export function registerBoostTools(
           data: {
             workspaceId: workspace.id,
             recommendationId: args.recommendation_id,
+            postId: rec.postId,
+            postType: rec.postType,
+            platform: (rec.recommendedPlatforms[0] ?? "FACEBOOK") as "FACEBOOK" | "GOOGLE_ADS",
             budget: args.budget,
-            status: "PENDING",
+            status: "ACTIVE",
           },
         });
         return textResult(

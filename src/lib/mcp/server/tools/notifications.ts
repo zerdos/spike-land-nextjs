@@ -44,7 +44,7 @@ export function registerNotificationsTools(
     description: "List notifications for the workspace, optionally filtered to unread only.",
     category: "notifications",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: NotificationListSchema.shape,
     handler: async (args: z.infer<typeof NotificationListSchema>): Promise<CallToolResult> =>
       safeToolCall("notification_list", async () => {
@@ -103,15 +103,18 @@ export function registerNotificationsTools(
       safeToolCall("notification_configure_channels", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         const ws = await resolveWorkspace(userId, args.workspace_slug);
-        const data: Record<string, boolean> = {};
-        if (args.email_enabled !== undefined) data["emailNotifications"] = args.email_enabled;
-        if (args.slack_enabled !== undefined) data["slackNotifications"] = args.slack_enabled;
-        if (args.in_app_enabled !== undefined) data["inAppNotifications"] = args.in_app_enabled;
-        await prisma.workspaceSettings.upsert({
-          where: { workspaceId: ws.id },
-          create: { workspaceId: ws.id, ...data },
-          update: data,
+
+        // Store notification channel preferences in workspace metadata
+        const config: Record<string, boolean> = {};
+        if (args.email_enabled !== undefined) config["emailNotifications"] = args.email_enabled;
+        if (args.slack_enabled !== undefined) config["slackNotifications"] = args.slack_enabled;
+        if (args.in_app_enabled !== undefined) config["inAppNotifications"] = args.in_app_enabled;
+
+        await prisma.workspace.update({
+          where: { id: ws.id },
+          data: { settings: config },
         });
+
         return textResult(
           `**Notification Channels Updated**\n\n` +
           `**Email:** ${args.email_enabled ?? "(unchanged)"}\n` +

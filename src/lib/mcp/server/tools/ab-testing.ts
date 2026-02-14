@@ -97,8 +97,9 @@ export function registerAbTestingTools(
 
         const test = await prisma.socialPostAbTest.create({
           data: {
-            postId: args.post_id,
+            originalPostId: args.post_id,
             workspaceId: workspace.id,
+            name: `A/B Test for ${args.post_id}`,
             status: "DRAFT",
           },
         });
@@ -109,7 +110,7 @@ export function registerAbTestingTools(
             data: {
               testId: test.id,
               content: args.variant_contents[i]!,
-              variantIndex: i,
+              variationType: `variant_${i}`,
             },
           });
           variantIds.push(variant.id);
@@ -118,8 +119,10 @@ export function registerAbTestingTools(
         if (args.hypothesis) {
           await prisma.hypothesis.create({
             data: {
-              testId: test.id,
-              content: args.hypothesis,
+              workspaceId: workspace.id,
+              title: `Hypothesis for test ${test.id}`,
+              description: args.hypothesis,
+              experimentId: test.id,
             },
           });
         }
@@ -157,8 +160,7 @@ export function registerAbTestingTools(
           where: { id: args.test_id },
           include: {
             variants: {
-              include: { metrics: true },
-              orderBy: { variantIndex: "asc" },
+              orderBy: { createdAt: "asc" },
             },
           },
         });
@@ -170,22 +172,14 @@ export function registerAbTestingTools(
         let text = `**A/B Test Results**\n\n`;
         text += `**Test ID:** \`${test.id}\`\n`;
         text += `**Status:** ${test.status}\n\n`;
-        text += `| Variant | Impressions | Clicks | CTR | Conversions | Conv. Rate |\n`;
-        text += `|---------|------------|--------|-----|-------------|------------|\n`;
+        text += `| Variant | Impressions | Clicks | CTR | Engagements |\n`;
+        text += `|---------|------------|--------|-----|-------------|\n`;
 
         for (const v of test.variants) {
-          const m = v.metrics;
-          if (m) {
-            const ctr = m.impressions > 0
-              ? ((m.clicks / m.impressions) * 100).toFixed(2)
-              : "0.00";
-            const convRate = m.impressions > 0
-              ? ((m.conversions / m.impressions) * 100).toFixed(2)
-              : "0.00";
-            text += `| \`${v.id}\` | ${m.impressions} | ${m.clicks} | ${ctr}% | ${m.conversions} | ${convRate}% |\n`;
-          } else {
-            text += `| \`${v.id}\` | - | - | - | - | - |\n`;
-          }
+          const ctr = v.impressions > 0
+            ? ((v.clicks / v.impressions) * 100).toFixed(2)
+            : "0.00";
+          text += `| \`${v.id}\` | ${v.impressions} | ${v.clicks} | ${ctr}% | ${v.engagements} |\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),
@@ -239,9 +233,9 @@ export function registerAbTestingTools(
         const workspace = await resolveWorkspace(userId, args.workspace_slug);
 
         const tests = await prisma.socialPostAbTest.findMany({
-          where: { workspaceId: workspace.id, status: "ACTIVE" },
+          where: { workspaceId: workspace.id, status: "RUNNING" },
           include: {
-            post: { select: { content: true } },
+            originalPost: { select: { content: true } },
             _count: { select: { variants: true } },
           },
           orderBy: { createdAt: "desc" },
@@ -255,8 +249,8 @@ export function registerAbTestingTools(
         text += `| Test ID | Post Preview | Variants | Started |\n`;
         text += `|---------|-------------|----------|---------|\n`;
         for (const t of tests) {
-          const preview = t.post?.content
-            ? t.post.content.slice(0, 50) + (t.post.content.length > 50 ? "..." : "")
+          const preview = t.originalPost?.content
+            ? t.originalPost.content.slice(0, 50) + (t.originalPost.content.length > 50 ? "..." : "")
             : "(no content)";
           text += `| \`${t.id}\` | ${preview} | ${t._count.variants} | ${t.createdAt.toISOString()} |\n`;
         }
@@ -280,8 +274,7 @@ export function registerAbTestingTools(
           where: { id: args.test_id },
           include: {
             variants: {
-              include: { metrics: true },
-              orderBy: { variantIndex: "asc" },
+              orderBy: { createdAt: "asc" },
             },
           },
         });
@@ -295,7 +288,6 @@ export function registerAbTestingTools(
         }
 
         const control = test.variants[0]!;
-        const controlMetrics = control.metrics;
 
         let text = `**Statistical Significance**\n\n`;
         text += `**Test ID:** \`${test.id}\`\n`;
@@ -305,13 +297,12 @@ export function registerAbTestingTools(
 
         for (let i = 1; i < test.variants.length; i++) {
           const variant = test.variants[i]!;
-          const variantMetrics = variant.metrics;
 
           const result = calculateSignificance(
-            controlMetrics?.impressions ?? 0,
-            controlMetrics?.conversions ?? 0,
-            variantMetrics?.impressions ?? 0,
-            variantMetrics?.conversions ?? 0,
+            control.impressions ?? 0,
+            control.clicks ?? 0,
+            variant.impressions ?? 0,
+            variant.clicks ?? 0,
           );
 
           text += `| \`${variant.id}\` | ${result.pValue.toFixed(4)} | ${result.confidence} | ${result.significant ? "Yes" : "No"} |\n`;

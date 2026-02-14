@@ -56,7 +56,7 @@ export function registerInboxTools(
     description: "List inbox items for a workspace with optional filters for status and platform.",
     category: "inbox",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: InboxListSchema.shape,
     handler: async (args: z.infer<typeof InboxListSchema>): Promise<CallToolResult> =>
       safeToolCall("inbox_list_items", async () => {
@@ -97,7 +97,7 @@ export function registerInboxTools(
     description: "Get full details of a specific inbox item including suggested responses and drafts.",
     category: "inbox",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: InboxGetItemSchema.shape,
     handler: async (args: z.infer<typeof InboxGetItemSchema>): Promise<CallToolResult> =>
       safeToolCall("inbox_get_item", async () => {
@@ -168,7 +168,7 @@ export function registerInboxTools(
 
         await prisma.inboxItem.update({
           where: { id: args.item_id },
-          data: { status: "RESOLVED", repliedAt: new Date() },
+          data: { status: "REPLIED", repliedAt: new Date() },
         });
 
         return textResult(
@@ -249,7 +249,7 @@ export function registerInboxTools(
     description: "Get priority breakdown and sentiment analysis for an inbox item.",
     category: "inbox",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: InboxPrioritySchema.shape,
     handler: async (args: z.infer<typeof InboxPrioritySchema>): Promise<CallToolResult> =>
       safeToolCall("inbox_get_priority_score", async () => {

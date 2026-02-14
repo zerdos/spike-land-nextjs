@@ -174,7 +174,7 @@ export function registerRelayTools(
     description: "Get relay draft metrics for a workspace over a time period.",
     category: "relay",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: RelayMetricsSchema.shape,
     handler: async (args: z.infer<typeof RelayMetricsSchema>): Promise<CallToolResult> =>
       safeToolCall("relay_get_metrics", async () => {
@@ -213,8 +213,8 @@ export function registerRelayTools(
         text += `| Status | Count |\n| --- | --- |\n`;
 
         for (const group of drafts as Array<Record<string, unknown>>) {
-          const countObj = group["_count"] as Record<string, number>;
-          const count = countObj["status"];
+          const countObj = group["_count"] as Record<string, number> | undefined;
+          const count = countObj?.["status"] ?? 0;
           const status = group["status"] as string;
           text += `| ${status} | ${count} |\n`;
           totalDrafts += count;
@@ -234,7 +234,7 @@ export function registerRelayTools(
     description: "List pending relay drafts awaiting review.",
     category: "relay",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: RelayListPendingSchema.shape,
     handler: async (args: z.infer<typeof RelayListPendingSchema>): Promise<CallToolResult> =>
       safeToolCall("relay_list_pending", async () => {

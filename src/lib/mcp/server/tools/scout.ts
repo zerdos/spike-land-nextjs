@@ -57,9 +57,8 @@ export function registerScoutTools(
             name: true,
             platform: true,
             handle: true,
-            followerCount: true,
             isActive: true,
-            lastScrapedAt: true,
+            updatedAt: true,
           },
         });
         if (competitors.length === 0) {
@@ -67,10 +66,8 @@ export function registerScoutTools(
         }
         let text = `**Competitors** (${competitors.length})\n\n`;
         for (const c of competitors) {
-          const followers = c.followerCount != null ? c.followerCount.toLocaleString() : "N/A";
-          const scraped = c.lastScrapedAt ? c.lastScrapedAt.toISOString() : "never";
-          text += `- **${c.name}** (${c.platform}) — @${c.handle}\n`;
-          text += `  Followers: ${followers} | Active: ${c.isActive} | Last scraped: ${scraped}\n`;
+          text += `- **${c.name ?? c.handle}** (${c.platform}) — @${c.handle}\n`;
+          text += `  Active: ${c.isActive} | Updated: ${c.updatedAt.toISOString()}\n`;
           text += `  ID: \`${c.id}\`\n`;
         }
         return textResult(text);
@@ -91,7 +88,7 @@ export function registerScoutTools(
           data: {
             workspaceId: workspace.id,
             name: args.name,
-            platform: args.platform,
+            platform: args.platform as "TWITTER" | "LINKEDIN" | "FACEBOOK" | "INSTAGRAM" | "TIKTOK" | "YOUTUBE" | "DISCORD" | "SNAPCHAT" | "PINTEREST",
             handle: args.handle,
           },
         });
@@ -120,7 +117,7 @@ export function registerScoutTools(
         if (args.competitor_id) where["competitorId"] = args.competitor_id;
         const benchmarks = await prisma.scoutBenchmark.findMany({
           where,
-          orderBy: { createdAt: "desc" },
+          orderBy: { generatedAt: "desc" },
           take: 20,
         });
         if (benchmarks.length === 0) {
@@ -154,19 +151,16 @@ export function registerScoutTools(
         const workspace = await resolveWorkspace(userId, args.workspace_slug);
         const topics = await prisma.scoutTopic.findMany({
           where: { workspaceId: workspace.id },
-          orderBy: { trendScore: "desc" },
+          orderBy: { createdAt: "desc" },
           take: args.limit,
+          include: { _count: { select: { results: true } } },
         });
         if (topics.length === 0) {
           return textResult("**Topics**\n\nNo topics found.");
         }
-        let text = `**Trending Topics** (${topics.length})\n\n`;
+        let text = `**Topics** (${topics.length})\n\n`;
         for (const t of topics) {
-          const tRecord = t as unknown as Record<string, unknown>;
-          const name = String(tRecord["name"] ?? "untitled");
-          const score = String(tRecord["trendScore"] ?? 0);
-          const mentions = String(tRecord["mentionCount"] ?? 0);
-          text += `- **${name}** — Score: ${score} | Mentions: ${mentions}\n`;
+          text += `- **${t.name}** — Results: ${t._count.results} | Active: ${t.isActive}\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),
@@ -183,25 +177,33 @@ export function registerScoutTools(
       safeToolCall("scout_get_insights", async () => {
         const prisma = (await import("@/lib/prisma")).default;
         const workspace = await resolveWorkspace(userId, args.workspace_slug);
-        const where: Record<string, unknown> = { workspaceId: workspace.id };
-        if (args.competitor_id) where["competitorId"] = args.competitor_id;
+        // Get topics for this workspace, optionally filtered
+        const topicWhere: Record<string, unknown> = { workspaceId: workspace.id };
+        const topics = await prisma.scoutTopic.findMany({
+          where: topicWhere,
+          select: { id: true },
+        });
+        const topicIds = topics.map((t) => t.id);
+
+        if (topicIds.length === 0) {
+          return textResult("**Insights**\n\nNo topics found for this workspace.");
+        }
+
         const results = await prisma.scoutResult.findMany({
-          where,
-          orderBy: { createdAt: "desc" },
+          where: { topicId: { in: topicIds } },
+          orderBy: { foundAt: "desc" },
           take: 10,
+          include: { topic: { select: { name: true } } },
         });
         if (results.length === 0) {
           return textResult("**Insights**\n\nNo insights available yet.");
         }
-        let text = `**Competitive Insights** (${results.length})\n\n`;
+        let text = `**Scout Results** (${results.length})\n\n`;
         for (const r of results) {
-          const rRecord = r as unknown as Record<string, unknown>;
-          const type = String(rRecord["type"] ?? "general");
-          const summary = String(rRecord["summary"] ?? "No summary");
-          const recommendations = String(rRecord["recommendations"] ?? "None");
-          text += `### ${type}\n`;
-          text += `${summary}\n`;
-          text += `**Recommendations:** ${recommendations}\n\n`;
+          text += `### ${r.topic.name} (${r.platform})\n`;
+          text += `**Author:** ${r.author} | **Found:** ${r.foundAt.toISOString()}\n`;
+          text += `${r.content.slice(0, 200)}${r.content.length > 200 ? "..." : ""}\n`;
+          text += `**Engagement:** ${JSON.stringify(r.engagement)}\n\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),

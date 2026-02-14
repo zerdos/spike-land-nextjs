@@ -73,14 +73,14 @@ export function registerBrandBrainTools(
         const violations: Array<{ term: string; type: string }> = [];
 
         for (const vocab of profile.vocabulary) {
-          if (vocab.category === "BANNED" && contentLower.includes(vocab.term.toLowerCase())) {
+          if (vocab.type === "BANNED" && contentLower.includes(vocab.term.toLowerCase())) {
             violations.push({ term: vocab.term, type: "BANNED_TERM" });
           }
         }
 
         for (const guardrail of profile.guardrails) {
-          if (guardrail.type === "KEYWORD_BLOCK") {
-            const keywords = (guardrail.config as Record<string, unknown>)?.["keywords"];
+          if (guardrail.type === "PROHIBITED_TOPIC") {
+            const keywords = (guardrail.ruleConfig as Record<string, unknown>)?.["keywords"];
             if (Array.isArray(keywords)) {
               for (const kw of keywords) {
                 if (typeof kw === "string" && contentLower.includes(kw.toLowerCase())) {
@@ -126,9 +126,11 @@ export function registerBrandBrainTools(
         }
         const rewrite = await prisma.contentRewrite.create({
           data: {
+            workspaceId: workspace.id,
+            createdById: userId,
             brandProfileId: profile.id,
             originalContent: args.content,
-            platform: args.platform ?? "GENERAL",
+            platform: (args.platform ?? "GENERAL") as "TWITTER" | "LINKEDIN" | "INSTAGRAM" | "FACEBOOK" | "GENERAL",
             characterLimit: args.character_limit ?? null,
             status: "PENDING",
           },
@@ -171,8 +173,8 @@ export function registerBrandBrainTools(
         text += `**Tone:** ${profile.toneDescriptors ?? "(none)"}\n`;
         text += `**Guardrails:** ${profile.guardrails.length}\n`;
         text += `**Vocabulary Terms:** ${profile.vocabulary.length}\n`;
-        const bannedCount = profile.vocabulary.filter((v) => v.category === "BANNED").length;
-        const preferredCount = profile.vocabulary.filter((v) => v.category === "PREFERRED").length;
+        const bannedCount = profile.vocabulary.filter((v) => v.type === "BANNED").length;
+        const preferredCount = profile.vocabulary.filter((v) => v.type === "PREFERRED").length;
         text += `  - Banned: ${bannedCount}\n`;
         text += `  - Preferred: ${preferredCount}\n`;
         return textResult(text);
@@ -200,8 +202,8 @@ export function registerBrandBrainTools(
         const violations: Array<{ rule: string; severity: string; matched: string }> = [];
 
         for (const rule of rules) {
-          if (rule.type === "KEYWORD_MATCH") {
-            const keywords = (rule.config as Record<string, unknown>)?.["keywords"];
+          if (rule.ruleType === "KEYWORD_MATCH") {
+            const keywords = (rule.conditions as Record<string, unknown>)?.["keywords"];
             if (Array.isArray(keywords)) {
               for (const kw of keywords) {
                 if (typeof kw === "string" && contentLower.includes(kw.toLowerCase())) {
@@ -226,26 +228,30 @@ export function registerBrandBrainTools(
         const check = await prisma.policyCheck.create({
           data: {
             workspaceId: workspace.id,
-            content: args.content,
-            contentType: args.content_type ?? "POST",
-            platform: args.platform ?? null,
-            result,
-            violationCount: violations.length,
+            contentText: args.content,
+            contentType: (args.content_type ?? "POST") as "POST" | "AD" | "COMMENT" | "MESSAGE" | "BIO" | "STORY",
+            platform: args.platform as "TWITTER" | "LINKEDIN" | "FACEBOOK" | "INSTAGRAM" | "TIKTOK" | "YOUTUBE" | "DISCORD" | "SNAPCHAT" | "PINTEREST" | null | undefined,
+            overallResult: result as "PASSED" | "PASSED_WITH_WARNINGS" | "FAILED",
+            failedRules: violations.length,
+            checkedById: userId,
           },
         });
 
         if (violations.length > 0) {
           for (const v of violations) {
-            await prisma.policyViolation.create({
-              data: {
-                policyCheckId: check.id,
-                workspaceId: workspace.id,
-                ruleName: v.rule,
-                severity: v.severity,
-                message: `Matched keyword: ${v.matched}`,
-                matchedContent: v.matched,
-              },
-            });
+            const matchedRule = rules.find((r) => r.name === v.rule);
+            if (matchedRule) {
+              await prisma.policyViolation.create({
+                data: {
+                  checkId: check.id,
+                  workspaceId: workspace.id,
+                  ruleId: matchedRule.id,
+                  severity: v.severity as "INFO" | "WARNING" | "ERROR" | "CRITICAL",
+                  message: `Matched keyword: ${v.matched}`,
+                  matchedContent: v.matched,
+                },
+              });
+            }
           }
         }
 
@@ -290,7 +296,7 @@ export function registerBrandBrainTools(
         }
         let text = `**Policy Violations** (${violations.length})\n\n`;
         for (const v of violations) {
-          text += `- **${v.rule?.name ?? v.ruleName}** (${v.severity})\n`;
+          text += `- **${v.rule?.name ?? "unknown"}** (${v.severity})\n`;
           text += `  Type: ${v.check?.contentType ?? "N/A"} | Message: ${v.message}\n`;
           text += `  Matched: \`${v.matchedContent ?? "N/A"}\` | At: ${v.createdAt.toISOString()}\n\n`;
         }

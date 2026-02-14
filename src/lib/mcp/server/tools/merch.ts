@@ -52,8 +52,9 @@ export function registerMerchTools(
         const prisma = (await import("@/lib/prisma")).default;
         const workspace = await resolveWorkspace(userId, args.workspace_slug);
 
+        void workspace; // workspace resolved for auth
         const products = await prisma.merchProduct.findMany({
-          where: { workspaceId: workspace.id },
+          where: { isActive: true },
           include: { _count: { select: { variants: true } } },
           orderBy: { createdAt: "desc" },
           take: args.limit ?? 20,
@@ -65,10 +66,9 @@ export function registerMerchTools(
 
         let text = `**Merchandise Products (${products.length}):**\n\n`;
         for (const p of products) {
-          const product = p as typeof p & { price?: number; status?: string; _count: { variants: number } };
-          text += `- **${product.name}**\n`;
-          text += `  Price: ${product.price ?? "N/A"} | Variants: ${product._count.variants} | Status: ${product.status ?? "active"}\n`;
-          text += `  ID: ${product.id}\n\n`;
+          text += `- **${p.name}**\n`;
+          text += `  Base: ${String(p.basePrice)} | Retail: ${String(p.retailPrice)} | Variants: ${p._count.variants} | Active: ${p.isActive}\n`;
+          text += `  ID: ${p.id}\n\n`;
         }
         return textResult(text);
       }, { timeoutMs: 30_000 }),
@@ -83,7 +83,7 @@ export function registerMerchTools(
     handler: async (args: z.infer<typeof AddToCartSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_add_to_cart", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        await resolveWorkspace(userId, args.workspace_slug);
 
         const variant = await prisma.merchVariant.findFirst({
           where: { id: args.variant_id },
@@ -92,14 +92,14 @@ export function registerMerchTools(
           return textResult("**Error: NOT_FOUND**\nVariant not found.\n**Retryable:** false");
         }
 
-        let cart = await prisma.merchCart.findFirst({
-          where: { userId, workspaceId: workspace.id },
+        let cart = await prisma.merchCart.findUnique({
+          where: { userId },
           include: { _count: { select: { items: true } } },
         });
 
         if (!cart) {
           cart = await prisma.merchCart.create({
-            data: { userId, workspaceId: workspace.id },
+            data: { userId },
             include: { _count: { select: { items: true } } },
           });
         }
@@ -107,17 +107,18 @@ export function registerMerchTools(
         await prisma.merchCartItem.create({
           data: {
             cartId: cart.id,
+            productId: variant.productId,
             variantId: args.variant_id,
             quantity: args.quantity ?? 1,
           },
         });
 
-        const updatedCart = await prisma.merchCart.findFirst({
-          where: { id: cart.id },
+        const updatedCart = await prisma.merchCart.findUnique({
+          where: { userId },
           include: { _count: { select: { items: true } } },
         });
 
-        const itemCount = (updatedCart as typeof updatedCart & { _count: { items: number } })?._count?.items ?? 0;
+        const itemCount = updatedCart?._count?.items ?? 0;
 
         return textResult(
           `**Cart Updated**\n\n` +
@@ -137,39 +138,44 @@ export function registerMerchTools(
     handler: async (args: z.infer<typeof CheckoutSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_checkout", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        await resolveWorkspace(userId, args.workspace_slug);
 
         const cart = await prisma.merchCart.findFirst({
-          where: { id: args.cart_id, workspaceId: workspace.id },
-          include: { items: { include: { variant: true } } },
+          where: { id: args.cart_id, userId },
+          include: { items: { include: { product: true } } },
         });
 
         if (!cart) {
           return textResult("**Error: NOT_FOUND**\nCart not found.\n**Retryable:** false");
         }
 
-        const cartWithItems = cart as typeof cart & { items: Array<{ quantity: number; variant: { price?: number } }> };
-        const total = cartWithItems.items.reduce(
-          (sum: number, item: { quantity: number; variant: { price?: number } }) =>
-            sum + item.quantity * (item.variant.price ?? 0),
+        const subtotal = cart.items.reduce(
+          (sum: number, item) =>
+            sum + item.quantity * Number(item.product.retailPrice),
           0,
         );
+        const shippingCost = 0;
+        const totalAmount = subtotal + shippingCost;
+        const orderNumber = `ORD-${Date.now()}`;
 
         const order = await prisma.merchOrder.create({
           data: {
-            workspaceId: workspace.id,
             userId,
-            cartId: args.cart_id,
+            orderNumber,
             status: "PENDING",
-            shippingAddress: args.shipping_address,
-            total,
+            subtotal,
+            shippingCost,
+            totalAmount,
+            customerEmail: "checkout@spike.land",
+            shippingAddress: { address: args.shipping_address },
           },
         });
 
         return textResult(
           `**Order Created**\n\n` +
           `**Order ID:** ${order.id}\n` +
-          `**Total:** ${total}\n` +
+          `**Order Number:** ${orderNumber}\n` +
+          `**Total:** ${totalAmount}\n` +
           `**Status:** PENDING\n` +
           `**Shipping to:** ${args.shipping_address}`,
         );
@@ -186,13 +192,13 @@ export function registerMerchTools(
     handler: async (args: z.infer<typeof GetOrderSchema>): Promise<CallToolResult> =>
       safeToolCall("merch_get_order", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        await resolveWorkspace(userId, args.workspace_slug);
 
         const order = await prisma.merchOrder.findFirst({
-          where: { id: args.order_id, workspaceId: workspace.id },
+          where: { id: args.order_id, userId },
           include: {
             items: true,
-            shipment: true,
+            shipments: true,
           },
         });
 
@@ -200,34 +206,26 @@ export function registerMerchTools(
           return textResult("**Error: NOT_FOUND**\nOrder not found.\n**Retryable:** false");
         }
 
-        const orderData = order as typeof order & {
-          status: string;
-          total: number;
-          shippingAddress: string;
-          items: Array<{ id: string; quantity: number; variantId: string }>;
-          shipment: { trackingNumber?: string; carrier?: string; status?: string } | null;
-          createdAt: Date;
-        };
-
         let text = `**Order Details**\n\n`;
-        text += `**Order ID:** ${orderData.id}\n`;
-        text += `**Status:** ${orderData.status}\n`;
-        text += `**Total:** ${orderData.total}\n`;
-        text += `**Shipping to:** ${orderData.shippingAddress}\n`;
-        text += `**Created:** ${orderData.createdAt.toISOString()}\n\n`;
+        text += `**Order ID:** ${order.id}\n`;
+        text += `**Order Number:** ${order.orderNumber}\n`;
+        text += `**Status:** ${order.status}\n`;
+        text += `**Total:** ${String(order.totalAmount)}\n`;
+        text += `**Shipping to:** ${JSON.stringify(order.shippingAddress)}\n`;
+        text += `**Created:** ${order.createdAt.toISOString()}\n\n`;
 
-        if (orderData.items.length > 0) {
-          text += `**Items (${orderData.items.length}):**\n`;
-          for (const item of orderData.items) {
-            text += `- Variant: ${item.variantId} x${item.quantity}\n`;
+        if (order.items.length > 0) {
+          text += `**Items (${order.items.length}):**\n`;
+          for (const item of order.items) {
+            text += `- ${item.productName} (${item.variantName ?? "default"}) x${item.quantity}\n`;
           }
         }
 
-        if (orderData.shipment) {
-          text += `\n**Shipment:**\n`;
-          text += `- Tracking: ${orderData.shipment.trackingNumber ?? "N/A"}\n`;
-          text += `- Carrier: ${orderData.shipment.carrier ?? "N/A"}\n`;
-          text += `- Status: ${orderData.shipment.status ?? "N/A"}\n`;
+        if (order.shipments.length > 0) {
+          text += `\n**Shipments (${order.shipments.length}):**\n`;
+          for (const s of order.shipments) {
+            text += `- Tracking: ${s.trackingNumber ?? "N/A"} | Carrier: ${s.carrier ?? "N/A"} | Status: ${s.status}\n`;
+          }
         }
 
         return textResult(text);
@@ -254,21 +252,13 @@ export function registerMerchTools(
           return textResult("**Error: NOT_FOUND**\nShipment not found for this order.\n**Retryable:** false");
         }
 
-        const s = shipment as typeof shipment & {
-          trackingNumber: string;
-          carrier: string;
-          status: string;
-          estimatedDelivery?: Date | null;
-          shippedAt?: Date | null;
-        };
-
         let text = `**Shipment Tracking**\n\n`;
         text += `**Order ID:** ${args.order_id}\n`;
-        text += `**Tracking Number:** ${s.trackingNumber}\n`;
-        text += `**Carrier:** ${s.carrier}\n`;
-        text += `**Status:** ${s.status}\n`;
-        if (s.shippedAt) text += `**Shipped At:** ${s.shippedAt.toISOString()}\n`;
-        if (s.estimatedDelivery) text += `**Estimated Delivery:** ${s.estimatedDelivery.toISOString()}\n`;
+        text += `**Tracking Number:** ${shipment.trackingNumber ?? "N/A"}\n`;
+        text += `**Carrier:** ${shipment.carrier ?? "N/A"}\n`;
+        text += `**Status:** ${shipment.status}\n`;
+        if (shipment.shippedAt) text += `**Shipped At:** ${shipment.shippedAt.toISOString()}\n`;
+        if (shipment.deliveredAt) text += `**Delivered At:** ${shipment.deliveredAt.toISOString()}\n`;
 
         return textResult(text);
       }, { timeoutMs: 30_000 }),

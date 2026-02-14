@@ -39,10 +39,10 @@ describe("tracking tools", () => {
         {
           id: "sess-1",
           visitorId: "v-1",
-          source: "google",
-          duration: 120,
-          pageCount: 5,
-          startedAt: new Date("2025-06-01"),
+          utmSource: "google",
+          pageViewCount: 5,
+          landingPage: "/home",
+          sessionStart: new Date("2025-06-01"),
         },
       ]);
 
@@ -52,7 +52,6 @@ describe("tracking tools", () => {
       expect(text).toContain("Visitor Sessions (1)");
       expect(text).toContain("sess-1");
       expect(text).toContain("google");
-      expect(text).toContain("120s");
       expect(text).toContain("Pages: 5");
     });
 
@@ -69,14 +68,18 @@ describe("tracking tools", () => {
       mockPrisma.visitorSession.findMany.mockResolvedValue([
         {
           id: "sess-2",
-          startedAt: new Date("2025-06-02"),
+          visitorId: "anon-1",
+          utmSource: null,
+          pageViewCount: 0,
+          landingPage: "/",
+          sessionStart: new Date("2025-06-02"),
         },
       ]);
 
       const handler = registry.handlers.get("tracking_get_sessions")!;
       const result = await handler({ workspace_slug: "my-ws" });
       const text = getText(result);
-      expect(text).toContain("anonymous");
+      expect(text).toContain("anon-1");
       expect(text).toContain("direct");
     });
   });
@@ -84,8 +87,8 @@ describe("tracking tools", () => {
   describe("tracking_get_attribution", () => {
     it("should return attribution report", async () => {
       mockPrisma.visitorSession.groupBy.mockResolvedValue([
-        { source: "google", medium: "cpc", campaign: "summer", _count: { id: 42 } },
-        { source: "twitter", medium: "social", campaign: null, _count: { id: 15 } },
+        { utmSource: "google", utmMedium: "cpc", utmCampaign: "summer", _count: { id: 42 } },
+        { utmSource: "twitter", utmMedium: "social", utmCampaign: null, _count: { id: 15 } },
       ]);
 
       const handler = registry.handlers.get("tracking_get_attribution")!;
@@ -112,9 +115,9 @@ describe("tracking tools", () => {
   describe("tracking_get_journey", () => {
     it("should return session page journey", async () => {
       mockPrisma.pageView.findMany.mockResolvedValue([
-        { path: "/home", duration: 30, viewedAt: new Date("2025-06-01T10:00:00Z") },
-        { path: "/products", duration: 45, viewedAt: new Date("2025-06-01T10:01:00Z") },
-        { path: "/checkout", duration: 60, viewedAt: new Date("2025-06-01T10:02:00Z") },
+        { path: "/home", timeOnPage: 30, timestamp: new Date("2025-06-01T10:00:00Z") },
+        { path: "/products", timeOnPage: 45, timestamp: new Date("2025-06-01T10:01:00Z") },
+        { path: "/checkout", timeOnPage: 60, timestamp: new Date("2025-06-01T10:02:00Z") },
       ]);
 
       const handler = registry.handlers.get("tracking_get_journey")!;
@@ -140,8 +143,8 @@ describe("tracking tools", () => {
   describe("tracking_query_events", () => {
     it("should return analytics events", async () => {
       mockPrisma.analyticsEvent.findMany.mockResolvedValue([
-        { name: "page_view", properties: { path: "/home" }, createdAt: new Date("2025-06-01T10:00:00Z") },
-        { name: "button_click", properties: { button: "cta" }, createdAt: new Date("2025-06-01T10:01:00Z") },
+        { name: "page_view", metadata: { path: "/home" }, category: null, value: null, timestamp: new Date("2025-06-01T10:00:00Z") },
+        { name: "button_click", metadata: { button: "cta" }, category: null, value: null, timestamp: new Date("2025-06-01T10:01:00Z") },
       ]);
 
       const handler = registry.handlers.get("tracking_query_events")!;
@@ -155,7 +158,7 @@ describe("tracking tools", () => {
 
     it("should filter by event name", async () => {
       mockPrisma.analyticsEvent.findMany.mockResolvedValue([
-        { name: "purchase", properties: { amount: 50 }, createdAt: new Date("2025-06-01") },
+        { name: "purchase", metadata: { amount: 50 }, category: null, value: null, timestamp: new Date("2025-06-01") },
       ]);
 
       const handler = registry.handlers.get("tracking_query_events")!;

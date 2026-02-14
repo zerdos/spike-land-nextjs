@@ -11,22 +11,24 @@ import { safeToolCall, textResult, resolveWorkspace } from "./tool-helpers";
 
 const AssetUploadSchema = z.object({
   workspace_slug: z.string().min(1).describe("Workspace slug."),
-  name: z.string().min(1).describe("Asset display name."),
-  url: z.string().min(1).describe("URL where the asset is hosted."),
-  mime_type: z.string().min(1).describe("MIME type of the asset (e.g. image/png)."),
+  filename: z.string().min(1).describe("Asset filename."),
+  r2_key: z.string().min(1).describe("R2 object key for the asset."),
+  r2_bucket: z.string().min(1).describe("R2 bucket name."),
+  file_type: z.string().min(1).describe("File type of the asset (e.g. image/png)."),
+  size_bytes: z.number().min(0).describe("File size in bytes."),
   folder_id: z.string().optional().describe("Optional folder ID to place the asset in."),
 });
 
 const AssetListSchema = z.object({
   workspace_slug: z.string().min(1).describe("Workspace slug."),
   folder_id: z.string().optional().describe("Filter by folder ID."),
-  mime_type: z.string().optional().describe("Filter by MIME type prefix (e.g. image/)."),
+  file_type: z.string().optional().describe("Filter by file type prefix (e.g. image/)."),
   limit: z.number().optional().default(20).describe("Max items to return (default 20)."),
 });
 
 const AssetSearchSchema = z.object({
   workspace_slug: z.string().min(1).describe("Workspace slug."),
-  query: z.string().min(1).describe("Search query to match against asset names and tags."),
+  query: z.string().min(1).describe("Search query to match against asset filenames."),
   limit: z.number().optional().default(20).describe("Max results to return (default 20)."),
 });
 
@@ -58,9 +60,11 @@ export function registerAssetsTools(
         const ws = await resolveWorkspace(userId, args.workspace_slug);
         const asset = await prisma.asset.create({
           data: {
-            name: args.name,
-            url: args.url,
-            mimeType: args.mime_type,
+            filename: args.filename,
+            r2Key: args.r2_key,
+            r2Bucket: args.r2_bucket,
+            fileType: args.file_type,
+            sizeBytes: args.size_bytes,
             workspaceId: ws.id,
             uploadedById: userId,
             ...(args.folder_id ? { folderId: args.folder_id } : {}),
@@ -69,19 +73,19 @@ export function registerAssetsTools(
         return textResult(
           `**Asset Uploaded**\n\n` +
           `**ID:** ${asset.id}\n` +
-          `**Name:** ${args.name}\n` +
-          `**URL:** ${args.url}\n` +
-          `**Type:** ${args.mime_type}`,
+          `**Filename:** ${args.filename}\n` +
+          `**R2 Key:** ${args.r2_key}\n` +
+          `**Type:** ${args.file_type}`,
         );
       }, { timeoutMs: 30_000 }),
   });
 
   registry.register({
     name: "asset_list",
-    description: "List assets in a workspace with optional folder and MIME type filters.",
+    description: "List assets in a workspace with optional folder and file type filters.",
     category: "assets",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: AssetListSchema.shape,
     handler: async (args: z.infer<typeof AssetListSchema>): Promise<CallToolResult> =>
       safeToolCall("asset_list", async () => {
@@ -89,18 +93,18 @@ export function registerAssetsTools(
         const ws = await resolveWorkspace(userId, args.workspace_slug);
         const where: Record<string, unknown> = { workspaceId: ws.id };
         if (args.folder_id) where["folderId"] = args.folder_id;
-        if (args.mime_type) where["mimeType"] = { startsWith: args.mime_type };
+        if (args.file_type) where["fileType"] = { startsWith: args.file_type };
         const assets = await prisma.asset.findMany({
           where,
-          include: { tags: true },
+          include: { tags: { include: { tag: true } } },
           orderBy: { createdAt: "desc" },
           take: args.limit,
         });
         if (assets.length === 0) {
           return textResult("**No assets found** matching the given filters.");
         }
-        const lines = assets.map((a: { id: string; name: string; mimeType: string; createdAt: Date; tags: Array<{ tag: string }> }) =>
-          `- **${a.name}** (${a.mimeType}) — tags: ${a.tags.map((t) => t.tag).join(", ") || "none"} — ${a.createdAt.toISOString()}`,
+        const lines = assets.map((a) =>
+          `- **${a.filename}** (${a.fileType}) — tags: ${a.tags.map((t) => t.tag.name).join(", ") || "none"} — ${a.createdAt.toISOString()}`,
         );
         return textResult(
           `**Assets (${assets.length})**\n\n${lines.join("\n")}`,
@@ -110,10 +114,10 @@ export function registerAssetsTools(
 
   registry.register({
     name: "asset_search",
-    description: "Search workspace assets by name or tag.",
+    description: "Search workspace assets by filename.",
     category: "assets",
     tier: "free",
-    readOnlyHint: true,
+    annotations: { readOnlyHint: true },
     inputSchema: AssetSearchSchema.shape,
     handler: async (args: z.infer<typeof AssetSearchSchema>): Promise<CallToolResult> =>
       safeToolCall("asset_search", async () => {
@@ -122,20 +126,16 @@ export function registerAssetsTools(
         const assets = await prisma.asset.findMany({
           where: {
             workspaceId: ws.id,
-            OR: [
-              { name: { contains: args.query, mode: "insensitive" } },
-              { tags: { some: { tag: { contains: args.query, mode: "insensitive" } } } },
-            ],
+            filename: { contains: args.query, mode: "insensitive" },
           },
-          include: { tags: true },
           orderBy: { createdAt: "desc" },
           take: args.limit,
         });
         if (assets.length === 0) {
           return textResult(`**No assets found** matching "${args.query}".`);
         }
-        const lines = assets.map((a: { id: string; name: string; mimeType: string; tags: Array<{ tag: string }> }) =>
-          `- **${a.name}** (${a.mimeType}) — tags: ${a.tags.map((t) => t.tag).join(", ") || "none"}`,
+        const lines = assets.map((a) =>
+          `- **${a.filename}** (${a.fileType}) — ${a.id}`,
         );
         return textResult(
           `**Search Results for "${args.query}" (${assets.length})**\n\n${lines.join("\n")}`,
@@ -173,29 +173,36 @@ export function registerAssetsTools(
     handler: async (args: z.infer<typeof AssetTagSchema>): Promise<CallToolResult> =>
       safeToolCall("asset_tag", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        await resolveWorkspace(userId, args.workspace_slug);
+        const ws = await resolveWorkspace(userId, args.workspace_slug);
         const asset = await prisma.asset.findFirst({
           where: { id: args.asset_id },
-          include: { tags: true },
+          include: { tags: { include: { tag: true } } },
         });
         if (!asset) {
           return textResult("**Error: NOT_FOUND**\nAsset not found.\n**Retryable:** false");
         }
-        for (const tag of args.tags) {
-          await prisma.assetTag.upsert({
-            where: { assetId_tag: { assetId: args.asset_id, tag } },
-            create: { assetId: args.asset_id, tag },
+        for (const tagName of args.tags) {
+          // Upsert the tag itself
+          const tag = await prisma.assetTag.upsert({
+            where: { workspaceId_name: { workspaceId: ws.id, name: tagName } },
+            create: { workspaceId: ws.id, name: tagName },
+            update: {},
+          });
+          // Create the assignment if not already present
+          await prisma.assetTagAssignment.upsert({
+            where: { assetId_tagId: { assetId: args.asset_id, tagId: tag.id } },
+            create: { assetId: args.asset_id, tagId: tag.id, assignedById: userId },
             update: {},
           });
         }
         const updated = await prisma.asset.findFirst({
           where: { id: args.asset_id },
-          include: { tags: true },
+          include: { tags: { include: { tag: true } } },
         });
-        const finalTags = (updated?.tags ?? []).map((t: { tag: string }) => t.tag);
+        const finalTags = (updated?.tags ?? []).map((t) => t.tag.name);
         return textResult(
           `**Tags Updated**\n\n` +
-          `**Asset:** ${asset.name}\n` +
+          `**Asset:** ${asset.filename}\n` +
           `**Tags:** ${finalTags.join(", ")}`,
         );
       }, { timeoutMs: 30_000 }),

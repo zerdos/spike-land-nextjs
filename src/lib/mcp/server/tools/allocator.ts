@@ -114,7 +114,7 @@ export function registerAllocatorTools(
         }
         let text = `**Allocator Campaigns** (${campaigns.length})\n\n`;
         for (const c of campaigns) {
-          const autopilot = c.autopilotConfig;
+          const autopilot = c.autopilotConfig[0];
           const autopilotStatus = autopilot
             ? `${autopilot.isEnabled ? "ON" : "OFF"} (${autopilot.mode})`
             : "Not configured";

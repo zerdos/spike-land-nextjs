@@ -51,10 +51,10 @@ export function registerCalendarTools(
     handler: async (args: z.infer<typeof SchedulePostSchema>): Promise<CallToolResult> =>
       safeToolCall("calendar_schedule_post", async () => {
         const prisma = (await import("@/lib/prisma")).default;
-        const workspace = await resolveWorkspace(userId, args.workspace_slug);
+        await resolveWorkspace(userId, args.workspace_slug);
         const post = await prisma.socialPost.create({
           data: {
-            workspaceId: workspace.id,
+            createdById: userId,
             content: args.content,
             status: "SCHEDULED",
             scheduledAt: new Date(args.scheduled_at),
@@ -99,7 +99,7 @@ export function registerCalendarTools(
         }
         const posts = await prisma.scheduledPost.findMany({
           where,
-          orderBy: { scheduledFor: "asc" },
+          orderBy: { scheduledAt: "asc" },
           take: args.limit,
         });
         if (posts.length === 0) {
@@ -110,8 +110,8 @@ export function registerCalendarTools(
           const pRecord = p as unknown as Record<string, unknown>;
           const content = String(pRecord["content"] ?? "");
           const preview = content.slice(0, 80) + (content.length > 80 ? "..." : "");
-          const scheduledFor = pRecord["scheduledFor"];
-          const date = scheduledFor instanceof Date ? scheduledFor.toISOString() : String(scheduledFor ?? "N/A");
+          const scheduledAt = pRecord["scheduledAt"];
+          const date = scheduledAt instanceof Date ? scheduledAt.toISOString() : String(scheduledAt ?? "N/A");
           const status = String(pRecord["status"] ?? "SCHEDULED");
           text += `- **${date}** — ${status}\n`;
           text += `  ${preview}\n`;
@@ -200,15 +200,15 @@ export function registerCalendarTools(
           where: {
             workspaceId: workspace.id,
             status: "SCHEDULED",
-            scheduledFor: { gte: now, lte: endDate },
+            scheduledAt: { gte: now, lte: endDate },
           },
         });
         const scheduledDates = new Set<string>();
         for (const p of posts) {
           const pRecord = p as unknown as Record<string, unknown>;
-          const scheduledFor = pRecord["scheduledFor"];
-          if (scheduledFor instanceof Date) {
-            scheduledDates.add(scheduledFor.toISOString().split("T")[0]!);
+          const scheduledAt = pRecord["scheduledAt"];
+          if (scheduledAt instanceof Date) {
+            scheduledDates.add(scheduledAt.toISOString().split("T")[0]!);
           }
         }
         const gaps: string[] = [];

@@ -189,6 +189,6 @@ describe("createGeminiChatStream", () => {
 
     // Should not throw
     const events = await collectEvents(stream);
-    expect(events.some((e) => e.type === "done")).toBe(true);
+    expect(events.some((e) => e["type"] === "done")).toBe(true);
   });
 });

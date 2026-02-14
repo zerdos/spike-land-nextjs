@@ -251,13 +251,14 @@ describe("agent-management tools", () => {
     it("should enforce max 10000 char limit on content field via schema", async () => {
       // The schema itself enforces .max(10000), so we verify the schema shape
       // was passed to registry.register with the max constraint
-      const registerCalls = registry.register.mock.calls;
+      const registerFn = registry.register as unknown as ReturnType<typeof vi.fn>;
+      const registerCalls = registerFn.mock.calls;
       const sendMessageCall = registerCalls.find(
         (call: unknown[]) => (call[0] as { name: string }).name === "agents_send_message",
       );
       expect(sendMessageCall).toBeDefined();
       const schema = (sendMessageCall![0] as { inputSchema: Record<string, unknown> }).inputSchema;
-      expect(schema.content).toBeDefined();
+      expect(schema["content"]).toBeDefined();
     });
   });
 });
