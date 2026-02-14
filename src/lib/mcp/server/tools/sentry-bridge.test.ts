@@ -20,7 +20,7 @@ describe("sentry bridge tools", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv("SENTRY_AUTH_TOKEN", "test-token");
+    vi.stubEnv("SENTRY_MCP_AUTH_TOKEN", "test-token");
     registry = createMockRegistry();
     registerSentryBridgeTools(registry, "user-123");
   });
@@ -75,9 +75,9 @@ describe("sentry bridge tools", () => {
       expect(mockListIssues).toHaveBeenCalledWith({ query: "TypeError", limit: 10 });
     });
 
-    it("should show not-configured when SENTRY_AUTH_TOKEN is missing", async () => {
-      vi.stubEnv("SENTRY_AUTH_TOKEN", "");
-      delete process.env.SENTRY_AUTH_TOKEN;
+    it("should show not-configured when SENTRY_MCP_AUTH_TOKEN is missing", async () => {
+      vi.stubEnv("SENTRY_MCP_AUTH_TOKEN", "");
+      delete process.env.SENTRY_MCP_AUTH_TOKEN;
       const handler = registry.handlers.get("sentry_issues")!;
       const result = await handler({});
       expect(getText(result)).toContain("Sentry not configured");
@@ -112,9 +112,9 @@ describe("sentry bridge tools", () => {
       expect(getText(result)).toContain("Issue not found");
     });
 
-    it("should show not-configured when SENTRY_AUTH_TOKEN is missing", async () => {
-      vi.stubEnv("SENTRY_AUTH_TOKEN", "");
-      delete process.env.SENTRY_AUTH_TOKEN;
+    it("should show not-configured when SENTRY_MCP_AUTH_TOKEN is missing", async () => {
+      vi.stubEnv("SENTRY_MCP_AUTH_TOKEN", "");
+      delete process.env.SENTRY_MCP_AUTH_TOKEN;
       const handler = registry.handlers.get("sentry_issue_detail")!;
       const result = await handler({ issue_id: "100" });
       expect(getText(result)).toContain("Sentry not configured");
@@ -141,9 +141,9 @@ describe("sentry bridge tools", () => {
       expect(getText(result)).toContain("Could not fetch Sentry stats");
     });
 
-    it("should show not-configured when SENTRY_AUTH_TOKEN is missing", async () => {
-      vi.stubEnv("SENTRY_AUTH_TOKEN", "");
-      delete process.env.SENTRY_AUTH_TOKEN;
+    it("should show not-configured when SENTRY_MCP_AUTH_TOKEN is missing", async () => {
+      vi.stubEnv("SENTRY_MCP_AUTH_TOKEN", "");
+      delete process.env.SENTRY_MCP_AUTH_TOKEN;
       const handler = registry.handlers.get("sentry_stats")!;
       const result = await handler({});
       expect(getText(result)).toContain("Sentry not configured");

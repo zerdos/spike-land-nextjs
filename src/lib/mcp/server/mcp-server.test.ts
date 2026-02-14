@@ -380,14 +380,14 @@ describe("createMcpServer", () => {
     }
   });
 
-  it("should register sentry bridge tools when SENTRY_AUTH_TOKEN is set", () => {
-    vi.stubEnv("SENTRY_AUTH_TOKEN", "test-sentry-token");
+  it("should register sentry bridge tools when SENTRY_MCP_AUTH_TOKEN is set", () => {
+    vi.stubEnv("SENTRY_MCP_AUTH_TOKEN", "test-sentry-token");
     createMcpServer(userId);
     expect(mockRegisterSentryBridgeTools).toHaveBeenCalledWith(mockRegistryInstance, userId);
   });
 
-  it("should skip sentry bridge tools when SENTRY_AUTH_TOKEN is not set", () => {
-    delete process.env["SENTRY_AUTH_TOKEN"];
+  it("should skip sentry bridge tools when SENTRY_MCP_AUTH_TOKEN is not set", () => {
+    delete process.env["SENTRY_MCP_AUTH_TOKEN"];
     createMcpServer(userId);
     expect(mockRegisterSentryBridgeTools).not.toHaveBeenCalled();
   });

@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     );
   }
 
-  if (!process.env.SENTRY_AUTH_TOKEN) {
+  if (!process.env.SENTRY_MCP_AUTH_TOKEN) {
     return NextResponse.json({ configured: false });
   }
 

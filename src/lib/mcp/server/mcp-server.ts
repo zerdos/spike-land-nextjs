@@ -251,7 +251,7 @@ export function createMcpServer(
   registerEnvironmentTools(registry, userId);
 
   // External service bridge tools (conditional on env vars)
-  if (process.env.SENTRY_AUTH_TOKEN) {
+  if (process.env.SENTRY_MCP_AUTH_TOKEN) {
     registerSentryBridgeTools(registry, userId);
   }
   if (process.env["VERCEL_TOKEN"]) {

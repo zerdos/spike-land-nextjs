@@ -152,7 +152,7 @@ export function SentryDashboardClient() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Set the <code className="rounded bg-muted px-1 py-0.5 text-sm font-mono">SENTRY_AUTH_TOKEN</code> environment
+            Set the <code className="rounded bg-muted px-1 py-0.5 text-sm font-mono">SENTRY_MCP_AUTH_TOKEN</code> environment
             variable to enable Sentry integration. You can generate a token from your{" "}
             <a
               href="https://sentry.io/settings/auth-tokens/"

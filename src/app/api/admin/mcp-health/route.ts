@@ -55,7 +55,7 @@ async function checkMcpServer(name: string, checkUrl?: string): Promise<McpServe
 }
 
 async function checkSentryHealth(): Promise<McpServerStatus> {
-  if (!process.env.SENTRY_AUTH_TOKEN) {
+  if (!process.env.SENTRY_MCP_AUTH_TOKEN) {
     return {
       name: "sentry",
       status: "not_configured",
