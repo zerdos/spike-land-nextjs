@@ -28,15 +28,25 @@ export default function ContentLibraryPage() {
   const [page, setPage] = useState(1);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [detailsPanelOpen, setDetailsPanelOpen] = useState(false);
+  const [workspaceError, setWorkspaceError] = useState<string | null>(null);
 
   // Fetch workspace ID from slug
   useEffect(() => {
     async function fetchWorkspaceId() {
-      const { data } = await tryCatch(
-        fetch(`/api/workspaces/by-slug/${workspaceSlug}`).then((r) => r.json()),
+      const { data, error } = await tryCatch(
+        fetch(`/api/workspaces/by-slug/${workspaceSlug}`).then((r) => {
+          if (!r.ok) throw new Error(r.status === 404 ? "Workspace not found" : "Failed to load workspace");
+          return r.json();
+        }),
       );
+      if (error) {
+        setWorkspaceError(error.message);
+        return;
+      }
       if (data?.id) {
         setWorkspaceId(data.id);
+      } else {
+        setWorkspaceError("Workspace not found");
       }
     }
     fetchWorkspaceId();
@@ -88,6 +98,14 @@ export default function ContentLibraryPage() {
     setSearchQuery("");
     setPage(1);
   };
+
+  if (workspaceError) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-destructive">{workspaceError}</p>
+      </div>
+    );
+  }
 
   if (!workspaceId) {
     return (

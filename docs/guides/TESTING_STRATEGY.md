@@ -96,18 +96,23 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     pool: "forks", // Better memory isolation in CI
     fileParallelism: true,
+    include: ["src/lib/mcp/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",
+      include: ["src/lib/mcp/**/*.ts"],
       thresholds: {
-        lines: 30,
-        functions: 20,
-        branches: 25,
-        statements: 30,
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
       },
     },
   },
 });
 ```
+
+> **Note:** Coverage thresholds are enforced on MCP business logic (`src/lib/mcp/**/*.ts`)
+> only, not on the entire codebase. All business logic is exposed and tested via MCP tools.
 
 ### Test Setup
 

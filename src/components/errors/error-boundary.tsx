@@ -74,7 +74,7 @@ export class ErrorBoundary extends Component<
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Report error to tracking service
     reportErrorBoundary(error, errorInfo.componentStack || undefined);
 
@@ -89,7 +89,7 @@ export class ErrorBoundary extends Component<
     });
   }
 
-  componentDidUpdate(prevProps: ErrorBoundaryProps): void {
+  override componentDidUpdate(prevProps: ErrorBoundaryProps): void {
     // Reset error state if resetKeys change
     if (
       this.state.hasError &&
@@ -114,7 +114,7 @@ export class ErrorBoundary extends Component<
     });
   };
 
-  render(): ReactNode {
+  override render(): ReactNode {
     if (this.state.hasError && this.state.error) {
       // Render custom fallback if provided
       if (this.props.fallback) {

@@ -115,7 +115,7 @@ export const MCP_ERROR_RETRYABLE: Record<McpErrorCode, boolean> = {
 export class McpError extends Error {
   public readonly code: McpErrorCode;
   public readonly retryable: boolean;
-  public readonly cause?: Error;
+  public override readonly cause?: Error;
 
   constructor(
     message: string,

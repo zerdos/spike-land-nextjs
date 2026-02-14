@@ -359,7 +359,8 @@ See [README.md](./README.md) for full development setup.
 
 ## ✅ Testing Requirements
 
-- **100% code coverage required** for unit tests
+- **Coverage thresholds enforced in CI** on MCP business logic (`src/lib/mcp/**/*.ts`):
+  - Lines: 80%, Functions: 80%, Branches: 75%, Statements: 80%
 - **Test files**: Place `.test.ts(x)` alongside source files
 - **MCP tool tests**: Business logic exposed as MCP tools, tested with `createMockRegistry()` pattern
 

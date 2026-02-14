@@ -155,7 +155,7 @@ export class WorkflowStageError extends Error {
   /** Whether the operation should be retried */
   public readonly retryable: boolean;
   /** The original error that caused this failure */
-  public readonly cause?: Error;
+  public override readonly cause?: Error;
 
   constructor(
     message: string,
