@@ -23,6 +23,7 @@
 
 import { authConfig } from "@/auth.config";
 import { CSP_NONCE_HEADER, generateNonce } from "@/lib/security/csp-nonce";
+import { secureCompare } from "@/lib/security/timing";
 import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -30,33 +31,6 @@ import type { NextRequest } from "next/server";
 // Create Edge-compatible auth (no database operations)
 const { auth } = NextAuth(authConfig);
 
-/**
- * Performs constant-time string comparison to prevent timing attacks
- * Uses Web Crypto API compatible approach for Edge runtime
- *
- * @param a - First string to compare
- * @param b - Second string to compare
- * @returns true if strings are equal, false otherwise
- */
-export function constantTimeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-
-  // Convert strings to Uint8Array for byte-by-byte comparison
-  const encoder = new TextEncoder();
-  const bufA = encoder.encode(a);
-  const bufB = encoder.encode(b);
-
-  // Double-check lengths match after encoding
-  if (bufA.length !== bufB.length) return false;
-
-  // Perform constant-time comparison
-  let result = 0;
-  for (let i = 0; i < bufA.length; i++) {
-    // TypeScript assertion safe due to length check above
-    result |= (bufA[i] ?? 0) ^ (bufB[i] ?? 0);
-  }
-  return result === 0;
-}
 
 /**
  * List of path patterns that require authentication
@@ -219,7 +193,7 @@ export async function proxy(request: NextRequest) {
 
   // Check for E2E bypass via header (primary method)
   const hasValidHeader = !isProduction && e2eBypassSecret && e2eBypassHeader &&
-    constantTimeCompare(e2eBypassHeader, e2eBypassSecret);
+    secureCompare(e2eBypassHeader, e2eBypassSecret);
 
   // Check for E2E bypass via cookies (fallback method)
   // This handles cases where the header is sent but cookies are already set
@@ -230,7 +204,7 @@ export async function proxy(request: NextRequest) {
   const hasValidCookie = !isProduction &&
     e2eBypassSecret &&
     e2eSecretCookie &&
-    constantTimeCompare(e2eSecretCookie, e2eBypassSecret) &&
+    secureCompare(e2eSecretCookie, e2eBypassSecret) &&
     e2eRoleCookie !== undefined;
 
   // SECURITY: Never allow E2E bypass on admin routes

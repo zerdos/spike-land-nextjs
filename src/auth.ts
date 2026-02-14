@@ -15,6 +15,7 @@ import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { attributeConversion } from "@/lib/tracking/attribution";
 import { tryCatch } from "@/lib/try-catch";
+import { secureCompare } from "@/lib/security/timing";
 import { ensurePersonalWorkspace } from "@/lib/workspace/ensure-personal-workspace";
 import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
@@ -455,23 +456,6 @@ async function getMockE2ESession() {
   };
 }
 
-/**
- * Constant-time string comparison to prevent timing attacks.
- * Avoids early return on length mismatch by including length difference in XOR.
- */
-function constantTimeCompare(a: string, b: string): boolean {
-  const encoder = new TextEncoder();
-  const aBytes = encoder.encode(a);
-  const bBytes = encoder.encode(b);
-  const maxLen = Math.max(aBytes.length, bBytes.length);
-  // Include length difference in result to avoid early return on mismatch
-  let result = aBytes.length ^ bBytes.length;
-  for (let i = 0; i < maxLen; i++) {
-    result |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
-  }
-  return result === 0;
-}
-
 export const auth = async () => {
   // Check for E2E bypass via env var FIRST (local dev with yarn dev:e2e)
   // This is checked first because it's faster (no headers() call needed if bypassing)
@@ -511,7 +495,7 @@ export const auth = async () => {
   if (!isProduction && e2eBypassSecret) {
     const bypassHeader = headersList?.get("x-e2e-auth-bypass");
 
-    if (bypassHeader && constantTimeCompare(bypassHeader, e2eBypassSecret)) {
+    if (bypassHeader && secureCompare(bypassHeader, e2eBypassSecret)) {
       // console.log(
       //   "[Auth] ✓ E2E bypass successful: Header matched secret, returning mock session",
       // );

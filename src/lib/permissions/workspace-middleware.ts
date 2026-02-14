@@ -7,6 +7,7 @@
 
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import { secureCompare } from "@/lib/security/timing";
 import type { WorkspaceRole } from "@prisma/client";
 import type { Session } from "next-auth";
 import { headers } from "next/headers";
@@ -19,20 +20,6 @@ export interface WorkspaceMemberInfo {
   workspaceId: string;
   userId: string;
   role: WorkspaceRole;
-}
-
-function constantTimeCompare(a: string, b: string): boolean {
-  const encoder = new TextEncoder();
-  const aBytes = encoder.encode(a);
-  const bBytes = encoder.encode(b);
-  const maxLen = Math.max(aBytes.length, bBytes.length);
-  let result = aBytes.length ^ bBytes.length;
-
-  for (let i = 0; i < maxLen; i++) {
-    result |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
-  }
-
-  return result === 0;
 }
 
 function getBypassMembershipRole(session: Session): WorkspaceRole {
@@ -64,7 +51,7 @@ async function getE2EBypassMembership(
   const headerBypassEnabled = !isStrictProduction &&
     !!bypassSecret &&
     !!bypassHeader &&
-    constantTimeCompare(bypassHeader, bypassSecret);
+    secureCompare(bypassHeader, bypassSecret);
 
   const envBypassEnabled = process.env.NODE_ENV !== "production" &&
     process.env.E2E_BYPASS_AUTH === "true";
