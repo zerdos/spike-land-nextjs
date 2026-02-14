@@ -16,6 +16,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
+  { href: "/admin/swarm", label: "Swarm Control", icon: "🐝" },
   { href: "/admin/analytics", label: "User Analytics", icon: "📈" },
   { href: "/admin/credits", label: "Credit Economics", icon: "💰" },
   { href: "/admin/system", label: "System Health", icon: "🏥" },

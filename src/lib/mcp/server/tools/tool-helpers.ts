@@ -128,6 +128,7 @@ export interface SafeToolCallOptions {
   sessionId?: string;
   input?: Record<string, unknown>;
   parentInvocationId?: string;
+  timeoutMs?: number;
 }
 
 /**
@@ -144,7 +145,15 @@ export async function safeToolCall(
 ): Promise<CallToolResult> {
   const startTime = Date.now();
   try {
-    const result = await handler();
+    const handlerPromise = handler();
+    const result = options?.timeoutMs
+      ? await Promise.race([
+          handlerPromise,
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Tool ${toolName} timed out after ${options.timeoutMs}ms`)), options.timeoutMs),
+          ),
+        ])
+      : await handlerPromise;
 
     // Record successful invocation (fire-and-forget)
     if (options?.userId) {
@@ -296,9 +305,15 @@ export async function apiRequest<T>(
   return response.json() as Promise<T>;
 }
 
+const MAX_RESPONSE_SIZE = 8192;
+
 /**
  * Simple text result helper for consistent formatting.
+ * Truncates responses exceeding 8KB to prevent token overruns.
  */
 export function textResult(text: string): CallToolResult {
-  return { content: [{ type: "text", text }] };
+  const truncated = text.length > MAX_RESPONSE_SIZE
+    ? text.slice(0, MAX_RESPONSE_SIZE) + "\n...(truncated, response exceeded 8KB)"
+    : text;
+  return { content: [{ type: "text", text: truncated }] };
 }

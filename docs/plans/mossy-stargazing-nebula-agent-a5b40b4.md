@@ -1,5 +1,7 @@
 # Performance Architecture: AI Cloud Swarm Platform Dashboard
 
+Resolves #1254
+
 ## Executive Summary
 
 This document defines the performance architecture for a real-time dashboard that aggregates agent chat (WebSocket), deployment status, error alerts, metrics, and data from 5+ external services (Sentry, Vercel, GitHub, Stripe, Upstash). The design builds on existing patterns in the spike-land-nextjs codebase -- particularly the Upstash Redis hybrid Pub/Sub + List architecture, TanStack Query polling with visibility-pause, SSE job streaming, and the circuit breaker pattern.

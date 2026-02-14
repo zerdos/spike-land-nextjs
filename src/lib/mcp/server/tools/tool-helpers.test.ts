@@ -314,6 +314,50 @@ describe("tool-helpers", () => {
     });
   });
 
+  describe("safeToolCall timeout", () => {
+    it("should trigger error when handler exceeds timeoutMs", async () => {
+      const result = await safeToolCall(
+        "slow_tool",
+        async () => {
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          return { content: [{ type: "text" as const, text: "should not reach" }] };
+        },
+        { timeoutMs: 50 },
+      );
+
+      expect(result.isError).toBe(true);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain("timed out");
+    });
+
+    it("should return normal result when handler completes within timeout", async () => {
+      const result = await safeToolCall(
+        "fast_tool",
+        async () => ({ content: [{ type: "text" as const, text: "fast result" }] }),
+        { timeoutMs: 5000 },
+      );
+
+      expect(result.isError).toBeUndefined();
+      expect((result.content[0] as { text: string }).text).toBe("fast result");
+    });
+  });
+
+  describe("textResult truncation", () => {
+    it("should truncate text exceeding 8KB", () => {
+      const longText = "x".repeat(10000);
+      const result = textResult(longText);
+      const text = (result.content[0] as { text: string }).text;
+      expect(text.length).toBeLessThan(10000);
+      expect(text).toContain("truncated, response exceeded 8KB");
+    });
+
+    it("should pass through short text unchanged", () => {
+      const shortText = "Hello world";
+      const result = textResult(shortText);
+      expect((result.content[0] as { text: string }).text).toBe("Hello world");
+    });
+  });
+
   describe("resolveWorkspace", () => {
     it("should return workspace when found", async () => {
       mockPrisma.workspace.findFirst.mockResolvedValue({

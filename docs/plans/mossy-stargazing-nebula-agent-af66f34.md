@@ -1,5 +1,7 @@
 # AI Cloud Swarm Platform Management Dashboard -- Backend Architecture
 
+Resolves #1254
+
 ## Executive Summary
 
 Replace all 35 existing `/api/admin/*` REST routes with an MCP-first data layer.
@@ -181,6 +183,14 @@ data: {"id":"dpl_xxx","state":"READY","url":"...","target":"production"}
 event: agent_message
 data: {"agent_id":"abc","role":"ASSISTANT","content":"...","ts":"..."}
 ```
+
+### 3.2 Soft Reconnection & State Reconciliation (BAZDMEG Resilience)
+
+To address the risk of "stale dashboard" states during SSE disconnections (e.g., WiFi drops or server restarts), the following strategy is implemented:
+
+1. **Last-Event-ID**: The client sends the `Last-Event-ID` header on reconnection. The server attempts to replay missed events from the Redis List if still available.
+2. **Explicit Full Refresh**: If the reconnection fails or the cursor is too old, the server sends a `reconcile_state` event.
+3. **Client-Side Trigger**: Upon receiving `reconcile_state`, the dashboard triggers an `invalidateQueries()` on all active TanStack Query keys to refetch the full state from MCP tools, ensuring zero drift.
 
 **Architecture:**
 

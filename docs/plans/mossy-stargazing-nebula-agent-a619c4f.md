@@ -1,5 +1,7 @@
 # Security Architecture Review: AI Cloud Swarm Platform Management Dashboard
 
+Resolves #1254
+
 **Auditor:** Security Architecture Review (Automated)
 **Date:** 2026-02-14
 **Scope:** CEO-facing admin panel for deployments, AI agent management, and sensitive business data
@@ -145,6 +147,14 @@ The role system in `/Users/z/Developer/spike-land-nextjs/src/lib/auth/admin-midd
 | Proxy external API | No | Yes | Yes | -- |
 | Manage API keys | No | Yes (own) | Yes (all) | -- |
 | View Stripe/billing data | No | No | Yes | -- |
+
+### 3.3 Human-in-the-loop Safeguards (BAZDMEG Security)
+
+To prevent catastrophic agent autonomously-triggered failures, the dashboard enforces "Human-in-the-loop" (HITL) for high-impact actions:
+
+1. **Destructive Actions**: Deleting environments, killing production-grade agents, or wiping tool caches require manual confirmation via a dashboard modal.
+2. **Auto-Trigger Guard**: Even if an agent requests a destructive tool via MCP, the backend will return a `REQUISITE_USER_CONFIRMATION` error. The dashboard must then prompt the user to "Approve" or "Reject" the action.
+3. **Approval Proxy**: High-risk deployments (promote to prod) require a second ADMIN or SUPER_ADMIN approval as specified in the permission matrix (Section 3.1).
 
 **FINDING SEC-AUTHZ-01 [HIGH]: Admin MCP tools lack role verification.**
 

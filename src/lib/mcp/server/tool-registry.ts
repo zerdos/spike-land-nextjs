@@ -72,6 +72,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   billing: "Billing: Stripe checkout sessions and subscription management",
   pipelines: "Enhancement pipelines: create, fork, update, and manage image processing pipelines",
   blog: "Blog content: list and read published blog posts",
+  career: "Career advice: skills assessment, occupation search, salary data, and job listings via ESCO and Adzuna",
   reports: "System reports: generate aggregated platform reports",
   audio: "Audio mixer: upload tracks and manage audio projects",
   chat: "AI chat: send messages and get AI responses",
@@ -79,6 +80,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   tts: "Text-to-speech: convert text to audio using ElevenLabs",
   capabilities: "Agent permission management: check capabilities, request permissions, track approvals",
   orchestration: "Cloud-native code orchestration: context packing, sandboxed execution, task decomposition, verification, and decision tracking",
+  "mcp-registry": "MCP server discovery: search, evaluate, and auto-configure MCP servers from Smithery, Official Registry, and Glama",
 };
 
 export class ToolRegistry {

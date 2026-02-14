@@ -1,5 +1,7 @@
 # Environment Management Dashboard -- Architecture Plan
 
+Resolves #1254
+
 ## Table of Contents
 
 1. [Architecture Overview](#1-architecture-overview)

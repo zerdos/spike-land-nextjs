@@ -34,6 +34,7 @@ import { registerCreditsTools } from "./tools/credits";
 import { registerBillingTools } from "./tools/billing";
 import { registerPipelinesTools } from "./tools/pipelines";
 import { registerBlogTools } from "./tools/blog";
+import { registerCareerTools } from "./tools/career";
 import { registerReportsTools } from "./tools/reports";
 import { registerAudioTools } from "./tools/audio";
 import { registerChatTools } from "./tools/chat";
@@ -49,6 +50,7 @@ import { registerLieDetectorTools } from "./tools/lie-detector";
 import { registerReqInterviewTools } from "./tools/req-interview";
 import { registerCodebaseExplainTools } from "./tools/codebase-explain";
 import { registerDecisionsTools } from "./tools/decisions";
+import { registerMcpRegistryTools } from "./tools/mcp-registry";
 
 /**
  * Options for creating an MCP server with capability restrictions.
@@ -175,6 +177,9 @@ export function createMcpServer(
   // Blog tools (discoverable)
   registerBlogTools(registry, userId);
 
+  // Career tools (discoverable)
+  registerCareerTools(registry, userId);
+
   // Reports tools (discoverable)
   registerReportsTools(registry, userId);
 
@@ -204,6 +209,9 @@ export function createMcpServer(
   registerReqInterviewTools(registry, userId);
   registerCodebaseExplainTools(registry, userId);
   registerDecisionsTools(registry, userId);
+
+  // MCP Registry tools (discoverable)
+  registerMcpRegistryTools(registry, userId);
 
   // Dev workflow tools (localhost only)
   if (process.env.NODE_ENV === "development") {
