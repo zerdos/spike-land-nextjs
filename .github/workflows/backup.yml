@@ -111,7 +111,9 @@ jobs:
           CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
           CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
           CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-        run: yarn backup
+        run: |
+          yarn backup 2>&1 | tee backup-output.log
+          exit ${PIPESTATUS[0]}
 
       - name: Retry backup on failure
         if: steps.backup.outcome == 'failure'

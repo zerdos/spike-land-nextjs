@@ -1,6 +1,6 @@
 # Technical Debt Registry
 
-> Last updated: 2026-01-28
+> Last updated: 2026-02-14
 > Maintainer: Development Team
 
 > **Recent Stabilization Work**: See [TECH_STABILIZATION_SPRINT_1.md](./TECH_STABILIZATION_SPRINT_1.md)
@@ -39,11 +39,74 @@ yarn add -D @cloudflare/vitest-pool-workers
 # Or remove from tsconfig.json if not actually used
 ```
 
+### 2. Unused Dependencies (66 total)
+
+**Location:** All package.json files across monorepo
+
+**Issue:** Knip analysis reveals 66 unused dependencies:
+- Root package.json: 7 unused (removed in BAZDMEG audit)
+- packages/code: 38 unused dependencies + 6 devDependencies
+- packages/testing.spike.land: 8 unused
+- packages/js.spike.land: 1 unused
+- packages/video: 2 unused + 1 devDependency
+
+**Impact:** Bloated node_modules, slower installs, unnecessary security surface area.
+
+**Status:** Root-level deps removed. packages/code cleanup requires careful testing (separate ticket).
+
+---
+
+### 3. Unused Files (253 total)
+
+**Location:** Primarily `packages/code/src/@/components/` and `packages/code/src/@/lib/`
+
+**Issue:** 253 files identified as unused by knip, including:
+- 60+ unused shadcn/ui component files
+- Unused utility modules (broadcast-channel, cache-utils, config-manager)
+- Stale wrapper components
+
+**Impact:** Code maintenance burden, confusing codebase navigation.
+
+**Status:** Requires per-file review before deletion (runtime dependencies may not be detected by static analysis).
+
+---
+
+### 4. Test Coverage Gaps
+
+**Location:** `vitest.config.ts` coverage thresholds
+
+**Issue:** Current CI thresholds are far below the 100% target stated in CLAUDE.md:
+- Lines: 30% (target: 80%+)
+- Functions: 20% (target: 80%+)
+- Branches: 25% (target: 78%+)
+- Statements: 30% (target: 80%+)
+
+**Modules at 0% coverage:**
+- `src/lib/feature-flags/flag-service.ts`
+- `src/lib/learnit/agent-loop.ts`, `content-generator.ts`, `agent-service.ts`
+- `src/lib/mcp/server/mcp-server.ts`, `tool-registry.ts`
+- `src/lib/validation/` (entire directory)
+- `src/lib/sync/clients/` (entire directory)
+
+**Impact:** Bugs ship undetected, refactoring is risky, CLAUDE.md claim of "100% coverage required" is aspirational.
+
+---
+
+### 5. Sentry MCP Token Permissions
+
+**Location:** `.env` / `.mcp.json` / Sentry dashboard
+
+**Issue:** The `SENTRY_AUTH_TOKEN` configured for MCP integration is a source-map upload token, not an API token. It lacks the required scopes: `org:read`, `project:read`, `issue:read`. All MCP API calls return 403.
+
+**Impact:** Sentry MCP integration is non-functional. Cannot query issues, traces, or project data through MCP.
+
+**Suggested Fix:** Create a separate Sentry API token with proper scopes and configure it for MCP.
+
 ---
 
 ## High Priority (P1)
 
-### 2. Commented-Out Auto-Save System in Durable Object
+### 6. Commented-Out Auto-Save System in Durable Object
 
 **Location:** `packages/testing.spike.land/src/chatRoom.ts:572-620`
 
@@ -66,7 +129,7 @@ yarn add -D @cloudflare/vitest-pool-workers
 
 ---
 
-### 3. Duplicate Route Handling Logic
+### 7. Duplicate Route Handling Logic
 
 **Location:**
 
@@ -103,7 +166,7 @@ Router
 
 ---
 
-### 4. Inconsistent Error Handling Patterns
+### 8. Inconsistent Error Handling Patterns
 
 **Location:** Throughout `packages/testing.spike.land/src/`
 
@@ -131,7 +194,7 @@ try { ... } catch (e) { return new Response("Error", { status: 500 }); }
 
 ## Medium Priority (P2)
 
-### 5. CSS Flexbox Scroll Container Pattern
+### 9. CSS Flexbox Scroll Container Pattern
 
 **Location:** `src/app/my-apps/[codeSpace]/page.tsx:867-870`
 
@@ -152,7 +215,7 @@ try { ... } catch (e) { return new Response("Error", { status: 500 }); }
 
 ---
 
-### 6. Hardcoded URLs and Origins
+### 10. Hardcoded URLs and Origins
 
 **Location:** Multiple files
 
@@ -169,7 +232,7 @@ try { ... } catch (e) { return new Response("Error", { status: 500 }); }
 
 ---
 
-### 7. Session Storage Migration Code
+### 11. Session Storage Migration Code
 
 **Location:** `packages/testing.spike.land/src/chatRoom.ts:413-431`
 
@@ -195,7 +258,7 @@ if (!sessionCore) {
 
 ---
 
-### 8. R2 Storage Keys Not Namespaced
+### 12. R2 Storage Keys Not Namespaced
 
 **Location:** `packages/testing.spike.land/src/chatRoom.ts:336-372`
 
@@ -207,7 +270,7 @@ if (!sessionCore) {
 
 ## Low Priority (P3)
 
-### 9. Magic Numbers and Strings
+### 13. Magic Numbers and Strings
 
 **Location:** Throughout codebase
 
@@ -228,7 +291,7 @@ const browserHeight = 1080;
 
 ---
 
-### 10. Unused Imports and Dead Code
+### 14. Unused Imports and Dead Code
 
 **Location:** Various files
 
@@ -241,7 +304,7 @@ const browserHeight = 1080;
 
 ---
 
-### 11. Inconsistent Async Patterns
+### 15. Inconsistent Async Patterns
 
 **Location:** `packages/testing.spike.land/src/routes/liveRoutes.ts`
 

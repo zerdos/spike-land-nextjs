@@ -179,7 +179,8 @@ export default withSentryConfig(nextConfig, {
 
   // Skip source map upload on PR branches to reduce build overhead and memory usage
   sourcemaps: {
-    disable: process.env.CI === "true" && process.env["GITHUB_REF"] !== "refs/heads/main",
+    disable: !process.env.SENTRY_AUTH_TOKEN ||
+      (process.env.CI === "true" && process.env["GITHUB_REF"] !== "refs/heads/main"),
   },
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size

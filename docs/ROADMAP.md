@@ -1,10 +1,10 @@
 # Spike Land - Development Roadmap
 
-> **Last Updated**: January 29, 2026
+> **Last Updated**: February 14, 2026
 > **Current Phase**: Pivot Phase 9 (Documentation)
 > **Business Structure**: UK Limited Company (SPIKE LAND LTD - Company #16906682) - Fully Established
 
-> **Operational Note (February 12, 2026)**: CI/CD and daily smoke tests are under active stabilization. Treat reliability work as release-blocking until green status is sustained.
+> **Operational Note (February 14, 2026)**: CI/CD and daily smoke tests are under active stabilization. 8 stale smoke test failure issues closed during BAZDMEG audit. Treat reliability work as release-blocking until green status is sustained.
 
 ---
 
@@ -39,8 +39,9 @@ See [#836 - Strategic Pivot Epic](https://github.com/zerdos/spike-land-nextjs/is
 | 6     | A/B Testing System     | 📋 Planned         | 0%       | Week 7      |
 | 7     | Polish & UX            | 📋 Planned         | 0%       | Week 8      |
 | 8     | Vibe Coding Support    | 📋 Planned         | 0%       | Week 9      |
-| **9** | **Documentation**      | **🔄 In Progress** | **50%**  | **Week 10** |
+| **9** | **Documentation**      | **🔄 In Progress** | **90%**  | **Week 10** |
 | 10    | Blog & Launch          | 📋 Planned         | 0%       | Week 11     |
+| **11** | **Tech Debt Reduction** | **🔄 In Progress** | **15%** | **Week 12+** |
 
 ### Phase 9: Documentation (Current - #845)
 
@@ -65,13 +66,38 @@ See [#836 - Strategic Pivot Epic](https://github.com/zerdos/spike-land-nextjs/is
 - [x] AB_TESTING_GUIDE.md (Complete)
 - [x] README.md (Complete)
 - [x] USER_GUIDE.md (Complete)
-- [x] ROADMAP.md (In Progress)
+- [x] ROADMAP.md (Complete)
 - [ ] FEATURES.md (Pending)
 
 **Timeline**: Week 10 (January 27-31, 2026)
 
 **Dependencies**: Requires Phase 2 (Backend) and Phase 3 (Frontend) complete
 **Blocks**: Phase 10 (Blog Article & Launch)
+
+### Phase 11: Tech Debt Reduction (Current - BAZDMEG Audit)
+
+**Goal**: Reduce accumulated technical debt identified by full repo audit
+
+**Key Findings (February 14, 2026)**:
+- 89 open GitHub issues (37 bugs, 30 features, 22 unlabeled)
+- 66 unused dependencies across all packages
+- 253 unused files (mostly unused shadcn/ui components)
+- Test coverage thresholds at 30/20/25/30% (target: 80%)
+- 8 consecutive daily smoke test failures (closed as stale)
+- Sentry MCP token has wrong permissions (403 on API calls)
+
+**Status**:
+- [x] Full repo audit completed (BAZDMEG method)
+- [x] Stale smoke test issues closed (8 issues)
+- [x] Root-level unused dependencies removed (7 deps)
+- [x] Documentation updated (ROADMAP, TECH_DEBT)
+- [ ] Remove 38 unused deps from packages/code
+- [ ] Audit and remove 253 unused files
+- [ ] Increase test coverage to 80%
+- [ ] Fix Sentry MCP API token permissions
+- [ ] Refactor files >1500 lines
+
+**Timeline**: Ongoing (February 2026+)
 
 ---
 
@@ -543,7 +569,9 @@ See [TECH_STABILIZATION_SPRINT_2.md](./TECH_STABILIZATION_SPRINT_2.md) for full 
 ### Q1 2026 (Current)
 
 - ✅ Phase 2 (My Apps Platform) - Complete
-- 🚧 Phase 3 (AI Agent Integration) - 45% complete
+- 🚧 Phase 3 (AI Agent Integration) - Superseded by Pivot
+- 🚧 Phase 9 (Documentation) - 90% complete
+- 🚧 Phase 11 (Tech Debt Reduction) - 15% complete
 - 🚧 Marketing Phase - 25% complete
 
 ### Q2 2026

@@ -79,8 +79,8 @@ describe("Arena MCP Tools", () => {
       const handler = registry.tools.get("arena_list_challenges")!.handler;
       const result = await handler({ status: "OPEN", limit: 20 });
 
-      expect(result.content[0].text).toContain("Counter App");
-      expect(result.content[0].text).toContain("ch1");
+      expect(result.content[0]!.text).toContain("Counter App");
+      expect(result.content[0]!.text).toContain("ch1");
     });
 
     it("returns empty message when no challenges", async () => {
@@ -89,7 +89,7 @@ describe("Arena MCP Tools", () => {
       const handler = registry.tools.get("arena_list_challenges")!.handler;
       const result = await handler({ status: "OPEN", limit: 20 });
 
-      expect(result.content[0].text).toContain("No open challenges");
+      expect(result.content[0]!.text).toContain("No open challenges");
     });
   });
 
@@ -122,9 +122,9 @@ describe("Arena MCP Tools", () => {
       const handler = registry.tools.get("arena_get_challenge_details")!.handler;
       const result = await handler({ challenge_id: "ch1" });
 
-      expect(result.content[0].text).toContain("Counter App");
-      expect(result.content[0].text).toContain("Player1");
-      expect(result.content[0].text).toContain("85%");
+      expect(result.content[0]!.text).toContain("Counter App");
+      expect(result.content[0]!.text).toContain("Player1");
+      expect(result.content[0]!.text).toContain("85%");
     });
 
     it("returns error for non-existent challenge", async () => {
@@ -134,7 +134,7 @@ describe("Arena MCP Tools", () => {
       const result = await handler({ challenge_id: "nonexistent" });
 
       expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("not found");
+      expect(result.content[0]!.text).toContain("not found");
     });
   });
 
@@ -156,8 +156,8 @@ describe("Arena MCP Tools", () => {
         prompt: "Create a beautiful counter app with animations",
       });
 
-      expect(result.content[0].text).toContain("Submission created");
-      expect(result.content[0].text).toContain("sub1");
+      expect(result.content[0]!.text).toContain("Submission created");
+      expect(result.content[0]!.text).toContain("sub1");
     });
 
     it("rejects submission to closed challenge", async () => {
@@ -174,7 +174,7 @@ describe("Arena MCP Tools", () => {
       });
 
       expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("closed");
+      expect(result.content[0]!.text).toContain("closed");
     });
   });
 
@@ -196,9 +196,9 @@ describe("Arena MCP Tools", () => {
       const handler = registry.tools.get("arena_get_leaderboard")!.handler;
       const result = await handler({ limit: 20 });
 
-      expect(result.content[0].text).toContain("TopPlayer");
-      expect(result.content[0].text).toContain("1450");
-      expect(result.content[0].text).toContain("10/3/1");
+      expect(result.content[0]!.text).toContain("TopPlayer");
+      expect(result.content[0]!.text).toContain("1450");
+      expect(result.content[0]!.text).toContain("10/3/1");
     });
 
     it("returns empty message when no entries", async () => {
@@ -207,7 +207,7 @@ describe("Arena MCP Tools", () => {
       const handler = registry.tools.get("arena_get_leaderboard")!.handler;
       const result = await handler({ limit: 20 });
 
-      expect(result.content[0].text).toContain("No leaderboard entries");
+      expect(result.content[0]!.text).toContain("No leaderboard entries");
     });
   });
 });

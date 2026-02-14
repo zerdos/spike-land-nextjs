@@ -312,7 +312,7 @@ cd packages/js.spike.land && yarn dev           # Start worker locally
 
 **Web App:**
 
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS 4 + shadcn/ui
 - **Testing**: Vitest (unit + MCP tool tests)
