@@ -39,6 +39,20 @@ import { registerBrandBrainTools } from "./tools/brand-brain";
 import { registerConnectionsTools } from "./tools/connections";
 import { registerBoxesTools } from "./tools/boxes";
 import { registerSmartRoutingTools } from "./tools/smart-routing";
+import { registerSkillStoreTools } from "./tools/skill-store";
+import { registerWorkspacesTools } from "./tools/workspaces";
+import { registerAgentManagementTools } from "./tools/agent-management";
+import { registerSettingsTools } from "./tools/settings";
+import { registerCreditsTools } from "./tools/credits";
+import { registerBillingTools } from "./tools/billing";
+import { registerPipelinesTools } from "./tools/pipelines";
+import { registerAgencyTools } from "./tools/agency";
+import { registerBlogTools } from "./tools/blog";
+import { registerReportsTools } from "./tools/reports";
+import { registerAudioTools } from "./tools/audio";
+import { registerChatTools } from "./tools/chat";
+import { registerNewsletterTools } from "./tools/newsletter";
+import { registerTtsTools } from "./tools/tts";
 
 /**
  * Create a fully configured MCP server for a specific user.
@@ -158,6 +172,48 @@ export function createMcpServer(userId: string): McpServer {
 
   // Smart routing tools (discoverable)
   registerSmartRoutingTools(registry, userId);
+
+  // Skill store tools (discoverable)
+  registerSkillStoreTools(registry, userId);
+
+  // Workspaces tools (discoverable)
+  registerWorkspacesTools(registry, userId);
+
+  // Agent management tools (discoverable)
+  registerAgentManagementTools(registry, userId);
+
+  // Settings tools (discoverable)
+  registerSettingsTools(registry, userId);
+
+  // Credits tools (discoverable)
+  registerCreditsTools(registry, userId);
+
+  // Billing tools (discoverable)
+  registerBillingTools(registry, userId);
+
+  // Pipelines tools (discoverable)
+  registerPipelinesTools(registry, userId);
+
+  // Agency tools (discoverable)
+  registerAgencyTools(registry, userId);
+
+  // Blog tools (discoverable)
+  registerBlogTools(registry, userId);
+
+  // Reports tools (discoverable)
+  registerReportsTools(registry, userId);
+
+  // Audio tools (discoverable)
+  registerAudioTools(registry, userId);
+
+  // Chat tools (discoverable)
+  registerChatTools(registry, userId);
+
+  // Newsletter tools (discoverable)
+  registerNewsletterTools(registry, userId);
+
+  // TTS tools (discoverable)
+  registerTtsTools(registry, userId);
 
   return mcpServer;
 }

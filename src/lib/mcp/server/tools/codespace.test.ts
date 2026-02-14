@@ -66,6 +66,14 @@ describe("codespace tools", () => {
       const result = await handler({ codespace_id: "test-app", code: "bad code" });
       expect(getText(result)).toContain("Error");
     });
+
+    it("should return error on fetch exception", async () => {
+      mockFetch.mockRejectedValue(new Error("Network timeout"));
+      const handler = registry.handlers.get("codespace_update")!;
+      const result = await handler({ codespace_id: "test-app", code: "export default () => <div/>" });
+      expect(getText(result)).toContain("Error");
+      expect(getText(result)).toContain("Network timeout");
+    });
   });
 
   describe("codespace_run", () => {
@@ -74,6 +82,36 @@ describe("codespace tools", () => {
       const handler = registry.handlers.get("codespace_run")!;
       const result = await handler({ codespace_id: "test-app" });
       expect(getText(result)).toContain("Transpiled");
+    });
+  });
+
+  describe("codespace_screenshot", () => {
+    it("should return screenshot image", async () => {
+      const imageBuffer = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]).buffer;
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        arrayBuffer: () => Promise.resolve(imageBuffer),
+        headers: new Map([["content-type", "image/jpeg"]]),
+      });
+      const handler = registry.handlers.get("codespace_screenshot")!;
+      const result = await handler({ codespace_id: "test-app" });
+      const content = (result as { content: Array<{ type: string; text?: string; data?: string; mimeType?: string }> }).content;
+      expect(content[0]!.text).toContain("Screenshot of test-app");
+      expect(content[1]!.type).toBe("image");
+      expect(content[1]!.mimeType).toBe("image/jpeg");
+    });
+
+    it("should return error on screenshot failure", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+        headers: new Map([["content-type", "text/plain"]]),
+      });
+      const handler = registry.handlers.get("codespace_screenshot")!;
+      const result = await handler({ codespace_id: "test-app" });
+      expect(getText(result)).toContain("Error");
     });
   });
 
@@ -110,6 +148,20 @@ describe("codespace tools", () => {
       const result = await handler({ codespace_id: "test-app" });
       expect(getText(result)).toContain("app_id or app_name required");
     });
+
+    it("should return error when PATCH fails for app_id", async () => {
+      mockFetch.mockResolvedValue(mockJsonResponse({ error: "App not found" }, false, 404));
+      const handler = registry.handlers.get("codespace_link_app")!;
+      const result = await handler({ codespace_id: "test-app", app_id: "bad-id" });
+      expect(getText(result)).toContain("Error");
+    });
+
+    it("should return error when POST fails for app_name", async () => {
+      mockFetch.mockResolvedValue(mockJsonResponse({ error: "Validation failed" }, false, 400));
+      const handler = registry.handlers.get("codespace_link_app")!;
+      const result = await handler({ codespace_id: "test-app", app_name: "Bad App" });
+      expect(getText(result)).toContain("Error");
+    });
   });
 
   describe("codespace_list_my_apps", () => {
@@ -128,6 +180,14 @@ describe("codespace tools", () => {
       const handler = registry.handlers.get("codespace_list_my_apps")!;
       const result = await handler({});
       expect(getText(result)).toContain("No apps found");
+    });
+
+    it("should return error on fetch failure", async () => {
+      mockFetch.mockRejectedValue(new Error("Service unavailable"));
+      const handler = registry.handlers.get("codespace_list_my_apps")!;
+      const result = await handler({});
+      expect(getText(result)).toContain("Error");
+      expect(getText(result)).toContain("Service unavailable");
     });
   });
 });

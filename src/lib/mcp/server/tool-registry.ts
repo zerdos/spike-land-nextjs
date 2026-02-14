@@ -76,6 +76,20 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   connections: "Business connections and competitor tracking",
   boxes: "Box management: organize items in virtual containers",
   "smart-routing": "Smart routing: traffic rules, weights, and performance stats",
+  "skill-store": "Skill Store: browse, install, and manage agent skills and extensions",
+  workspaces: "Workspace management: create, list, update, and favorite workspaces",
+  agents: "Agent lifecycle: list, get, queue, and message management",
+  settings: "User settings: API key management (list, create, revoke)",
+  credits: "AI credit balance: check remaining credits, limits, and usage",
+  billing: "Billing: Stripe checkout sessions and subscription management",
+  pipelines: "Enhancement pipelines: create, fork, update, and manage image processing pipelines",
+  agency: "Agency marketing: personas, demographics, and portfolio management",
+  blog: "Blog content: list and read published blog posts",
+  reports: "System reports: generate aggregated platform reports",
+  audio: "Audio mixer: upload tracks and manage audio projects",
+  chat: "AI chat: send messages and get AI responses",
+  newsletter: "Newsletter: email subscription management",
+  tts: "Text-to-speech: convert text to audio using ElevenLabs",
 };
 
 export class ToolRegistry {

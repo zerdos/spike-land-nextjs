@@ -91,6 +91,32 @@ describe("Arena MCP Tools", () => {
 
       expect(result.content[0]!.text).toContain("No open challenges");
     });
+
+    it("should handle database errors gracefully", async () => {
+      mockPrisma.arenaChallenge.findMany.mockRejectedValue(new Error("DB error"));
+      const handler = registry.tools.get("arena_list_challenges")!.handler;
+      const result = await handler({ status: "OPEN", limit: 20 });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]!.text).toContain("Error listing challenges");
+    });
+
+    it("should filter by category", async () => {
+      mockPrisma.arenaChallenge.findMany.mockResolvedValue([]);
+      const handler = registry.tools.get("arena_list_challenges")!.handler;
+      await handler({ status: "OPEN", category: "basics", limit: 20 });
+      expect(mockPrisma.arenaChallenge.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { status: "OPEN", category: "basics" } })
+      );
+    });
+
+    it("should truncate long descriptions", async () => {
+      mockPrisma.arenaChallenge.findMany.mockResolvedValue([{
+        id: "ch1", title: "Test", description: "A".repeat(250), category: "cat", difficulty: "EASY", _count: { submissions: 0 },
+      }] as never);
+      const handler = registry.tools.get("arena_list_challenges")!.handler;
+      const result = await handler({ status: "OPEN", limit: 20 });
+      expect(result.content[0]!.text).toContain("...");
+    });
   });
 
   describe("arena_get_challenge_details", () => {
@@ -136,6 +162,27 @@ describe("Arena MCP Tools", () => {
       expect(result.isError).toBe(true);
       expect(result.content[0]!.text).toContain("not found");
     });
+
+    it("should handle database error", async () => {
+      mockPrisma.arenaChallenge.findUnique.mockRejectedValue(new Error("DB error"));
+      const handler = registry.tools.get("arena_get_challenge_details")!.handler;
+      const result = await handler({ challenge_id: "ch1" });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]!.text).toContain("Error getting challenge");
+    });
+
+    it("should handle submission with null reviewScore and eloChange", async () => {
+      mockPrisma.arenaChallenge.findUnique.mockResolvedValue({
+        id: "ch1", title: "Test", description: "desc", category: "cat", difficulty: "EASY", status: "OPEN",
+        createdBy: { name: null }, _count: { submissions: 1 },
+        submissions: [{ id: "s1", status: "PENDING", codespaceUrl: null, reviewScore: null, eloChange: null, iterations: 1, createdAt: new Date(), user: { name: null }, _count: { reviews: 0 } }],
+      } as never);
+      const handler = registry.tools.get("arena_get_challenge_details")!.handler;
+      const result = await handler({ challenge_id: "ch1" });
+      expect(result.content[0]!.text).toContain("Unknown");
+      expect(result.content[0]!.text).toContain("Anonymous");
+      expect(result.content[0]!.text).toContain("Status: PENDING");
+    });
   });
 
   describe("arena_submit_prompt", () => {
@@ -176,6 +223,41 @@ describe("Arena MCP Tools", () => {
       expect(result.isError).toBe(true);
       expect(result.content[0]!.text).toContain("closed");
     });
+
+    it("should handle submit error", async () => {
+      mockPrisma.arenaChallenge.findUnique.mockRejectedValue(new Error("DB error"));
+      const handler = registry.tools.get("arena_submit_prompt")!.handler;
+      const result = await handler({ challenge_id: "ch1", prompt: "Create something cool" });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]!.text).toContain("Error submitting prompt");
+    });
+
+    it("should return error for non-existent challenge when submitting", async () => {
+      mockPrisma.arenaChallenge.findUnique.mockResolvedValue(null);
+      const handler = registry.tools.get("arena_submit_prompt")!.handler;
+      const result = await handler({ challenge_id: "nope", prompt: "Create something cool" });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]!.text).toContain("not found");
+    });
+  });
+
+  describe("arena_review_submission", () => {
+    it("should show scoring triggered message", async () => {
+      const { submitReview } = await import("@/lib/arena/review");
+      (submitReview as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ reviewId: "rev2", scoringTriggered: true });
+      const handler = registry.tools.get("arena_review_submission")!.handler;
+      const result = await handler({ submission_id: "sub1", bugs: [], score: 0.9, approved: true, comment: "Great" });
+      expect(result.content[0]!.text).toContain("Scoring triggered");
+    });
+
+    it("should handle review error", async () => {
+      const { submitReview } = await import("@/lib/arena/review");
+      (submitReview as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("Review failed"));
+      const handler = registry.tools.get("arena_review_submission")!.handler;
+      const result = await handler({ submission_id: "sub1", bugs: [], score: 0.5, approved: false });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]!.text).toContain("Error submitting review");
+    });
   });
 
   describe("arena_get_leaderboard", () => {
@@ -208,6 +290,25 @@ describe("Arena MCP Tools", () => {
       const result = await handler({ limit: 20 });
 
       expect(result.content[0]!.text).toContain("No leaderboard entries");
+    });
+
+    it("should handle leaderboard error", async () => {
+      mockPrisma.arenaElo.findMany.mockRejectedValue(new Error("DB error"));
+      const handler = registry.tools.get("arena_get_leaderboard")!.handler;
+      const result = await handler({ limit: 20 });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]!.text).toContain("Error getting leaderboard");
+    });
+
+    it("should show negative and zero streaks correctly", async () => {
+      mockPrisma.arenaElo.findMany.mockResolvedValue([
+        { userId: "u1", elo: 1200, wins: 2, losses: 5, draws: 0, streak: -3, bestElo: 1300, user: { name: "Loser" } },
+        { userId: "u2", elo: 1000, wins: 0, losses: 0, draws: 1, streak: 0, bestElo: 1000, user: { name: "Tied" } },
+      ] as never);
+      const handler = registry.tools.get("arena_get_leaderboard")!.handler;
+      const result = await handler({ limit: 20 });
+      expect(result.content[0]!.text).toContain("-3");
+      expect(result.content[0]!.text).toContain("| 0 |");
     });
   });
 });

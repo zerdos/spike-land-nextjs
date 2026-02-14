@@ -79,6 +79,26 @@ describe("image tools", () => {
       const result = await handler({ prompt: "test" });
       expect(getText(result)).toContain("Insufficient credits");
     });
+
+    it("should return error when waitForJobCompletion returns FAILED", async () => {
+      mockCreateGenerationJob.mockResolvedValue({ success: true, jobId: "job-fail", creditsCost: 2 });
+      mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue({
+        id: "job-fail", status: "FAILED", outputImageUrl: null,
+        outputWidth: null, outputHeight: null, creditsCost: 0, errorMessage: "GPU out of memory", type: "GENERATE", prompt: "test",
+      });
+      const handler = registry.handlers.get("generate_image")!;
+      const result = await handler({ prompt: "test", wait_for_completion: true });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("GPU out of memory");
+    });
+
+    it("should handle exception in createGenerationJob", async () => {
+      mockCreateGenerationJob.mockRejectedValue(new Error("Service unavailable"));
+      const handler = registry.handlers.get("generate_image")!;
+      const result = await handler({ prompt: "test", wait_for_completion: false });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Service unavailable");
+    });
   });
 
   describe("modify_image", () => {
@@ -97,6 +117,69 @@ describe("image tools", () => {
       const handler = registry.handlers.get("modify_image")!;
       const result = await handler({ prompt: "make it blue", image_base64: "base64data", wait_for_completion: true });
       expect(getText(result)).toContain("Image modified");
+    });
+
+    it("should modify with image_url", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        arrayBuffer: () => Promise.resolve(new Uint8Array([0x89, 0x50, 0x4e, 0x47]).buffer),
+        headers: { get: () => "image/png" },
+      });
+      mockCreateModificationJob.mockResolvedValue({ success: true, jobId: "job-url", creditsCost: 2 });
+      mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue({
+        id: "job-url", status: "COMPLETED", outputImageUrl: "https://example.com/modified.jpg",
+        outputWidth: 512, outputHeight: 512, creditsCost: 2, errorMessage: null, type: "MODIFY", prompt: "sharpen",
+      });
+      const handler = registry.handlers.get("modify_image")!;
+      const result = await handler({ prompt: "sharpen", image_url: "https://example.com/input.png", wait_for_completion: true });
+      expect(getText(result)).toContain("Image modified");
+    });
+
+    it("should return error when fetch fails for image_url", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        statusText: "Not Found",
+      });
+      const handler = registry.handlers.get("modify_image")!;
+      const result = await handler({ prompt: "sharpen", image_url: "https://example.com/missing.png" });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Failed to fetch image");
+    });
+
+    it("should return error when modification job fails", async () => {
+      mockCreateModificationJob.mockResolvedValue({ success: false, error: "No credits" });
+      const handler = registry.handlers.get("modify_image")!;
+      const result = await handler({ prompt: "test", image_base64: "base64data", wait_for_completion: false });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("No credits");
+    });
+
+    it("should return job ID without wait", async () => {
+      mockCreateModificationJob.mockResolvedValue({ success: true, jobId: "job-nowait", creditsCost: 2 });
+      const handler = registry.handlers.get("modify_image")!;
+      const result = await handler({ prompt: "test", image_base64: "base64data", wait_for_completion: false });
+      expect(getText(result)).toContain("Modification started");
+      expect(getText(result)).toContain("job-nowait");
+    });
+
+    it("should return error when waitForJobCompletion returns FAILED", async () => {
+      mockCreateModificationJob.mockResolvedValue({ success: true, jobId: "job-modfail", creditsCost: 2 });
+      mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue({
+        id: "job-modfail", status: "FAILED", outputImageUrl: null,
+        outputWidth: null, outputHeight: null, creditsCost: 0, errorMessage: "Processing error", type: "MODIFY", prompt: "test",
+      });
+      const handler = registry.handlers.get("modify_image")!;
+      const result = await handler({ prompt: "test", image_base64: "base64data", wait_for_completion: true });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Processing error");
+    });
+
+    it("should handle exception in modification flow", async () => {
+      mockCreateModificationJob.mockRejectedValue(new Error("Modification service down"));
+      const handler = registry.handlers.get("modify_image")!;
+      const result = await handler({ prompt: "test", image_base64: "base64data" });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("Modification service down");
     });
   });
 
@@ -130,6 +213,27 @@ describe("image tools", () => {
       const result = await handler({ job_id: "job-2" });
       expect(getText(result)).toContain("FAILED");
       expect(getText(result)).toContain("Model timeout");
+    });
+
+    it("should return pending job without image or error details", async () => {
+      mockPrisma.mcpGenerationJob.findUnique.mockResolvedValue({
+        id: "job-3", type: "GENERATE", status: "PENDING", prompt: "landscape",
+        creditsCost: 2, outputImageUrl: null, outputWidth: null, outputHeight: null,
+        errorMessage: null,
+      });
+      const handler = registry.handlers.get("check_job")!;
+      const result = await handler({ job_id: "job-3" });
+      expect(getText(result)).toContain("PENDING");
+      expect(getText(result)).not.toContain("Image URL");
+      expect(getText(result)).not.toContain("Error:");
+    });
+
+    it("should handle check_job exception", async () => {
+      mockPrisma.mcpGenerationJob.findUnique.mockRejectedValue(new Error("DB connection lost"));
+      const handler = registry.handlers.get("check_job")!;
+      const result = await handler({ job_id: "job-err" });
+      expect((result as { isError?: boolean }).isError).toBe(true);
+      expect(getText(result)).toContain("DB connection lost");
     });
   });
 });
