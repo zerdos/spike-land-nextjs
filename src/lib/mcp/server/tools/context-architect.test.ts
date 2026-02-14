@@ -407,7 +407,6 @@ import bar from "../bar";`;
       });
 
       const text = getText(result);
-      const lines = text.split("\n").filter((l: string) => l.includes("login"));
       // The src file should appear before the test file
       const srcIdx = text.indexOf("src/auth/login.ts");
       const testIdx = text.indexOf("src/auth/login.test.ts");
