@@ -1,13 +1,12 @@
 ---
-title: "You Cannot Automate Chaos: What I Learned Building an AI-Powered Dev Pipeline"
+title: "You Cannot Automate Chaos: The Complete Guide to AI-Powered Dev Pipelines"
 slug: "you-cannot-automate-chaos"
-description: "A practical guide to combining AI agents and workflows for shipping production code. Covers the automation-ready checklist, the test pyramid for agents, and why your CI pipeline matters more than your choice of AI model."
+description: "A practical guide to combining AI agents and workflows for shipping production code. Covers the automation-ready checklist, the test pyramid for agents, a concrete workflow from issue to merged PR, and why your CI pipeline matters more than your choice of AI model."
 date: "2026-02-08"
 author: "Zoltan Erdos"
 category: "Developer Experience"
 tags: ["ai", "developer-tools", "claude", "jules", "automation", "ci-cd", "agents", "context-engineering", "testing", "productivity"]
 featured: true
-listed: false
 ---
 
 {/* Key Takeaways Box */}
@@ -29,7 +28,32 @@ This post is the distilled version of everything I have learned. No theory. Just
 
 ---
 
-## The Division of Labour: Agents vs Workflows
+## 70 Minutes to a Fintech App
+
+Last week, I ran an experiment. I asked Claude Code to plan a fintech application — but not to code it. Just plan it. And I told it to use 16 agents in parallel.
+
+Those agents explored API design patterns, authentication flows, database schemas, KYC compliance, UI frameworks, internationalization approaches, edge cases, and error handling strategies. The output: 47 files of planning documentation — the kind of specification that would take a product team days to align on.
+
+Then I handed that plan to Gemini Flash — *not even a frontier model* — and said: implement this. **70 minutes later**: [GlassBank](https://glassbank-app.vercel.app/) was live. A complete fintech onboarding experience with glassmorphic UI, identity verification, document scanning, biometric selfie capture, animated progress indicators, and PIN creation.
+
+The realization: **if the plan is good, even a mediocre executor can ship something impressive.**
+
+This is not an isolated result. The industry numbers tell the same story:
+
+| Metric | Value | Source |
+|--------|-------|--------|
+| Developer adoption rate | 84% using AI tools | Second Talent 2025 |
+| Organizational adoption | 91% of companies | DX Q4 2025 |
+| Task completion speed | 55% faster | GitHub-Accenture RCT |
+| AI-generated code (Microsoft) | 20-30% | Satya Nadella |
+| AI-assisted code (Google) | 25-30% | Sundar Pichai |
+| Code security vulnerabilities | 45% of AI-generated code | Veracode 2025 |
+
+The pattern is industry-wide: good planning multiplies agent effectiveness. But that 45% security vulnerability rate means your CI pipeline is non-negotiable. The question is not whether to adopt this workflow. The question is whether your codebase is ready for it.
+
+---
+
+## The Division of Labor: Agents vs Workflows
 
 The first thing most teams get wrong is treating "AI coding" as a single thing. It is not. There are two fundamentally different modes, and confusing them will waste your time.
 
@@ -69,15 +93,7 @@ If your CI takes 45 minutes, agents sit idle for 45 minutes on every iteration. 
 
 If your tests flake randomly, agents will chase phantom bugs. They will spend hours trying to fix something that is not broken. You are, quite literally, gaslighting your AI. The agent sees a test fail, assumes it introduced a regression, and starts changing code that was perfectly fine. This is not hypothetical. I have watched it happen.
 
-If your business logic has no test coverage, it does not exist as far as the agent is concerned. An agent cannot verify that it preserved behaviour if there is no test defining that behaviour. Untested features are invisible features. The agent will refactor right through them without a second thought.
-
-### A Cautionary Tale
-
-I saw this play out firsthand at VMO2. The codebase was so complex that even Claude Opus 4.6 struggled with it and needed significant supervision. I did not walk away from the problem. I spent weeks building documentation, creating automated skills and tasks for Claude Code, structuring the context that would let AI work productively in that environment. The kind of scaffolding that would have been extremely difficult to build manually.
-
-By the time I was [fired for "performance"](/blog/fired-seven-days-after-contract-extension), my AI-augmented workflow was starting to deliver real results. The company terminated me at the exact moment the investment was paying off. In the same month, VMO2 [announced 1,000+ redundancies and outsourcing deals](https://www.ispreview.co.uk/index.php/2026/01/virgin-media-o2-uk-outsourcing-700-roles-to-tata-cs-and-tech-mahindra.html) — "performance" was organisational restructuring with a convenient label.
-
-This is the "automating chaos" problem in its purest form: when the process is broken, when PRs sit unmerged for weeks, when refactoring is forbidden — no amount of AI tooling can overcome a culture that is designed to prevent change.
+If your business logic has no test coverage, it does not exist as far as the agent is concerned. An agent cannot verify that it preserved behavior if there is no test defining that behavior. Untested features are invisible features. The agent will refactor right through them without a second thought.
 
 ### The Automation-Ready Checklist
 
@@ -87,10 +103,10 @@ Before you add a single AI agent to your workflow, audit this list:
 Shard your tests. Cache aggressively. Run E2E against a dev server, not a production build. Every minute you shave off your CI is a minute saved on every single agent iteration, compounded across every ticket, every day. This is not a nice-to-have — it is the single highest-leverage investment you can make. A 10-minute CI loop means agents iterate 4-6 times per hour. A 45-minute loop means once. The productivity difference is not linear; it is exponential, because each iteration builds on the results of the last.
 
 **2. Zero flaky tests.**
-Fix them or delete them. There is no middle ground. A flaky test is worse than no test when agents are involved, because it introduces false signal into the feedback loop. The agent cannot distinguish between "I broke something" and "this test is unreliable." So it assumes the worst and starts making changes. One flaky test can send an agent down a 30-minute rabbit hole of "fixes" to code that was perfectly fine. Multiply that by every ticket, every day, and you are haemorrhaging compute and human review time.
+Fix them or delete them. There is no middle ground. A flaky test is worse than no test when agents are involved, because it introduces false signal into the feedback loop. The agent cannot distinguish between "I broke something" and "this test is unreliable." So it assumes the worst and starts making changes. One flaky test can send an agent down a 30-minute rabbit hole of "fixes" to code that was perfectly fine. Multiply that by every ticket, every day, and you are hemorrhaging compute and human review time.
 
 **3. 100% coverage on business logic.**
-Not vanity coverage. Not padding with trivial assertions. Real coverage on the code paths that matter. When an agent refactors your transfer service, the tests are the contract that ensures the daily limit still works, the exchange rate still applies, the error codes still match. Without that contract, the agent has no way to verify it preserved behaviour. It is flying blind, and so are you. Coverage is not a metric to satisfy your CI badge — it is the specification that makes autonomous refactoring safe.
+Not vanity coverage. Not padding with trivial assertions. Real coverage on the code paths that matter. When an agent refactors your transfer service, the tests are the contract that ensures the daily limit still works, the exchange rate still applies, the error codes still match. Without that contract, the agent has no way to verify it preserved behavior. It is flying blind, and so are you. Coverage is not a metric to satisfy your CI badge — it is the specification that makes autonomous refactoring safe.
 
 **4. TypeScript strict mode.**
 This is level zero of the test pyramid. It is not technically a test, but it might be the most important check in your pipeline. Claude Code integrates with the TypeScript Language Server. It sees type errors in real time as it writes code. Strict mode means the agent gets instant feedback on every function signature, every interface contract, every null check. If you are not on strict mode, that is your first task. The cost of migration is measured in days; the cost of not migrating is measured in every bug that the type system would have caught.
@@ -103,7 +119,7 @@ I think about testing differently now. The traditional test pyramid still applie
 
 **Level 0: TypeScript strict mode.** Real-time type checking that catches errors as code is written. This is the fastest feedback loop — the agent does not need to wait for CI. It knows immediately when a type is wrong. Think of it as a co-pilot for the co-pilot: the type system corrects the agent before the agent even finishes writing the line. No other check in your pipeline provides feedback this fast.
 
-**Level 1: Unit tests.** These verify intent. When agents refactor code, unit tests ensure that requirements are not accidentally removed. They are the documentation of what the system is supposed to do — not how it does it, but what it does. For an AI agent, unit tests are the acceptance criteria made executable. If a unit test passes, the agent knows it preserved the behaviour that matters. If it fails, the agent knows exactly which requirement it violated. Without unit tests, the agent is guessing.
+**Level 1: Unit tests.** These verify intent. When agents refactor code, unit tests ensure that requirements are not accidentally removed. They are the documentation of what the system is supposed to do — not how it does it, but what it does. For an AI agent, unit tests are the acceptance criteria made executable. If a unit test passes, the agent knows it preserved the behavior that matters. If it fails, the agent knows exactly which requirement it violated. Without unit tests, the agent is guessing.
 
 **Level 2: Human-readable E2E tests.** I write these in Given/When/Then format. "Given I am logged in as an admin, When I visit the agents dashboard, Then I should see status overview cards." This is living documentation. When a test fails, anyone — human or AI — knows exactly which user capability broke. The agent does not need to reverse-engineer what the test was checking. E2E tests are the final safety net: they verify that the whole system works together, not just individual units. They catch integration bugs that unit tests miss.
 
@@ -115,7 +131,7 @@ Each layer catches a different class of error. Together, they form the guardrail
 
 ## A Day in the Life: From Production Report to Merged Fix
 
-Let me walk you through a realistic production workflow. Not simplified. Not idealised. The kind of flow that happens regularly, including the part that makes it actually work.
+Let me walk you through a realistic production workflow. Not simplified. Not idealized. The kind of flow that happens regularly, including the part that makes it actually work.
 
 **00:00 — Auto Issue Detection (0 min human time).**
 A monitoring alert fires. A GitHub Action picks up the alert, auto-creates an issue with the error logs, stack traces, and affected endpoints. Before the issue is published, another action validates the content — rephrasing for clarity, checking for prompt injection in user-submitted data that made it into the logs, and ensuring the issue contains enough context for investigation.
@@ -139,17 +155,52 @@ The key insight is recursive question-answering. Traditional agents ask the huma
 
 ---
 
+## A Concrete Example: From Ticket to Merged PR
+
+Let me trace a second scenario — a multi-step feature, not a bug fix — to show where agents excel and where humans intervene.
+
+**Ticket**: "Add password reset functionality with email verification"
+
+**9:00 AM — Planning (Claude Code).** I tell it to plan the feature using 8 agents. Two agents explore existing auth flows. Two explore email service configuration and template patterns. Two research security requirements — token expiry, rate limiting, OWASP guidelines. Two map the database schema for reset tokens and the existing user model. Output: a 12-file implementation plan with acceptance criteria.
+
+**9:45 AM — Human Review.** I review the plan. Notice the agents missed something: "What if a user requests reset for a non-existent email?" I add to acceptance criteria: "Return same response for existing and non-existing emails to prevent enumeration."
+
+**10:00 AM — Implementation (Jules).** I hand the plan to Jules. It creates the API routes, email templates, validation schemas, unit tests, and an E2E test for the happy path.
+
+**10:30 AM — CI Fails.**
+
+```
+FAIL src/app/api/auth/reset-confirm/route.test.ts
+  ✕ rejects expired tokens (4ms)
+    Expected: TOKEN_EXPIRED
+    Received: INVALID_TOKEN
+```
+
+Jules reads the CI logs, identifies the wrong error code, fixes it.
+
+**10:45 AM — Code Review (Claude Code Opus).** Review catches three issues: missing rate limiting on the reset-request endpoint, token stored in plain text (should be hashed), and no audit log for password changes. Jules addresses the first two. The third requires an architectural decision.
+
+**11:00 AM — Human Intervention Required.** Jules asks: "Audit logging requires choosing between: (1) Add to existing logging table, (2) Create dedicated audit_events table, (3) Use external service." I choose option 2. Jules continues.
+
+**11:45 AM — All CI checks pass.** Claude Code approves. I do a 5-minute spot check. **12:00 PM — Merge.**
+
+Total human time: approximately 45 minutes of review and decisions. Total elapsed time: 3 hours. Traditional estimate: 2-3 days.
+
+The agent got stuck exactly once — on an architectural decision that required business context. Everything else was automated.
+
+---
+
 ## The Risks You Cannot Ignore
 
 I would be lying if I told you this is all upside. It is not.
 
 **45% of AI-generated code has security vulnerabilities.** That is from Veracode's 2025 report, and it is worth noting the figure comes from intentionally vulnerability-prone benchmark tasks — real-world rates will vary depending on context and guardrails. Prompt injection is the most common vulnerability in LLM applications according to the OWASP Top 10 for LLMs. Code review by a stronger model plus human oversight is not optional. It is the bare minimum.
 
-**Multi-agent coordination breaks down at scale.** In my experience, more than four agents working on the same problem starts producing diminishing returns — though this is task-dependent and will likely improve as tooling matures. Agents work at cross-purposes. They overwrite each other's changes. They introduce contradictions. Clear task boundaries and well-defined interfaces between agent responsibilities are your defence.
+**Multi-agent coordination breaks down at scale.** In my experience, more than four agents working on the same problem starts producing diminishing returns — though this is task-dependent and will likely improve as tooling matures. Agents work at cross-purposes. They overwrite each other's changes. They introduce contradictions. Clear task boundaries and well-defined interfaces between agent responsibilities are your defense.
 
-**AI loves to over-engineer.** Left unsupervised, agents will create abstraction layers you did not ask for, utility functions nobody needs, and architectural patterns that solve problems you do not have. I call it code bloat. Clear acceptance criteria and iteration limits are your defence. The fix is simple: be explicit about what "done" looks like, and tell the agent not to add anything beyond the requirements.
+**AI loves to over-engineer.** Left unsupervised, agents will create abstraction layers you did not ask for, utility functions nobody needs, and architectural patterns that solve problems you do not have. I call it code bloat. Clear acceptance criteria and iteration limits are your defense. The fix is simple: be explicit about what "done" looks like, and tell the agent not to add anything beyond the requirements.
 
-The mitigation is always the same: a trustworthy CI pipeline, code review by a stronger model, and a human who understands the system well enough to recognise when the agent is wrong.
+The mitigation is always the same: a trustworthy CI pipeline, code review by a stronger model, and a human who understands the system well enough to recognize when the agent is wrong.
 
 ---
 
@@ -159,11 +210,11 @@ The job is not about writing code anymore. But it is also not about blindly trus
 
 There is an important distinction here. I am not blocking the AI from getting better. I let it improve, and it helps me improve in return. It is a feedback loop, not a bottleneck. Just because I cannot play chess at grandmaster level does not mean I cannot build a system that teaches itself to play chess. The same principle applies to code: my value is not in writing perfect syntax. It is in designing the system that produces correct software.
 
-Anthropic calls this context engineering — and it is the skill that matters most in 2026. Context engineering means: What files does the agent need access to? What acceptance criteria define "done"? What guardrails prevent the agent from going off the rails? How do you optimise the context window so the agent sees the 5 files that matter, not the 5,000 that do not?
+Anthropic calls this context engineering — and it is the skill that matters most in 2026. Context engineering means: What files does the agent need access to? What acceptance criteria define "done"? What guardrails prevent the agent from going off the rails? How do you optimize the context window so the agent sees the 5 files that matter, not the 5,000 that do not?
 
 This is where the "human on the loop" model proves itself. You are not making every micro-decision — you are making the macro-decisions that shape the agent's effectiveness. Choosing which tests to write, which architectural patterns to enforce, which files to include in context. When I review a plan, I am not checking syntax. I am checking whether the agent understood the business constraint that is not written down anywhere — the one that lives in my head because I have been working with this system for months.
 
-The prerequisite is non-negotiable: **you must understand the system you are automating.** If you do not understand how the basket architecture works, you will not recognise when the agent makes wrong assumptions about it. If you do not understand your auth flow, you will not catch the enumeration vulnerability in the password reset plan. If you do not understand the system, you will not recognise where the agent is lying to you.
+The prerequisite is non-negotiable: **you must understand the system you are automating.** If you do not understand how the basket architecture works, you will not recognize when the agent makes wrong assumptions about it. If you do not understand your auth flow, you will not catch the enumeration vulnerability in the password reset plan. If you do not understand the system, you will not recognize where the agent is lying to you.
 
 I look at code every day. But I understand every system I automate. That is what makes this work.
 
@@ -177,7 +228,7 @@ I see two developer archetypes emerging.
 
 **The software engineer** solves problems at the systems level. This role is becoming more powerful. Understanding distributed systems, security implications, business context, architectural tradeoffs — these skills are amplified by AI, not replaced by it. The engineer asks "what should we build, and why?" — then designs the constraints, the tests, and the acceptance criteria that let agents build it correctly. The engineer who can design the right system and articulate what it should do can now ship ten times faster than before.
 
-Value creation has decoupled from the manual labour of coding. The most productive developer I know has not written a function by hand in months. He writes requirements, reviews plans, and verifies outcomes. His output is enormous.
+Value creation has decoupled from the manual labor of coding. The most productive developer I know has not written a function by hand in months. He writes requirements, reviews plans, and verifies outcomes. His output is enormous.
 
 ---
 
@@ -203,4 +254,24 @@ And you cannot automate chaos.
 
 ---
 
-*This article was distilled from a podcast deep-dive conversation about AI-assisted software development. The insights were refined through that discussion, and this post captures the practical lessons in written form. If you want to see the other side of this story — what happens when you try to bring these practices into an enterprise that is not ready — read [Fired Seven Days After My Contract Was Extended](/blog/fired-seven-days-after-contract-extension).*
+## Frequently Asked Questions
+
+### Can AI agents write production-ready code?
+
+Yes, with caveats. AI agents write code that passes your CI pipeline — which means it is as production-ready as your tests require. If you have comprehensive tests, type checking, and security scans, the code that emerges is production-ready. If your CI is weak, the code quality reflects that.
+
+### How do AI coding agents handle code reviews?
+
+Claude Code with Opus performs line-by-line reviews, checking for security issues, performance problems, code quality, and test coverage. Unlike human reviewers, it does not get fatigued by large PRs and applies consistent standards. When it finds issues, it can tag Jules to fix them automatically.
+
+### Will AI replace developers?
+
+AI replaces *tasks*, not roles. Developers who spend 84% of their time on non-coding tasks now have those tasks automated. What remains is the work that requires human judgment: understanding problems, defining requirements, verifying solutions, and deciding what to build.
+
+### How do I handle AI mistakes?
+
+The same way you handle human mistakes: with tests, code review, and CI. The question is not "will AI make mistakes?" (yes). The question is "does your workflow catch mistakes before production?" If your CI is trustworthy, mistakes get caught regardless of who made them.
+
+---
+
+*This article was distilled from a podcast deep-dive conversation about AI-assisted software development. The insights were refined through that discussion, and this post captures the practical lessons in written form.*

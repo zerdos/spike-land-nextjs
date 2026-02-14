@@ -676,9 +676,9 @@ import { ENHANCEMENT_COSTS, formatCurrency, User } from "@spike-npm-land/shared"
 
 ### AI & Machine Learning
 
-- **LLMs**: Google Gemini (image enhancement), OpenAI GPT-4 (content generation)
+- **LLMs**: Google Gemini (image enhancement), Claude Opus 4.6 (content generation, learning content)
 - **Image Generation**: Stable Diffusion via Replicate
-- **Sentiment Analysis**: OpenAI GPT-4
+- **Sentiment Analysis**: Claude Opus 4.6
 - **Anomaly Detection**: Custom statistical models
 
 ---

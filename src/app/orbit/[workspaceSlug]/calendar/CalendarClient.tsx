@@ -193,6 +193,15 @@ export function CalendarClient() {
     ...new Set(accounts.map((a) => a.platform)),
   ];
 
+  // Workspace not loaded yet
+  if (!workspace) {
+    return (
+      <div className="flex items-center justify-center h-64" data-testid="calendar-view">
+        <p className="text-muted-foreground">Loading workspace...</p>
+      </div>
+    );
+  }
+
   // No accounts connected state
   if (!isLoading && accounts.length === 0) {
     return (

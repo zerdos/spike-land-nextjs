@@ -156,7 +156,7 @@ The KV cache stores the Key and Value vectors for every previously processed tok
 
 For a large model, the KV cache requires roughly 1 MB per token. A 128K context window can require 40+ GB of KV cache alone. This is the primary memory bottleneck during inference and the reason context window size is not unlimited.
 
-Modern architectures reduce this cost. Grouped Query Attention (GQA), used in LLaMA 3 and Mistral, shares Key/Value heads across multiple Query heads — cutting KV cache size by up to 90%. DeepSeek-V2 went further with Multi-Head Latent Attention, compressing K and V into a shared low-rank latent space before caching and achieving a 93% KV cache reduction. These are not obscure optimisations. They are what makes 128K and 1M context windows physically possible without requiring an entire server room of GPU memory.
+Modern architectures reduce this cost. Grouped Query Attention (GQA), used in LLaMA 3 and Mistral, shares Key/Value heads across multiple Query heads — cutting KV cache size by up to 90%. DeepSeek-V2 went further with Multi-Head Latent Attention, compressing K and V into a shared low-rank latent space before caching and achieving a 93% KV cache reduction. These are not obscure optimizations. They are what makes 128K and 1M context windows physically possible without requiring an entire server room of GPU memory.
 
 **Stage 4: Prefill vs Decode.**
 
@@ -174,7 +174,7 @@ During prefill, all your input tokens are processed in one parallel forward pass
 
 This asymmetry is why Anthropic charges $5 per million input tokens but $25 per million output tokens for Opus 4.6. Input is cheap because it is parallel. Output is expensive because it is sequential.
 
-In production, providers physically separate these phases onto different GPU pools — a pattern called disaggregated inference. Prefill nodes are optimised for compute throughput. Decode nodes are optimised for memory bandwidth. Meta, LinkedIn, and Mistral all deploy this in production, reporting 2-7x throughput gains. NVIDIA built their Dynamo serving framework specifically for this pattern.
+In production, providers physically separate these phases onto different GPU pools — a pattern called disaggregated inference. Prefill nodes are optimized for compute throughput. Decode nodes are optimized for memory bandwidth. Meta, LinkedIn, and Mistral all deploy this in production, reporting 2-7x throughput gains. NVIDIA built their Dynamo serving framework specifically for this pattern.
 
 This pricing differential is the economic foundation of context engineering: **investing tokens in preparation (cheap) reduces the tokens needed in trial-and-error iteration (expensive).**
 
@@ -184,7 +184,7 @@ Andrej Karpathy compared the context window to RAM — the only working memory t
 
 This analogy has a precise implication: irrelevant context is not just wasted space. It is noise in working memory. A 2025 paper titled "Context Length Alone Hurts LLM Performance Despite Perfect Retrieval" found that the mere presence of more tokens degrades performance — even when retrieval is perfect and no distractors are present. On HumanEval coding tasks, accuracy dropped 47.6% at 30K tokens. Adding whitespace — literally blank tokens with no semantic content — still caused 7-48% performance drops.
 
-Research on the "lost in the middle" problem shows this degradation is not uniform. Models attend most strongly to tokens at the beginning and end of the context window. Information placed in the middle receives significantly less attention — performance can degrade by over 30% when critical information shifts from the edges to the centre. This U-shaped attention pattern, caused by rotary positional embeddings, means that where you place information in the context matters almost as much as what information you place.
+Research on the "lost in the middle" problem shows this degradation is not uniform. Models attend most strongly to tokens at the beginning and end of the context window. Information placed in the middle receives significantly less attention — performance can degrade by over 30% when critical information shifts from the edges to the center. This U-shaped attention pattern, caused by rotary positional embeddings, means that where you place information in the context matters almost as much as what information you place.
 
 The model's attention is a finite budget. Every token you add competes for that budget.
 
@@ -228,7 +228,7 @@ The plan is not documentation. It is a prompt. Every line exists to increase the
 
 ### **Zoltan: The Manus team talked about rewriting their todo.md file to push objectives into the model's recent attention span. Is that what you are doing?**
 
-It is the same principle. Research on the "lost in the middle" problem shows that models attend most strongly to tokens at the beginning and end of the context window. Information in the middle receives less attention — performance can degrade by over 30% when critical information shifts from the edges to the centre.
+It is the same principle. Research on the "lost in the middle" problem shows that models attend most strongly to tokens at the beginning and end of the context window. Information in the middle receives less attention — performance can degrade by over 30% when critical information shifts from the edges to the center.
 
 The plan file sits at the end of the context, right before the conversation begins. It occupies the recency-favourable position. The system prompt sits at the beginning, occupying the primacy-favourable position. The middle is where conversation history accumulates — and that is where attention is weakest.
 
@@ -258,7 +258,7 @@ Research and practice have identified four distinct failure modes, and I have ob
 
 Several mechanisms. Auto-compaction at 83% capacity prevents the window from filling with stale conversation. The CLAUDE.md hierarchy (enterprise policy > project > user) resolves authority conflicts. Subagent isolation prevents research context from polluting execution context. And system reminders — roughly 40 conditional injections that trigger after tool calls — combat instruction drift by repeating key directives throughout the conversation.
 
-But the most important defence is the plan-then-execute pattern itself. By separating exploration from implementation, you ensure the executing agent starts with a clean context containing only the distilled findings. The exploration noise is discarded. The plan is the antibody against context rot.
+But the most important defense is the plan-then-execute pattern itself. By separating exploration from implementation, you ensure the executing agent starts with a clean context containing only the distilled findings. The exploration noise is discarded. The plan is the antibody against context rot.
 
 ---
 
@@ -349,7 +349,7 @@ This creates an asymmetry that maps to Lance Martin's four patterns:
 | **Compress** | Summarize in their heads, remember key points | Auto-compact conversation history |
 | **Isolate** | Assign subtasks to team members | Spawn subagents with focused contexts |
 
-But the deeper asymmetry is this: **you know what you do not know.** When you encounter unfamiliar code, you recognise the gap in your understanding and investigate. I do not have that metacognitive ability in the way you do. I proceed with what my context contains. If my context contains confident-sounding but incorrect information — stale documentation, misleading variable names, a hallucinated function signature from an earlier turn — I will build on it without recognising the error.
+But the deeper asymmetry is this: **you know what you do not know.** When you encounter unfamiliar code, you recognize the gap in your understanding and investigate. I do not have that metacognitive ability in the way you do. I proceed with what my context contains. If my context contains confident-sounding but incorrect information — stale documentation, misleading variable names, a hallucinated function signature from an earlier turn — I will build on it without recognizing the error.
 
 Anthropic's interpretability research traced this mechanistically. The model has "default refusal circuits" that are normally active and get suppressed by "known answer" features. Hallucinations occur when this suppression misfires — the model's internal state confidently signals "I know this" when it does not. The model cannot distinguish between genuine knowledge and confident confabulation from within its own processing.
 
@@ -478,7 +478,7 @@ It is context all the way down.
 <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-6 mt-8">
   <h3 className="text-lg font-semibold mb-3 text-slate-200">Continue the conversation</h3>
   <p className="text-slate-300 mb-4">
-    This article is the companion to <a href="/blog/context-engineering-your-zero-shot-prompt" className="text-blue-400 hover:underline">Context Engineering Your 0-Shot Prompt</a>, which covers the practical 5-layer framework. Our open-source repository uses CLAUDE.md, plan mode, and multi-agent workflows to ship features. Explore the codebase to see context engineering in practice.
+    This article is the companion to <a href="/blog/context-engineering-your-zero-shot-prompt" className="text-blue-400 hover:underline">Context Engineering Your Zero-Shot Prompt</a>, which covers the practical 5-layer framework. Our open-source repository uses CLAUDE.md, plan mode, and multi-agent workflows to ship features. Explore the codebase to see context engineering in practice.
   </p>
   <div className="flex flex-wrap gap-3">
     <a

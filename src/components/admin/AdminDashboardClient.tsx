@@ -123,12 +123,6 @@ export function AdminDashboardClient(
       icon: "activity",
     },
     {
-      title: "Voucher Management",
-      description: "Create and manage promotional vouchers",
-      href: "/admin/vouchers",
-      icon: "ticket",
-    },
-    {
       title: "User Management",
       description: "Search users, adjust roles, and manage credits",
       href: "/admin/users",

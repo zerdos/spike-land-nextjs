@@ -260,7 +260,7 @@ yarn lint         # Run ESLint
 yarn test             # Run tests in watch mode
 yarn test:run         # Run tests once
 yarn test:ui          # Run tests with UI
-yarn test:coverage    # Run with coverage (100% required)
+yarn test:coverage    # Run with coverage (MCP business logic: 80/80/75/80 thresholds)
 
 # E2E Tests (Playwright + Cucumber)
 yarn test:e2e:local   # Run E2E against localhost (dev server must be running)
