@@ -220,16 +220,12 @@ The model cascade has an economic argument too:
 | Model | Role | Cost (Output/MTok) | Temperature | Why This Model |
 |---|---|---|---|---|
 | **Opus** | Generate | $25.00 | 0.5 | Creative, high capability for novel apps |
-| **Sonnet** | Fix | $25.00 | 0.2 | Precise, fast for targeted repairs |
+| **Sonnet** | Fix | $15.00 | 0.2 | Precise, fast for targeted repairs |
 | **Haiku** | Learn | $5.00 | 0.2 | Cheapest capable model for extraction |
 
 <ModelCascadeDemo />
 
 Use the most expensive model where creativity matters. Use the cheapest capable model for mechanical tasks. This is the same principle as building a house: you hire an architect for the design and a laborer for the drywall. Both essential. One doesn't need to be the other.
-
-<Callout type="warning">
-**Idea: Visual Error Debugger** — *"Imagine if your compiler showed you a time-lapse of the bug being born, diagnosed, and fixed."* The streaming event system already emits every phase: `GENERATING → TRANSPILING → FIXING → LEARNING → PUBLISHED`. A visual debugger could replay the agent's journey — showing users what broke and how it was repaired. Turns opaque generation into a transparent debugging session. Each `StreamEvent` type maps to a visual beat.
-</Callout>
 
 ---
 
@@ -324,14 +320,6 @@ function formatNotes(notes: LearningNote[]): string {
 
 The 800-token budget is tight by design. Remember the attention physics: every note token competes with the code generation context for the model's attention. High-confidence notes earn their place. Low-confidence notes get pruned. Natural selection, running on softmax.
 
-<Callout type="warning">
-**Idea: Cross-Tenant Learning** — *"In ecology, monocultures are fragile. So are undifferentiated learning pools."* Currently, all learning notes go into one pool. But game-specific lessons ("always add key props to AnimatePresence children") might dilute dashboard prompts where they're irrelevant — the exact attention dilution problem, but at the data layer. Partitioning notes by category would let the game agent accumulate game expertise without cross-pollinating the dashboard agent.
-</Callout>
-
-<Callout type="warning">
-**Idea: Learning Note Dashboard** — *"You can't manage what you can't measure."* Build an `/admin/agent-notes` page showing confidence trajectories over time, which slugs benefited from which notes, and which notes are approaching the 0.3 deprecation threshold. Observable systems beat black boxes. The data already lives in Prisma — it just needs a UI.
-</Callout>
-
 ---
 
 ## Skill Matching — The Right Tool for the Right Job
@@ -356,10 +344,6 @@ The matching is keyword-driven, not AI-driven — deliberately simple:
 | **Audio** | Howler.js, Web Audio | music, audio, drum, piano, synth |
 
 Each matched skill injects its own prompt section with library-specific instructions, import patterns, and common pitfalls. The total prompt grows only by the skills that match — not by the entire skill catalogue. Minimum viable context. Maximum signal density.
-
-<Callout type="warning">
-**Idea: Learned Skills** — *"Evolution doesn't just select for the fittest. It generates new species."* If Haiku keeps extracting learning notes about a library that isn't in any skill definition — say, `@tanstack/query` keeps appearing in data-fetching apps — that pattern could be flagged for promotion to a full skill definition. Skills would grow organically from the agent's own experience, rather than being hand-coded. Natural selection applied to the skill catalogue itself.
-</Callout>
 
 ---
 
@@ -394,10 +378,6 @@ export async function isAgentAvailable(): Promise<boolean> {
 If the local agent server is running (with its database of learning notes and full model cascade), traffic routes there. If it's down, the system falls back to the in-process Claude agent loop. If Claude's API is unavailable, it degrades to the original Gemini path.
 
 The user never sees the failover. They get an app. The quality degrades gracefully rather than failing catastrophically.
-
-<Callout type="warning">
-**Idea: Agent Fleet** — *"Why have one generalist when you could have specialists?"* The proxy pattern makes it trivial to route requests to specialized agent instances. A "game agent" running on a GPU server with game-optimized learning notes. A "dashboard agent" with data visualization expertise. Each instance accumulates domain-specific knowledge, and the proxy routes based on the classified category. Multi-agent coordination at the infrastructure level.
-</Callout>
 
 ---
 
@@ -499,10 +479,6 @@ The `recordGenerationAttempt` function tracks every generation with full observa
 </Callout>
 
 The metrics also show something unexpected: learning notes have diminishing returns. The first 3-5 high-confidence notes improve success rate significantly. After that, the attention budget starts competing. More notes don't mean better results — the same physics that motivates the 800-token budget for notes.
-
-<Callout type="warning">
-**Idea: A/B Testing** — *"Science requires a control group."* The fallback architecture makes A/B testing trivial. Randomly route 50% of requests through the full agent loop and 50% through the Gemini fallback. Track success rate, user retention, and cost per successful generation. Let data decide whether the complexity and cost are justified. The proxy already handles routing — it just needs a coin flip.
-</Callout>
 
 ---
 

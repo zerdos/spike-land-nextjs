@@ -3,6 +3,7 @@ import { AppShowcaseSection } from "@/components/landing/AppShowcaseSection";
 import { CreateCTASection } from "@/components/landing/CreateCTASection";
 import { LandingHero } from "@/components/landing/LandingHero";
 import { LearnItSection } from "@/components/landing/LearnItSection";
+import { OrbitSection } from "@/components/landing/OrbitSection";
 import { PublicGallerySection } from "@/components/landing/PublicGallerySection";
 import { LandingPageStructuredData } from "@/components/seo/LandingPageStructuredData";
 import { getRecentPublicPhotos } from "@/lib/gallery/public-photos";
@@ -31,6 +32,7 @@ export default async function Home() {
       <div className="relative z-10">
         <LandingHero stats={stats ?? undefined} />
         <AppShowcaseSection apps={showcaseApps} />
+        <OrbitSection />
         <PublicGallerySection photos={publicPhotos} />
         <LearnItSection />
         <BlogPreviewSection />

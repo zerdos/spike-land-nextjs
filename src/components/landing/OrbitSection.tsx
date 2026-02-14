@@ -2,37 +2,37 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
-import { ArrowRight, BookOpen, Brain, Globe, Headphones } from "lucide-react";
+import { ArrowRight, Inbox, Activity, Brain } from "lucide-react";
 import { motion } from "framer-motion";
 
 const features = [
   {
-    icon: Globe,
-    title: "Works from URL",
-    description: "Create learning materials from any link",
-    gradient: "from-emerald-500/20 to-teal-500/20",
-    hoverGlow: "rgba(16,185,129,0.2)",
-    hoverColor: "group-hover:text-emerald-400",
+    icon: Activity,
+    title: "Pulse",
+    description: "Real-time analytics across every social channel in one dashboard",
+    gradient: "from-fuchsia-500/20 to-purple-500/20",
+    hoverGlow: "rgba(217,70,239,0.2)",
+    hoverColor: "group-hover:text-fuchsia-400",
+  },
+  {
+    icon: Inbox,
+    title: "Inbox",
+    description: "Unified inbox for comments, DMs, and mentions — never miss a conversation",
+    gradient: "from-purple-500/20 to-cyan-500/20",
+    hoverGlow: "rgba(168,85,247,0.2)",
+    hoverColor: "group-hover:text-purple-400",
   },
   {
     icon: Brain,
-    title: "Powered by Claude Opus 4.6",
-    description: "State-of-the-art AI generates accurate, in-depth educational content",
-    gradient: "from-teal-500/20 to-cyan-500/20",
-    hoverGlow: "rgba(20,184,166,0.2)",
-    hoverColor: "group-hover:text-teal-400",
-  },
-  {
-    icon: Headphones,
-    title: "Listen to any article",
-    description: "Text-to-speech built in — listen while you multitask",
-    gradient: "from-cyan-500/20 to-emerald-500/20",
+    title: "Brand Brain",
+    description: "AI that learns your voice and drafts on-brand replies in seconds",
+    gradient: "from-cyan-500/20 to-fuchsia-500/20",
     hoverGlow: "rgba(6,182,212,0.2)",
     hoverColor: "group-hover:text-cyan-400",
   },
 ];
 
-export function LearnItSection() {
+export function OrbitSection() {
   return (
     <section className="relative py-32 overflow-hidden">
       <div className="container relative mx-auto px-4">
@@ -42,10 +42,10 @@ export function LearnItSection() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-sm text-emerald-400 mb-8"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 text-sm text-fuchsia-400 mb-8"
           >
-            <BookOpen className="w-4 h-4" />
-            <span className="font-semibold tracking-widest uppercase text-[10px]">AI Learning</span>
+            <Activity className="w-4 h-4" />
+            <span className="font-semibold tracking-widest uppercase text-[10px]">Social Media Command Center</span>
           </motion.div>
 
           <motion.h2
@@ -55,9 +55,9 @@ export function LearnItSection() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl md:text-7xl font-bold text-white mb-8 tracking-tight"
           >
-            Learn{" "}
-            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-              It
+            Meet{" "}
+            <span className="bg-gradient-to-r from-fuchsia-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+              Orbit
             </span>
           </motion.h2>
 
@@ -68,8 +68,7 @@ export function LearnItSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-xl text-zinc-500 mb-16 max-w-2xl mx-auto font-light"
           >
-            A wiki about absolutely anything — you choose the topic. Powered by Claude Opus 4.6,
-            the must-have tool in education.
+            Manage every social channel from one place. AI-powered replies, real-time analytics, and unified messaging — built for teams that move fast.
           </motion.p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
@@ -106,10 +105,10 @@ export function LearnItSection() {
             <Button
               asChild
               size="lg"
-              className="bg-zinc-100 hover:bg-white text-zinc-950 font-bold border-0 gap-3 group px-10 h-16 rounded-2xl transition-all duration-300 shadow-xl shadow-emerald-500/10"
+              className="bg-zinc-100 hover:bg-white text-zinc-950 font-bold border-0 gap-3 group px-10 h-16 rounded-2xl transition-all duration-300 shadow-xl shadow-fuchsia-500/10"
             >
-              <Link href="/learnit">
-                Start Learning
+              <Link href="/orbit">
+                Explore Orbit
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-2" />
               </Link>
             </Button>
