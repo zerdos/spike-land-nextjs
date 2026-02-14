@@ -49,6 +49,7 @@ export default defineConfig({
         "src/**/*.d.ts",
         "src/**/*.test.ts",
         "src/**/*.spec.ts",
+        "src/lib/mcp/server/__test-utils__/**",
         "node_modules/**",
       ],
       thresholds: {

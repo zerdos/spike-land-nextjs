@@ -31,27 +31,8 @@ vi.mock("node:child_process", async (importOriginal) => {
   return { ...mocked, default: mocked };
 });
 
-import type { ToolRegistry } from "../tool-registry";
+import { createMockRegistry, getText, isError } from "../__test-utils__";
 import { registerDevTools } from "./dev";
-
-function createMockRegistry(): ToolRegistry & { handlers: Map<string, (...args: unknown[]) => unknown> } {
-  const handlers = new Map<string, (...args: unknown[]) => unknown>();
-  const registry = {
-    register: vi.fn((def: { name: string; handler: (...args: unknown[]) => unknown }) => {
-      handlers.set(def.name, def.handler);
-    }),
-    handlers,
-  };
-  return registry as unknown as ToolRegistry & { handlers: Map<string, (...args: unknown[]) => unknown> };
-}
-
-function getText(result: unknown): string {
-  return (result as { content: Array<{ text: string }> }).content[0]!.text;
-}
-
-function isError(result: unknown): boolean {
-  return (result as { isError?: boolean }).isError === true;
-}
 
 describe("dev tools", () => {
   const userId = "test-user";
@@ -232,7 +213,9 @@ describe("dev tools", () => {
 
   describe("file_guard", () => {
     it("should return PASS when vitest succeeds", async () => {
-      mockExecSync.mockReturnValue("Tests passed\n 5 passed\n");
+      mockExecSync
+        .mockReturnValueOnce("src/app/page.tsx\n")  // git diff (non-MCP file)
+        .mockReturnValueOnce("Tests passed\n 5 passed\n");  // vitest
 
       const handler = registry.handlers.get("file_guard")!;
       const result = await handler({});
@@ -244,8 +227,11 @@ describe("dev tools", () => {
     it("should return FAIL when vitest fails", async () => {
       const err = new Error("Tests failed") as Error & { stdout?: string };
       err.stdout = "FAIL src/test.ts\n Expected true, got false";
+      let callCount = 0;
       mockExecSync.mockImplementation(() => {
-        throw err;
+        callCount++;
+        if (callCount === 1) return "src/app/page.tsx\n";  // git diff
+        throw err;  // vitest
       });
 
       const handler = registry.handlers.get("file_guard")!;
@@ -256,7 +242,9 @@ describe("dev tools", () => {
     });
 
     it("should use HEAD~1 as default base", async () => {
-      mockExecSync.mockReturnValue("Tests passed\n");
+      mockExecSync
+        .mockReturnValueOnce("src/app/page.tsx\n")  // git diff
+        .mockReturnValueOnce("Tests passed\n");  // vitest
 
       const handler = registry.handlers.get("file_guard")!;
       await handler({});
@@ -267,7 +255,9 @@ describe("dev tools", () => {
     });
 
     it("should accept a custom commit hash", async () => {
-      mockExecSync.mockReturnValue("Tests passed\n");
+      mockExecSync
+        .mockReturnValueOnce("src/app/page.tsx\n")  // git diff
+        .mockReturnValueOnce("Tests passed\n");  // vitest
 
       const handler = registry.handlers.get("file_guard")!;
       await handler({ commit_hash: "abc123" });
@@ -299,11 +289,81 @@ describe("dev tools", () => {
     });
 
     it("should accept valid branch-like refs", async () => {
-      mockExecSync.mockReturnValue("Tests passed\n");
+      mockExecSync
+        .mockReturnValueOnce("src/app/page.tsx\n")  // git diff
+        .mockReturnValueOnce("Tests passed\n");  // vitest
 
       const handler = registry.handlers.get("file_guard")!;
       await handler({ commit_hash: "feature/my-branch" });
       expect(mockExecSync).toHaveBeenCalled();
+    });
+
+    it("should scope to MCP layer when all changed files are in src/lib/mcp/", async () => {
+      // First call: safeExec for git diff --name-only (returns MCP-only files)
+      // Second call: execSync for vitest run (the actual test run)
+      mockExecSync
+        .mockReturnValueOnce("src/lib/mcp/server/tools/dev.ts\nsrc/lib/mcp/server/tool-registry.ts\n")
+        .mockReturnValueOnce("Tests passed\n 5 passed\n");
+
+      const handler = registry.handlers.get("file_guard")!;
+      const result = await handler({});
+      const text = getText(result);
+
+      // Should include scope in vitest command
+      expect(mockExecSync).toHaveBeenCalledWith(
+        expect.stringContaining("src/lib/mcp"),
+        expect.objectContaining({ timeout: 120_000 }),
+      );
+      // Should note scoped run in output
+      expect(text).toContain("scoped to MCP layer");
+      expect(text).toContain("File Guard: PASS");
+    });
+
+    it("should run full suite when changes are outside src/lib/mcp/", async () => {
+      mockExecSync
+        .mockReturnValueOnce("src/lib/mcp/server/tools/dev.ts\nsrc/app/page.tsx\n")
+        .mockReturnValueOnce("Tests passed\n 10 passed\n");
+
+      const handler = registry.handlers.get("file_guard")!;
+      const result = await handler({});
+      const text = getText(result);
+
+      // Should NOT include src/lib/mcp scope
+      const vitestCall = mockExecSync.mock.calls[1];
+      expect(vitestCall?.[0]).not.toContain("src/lib/mcp");
+      // Should note full suite in output
+      expect(text).toContain("full suite");
+      expect(text).toContain("File Guard: PASS");
+    });
+
+    it("should run full suite when git diff returns no files", async () => {
+      mockExecSync
+        .mockReturnValueOnce("")  // No changed files
+        .mockReturnValueOnce("Tests passed\n");
+
+      const handler = registry.handlers.get("file_guard")!;
+      const result = await handler({});
+      const text = getText(result);
+
+      expect(text).toContain("full suite");
+    });
+
+    it("should include scope note in FAIL output for MCP-scoped runs", async () => {
+      const err = new Error("Tests failed") as Error & { stdout?: string };
+      err.stdout = "FAIL src/lib/mcp/server/tools/dev.test.ts";
+      mockExecSync
+        .mockReturnValueOnce("src/lib/mcp/server/tools/dev.ts\n")
+        .mockImplementationOnce(() => {
+          throw err;
+        });
+
+      const handler = registry.handlers.get("file_guard")!;
+      const result = await handler({});
+      const text = getText(result);
+
+      expect(text).toContain("scoped to MCP layer");
+      expect(text).toContain("File Guard: FAIL");
+      expect(isError(result)).toBe(true);
     });
   });
 

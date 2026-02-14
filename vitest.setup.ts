@@ -1,8 +1,10 @@
 import * as matchers from "@testing-library/jest-dom/matchers";
 import { expect } from "vitest";
 import "@testing-library/jest-dom/vitest";
+import { mcpMatchers } from "./src/lib/mcp/server/__test-utils__/matchers";
 
 expect.extend(matchers);
+expect.extend(mcpMatchers);
 
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeAll, vi } from "vitest";

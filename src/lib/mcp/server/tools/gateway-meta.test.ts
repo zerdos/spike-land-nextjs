@@ -6,6 +6,7 @@ vi.mock("@/lib/credits/workspace-credit-manager", () => ({
   WorkspaceCreditManager: { getBalance: (...args: unknown[]) => mockGetBalance(...args) },
 }));
 
+import { getText } from "../__test-utils__";
 import type { ToolRegistry, SearchResult, CategoryInfo } from "../tool-registry";
 import { registerGatewayMetaTools } from "./gateway-meta";
 
@@ -39,9 +40,6 @@ function createMockRegistry(): ToolRegistry & {
   return mock as unknown as ToolRegistry & typeof mock;
 }
 
-function getText(result: unknown): string {
-  return (result as { content: Array<{ text: string }> }).content[0]!.text;
-}
 
 describe("gateway-meta tools", () => {
   const userId = "test-user-123";

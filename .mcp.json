@@ -6,16 +6,13 @@
     },
     "vitest": {
       "type": "stdio",
-      "command": "npx",
+      "command": "yarn",
       "args": ["vitest-mcp"]
     },
     "playwright": {
       "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@latest"
-      ]
+      "command": "yarn",
+      "args": ["@playwright/mcp"]
     },
     "sentry-mcp": {
       "type": "stdio",

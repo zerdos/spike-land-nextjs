@@ -24,28 +24,11 @@ vi.mock("@/lib/app-lookup", () => ({
     mockFindAppByIdentifierSimple(...args),
 }));
 
-import type { ToolRegistry } from "../tool-registry";
+import { createMockRegistry } from "../__test-utils__";
 import { registerAppsTools } from "./apps";
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
-
-function createMockRegistry(): ToolRegistry & {
-  handlers: Map<string, (...args: unknown[]) => unknown>;
-} {
-  const handlers = new Map<string, (...args: unknown[]) => unknown>();
-  const registry = {
-    register: vi.fn(
-      (def: { name: string; handler: (...args: unknown[]) => unknown }) => {
-        handlers.set(def.name, def.handler);
-      },
-    ),
-    handlers,
-  };
-  return registry as unknown as ToolRegistry & {
-    handlers: Map<string, (...args: unknown[]) => unknown>;
-  };
-}
 
 describe("apps tools", () => {
   const userId = "test-user-123";

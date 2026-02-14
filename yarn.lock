@@ -1711,6 +1711,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@djankies/vitest-mcp@npm:0.5.1":
+  version: 0.5.1
+  resolution: "@djankies/vitest-mcp@npm:0.5.1"
+  dependencies:
+    "@modelcontextprotocol/sdk": "npm:^1.17.1"
+  peerDependencies:
+    vitest: ">=0.34.0"
+  peerDependenciesMeta:
+    vitest:
+      optional: false
+  bin:
+    vitest-mcp: dist/index.js
+  checksum: 10c9/87dfa18e5554280d8e33c434732e28b6b2b54a5d0da7201e835cee1516a0577626b8bfdcf654a66d4b212de655a0b921aa66cb79780f934384d462b505222bb3
+  languageName: node
+  linkType: hard
+
 "@dmsnell/diff-match-patch@npm:1.1.0, @dmsnell/diff-match-patch@npm:^1.1.0":
   version: 1.1.0
   resolution: "@dmsnell/diff-match-patch@npm:1.1.0"
@@ -3316,7 +3332,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:^1.26.0":
+"@modelcontextprotocol/sdk@npm:^1.17.1, @modelcontextprotocol/sdk@npm:^1.26.0":
   version: 1.26.0
   resolution: "@modelcontextprotocol/sdk@npm:1.26.0"
   dependencies:
@@ -4062,6 +4078,18 @@ __metadata:
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
   checksum: 10c9/115e8ceeec6bc69dff2048b35c0ab4f8bbee12d8bb6c1f4af758604586d802b6e669dcb02dda61d078de42c2b4ddce41b3d9e726d7daa6b4b850f4adbf7333ff
+  languageName: node
+  linkType: hard
+
+"@playwright/mcp@npm:0.0.64":
+  version: 0.0.64
+  resolution: "@playwright/mcp@npm:0.0.64"
+  dependencies:
+    playwright: "npm:1.59.0-alpha-1770338664000"
+    playwright-core: "npm:1.59.0-alpha-1770338664000"
+  bin:
+    playwright-mcp: cli.js
+  checksum: 10c9/3acae31a54719908db38918524ddd22a79df412df6195557fc9514236935187148a113140df14d3538cfada0e7adbe2314df791db482e4e41ef77933b90b41e8
   languageName: node
   linkType: hard
 
@@ -18520,6 +18548,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"playwright-core@npm:1.59.0-alpha-1770338664000":
+  version: 1.59.0-alpha-1770338664000
+  resolution: "playwright-core@npm:1.59.0-alpha-1770338664000"
+  bin:
+    playwright-core: cli.js
+  checksum: 10c9/d08eaaec5861771a0d0ac7b47dfe6215967d5b5d98850a846c51fc5284e3fdeb85cae6c233f83fcfdfc7922b99b5218d72d0d735068924e31934330d9e1c85f0
+  languageName: node
+  linkType: hard
+
 "playwright@npm:1.58.2":
   version: 1.58.2
   resolution: "playwright@npm:1.58.2"
@@ -18532,6 +18569,21 @@ __metadata:
   bin:
     playwright: cli.js
   checksum: 10c9/d89d6c8a32388911b9aff9ee0f1a90076219f15c804f2b287db048b9e9cde182aea3131fac1959051d25189ed4218ec4272b137c83cd7f9cd24781cbc77edd86
+  languageName: node
+  linkType: hard
+
+"playwright@npm:1.59.0-alpha-1770338664000":
+  version: 1.59.0-alpha-1770338664000
+  resolution: "playwright@npm:1.59.0-alpha-1770338664000"
+  dependencies:
+    fsevents: "npm:2.3.2"
+    playwright-core: "npm:1.59.0-alpha-1770338664000"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    playwright: cli.js
+  checksum: 10c9/f45699f379ac36865dd7c2565f9567c0b68369f0e6b9641ef640d4a01499d91ffcd94c852a9bef4f81823565e3d1a6c706ab4f5dd10330a684086dcd151e2cfe
   languageName: node
   linkType: hard
 
@@ -22750,6 +22802,7 @@ __metadata:
     "@anthropic-ai/sdk": "npm:^0.74.0"
     "@aws-sdk/client-s3": "npm:3.990.0"
     "@aws-sdk/lib-storage": "npm:3.990.0"
+    "@djankies/vitest-mcp": "npm:0.5.1"
     "@dnd-kit/core": "npm:6.3.1"
     "@dnd-kit/sortable": "npm:10.0.0"
     "@dnd-kit/utilities": "npm:3.2.2"
@@ -22757,6 +22810,7 @@ __metadata:
     "@hookform/resolvers": "npm:5.2.2"
     "@modelcontextprotocol/sdk": "npm:^1.26.0"
     "@next/eslint-plugin-next": "npm:16.1.6"
+    "@playwright/mcp": "npm:0.0.64"
     "@prisma/adapter-pg": "npm:7.4.0"
     "@prisma/client": "npm:7.4.0"
     "@radix-ui/react-accordion": "npm:1.2.12"

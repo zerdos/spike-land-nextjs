@@ -24,23 +24,8 @@ vi.mock("../crypto/vault", () => ({
   encryptSecret: (...args: unknown[]) => mockEncryptSecret(...args),
 }));
 
-import type { ToolRegistry } from "../tool-registry";
+import { createMockRegistry } from "../__test-utils__";
 import { registerVaultTools } from "./vault";
-
-function createMockRegistry(): ToolRegistry & {
-  handlers: Map<string, (...args: unknown[]) => unknown>;
-} {
-  const handlers = new Map<string, (...args: unknown[]) => unknown>();
-  const registry = {
-    register: vi.fn((def: { name: string; handler: (...args: unknown[]) => unknown }) => {
-      handlers.set(def.name, def.handler);
-    }),
-    handlers,
-  };
-  return registry as unknown as ToolRegistry & {
-    handlers: Map<string, (...args: unknown[]) => unknown>;
-  };
-}
 
 describe("vault tools", () => {
   const userId = "test-user-123";

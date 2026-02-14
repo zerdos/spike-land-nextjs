@@ -180,16 +180,31 @@ export function registerDevTools(registry: ToolRegistry, _userId: string): void 
       if (!isValidGitRef(base)) {
         return errorResult("Invalid commit hash format. Use a hex SHA, branch name, or HEAD~N.");
       }
+
+      // Detect if all changes are within src/lib/mcp/ to scope test run
+      const changedFiles = safeExec(`git diff --name-only ${base}`);
+      const fileList = changedFiles.split("\n").filter(Boolean);
+      const mcpOnly = fileList.length > 0 && fileList.every((f) => f.startsWith("src/lib/mcp/"));
+      const scope = mcpOnly ? " src/lib/mcp" : "";
+      const scopeNote = mcpOnly ? " (scoped to MCP layer)" : " (full suite)";
+
       try {
-        const result = execSync(`yarn vitest run --changed ${base} --reporter=verbose 2>&1`, {
-          encoding: "utf-8",
-          timeout: 120_000,
-          stdio: ["pipe", "pipe", "pipe"],
-        });
-        return textResult(`## File Guard: PASS\n\n\`\`\`\n${result.slice(-2000)}\n\`\`\``);
+        const result = execSync(
+          `yarn vitest run --changed ${base}${scope} --reporter=verbose 2>&1`,
+          {
+            encoding: "utf-8",
+            timeout: 120_000,
+            stdio: ["pipe", "pipe", "pipe"],
+          },
+        );
+        return textResult(
+          `## File Guard: PASS${scopeNote}\n\n\`\`\`\n${result.slice(-2000)}\n\`\`\``,
+        );
       } catch (err: unknown) {
         const output = (err as { stdout?: string }).stdout ?? String(err);
-        return errorResult(`## File Guard: FAIL\n\n\`\`\`\n${output.slice(-2000)}\n\`\`\``);
+        return errorResult(
+          `## File Guard: FAIL${scopeNote}\n\n\`\`\`\n${output.slice(-2000)}\n\`\`\``,
+        );
       }
     },
   });
