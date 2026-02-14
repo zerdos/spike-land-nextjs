@@ -132,8 +132,8 @@ export default function BazdmegPage() {
                 Add the <code className="text-amber-500 font-bold bg-amber-500/10 px-2 py-1 rounded">bazdmeg</code> skill to your AI agent and enforce quality gates today.
               </p>
               <div className="flex flex-col md:flex-row gap-4 justify-center">
-                <a 
-                  href="/docs/SKILLS" 
+                <a
+                  href="/store/skills/bazdmeg"
                   className="px-10 py-5 bg-white text-zinc-950 font-black rounded-2xl hover:bg-zinc-100 transition-all shadow-xl"
                 >
                   Adopt the Skill
@@ -154,7 +154,7 @@ export default function BazdmegPage() {
         <div className="container mx-auto px-6">
           <p>© {new Date().getFullYear()} Spike Land Ltd. All rights reserved.</p>
           <div className="flex justify-center gap-6 mt-4">
-            <a href="/docs" className="hover:text-white transition-colors">Documentation</a>
+            <a href="/store/skills" className="hover:text-white transition-colors">Skill Store</a>
             <a href="https://github.com/zerdos/spike-land-nextjs" className="hover:text-white transition-colors">GitHub</a>
             <a href="https://discord.com" className="hover:text-white transition-colors">Discord</a>
           </div>

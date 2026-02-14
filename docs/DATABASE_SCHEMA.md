@@ -2415,6 +2415,47 @@ erDiagram
   String parentInvocationId FK "nullable"
   DateTime createdAt
 }
+"skills" {
+  String id PK
+  String name UK
+  String slug UK
+  String displayName
+  String description
+  String longDescription "nullable"
+  SkillCategory category
+  SkillStatus status
+  String version
+  String author
+  String authorUrl "nullable"
+  String repoUrl "nullable"
+  String iconUrl "nullable"
+  String color "nullable"
+  String tags
+  Int installCount
+  Int sortOrder
+  Boolean isActive
+  Boolean isFeatured
+  String createdBy FK "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"skill_features" {
+  String id PK
+  String skillId FK
+  String title
+  String description
+  String icon "nullable"
+  Int sortOrder
+  DateTime createdAt
+  DateTime updatedAt
+}
+"skill_installations" {
+  String id PK
+  String skillId FK
+  String userId FK "nullable"
+  String ipHash "nullable"
+  DateTime createdAt
+}
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
 "campaign_briefs" }o--o| "workspaces" : workspace
@@ -2653,6 +2694,10 @@ erDiagram
 "arena_elos" |o--|| "users" : user
 "tool_invocations" }o--|| "users" : user
 "tool_invocations" }o--o| "tool_invocations" : parent
+"skills" }o--o| "users" : creator
+"skill_features" }o--|| "skills" : skill
+"skill_installations" }o--|| "skills" : skill
+"skill_installations" }o--o| "users" : user
 ```
 
 ### `users`
@@ -5679,4 +5724,54 @@ Properties as follows:
 - `error`:
 - `isError`:
 - `parentInvocationId`:
+- `createdAt`:
+
+### `skills`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `slug`:
+- `displayName`:
+- `description`:
+- `longDescription`:
+- `category`:
+- `status`:
+- `version`:
+- `author`:
+- `authorUrl`:
+- `repoUrl`:
+- `iconUrl`:
+- `color`:
+- `tags`:
+- `installCount`:
+- `sortOrder`:
+- `isActive`:
+- `isFeatured`:
+- `createdBy`:
+- `createdAt`:
+- `updatedAt`:
+
+### `skill_features`
+
+Properties as follows:
+
+- `id`:
+- `skillId`:
+- `title`:
+- `description`:
+- `icon`:
+- `sortOrder`:
+- `createdAt`:
+- `updatedAt`:
+
+### `skill_installations`
+
+Properties as follows:
+
+- `id`:
+- `skillId`:
+- `userId`:
+- `ipHash`:
 - `createdAt`:

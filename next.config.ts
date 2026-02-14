@@ -155,7 +155,13 @@ const nextConfig: NextConfig = {
     ];
   },
   async redirects() {
-    return [];
+    return [
+      {
+        source: "/docs/SKILLS",
+        destination: "/store/skills/bazdmeg",
+        permanent: true,
+      },
+    ];
   },
   // Webpack configuration for Yarn PnP compatibility
   webpack: (config) => {
