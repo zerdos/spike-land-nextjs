@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const { mockPrisma } = vi.hoisted(() => ({
   mockPrisma: {
+    user: { findUnique: vi.fn() },
     aIProvider: { findMany: vi.fn(), update: vi.fn() },
     emailLog: { findMany: vi.fn(), create: vi.fn() },
     featuredGalleryItem: { findMany: vi.fn(), update: vi.fn(), delete: vi.fn() },
@@ -21,6 +22,8 @@ describe("admin tools", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: user has ADMIN role (required for all admin tools)
+    mockPrisma.user.findUnique.mockResolvedValue({ role: "ADMIN" });
     registry = createMockRegistry();
     registerAdminTools(registry, userId);
   });
