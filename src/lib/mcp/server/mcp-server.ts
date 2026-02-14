@@ -58,6 +58,32 @@ import { registerSentryBridgeTools } from "./tools/sentry-bridge";
 import { registerVercelBridgeTools } from "./tools/vercel-bridge";
 import { registerGitHubAdminTools } from "./tools/github-admin";
 
+// Orbit core tools (Tier 1)
+import { registerSocialAccountsTools } from "./tools/social-accounts";
+import { registerPulseTools } from "./tools/pulse";
+import { registerInboxTools } from "./tools/inbox";
+import { registerRelayTools } from "./tools/relay";
+import { registerAllocatorTools } from "./tools/allocator";
+import { registerBrandBrainTools } from "./tools/brand-brain";
+import { registerScoutTools } from "./tools/scout";
+
+// Orbit growth tools (Tier 2)
+import { registerCalendarTools } from "./tools/calendar";
+import { registerBoostTools } from "./tools/boost";
+import { registerCreativeTools } from "./tools/creative";
+import { registerAbTestingTools } from "./tools/ab-testing";
+import { registerCrisisTools } from "./tools/crisis";
+import { registerMerchTools } from "./tools/merch";
+
+// Platform infrastructure tools (Tier 3)
+import { registerTrackingTools } from "./tools/tracking";
+import { registerWorkflowsTools } from "./tools/workflows";
+import { registerAssetsTools } from "./tools/assets";
+import { registerEmailTools } from "./tools/email";
+import { registerAgencyTools } from "./tools/agency";
+import { registerAuditTools } from "./tools/audit";
+import { registerNotificationsTools } from "./tools/notifications";
+
 /**
  * Options for creating an MCP server with capability restrictions.
  * When capabilityTokenId is provided, all tool calls are filtered
@@ -234,6 +260,32 @@ export function createMcpServer(
   if (process.env.GH_PAT_TOKEN) {
     registerGitHubAdminTools(registry, userId);
   }
+
+  // Orbit core tools — Tier 1 (agent-native social management)
+  registerSocialAccountsTools(registry, userId);
+  registerPulseTools(registry, userId);
+  registerInboxTools(registry, userId);
+  registerRelayTools(registry, userId);
+  registerAllocatorTools(registry, userId);
+  registerBrandBrainTools(registry, userId);
+  registerScoutTools(registry, userId);
+
+  // Orbit growth tools — Tier 2 (monetization & content optimization)
+  registerCalendarTools(registry, userId);
+  registerBoostTools(registry, userId);
+  registerCreativeTools(registry, userId);
+  registerAbTestingTools(registry, userId);
+  registerCrisisTools(registry, userId);
+  registerMerchTools(registry, userId);
+
+  // Platform infrastructure tools — Tier 3
+  registerTrackingTools(registry, userId);
+  registerWorkflowsTools(registry, userId);
+  registerAssetsTools(registry, userId);
+  registerEmailTools(registry, userId);
+  registerAgencyTools(registry, userId);
+  registerAuditTools(registry, userId);
+  registerNotificationsTools(registry, userId);
 
   // Dev workflow tools (localhost only)
   if (process.env.NODE_ENV === "development") {
