@@ -19,6 +19,7 @@ export default defineConfig({
       "src/lib/mcp/**/*.{test,spec}.{ts,tsx}",
       "src/lib/agents/**/*.{test,spec}.{ts,tsx}",
       "src/lib/chat/**/*.{test,spec}.{ts,tsx}",
+      "src/lib/rate-limiter.test.ts",
     ],
     exclude: [
       "**/node_modules/**",
