@@ -21,11 +21,11 @@ interface KVStats {
 }
 
 function getAuth(): string | null {
-  return process.env.CF_API_TOKEN ?? null;
+  return process.env["CF_API_TOKEN"] ?? null;
 }
 
 function getAccountId(): string | null {
-  return process.env.CF_ACCOUNT_ID ?? null;
+  return process.env["CF_ACCOUNT_ID"] ?? null;
 }
 
 async function cfFetch<T>(path: string, timeoutMs = 10_000): Promise<T | null> {

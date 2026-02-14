@@ -84,7 +84,7 @@ export async function createPermissionRequest(
       agentId,
       userId,
       requestType: "tool_access",
-      requestPayload: { toolName, toolCategory, input: redactSecrets(input) },
+      requestPayload: { toolName, toolCategory, input: redactSecrets(input) } as Record<string, unknown> as import("@prisma/client").Prisma.InputJsonValue,
       fallbackBehavior,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h expiry
     },

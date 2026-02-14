@@ -31,11 +31,11 @@ function getAuth(): string | null {
 }
 
 function getOrgSlug(): string {
-  return process.env.SENTRY_ORG_SLUG ?? "spike-land";
+  return process.env["SENTRY_ORG_SLUG"] ?? "spike-land";
 }
 
 function getProjectSlug(): string {
-  return process.env.SENTRY_PROJECT_SLUG ?? "spike-land-nextjs";
+  return process.env["SENTRY_PROJECT_SLUG"] ?? "spike-land-nextjs";
 }
 
 async function sentryFetch<T>(path: string, timeoutMs = 10_000): Promise<T | null> {
