@@ -101,7 +101,7 @@ export function registerReqInterviewTools(
     name: "interview_start",
     description:
       "Start a BAZDMEG requirements interview session. Creates an interview with 7 structured questions that must be answered before a specification can be generated.",
-    category: "bazdmeg",
+    category: "orchestration",
     tier: "free",
     inputSchema: InterviewStartSchema.shape,
     handler: async ({
@@ -146,7 +146,7 @@ export function registerReqInterviewTools(
     name: "interview_submit",
     description:
       "Submit answers to BAZDMEG interview questions. You may answer one or several questions at a time.",
-    category: "bazdmeg",
+    category: "orchestration",
     tier: "free",
     inputSchema: InterviewSubmitSchema.shape,
     handler: async ({
@@ -220,7 +220,7 @@ export function registerReqInterviewTools(
     name: "interview_generate_spec",
     description:
       "Generate a structured specification from a completed BAZDMEG interview. All 7 questions must be answered first.",
-    category: "bazdmeg",
+    category: "orchestration",
     tier: "free",
     inputSchema: InterviewGenerateSpecSchema.shape,
     handler: async ({

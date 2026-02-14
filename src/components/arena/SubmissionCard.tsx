@@ -15,6 +15,7 @@ interface SubmissionCardProps {
   userName: string | null;
   userImage: string | null;
   reviewCount: number;
+  errors?: Array<{ error: string; iteration: number; fixed: boolean }>;
 }
 
 const statusColors: Record<string, string> = {
@@ -37,7 +38,10 @@ export function SubmissionCard({
   totalDurationMs,
   userName,
   reviewCount,
+  errors,
 }: SubmissionCardProps) {
+  const failedWithNoWork = status === "FAILED" && iterations === 0 && inputTokens + outputTokens === 0;
+  const firstError = failedWithNoWork && errors?.length ? errors[0]!.error : null;
   return (
     <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
       <div className="flex items-center justify-between mb-2">
@@ -69,8 +73,16 @@ export function SubmissionCard({
         )}
       </div>
       <div className="flex items-center gap-4 text-xs text-zinc-500">
-        <span>{iterations} iteration{iterations !== 1 ? "s" : ""}</span>
-        <span>{inputTokens + outputTokens} tokens</span>
+        {firstError ? (
+          <span className="text-red-400 truncate max-w-[300px]" title={firstError}>
+            {firstError}
+          </span>
+        ) : (
+          <>
+            <span>{iterations} iteration{iterations !== 1 ? "s" : ""}</span>
+            <span>{inputTokens + outputTokens} tokens</span>
+          </>
+        )}
         {totalDurationMs && (
           <span>{(totalDurationMs / 1000).toFixed(1)}s</span>
         )}

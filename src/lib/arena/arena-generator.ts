@@ -195,8 +195,20 @@ export async function arenaGenerateFromPrompt(
       });
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    logger.error("Arena generation failed", { submissionId, error: message });
+    const rawMessage = error instanceof Error ? error.message : "Unknown error";
+    // Sanitize: strip tokens/credentials from error messages
+    const message = rawMessage.replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
+      .replace(/sk-[a-zA-Z0-9_-]+/g, "[REDACTED]");
+    const isAuth = error && typeof error === "object" && "status" in error
+      && (error as { status: number }).status === 401;
+    const errorType = isAuth ? "auth_error" : "generation_error";
+
+    logger.error("Arena generation failed", {
+      submissionId,
+      error: message,
+      errorType,
+      durationMs: Date.now() - startTime,
+    });
 
     await prisma.arenaSubmission.update({
       where: { id: submissionId },
@@ -214,7 +226,7 @@ export async function arenaGenerateFromPrompt(
     await setSubmissionState(submissionId, "FAILED");
     await publishArenaEvent(submissionId, {
       type: "failed",
-      data: { message },
+      data: { message, errorType },
     });
   } finally {
     await setSubmissionWorking(submissionId, false);

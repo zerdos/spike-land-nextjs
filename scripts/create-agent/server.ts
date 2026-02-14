@@ -8,6 +8,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { buildFullSystemPrompt, buildUserPrompt } from "../../src/lib/create/prompt-builder";
+import { getClaudeCliVersion } from "../../src/lib/ai/claude-client";
 
 const PORT = parseInt(process.env["CREATE_AGENT_PORT"] ?? "4892", 10);
 const AGENT_NAME = "Spike";
@@ -31,7 +32,7 @@ const anthropic = new Anthropic({
     "accept": "application/json",
     "anthropic-beta":
       "claude-code-20250219,oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14",
-    "user-agent": "claude-cli/2.1.2 (external, cli)",
+    "user-agent": `claude-cli/${getClaudeCliVersion()} (external, cli)`,
     "x-app": "cli",
   },
 });

@@ -37,6 +37,7 @@ export async function GET(
             reviewScore: true,
             eloChange: true,
             totalDurationMs: true,
+            errors: true,
             createdAt: true,
             user: { select: { id: true, name: true, image: true } },
             _count: { select: { reviews: true } },

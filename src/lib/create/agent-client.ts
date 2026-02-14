@@ -87,111 +87,122 @@ export async function callClaude(params: {
     temperature = 0.5,
   } = params;
 
-  const anthropic = await getClaudeClient();
-
   // Build system content blocks with split caching
   const systemBlocks = buildSystemBlocks(systemPrompt, stablePrefix, dynamicSuffix);
 
   let lastError: unknown;
+  let authRetried = false;
 
-  for (let attempt = 0; attempt <= CLAUDE_MAX_RETRIES; attempt++) {
-    try {
-      const stream = anthropic.messages.stream({
-        model: MODEL_MAP[model],
-        max_tokens: maxTokens,
-        temperature,
-        system: systemBlocks,
-        messages: [{ role: "user", content: userPrompt }],
-      });
-      const response = await stream.finalMessage();
+  // Outer loop: allows one auth-retry (reset client + fresh token) on 401
+  for (let authAttempt = 0; authAttempt < 2; authAttempt++) {
+    const anthropic = await getClaudeClient();
 
-      const text = response.content
-        .filter((block): block is TextBlock => block.type === "text")
-        .map((block) => block.text)
-        .join("");
+    for (let attempt = 0; attempt <= CLAUDE_MAX_RETRIES; attempt++) {
+      try {
+        const stream = anthropic.messages.stream({
+          model: MODEL_MAP[model],
+          max_tokens: maxTokens,
+          temperature,
+          system: systemBlocks,
+          messages: [{ role: "user", content: userPrompt }],
+        });
+        const response = await stream.finalMessage();
 
-      const { usage } = response;
-      const usageRecord = usage as unknown as Record<string, number | undefined>;
+        const text = response.content
+          .filter((block): block is TextBlock => block.type === "text")
+          .map((block) => block.text)
+          .join("");
 
-      return {
-        text,
-        inputTokens: usage.input_tokens,
-        outputTokens: usage.output_tokens,
-        cacheReadTokens: usageRecord["cache_read_input_tokens"] ?? 0,
-        cacheCreationTokens: usageRecord["cache_creation_input_tokens"] ?? 0,
-        truncated: response.stop_reason === "max_tokens",
-      };
-    } catch (error) {
-      lastError = error;
+        const { usage } = response;
+        const usageRecord = usage as unknown as Record<string, number | undefined>;
 
-      if (isAuthError(error)) {
-        resetClaudeClient();
-      }
+        return {
+          text,
+          inputTokens: usage.input_tokens,
+          outputTokens: usage.output_tokens,
+          cacheReadTokens: usageRecord["cache_read_input_tokens"] ?? 0,
+          cacheCreationTokens: usageRecord["cache_creation_input_tokens"] ?? 0,
+          truncated: response.stop_reason === "max_tokens",
+        };
+      } catch (error) {
+        lastError = error;
 
-      if (!isRetryableError(error) || attempt >= CLAUDE_MAX_RETRIES) {
-        // If we've exhausted retries (or error is not retryable) and the model was Opus, fall back to Gemini Flash
-        if (model === "opus") {
-          logger.warn("Claude Opus failed, falling back to Gemini Flash", {
-            error: error instanceof Error ? error.message : String(error),
-            attempt: attempt + 1,
-            isRetryable: isRetryableError(error),
-          });
-
-          try {
-            // Construct the prompt for Gemini
-            const userText = Array.isArray(userPrompt)
-              ? userPrompt
-                  .filter((block): block is { type: "text"; text: string } =>
-                    "type" in block && block.type === "text"
-                  )
-                  .map((b) => b.text)
-                  .join("\n")
-              : (userPrompt as string); // Cast as string since ContentBlockParam usually means text or image/tool_use blocks which we simplify here
-
-            // Construct system prompt from parts
-            const systemText = [
-              stablePrefix,
-              systemPrompt,
-              dynamicSuffix
-            ].filter(Boolean).join("\n\n");
-
-            const geminiText = await generateAgentResponse({
-              messages: [{ role: "user", content: userText }],
-              systemPrompt: systemText,
-            });
-
-            return {
-              text: geminiText,
-              inputTokens: 0, // Gemini client doesn't return usage yet
-              outputTokens: 0,
-              cacheReadTokens: 0,
-              cacheCreationTokens: 0,
-              truncated: false,
-            };
-
-          } catch (geminiError) {
-            logger.error("Gemini fallback also failed", {
-              error: geminiError instanceof Error ? geminiError.message : String(geminiError),
-              originalError: error,
-            });
-            // Throw the original error to preserve the primary failure context
-            throw error;
-          }
+        // On 401, reset the client (forces fresh token resolution) and retry once
+        if (isAuthError(error) && !authRetried) {
+          authRetried = true;
+          resetClaudeClient();
+          logger.warn("Claude 401 — resetting client and retrying with fresh token");
+          break; // break inner loop, outer loop will re-acquire client
         }
 
-        throw error;
+        if (!isRetryableError(error) || attempt >= CLAUDE_MAX_RETRIES) {
+          // If we've exhausted retries (or error is not retryable) and the model was Opus, fall back to Gemini Flash
+          if (model === "opus") {
+            logger.warn("Claude Opus failed, falling back to Gemini Flash", {
+              error: error instanceof Error ? error.message : String(error),
+              attempt: attempt + 1,
+              isRetryable: isRetryableError(error),
+            });
+
+            try {
+              // Construct the prompt for Gemini
+              const userText = Array.isArray(userPrompt)
+                ? userPrompt
+                    .filter((block): block is { type: "text"; text: string } =>
+                      "type" in block && block.type === "text"
+                    )
+                    .map((b) => b.text)
+                    .join("\n")
+                : (userPrompt as string);
+
+              // Construct system prompt from parts
+              const systemText = [
+                stablePrefix,
+                systemPrompt,
+                dynamicSuffix
+              ].filter(Boolean).join("\n\n");
+
+              const geminiText = await generateAgentResponse({
+                messages: [{ role: "user", content: userText }],
+                systemPrompt: systemText,
+              });
+
+              return {
+                text: geminiText,
+                inputTokens: 0,
+                outputTokens: 0,
+                cacheReadTokens: 0,
+                cacheCreationTokens: 0,
+                truncated: false,
+              };
+
+            } catch (geminiError) {
+              logger.error("Gemini fallback also failed", {
+                error: geminiError instanceof Error ? geminiError.message : String(geminiError),
+                originalError: error,
+              });
+              throw error;
+            }
+          }
+
+          throw error;
+        }
+
+        const retryAfter = getRetryAfterMs(error);
+        const delay = retryAfter ?? CLAUDE_RETRY_DELAYS[attempt] ?? 4000;
+
+        logger.warn(`Claude API call failed with retryable error (attempt ${attempt + 1}), retrying in ${delay}ms`, {
+          status: (error as APIError).status,
+          model,
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
-
-      const retryAfter = getRetryAfterMs(error);
-      const delay = retryAfter ?? CLAUDE_RETRY_DELAYS[attempt] ?? 4000;
-
-      logger.warn(`Claude API call failed with retryable error (attempt ${attempt + 1}), retrying in ${delay}ms`, {
-        status: (error as APIError).status,
-        model,
-      });
-
-      await new Promise((resolve) => setTimeout(resolve, delay));
     }
+
+    // If we broke out of inner loop for auth retry, continue outer loop
+    if (authRetried && authAttempt === 0) continue;
+    break;
   }
 
   throw lastError;

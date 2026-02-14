@@ -18,6 +18,7 @@ interface Submission {
   reviewScore: number | null;
   eloChange: number | null;
   totalDurationMs: number | null;
+  errors: Array<{ error: string; iteration: number; fixed: boolean }>;
   createdAt: string;
   user: { id: string; name: string | null; image: string | null };
   _count: { reviews: number };
@@ -156,6 +157,7 @@ export function ChallengeDetail({ challengeId }: { challengeId: string }) {
                 userName={s.user.name}
                 userImage={s.user.image}
                 reviewCount={s._count.reviews}
+                errors={s.errors}
               />
             ))}
           </div>

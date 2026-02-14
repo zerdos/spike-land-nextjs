@@ -39,6 +39,13 @@ const {
   mockRegisterBazdmegFaqTools,
   mockRegisterCapabilitiesTools,
   mockRegisterDevTools,
+  mockRegisterContextArchitectTools,
+  mockRegisterSandboxTools,
+  mockRegisterOrchestratorTools,
+  mockRegisterLieDetectorTools,
+  mockRegisterReqInterviewTools,
+  mockRegisterCodebaseExplainTools,
+  mockRegisterDecisionsTools,
   mockRegistryInstance,
 } = vi.hoisted(() => ({
   mockRegistryInstance: {} as Record<string, unknown>,
@@ -85,6 +92,13 @@ const {
   mockRegisterBazdmegFaqTools: vi.fn(),
   mockRegisterCapabilitiesTools: vi.fn(),
   mockRegisterDevTools: vi.fn(),
+  mockRegisterContextArchitectTools: vi.fn(),
+  mockRegisterSandboxTools: vi.fn(),
+  mockRegisterOrchestratorTools: vi.fn(),
+  mockRegisterLieDetectorTools: vi.fn(),
+  mockRegisterReqInterviewTools: vi.fn(),
+  mockRegisterCodebaseExplainTools: vi.fn(),
+  mockRegisterDecisionsTools: vi.fn(),
 }));
 
 // Mock McpServer constructor - must use function keyword for `new` support
@@ -138,6 +152,13 @@ vi.mock("./tools/tts", () => ({ registerTtsTools: mockRegisterTtsTools }));
 vi.mock("./tools/bazdmeg-faq", () => ({ registerBazdmegFaqTools: mockRegisterBazdmegFaqTools }));
 vi.mock("./tools/capabilities", () => ({ registerCapabilitiesTools: mockRegisterCapabilitiesTools }));
 vi.mock("./tools/dev", () => ({ registerDevTools: mockRegisterDevTools }));
+vi.mock("./tools/context-architect", () => ({ registerContextArchitectTools: mockRegisterContextArchitectTools }));
+vi.mock("./tools/sandbox", () => ({ registerSandboxTools: mockRegisterSandboxTools }));
+vi.mock("./tools/orchestrator", () => ({ registerOrchestratorTools: mockRegisterOrchestratorTools }));
+vi.mock("./tools/lie-detector", () => ({ registerLieDetectorTools: mockRegisterLieDetectorTools }));
+vi.mock("./tools/req-interview", () => ({ registerReqInterviewTools: mockRegisterReqInterviewTools }));
+vi.mock("./tools/codebase-explain", () => ({ registerCodebaseExplainTools: mockRegisterCodebaseExplainTools }));
+vi.mock("./tools/decisions", () => ({ registerDecisionsTools: mockRegisterDecisionsTools }));
 vi.mock("./capability-filtered-registry", () => {
   const MockCapabilityFilteredRegistry = vi.fn(function CapabilityFilteredRegistry() {
     return mockRegistryInstance;
@@ -226,6 +247,13 @@ describe("createMcpServer", () => {
       mockRegisterTtsTools,
       mockRegisterBazdmegFaqTools,
       mockRegisterCapabilitiesTools,
+      mockRegisterContextArchitectTools,
+      mockRegisterSandboxTools,
+      mockRegisterOrchestratorTools,
+      mockRegisterLieDetectorTools,
+      mockRegisterReqInterviewTools,
+      mockRegisterCodebaseExplainTools,
+      mockRegisterDecisionsTools,
     ];
 
     for (const registerFn of unconditionalRegisters) {

@@ -78,6 +78,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   newsletter: "Newsletter: email subscription management",
   tts: "Text-to-speech: convert text to audio using ElevenLabs",
   capabilities: "Agent permission management: check capabilities, request permissions, track approvals",
+  orchestration: "Cloud-native code orchestration: context packing, sandboxed execution, task decomposition, verification, and decision tracking",
 };
 
 export class ToolRegistry {

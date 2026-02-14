@@ -187,7 +187,7 @@ describe("orchestrator tools", () => {
         result: "Done",
       });
 
-      expect(getText(result)).toContain("Plan Status: completed");
+      expect(getText(result)).toContain("Plan Status:** completed");
     });
 
     it("should auto-fail plan when any subtask fails", async () => {
@@ -210,7 +210,7 @@ describe("orchestrator tools", () => {
         error: "Something broke",
       });
 
-      expect(getText(result)).toContain("Plan Status: failed");
+      expect(getText(result)).toContain("Plan Status:** failed");
       expect(getText(result)).toContain("Something broke");
     });
 
@@ -328,7 +328,7 @@ describe("orchestrator tools", () => {
         ],
       });
       const planId = extractPlanId(getText(createResult));
-      expect(getText(createResult)).toContain("Subtasks: 3");
+      expect(getText(createResult)).toContain("Subtasks:** 3");
 
       // 2. Dispatch — only A should be ready
       const dispatch1 = await dispatch({ plan_id: planId });
@@ -371,7 +371,7 @@ describe("orchestrator tools", () => {
         status: "completed",
         result: "C is done",
       });
-      expect(getText(submitC)).toContain("Plan Status: completed");
+      expect(getText(submitC)).toContain("Plan Status:** completed");
 
       // 8. Check status
       const statusResult = await status({ plan_id: planId });

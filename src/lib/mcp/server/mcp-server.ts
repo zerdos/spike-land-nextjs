@@ -42,6 +42,13 @@ import { registerTtsTools } from "./tools/tts";
 import { registerBazdmegFaqTools } from "./tools/bazdmeg-faq";
 import { registerCapabilitiesTools } from "./tools/capabilities";
 import { registerDevTools } from "./tools/dev";
+import { registerContextArchitectTools } from "./tools/context-architect";
+import { registerSandboxTools } from "./tools/sandbox";
+import { registerOrchestratorTools } from "./tools/orchestrator";
+import { registerLieDetectorTools } from "./tools/lie-detector";
+import { registerReqInterviewTools } from "./tools/req-interview";
+import { registerCodebaseExplainTools } from "./tools/codebase-explain";
+import { registerDecisionsTools } from "./tools/decisions";
 
 /**
  * Options for creating an MCP server with capability restrictions.
@@ -188,6 +195,15 @@ export function createMcpServer(
 
   // Capabilities tools (discoverable)
   registerCapabilitiesTools(registry, userId);
+
+  // Orchestration tools (cloud-native code orchestration)
+  registerContextArchitectTools(registry, userId);
+  registerSandboxTools(registry, userId);
+  registerOrchestratorTools(registry, userId);
+  registerLieDetectorTools(registry, userId);
+  registerReqInterviewTools(registry, userId);
+  registerCodebaseExplainTools(registry, userId);
+  registerDecisionsTools(registry, userId);
 
   // Dev workflow tools (localhost only)
   if (process.env.NODE_ENV === "development") {
