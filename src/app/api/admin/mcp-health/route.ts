@@ -1,3 +1,4 @@
+import { getSentryStats } from "@/lib/bridges/sentry";
 import { NextResponse } from "next/server";
 
 interface McpServerStatus {
@@ -53,11 +54,48 @@ async function checkMcpServer(name: string, checkUrl?: string): Promise<McpServe
   }
 }
 
+async function checkSentryHealth(): Promise<McpServerStatus> {
+  if (!process.env.SENTRY_AUTH_TOKEN) {
+    return {
+      name: "sentry",
+      status: "not_configured",
+      lastHeartbeat: null,
+      responseTimeMs: null,
+      errorCount: 0,
+    };
+  }
+
+  const start = Date.now();
+  try {
+    const stats = await getSentryStats();
+    const responseTimeMs = Date.now() - start;
+
+    return {
+      name: "sentry",
+      status: stats ? "connected" : "error",
+      lastHeartbeat: new Date().toISOString(),
+      responseTimeMs,
+      errorCount: stats ? 0 : 1,
+      details: stats ? undefined : "Failed to fetch stats from Sentry API",
+    };
+  } catch (error) {
+    return {
+      name: "sentry",
+      status: "error",
+      lastHeartbeat: null,
+      responseTimeMs: Date.now() - start,
+      errorCount: 1,
+      details: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
 export async function GET() {
   const servers = await Promise.all([
     checkMcpServer("spike-land", process.env.SPIKE_LAND_API_KEY ? "https://spike.land/api/health" : undefined),
     checkMcpServer("bridgemind", process.env["BRIDGEMIND_MCP_URL"] || undefined),
     checkMcpServer("playwright", undefined), // stdio server, can't health-check
+    checkSentryHealth(),
   ]);
 
   return NextResponse.json({ servers });
