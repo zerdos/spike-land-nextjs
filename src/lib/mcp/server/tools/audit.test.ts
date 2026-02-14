@@ -82,6 +82,7 @@ describe("audit tools", () => {
         workspace_slug: "my-ws",
         from_date: "2025-01-01",
         to_date: "2025-06-30",
+        format: "json",
       });
       const text = getText(result);
       expect(text).toContain("Audit Export Summary");

@@ -78,7 +78,7 @@ describe("merch tools", () => {
       expect(text).toContain("Cart Updated");
       expect(text).toContain("var-1");
       expect(text).toContain("qty: 2");
-      expect(text).toContain("Total items: 2");
+      expect(text).toContain("Total items:** 2");
     });
 
     it("should create new cart when none exists", async () => {

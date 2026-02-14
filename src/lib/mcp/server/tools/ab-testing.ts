@@ -99,7 +99,7 @@ export function registerAbTestingTools(
           data: {
             postId: args.post_id,
             workspaceId: workspace.id,
-            status: "ACTIVE",
+            status: "DRAFT",
           },
         });
 
