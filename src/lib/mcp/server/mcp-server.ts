@@ -57,6 +57,16 @@ import { registerEnvironmentTools } from "./tools/environment";
 import { registerSentryBridgeTools } from "./tools/sentry-bridge";
 import { registerVercelBridgeTools } from "./tools/vercel-bridge";
 import { registerGitHubAdminTools } from "./tools/github-admin";
+import { registerStorageTools } from "./tools/storage";
+import { registerGalleryTools } from "./tools/gallery";
+import { registerBoxesTools } from "./tools/boxes";
+import { registerJobsTools } from "./tools/jobs";
+
+import { registerRemindersTools } from "./tools/reminders";
+import { registerShareTools } from "./tools/share";
+import { registerPermissionsTools } from "./tools/permissions";
+import { registerPolicyTools } from "./tools/policy";
+import { registerWhiteLabelTools } from "./tools/white-label";
 
 // Orbit core tools (Tier 1)
 import { registerSocialAccountsTools } from "./tools/social-accounts";
@@ -129,6 +139,33 @@ export function createMcpServer(
 
   // Always-on gateway meta tools (5 tools)
   registerGatewayMetaTools(registry, userId);
+
+  // Storage and upload tools
+  registerStorageTools(registry, userId);
+
+  // Gallery tools
+  registerGalleryTools(registry, userId);
+
+  // Boxes tools
+  registerBoxesTools(registry, userId);
+
+  // Jobs tools
+  registerJobsTools(registry, userId);
+
+  // Reminders tools
+  registerRemindersTools(registry, userId);
+
+  // Share tools
+  registerShareTools(registry, userId);
+
+  // Permissions tools
+  registerPermissionsTools(registry, userId);
+
+  // Policy tools
+  registerPolicyTools(registry, userId);
+
+  // White-label tools
+  registerWhiteLabelTools(registry, userId);
 
   // Image tools (discoverable)
   registerImageTools(registry, userId);

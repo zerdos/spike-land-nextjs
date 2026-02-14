@@ -27,7 +27,7 @@ function getR2Config() {
   return { accountId, accessKeyId, secretAccessKey, bucket, endpoint };
 }
 
-function getR2Client(): S3Client {
+export function getR2Client(): S3Client {
   // In development, always create fresh client to pick up env changes
   // In production, use cached client for performance
   if (process.env.NODE_ENV === "development") {
@@ -60,7 +60,7 @@ function getR2Client(): S3Client {
   return global.__r2Client;
 }
 
-function getBucketName(): string {
+export function getBucketName(): string {
   if (process.env.NODE_ENV === "development") {
     return getR2Config().bucket;
   }
@@ -69,6 +69,28 @@ function getBucketName(): string {
     global.__r2BucketName = getR2Config().bucket;
   }
   return global.__r2BucketName;
+}
+
+/**
+ * Generate a presigned URL for uploading to R2
+ */
+export async function getPresignedUploadUrl(
+  key: string,
+  contentType: string,
+  expiresIn: number = 3600,
+): Promise<string> {
+  const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
+  const { PutObjectCommand } = await import("@aws-sdk/client-s3");
+  const client = getR2Client();
+  const bucket = getBucketName();
+
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    ContentType: contentType,
+  });
+
+  return getSignedUrl(client, command, { expiresIn });
 }
 
 export interface UploadImageParams {
