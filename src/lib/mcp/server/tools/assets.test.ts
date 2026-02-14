@@ -4,6 +4,7 @@ const mockPrisma = {
   workspace: { findFirst: vi.fn() },
   asset: { create: vi.fn(), findMany: vi.fn(), updateMany: vi.fn(), findFirst: vi.fn() },
   assetTag: { upsert: vi.fn() },
+  assetTagAssignment: { upsert: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -39,9 +40,11 @@ describe("assets tools", () => {
       const handler = registry.handlers.get("asset_upload")!;
       const result = await handler({
         workspace_slug: "my-ws",
-        name: "logo.png",
-        url: "https://cdn.example.com/logo.png",
-        mime_type: "image/png",
+        filename: "logo.png",
+        r2_key: "uploads/logo.png",
+        r2_bucket: "assets",
+        file_type: "image/png",
+        size_bytes: 12345,
       });
       const text = getText(result);
       expect(text).toContain("Asset Uploaded");
@@ -49,9 +52,11 @@ describe("assets tools", () => {
       expect(text).toContain("logo.png");
       expect(mockPrisma.asset.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          name: "logo.png",
-          url: "https://cdn.example.com/logo.png",
-          mimeType: "image/png",
+          filename: "logo.png",
+          r2Key: "uploads/logo.png",
+          r2Bucket: "assets",
+          fileType: "image/png",
+          sizeBytes: 12345,
           workspaceId: wsId,
           uploadedById: userId,
         }),
@@ -63,9 +68,11 @@ describe("assets tools", () => {
       const handler = registry.handlers.get("asset_upload")!;
       await handler({
         workspace_slug: "my-ws",
-        name: "photo.jpg",
-        url: "https://cdn.example.com/photo.jpg",
-        mime_type: "image/jpeg",
+        filename: "photo.jpg",
+        r2_key: "uploads/photo.jpg",
+        r2_bucket: "assets",
+        file_type: "image/jpeg",
+        size_bytes: 54321,
         folder_id: "folder-1",
       });
       expect(mockPrisma.asset.create).toHaveBeenCalledWith({
@@ -77,8 +84,8 @@ describe("assets tools", () => {
   describe("asset_list", () => {
     it("should list assets with tags", async () => {
       mockPrisma.asset.findMany.mockResolvedValue([
-        { id: "a1", name: "logo.png", mimeType: "image/png", createdAt: new Date("2025-06-01"), tags: [{ tag: "brand" }] },
-        { id: "a2", name: "banner.jpg", mimeType: "image/jpeg", createdAt: new Date("2025-06-02"), tags: [] },
+        { id: "a1", filename: "logo.png", fileType: "image/png", createdAt: new Date("2025-06-01"), tags: [{ tag: { name: "brand" } }] },
+        { id: "a2", filename: "banner.jpg", fileType: "image/jpeg", createdAt: new Date("2025-06-02"), tags: [] },
       ]);
       const handler = registry.handlers.get("asset_list")!;
       const result = await handler({ workspace_slug: "my-ws" });
@@ -96,15 +103,15 @@ describe("assets tools", () => {
       expect(getText(result)).toContain("No assets found");
     });
 
-    it("should apply folder and mime_type filters", async () => {
+    it("should apply folder and file_type filters", async () => {
       mockPrisma.asset.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("asset_list")!;
-      await handler({ workspace_slug: "my-ws", folder_id: "f1", mime_type: "image/" });
+      await handler({ workspace_slug: "my-ws", folder_id: "f1", file_type: "image/" });
       expect(mockPrisma.asset.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             folderId: "f1",
-            mimeType: { startsWith: "image/" },
+            fileType: { startsWith: "image/" },
           }),
         }),
       );
@@ -112,9 +119,9 @@ describe("assets tools", () => {
   });
 
   describe("asset_search", () => {
-    it("should search assets by name or tag", async () => {
+    it("should search assets by filename", async () => {
       mockPrisma.asset.findMany.mockResolvedValue([
-        { id: "a1", name: "brand-logo.png", mimeType: "image/png", tags: [{ tag: "brand" }] },
+        { id: "a1", filename: "brand-logo.png", fileType: "image/png" },
       ]);
       const handler = registry.handlers.get("asset_search")!;
       const result = await handler({ workspace_slug: "my-ws", query: "brand" });
@@ -153,9 +160,10 @@ describe("assets tools", () => {
   describe("asset_tag", () => {
     it("should add tags and return final tag list", async () => {
       mockPrisma.asset.findFirst
-        .mockResolvedValueOnce({ id: "a1", name: "logo.png", tags: [{ tag: "old" }] })
-        .mockResolvedValueOnce({ id: "a1", name: "logo.png", tags: [{ tag: "old" }, { tag: "brand" }, { tag: "new" }] });
-      mockPrisma.assetTag.upsert.mockResolvedValue({});
+        .mockResolvedValueOnce({ id: "a1", filename: "logo.png", tags: [{ tag: { name: "old" } }] })
+        .mockResolvedValueOnce({ id: "a1", filename: "logo.png", tags: [{ tag: { name: "old" } }, { tag: { name: "brand" } }, { tag: { name: "new" } }] });
+      mockPrisma.assetTag.upsert.mockResolvedValue({ id: "tag-1" });
+      mockPrisma.assetTagAssignment.upsert.mockResolvedValue({});
       const handler = registry.handlers.get("asset_tag")!;
       const result = await handler({
         workspace_slug: "my-ws",

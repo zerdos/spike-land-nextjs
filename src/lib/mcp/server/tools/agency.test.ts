@@ -4,8 +4,6 @@ const mockPrisma = {
   workspace: { findFirst: vi.fn() },
   agencyPersona: { create: vi.fn() },
   agencyPortfolioItem: { findMany: vi.fn() },
-  workspaceDomain: { findFirst: vi.fn() },
-  workspaceTheme: { findFirst: vi.fn() },
 };
 
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
@@ -40,37 +38,36 @@ describe("agency tools", () => {
       const handler = registry.handlers.get("agency_generate_persona")!;
       const result = await handler({
         workspace_slug: "my-ws",
-        client_name: "Acme Corp",
-        industry: "Technology",
-        target_audience: "Developers",
+        name: "Acme Corp",
+        tagline: "Innovation at scale",
+        primary_hook: "Enterprise solutions for modern teams",
       });
       const text = getText(result);
       expect(text).toContain("Persona Created");
       expect(text).toContain("persona-1");
       expect(text).toContain("Acme Corp");
-      expect(text).toContain("PENDING");
+      expect(text).toContain("Created");
       expect(mockPrisma.agencyPersona.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          workspaceId: wsId,
-          clientName: "Acme Corp",
-          industry: "Technology",
-          targetAudience: "Developers",
-          status: "PENDING",
-          createdById: userId,
+          slug: "acme-corp",
+          name: "Acme Corp",
+          tagline: "Innovation at scale",
+          primaryHook: "Enterprise solutions for modern teams",
         }),
       });
     });
 
-    it("should handle missing target_audience", async () => {
+    it("should generate slug from name", async () => {
       mockPrisma.agencyPersona.create.mockResolvedValue({ id: "persona-2" });
       const handler = registry.handlers.get("agency_generate_persona")!;
       await handler({
         workspace_slug: "my-ws",
-        client_name: "BigCo",
-        industry: "Finance",
+        name: "Big Co Industries",
+        tagline: "Building the future",
+        primary_hook: "Trusted by Fortune 500",
       });
       expect(mockPrisma.agencyPersona.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({ targetAudience: null }),
+        data: expect.objectContaining({ slug: "big-co-industries" }),
       });
     });
   });
@@ -78,8 +75,8 @@ describe("agency tools", () => {
   describe("agency_list_portfolio", () => {
     it("should list portfolio items", async () => {
       mockPrisma.agencyPortfolioItem.findMany.mockResolvedValue([
-        { title: "Website Redesign", clientName: "Acme Corp", category: "Web", createdAt: new Date("2025-06-01") },
-        { title: "Brand Identity", clientName: "BigCo", category: "Branding", createdAt: new Date("2025-05-15") },
+        { name: "Website Redesign", category: "Web", createdAt: new Date("2025-06-01") },
+        { name: "Brand Identity", category: "Branding", createdAt: new Date("2025-05-15") },
       ]);
       const handler = registry.handlers.get("agency_list_portfolio")!;
       const result = await handler({ workspace_slug: "my-ws" });
@@ -98,52 +95,26 @@ describe("agency tools", () => {
   });
 
   describe("agency_verify_domain", () => {
-    it("should return verification status for configured domain", async () => {
-      mockPrisma.workspaceDomain.findFirst.mockResolvedValue({
-        domain: "custom.example.com",
-        status: "VERIFIED",
-        verified: true,
-      });
+    it("should return DNS instructions for domain verification", async () => {
       const handler = registry.handlers.get("agency_verify_domain")!;
       const result = await handler({ workspace_slug: "my-ws", domain: "custom.example.com" });
       const text = getText(result);
       expect(text).toContain("Domain Verification");
-      expect(text).toContain("VERIFIED");
-      expect(text).toContain("true");
-    });
-
-    it("should return DNS instructions for unconfigured domain", async () => {
-      mockPrisma.workspaceDomain.findFirst.mockResolvedValue(null);
-      const handler = registry.handlers.get("agency_verify_domain")!;
-      const result = await handler({ workspace_slug: "my-ws", domain: "new.example.com" });
-      const text = getText(result);
-      expect(text).toContain("Domain Not Configured");
+      expect(text).toContain("custom.example.com");
       expect(text).toContain("CNAME");
       expect(text).toContain("cname.spike.land");
+      expect(text).toContain(`spike-verify=${wsId}`);
     });
   });
 
   describe("agency_get_theme", () => {
-    it("should return theme configuration", async () => {
-      mockPrisma.workspaceTheme.findFirst.mockResolvedValue({
-        primaryColor: "#FF5733",
-        secondaryColor: "#333333",
-        logoUrl: "https://cdn.example.com/logo.png",
-        fontFamily: "Inter",
-      });
+    it("should return theme configuration with workspace name", async () => {
       const handler = registry.handlers.get("agency_get_theme")!;
       const result = await handler({ workspace_slug: "my-ws" });
       const text = getText(result);
       expect(text).toContain("Theme Configuration");
-      expect(text).toContain("#FF5733");
-      expect(text).toContain("Inter");
-    });
-
-    it("should return default theme message when no theme configured", async () => {
-      mockPrisma.workspaceTheme.findFirst.mockResolvedValue(null);
-      const handler = registry.handlers.get("agency_get_theme")!;
-      const result = await handler({ workspace_slug: "my-ws" });
-      expect(getText(result)).toContain("No Theme Configured");
+      expect(text).toContain("My Workspace");
+      expect(text).toContain("default theme");
     });
   });
 });

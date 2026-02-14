@@ -60,6 +60,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-tsbuildinfo-
 
+      - name: Generate docs manifests (needed by tsc)
+        run: yarn docs:generate
+
       - name: Run linter
         run: yarn lint
 

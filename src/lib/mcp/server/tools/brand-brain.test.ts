@@ -4,7 +4,6 @@ const mockPrisma = {
   workspace: { findFirst: vi.fn() },
   brandProfile: { findUnique: vi.fn() },
   brandGuardrail: { findMany: vi.fn() },
-  brandVocabulary: { findMany: vi.fn() },
   contentRewrite: { create: vi.fn() },
   policyRule: { findMany: vi.fn() },
   policyCheck: { create: vi.fn() },
@@ -36,8 +35,8 @@ describe("brand-brain tools", () => {
       mockPrisma.brandProfile.findUnique.mockResolvedValue({
         id: "bp1",
         vocabulary: [
-          { term: "spam", category: "BANNED" },
-          { term: "innovative", category: "PREFERRED" },
+          { term: "spam", type: "BANNED" },
+          { term: "innovative", type: "PREFERRED" },
         ],
         guardrails: [],
       });
@@ -51,8 +50,8 @@ describe("brand-brain tools", () => {
       mockPrisma.brandProfile.findUnique.mockResolvedValue({
         id: "bp1",
         vocabulary: [
-          { term: "spam", category: "BANNED" },
-          { term: "cheap", category: "BANNED" },
+          { term: "spam", type: "BANNED" },
+          { term: "cheap", type: "BANNED" },
         ],
         guardrails: [],
       });
@@ -70,9 +69,9 @@ describe("brand-brain tools", () => {
         vocabulary: [],
         guardrails: [
           {
-            type: "KEYWORD_BLOCK",
+            type: "PROHIBITED_TOPIC",
             name: "competitor-block",
-            config: { keywords: ["competitor-x"] },
+            ruleConfig: { keywords: ["competitor-x"] },
             isActive: true,
           },
         ],
@@ -145,9 +144,9 @@ describe("brand-brain tools", () => {
         toneDescriptors: "Professional, Friendly",
         guardrails: [{ id: "g1" }, { id: "g2" }],
         vocabulary: [
-          { category: "BANNED" },
-          { category: "BANNED" },
-          { category: "PREFERRED" },
+          { type: "BANNED" },
+          { type: "BANNED" },
+          { type: "PREFERRED" },
         ],
       });
       const handler = registry.handlers.get("brand_get_profile")!;
@@ -184,10 +183,10 @@ describe("brand-brain tools", () => {
         {
           id: "rule1",
           name: "No Profanity",
-          type: "KEYWORD_MATCH",
+          ruleType: "KEYWORD_MATCH",
           severity: "CRITICAL",
           isActive: true,
-          config: { keywords: ["badword"] },
+          conditions: { keywords: ["badword"] },
         },
       ]);
       mockPrisma.policyCheck.create.mockResolvedValue({ id: "chk1" });
@@ -205,10 +204,10 @@ describe("brand-brain tools", () => {
         {
           id: "rule2",
           name: "Tone Check",
-          type: "KEYWORD_MATCH",
+          ruleType: "KEYWORD_MATCH",
           severity: "LOW",
           isActive: true,
-          config: { keywords: ["maybe"] },
+          conditions: { keywords: ["maybe"] },
         },
       ]);
       mockPrisma.policyCheck.create.mockResolvedValue({ id: "chk2" });
@@ -224,10 +223,10 @@ describe("brand-brain tools", () => {
         {
           id: "rule3",
           name: "Brand Filter",
-          type: "KEYWORD_MATCH",
+          ruleType: "KEYWORD_MATCH",
           severity: "HIGH",
           isActive: true,
-          config: { keywords: ["forbidden"] },
+          conditions: { keywords: ["forbidden"] },
         },
       ]);
       mockPrisma.policyCheck.create.mockResolvedValue({ id: "chk3" });
@@ -243,7 +242,6 @@ describe("brand-brain tools", () => {
       mockPrisma.policyViolation.findMany.mockResolvedValue([
         {
           id: "v1",
-          ruleName: "No Profanity",
           severity: "CRITICAL",
           message: "Matched keyword: badword",
           matchedContent: "badword",

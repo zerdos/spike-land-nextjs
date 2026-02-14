@@ -41,10 +41,9 @@ describe("crisis tools", () => {
       mockPrisma.crisisDetectionEvent.findMany.mockResolvedValue([
         {
           id: "cr-1",
-          crisisType: "BRAND_ATTACK",
+          triggerType: "SENTIMENT_SPIKE",
           severity: "HIGH",
           affectedAccountIds: ["acc-1", "acc-2", "acc-3"],
-          triggerType: "SENTIMENT_SPIKE",
           status: "DETECTED",
           detectedAt: new Date("2025-06-01T10:00:00Z"),
         },
@@ -56,9 +55,9 @@ describe("crisis tools", () => {
       const text = getText(result);
       expect(text).toContain("Active Crises");
       expect(text).toContain("cr-1");
-      expect(text).toContain("BRAND_ATTACK");
-      expect(text).toContain("HIGH");
       expect(text).toContain("SENTIMENT_SPIKE");
+      expect(text).toContain("HIGH");
+      expect(text).toContain("3");
     });
 
     it("should filter by severity", async () => {
@@ -166,7 +165,6 @@ describe("crisis tools", () => {
 
   describe("crisis_pause_automation", () => {
     it("should pause all accounts when no account_ids specified", async () => {
-      mockPrisma.socialAccount.updateMany.mockResolvedValue({ count: 5 });
       mockPrisma.allocatorAutopilotConfig.updateMany.mockResolvedValue({ count: 3 });
 
       const handler = registry.handlers.get("crisis_pause_automation")!;
@@ -178,13 +176,12 @@ describe("crisis tools", () => {
 
       const text = getText(result);
       expect(text).toContain("Automation Paused");
-      expect(text).toContain("5");
+      expect(text).toContain("3");
       expect(text).toContain("All accounts");
       expect(text).toContain("Brand crisis detected");
     });
 
     it("should pause specific accounts when account_ids provided", async () => {
-      mockPrisma.socialAccount.updateMany.mockResolvedValue({ count: 2 });
       mockPrisma.allocatorAutopilotConfig.updateMany.mockResolvedValue({ count: 1 });
 
       const handler = registry.handlers.get("crisis_pause_automation")!;
@@ -196,11 +193,11 @@ describe("crisis tools", () => {
       });
 
       const text = getText(result);
-      expect(text).toContain("2");
+      expect(text).toContain("1");
       expect(text).toContain("Selected accounts");
-      expect(mockPrisma.socialAccount.updateMany).toHaveBeenCalledWith(
+      expect(mockPrisma.allocatorAutopilotConfig.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ id: { in: ["acc-1", "acc-2"] } }),
+          data: expect.objectContaining({ isEmergencyStopped: true }),
         }),
       );
     });
@@ -214,7 +211,7 @@ describe("crisis tools", () => {
       });
 
       expect(getText(result)).toContain("VALIDATION_ERROR");
-      expect(mockPrisma.socialAccount.updateMany).not.toHaveBeenCalled();
+      expect(mockPrisma.allocatorAutopilotConfig.updateMany).not.toHaveBeenCalled();
     });
   });
 
@@ -223,9 +220,10 @@ describe("crisis tools", () => {
       mockPrisma.crisisResponseTemplate.findMany.mockResolvedValue([
         {
           id: "tpl-1",
-          crisisType: "BRAND_ATTACK",
+          category: "BRAND_ATTACK",
           name: "Brand Defense",
-          tone: "professional",
+          platform: "twitter",
+          isActive: true,
           content: "We take this seriously...",
         },
       ]);
@@ -238,18 +236,18 @@ describe("crisis tools", () => {
       expect(text).toContain("tpl-1");
       expect(text).toContain("BRAND_ATTACK");
       expect(text).toContain("Brand Defense");
-      expect(text).toContain("professional");
+      expect(text).toContain("twitter");
     });
 
-    it("should filter by crisis type", async () => {
+    it("should filter by category", async () => {
       mockPrisma.crisisResponseTemplate.findMany.mockResolvedValue([]);
 
       const handler = registry.handlers.get("crisis_get_templates")!;
-      await handler({ workspace_slug: "test-ws", crisis_type: "PR_CRISIS" });
+      await handler({ workspace_slug: "test-ws", category: "PR_CRISIS" });
 
       expect(mockPrisma.crisisResponseTemplate.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ crisisType: "PR_CRISIS" }),
+          where: expect.objectContaining({ category: "PR_CRISIS" }),
         }),
       );
     });
@@ -289,7 +287,7 @@ describe("crisis tools", () => {
       expect(text).toContain("Crisis Response Recorded");
       expect(text).toContain("Template");
       expect(text).toContain("We are aware");
-      expect(text).toContain("RESPONDED");
+      expect(text).toContain("ACKNOWLEDGED");
     });
 
     it("should respond with custom response", async () => {

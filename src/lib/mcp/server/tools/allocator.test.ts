@@ -75,7 +75,7 @@ describe("allocator tools", () => {
           status: "ACTIVE",
           budget: 1000,
           spend: 450,
-          autopilotConfig: { isEnabled: true, mode: "AGGRESSIVE" },
+          autopilotConfig: [{ isEnabled: true, mode: "AGGRESSIVE" }],
           _count: { adSets: 3 },
         },
       ]);

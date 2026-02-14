@@ -74,7 +74,11 @@ describe("ab-testing tools", () => {
       expect(text).toContain("Shorter content performs better");
       expect(mockPrisma.hypothesis.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ content: "Shorter content performs better" }),
+          data: expect.objectContaining({
+            description: "Shorter content performs better",
+            title: "Hypothesis for test abt-2",
+            experimentId: "abt-2",
+          }),
         }),
       );
     });
@@ -88,13 +92,15 @@ describe("ab-testing tools", () => {
         variants: [
           {
             id: "var-1",
-            variantIndex: 0,
-            metrics: { impressions: 1000, clicks: 100, conversions: 20 },
+            impressions: 1000,
+            clicks: 100,
+            engagements: 20,
           },
           {
             id: "var-2",
-            variantIndex: 1,
-            metrics: { impressions: 1000, clicks: 150, conversions: 30 },
+            impressions: 1000,
+            clicks: 150,
+            engagements: 30,
           },
         ],
       });
@@ -117,7 +123,7 @@ describe("ab-testing tools", () => {
       mockPrisma.socialPostAbTest.findFirst.mockResolvedValue({
         id: "abt-1",
         status: "ACTIVE",
-        variants: [{ id: "var-1", variantIndex: 0, metrics: null }],
+        variants: [{ id: "var-1", impressions: 0, clicks: 0, engagements: 0 }],
       });
 
       const handler = registry.handlers.get("abtest_get_results")!;
@@ -126,7 +132,7 @@ describe("ab-testing tools", () => {
         test_id: "abt-1",
       });
 
-      expect(getText(result)).toContain("- | - | - | - | -");
+      expect(getText(result)).toContain("0.00%");
     });
 
     it("should return NOT_FOUND for missing test", async () => {
@@ -190,7 +196,7 @@ describe("ab-testing tools", () => {
       mockPrisma.socialPostAbTest.findMany.mockResolvedValue([
         {
           id: "abt-1",
-          post: { content: "This is a really long post content that should be truncated after fifty characters in the preview" },
+          originalPost: { content: "This is a really long post content that should be truncated after fifty characters in the preview" },
           _count: { variants: 3 },
           createdAt: new Date("2025-06-01"),
         },
@@ -210,7 +216,7 @@ describe("ab-testing tools", () => {
       mockPrisma.socialPostAbTest.findMany.mockResolvedValue([
         {
           id: "abt-1",
-          post: null,
+          originalPost: null,
           _count: { variants: 2 },
           createdAt: new Date("2025-06-01"),
         },
@@ -237,8 +243,8 @@ describe("ab-testing tools", () => {
       mockPrisma.socialPostAbTest.findFirst.mockResolvedValue({
         id: "abt-1",
         variants: [
-          { id: "var-1", variantIndex: 0, metrics: { impressions: 1000, conversions: 50 } },
-          { id: "var-2", variantIndex: 1, metrics: { impressions: 1000, conversions: 80 } },
+          { id: "var-1", impressions: 1000, clicks: 50 },
+          { id: "var-2", impressions: 1000, clicks: 80 },
         ],
       });
 
@@ -258,8 +264,8 @@ describe("ab-testing tools", () => {
       mockPrisma.socialPostAbTest.findFirst.mockResolvedValue({
         id: "abt-1",
         variants: [
-          { id: "var-1", variantIndex: 0, metrics: null },
-          { id: "var-2", variantIndex: 1, metrics: { impressions: 0, conversions: 0 } },
+          { id: "var-1", impressions: 0, clicks: 0 },
+          { id: "var-2", impressions: 0, clicks: 0 },
         ],
       });
 
@@ -288,7 +294,7 @@ describe("ab-testing tools", () => {
       mockPrisma.socialPostAbTest.findFirst.mockResolvedValue({
         id: "abt-1",
         variants: [
-          { id: "var-1", variantIndex: 0, metrics: { impressions: 100, conversions: 10 } },
+          { id: "var-1", impressions: 100, clicks: 10 },
         ],
       });
 

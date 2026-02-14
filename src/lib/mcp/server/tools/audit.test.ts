@@ -36,8 +36,8 @@ describe("audit tools", () => {
   describe("audit_query_logs", () => {
     it("should return audit logs", async () => {
       mockPrisma.workspaceAuditLog.findMany.mockResolvedValue([
-        { action: "CREATE", entityType: "Post", userId: "user-1", createdAt: new Date("2025-06-01"), details: "Created post" },
-        { action: "UPDATE", entityType: "Settings", userId: null, createdAt: new Date("2025-06-02"), details: null },
+        { action: "CREATE", targetType: "Post", userId: "user-1", createdAt: new Date("2025-06-01"), details: "Created post" },
+        { action: "UPDATE", targetType: "Settings", userId: null, createdAt: new Date("2025-06-02"), details: null },
       ]);
       const handler = registry.handlers.get("audit_query_logs")!;
       const result = await handler({ workspace_slug: "my-ws" });
@@ -55,15 +55,15 @@ describe("audit tools", () => {
       expect(getText(result)).toContain("No audit logs found");
     });
 
-    it("should apply action and entity_type filters", async () => {
+    it("should apply action and target_type filters", async () => {
       mockPrisma.workspaceAuditLog.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("audit_query_logs")!;
-      await handler({ workspace_slug: "my-ws", action: "DELETE", entity_type: "User" });
+      await handler({ workspace_slug: "my-ws", action: "DELETE", target_type: "User" });
       expect(mockPrisma.workspaceAuditLog.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             action: "DELETE",
-            entityType: "User",
+            targetType: "User",
           }),
         }),
       );
@@ -95,10 +95,9 @@ describe("audit tools", () => {
     it("should return AI decision logs", async () => {
       mockPrisma.aIDecisionLog.findMany.mockResolvedValue([
         {
-          decisionType: "CONTENT_MODERATION",
-          inputSummary: "Review post #42",
-          outputSummary: "Approved",
-          confidence: 0.95,
+          requestType: "CONTENT_MODERATION",
+          inputPrompt: "Review post #42",
+          outputResult: "Approved",
           createdAt: new Date("2025-06-01"),
         },
       ]);
@@ -107,7 +106,7 @@ describe("audit tools", () => {
       const text = getText(result);
       expect(text).toContain("AI Decisions (1)");
       expect(text).toContain("CONTENT_MODERATION");
-      expect(text).toContain("0.95");
+      expect(text).toContain("Review post #42");
     });
 
     it("should return message when no decisions found", async () => {
@@ -123,8 +122,6 @@ describe("audit tools", () => {
       mockPrisma.agentAuditLog.findMany.mockResolvedValue([
         {
           action: "TOOL_CALL",
-          toolUsed: "image_generate",
-          result: "success",
           durationMs: 1234,
           createdAt: new Date("2025-06-01"),
         },
@@ -134,7 +131,6 @@ describe("audit tools", () => {
       const text = getText(result);
       expect(text).toContain("Agent Trail (1)");
       expect(text).toContain("TOOL_CALL");
-      expect(text).toContain("image_generate");
       expect(text).toContain("1234ms");
     });
 

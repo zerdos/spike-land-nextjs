@@ -58,7 +58,7 @@ describe("calendar tools", () => {
       expect(text).toContain("Linked accounts:** 2");
       expect(mockPrisma.socialPost.create).toHaveBeenCalledWith({
         data: {
-          workspaceId: "ws-1",
+          createdById: userId,
           content: "Hello world!",
           status: "SCHEDULED",
           scheduledAt: expect.objectContaining({}),
@@ -99,7 +99,7 @@ describe("calendar tools", () => {
         {
           id: "sp-1",
           content: "Post content here",
-          scheduledFor: new Date("2025-07-01T10:00:00Z"),
+          scheduledAt: new Date("2025-07-01T10:00:00Z"),
           status: "SCHEDULED",
         },
       ]);
@@ -208,7 +208,7 @@ describe("calendar tools", () => {
       const posts = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(now);
         d.setDate(d.getDate() + i);
-        return { scheduledFor: d, status: "SCHEDULED" };
+        return { scheduledAt: d, status: "SCHEDULED" };
       });
       mockPrisma.scheduledPost.findMany.mockResolvedValue(posts);
       const handler = registry.handlers.get("calendar_detect_gaps")!;

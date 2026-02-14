@@ -3,7 +3,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const mockPrisma = {
   merchProduct: { findMany: vi.fn() },
   merchVariant: { findFirst: vi.fn() },
-  merchCart: { findFirst: vi.fn(), create: vi.fn() },
+  merchCart: { findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn() },
   merchCartItem: { create: vi.fn() },
   merchOrder: { create: vi.fn(), findFirst: vi.fn() },
   merchShipment: { findFirst: vi.fn() },
@@ -40,8 +40,8 @@ describe("merch tools", () => {
   describe("merch_list_products", () => {
     it("should list products with variant counts", async () => {
       mockPrisma.merchProduct.findMany.mockResolvedValue([
-        { id: "prod-1", name: "T-Shirt", price: 25, status: "active", _count: { variants: 3 }, createdAt: new Date("2025-01-01") },
-        { id: "prod-2", name: "Mug", price: 15, status: "active", _count: { variants: 1 }, createdAt: new Date("2025-01-02") },
+        { id: "prod-1", name: "T-Shirt", basePrice: 20, retailPrice: 25, isActive: true, _count: { variants: 3 }, createdAt: new Date("2025-01-01") },
+        { id: "prod-2", name: "Mug", basePrice: 10, retailPrice: 15, isActive: true, _count: { variants: 1 }, createdAt: new Date("2025-01-02") },
       ]);
 
       const handler = registry.handlers.get("merch_list_products")!;
@@ -66,8 +66,8 @@ describe("merch tools", () => {
 
   describe("merch_add_to_cart", () => {
     it("should add item to existing cart", async () => {
-      mockPrisma.merchVariant.findFirst.mockResolvedValue({ id: "var-1", name: "Large" });
-      mockPrisma.merchCart.findFirst
+      mockPrisma.merchVariant.findFirst.mockResolvedValue({ id: "var-1", productId: "prod-1", name: "Large" });
+      mockPrisma.merchCart.findUnique
         .mockResolvedValueOnce({ id: "cart-1", _count: { items: 1 } })
         .mockResolvedValueOnce({ id: "cart-1", _count: { items: 2 } });
       mockPrisma.merchCartItem.create.mockResolvedValue({ id: "ci-1" });
@@ -82,8 +82,8 @@ describe("merch tools", () => {
     });
 
     it("should create new cart when none exists", async () => {
-      mockPrisma.merchVariant.findFirst.mockResolvedValue({ id: "var-1" });
-      mockPrisma.merchCart.findFirst
+      mockPrisma.merchVariant.findFirst.mockResolvedValue({ id: "var-1", productId: "prod-1" });
+      mockPrisma.merchCart.findUnique
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce({ id: "cart-new", _count: { items: 1 } });
       mockPrisma.merchCart.create.mockResolvedValue({ id: "cart-new", _count: { items: 0 } });
@@ -112,14 +112,14 @@ describe("merch tools", () => {
       mockPrisma.merchCart.findFirst.mockResolvedValue({
         id: "cart-1",
         items: [
-          { quantity: 2, variant: { price: 25 } },
-          { quantity: 1, variant: { price: 15 } },
+          { quantity: 2, product: { retailPrice: 25 } },
+          { quantity: 1, product: { retailPrice: 15 } },
         ],
       });
       mockPrisma.merchOrder.create.mockResolvedValue({
         id: "order-1",
         status: "PENDING",
-        total: 65,
+        totalAmount: 65,
       });
 
       const handler = registry.handlers.get("merch_checkout")!;
@@ -147,12 +147,13 @@ describe("merch tools", () => {
     it("should return order details with items and shipment", async () => {
       mockPrisma.merchOrder.findFirst.mockResolvedValue({
         id: "order-1",
+        orderNumber: "ORD-123",
         status: "SHIPPED",
-        total: 50,
-        shippingAddress: "456 Oak Ave",
+        totalAmount: 50,
+        shippingAddress: { address: "456 Oak Ave" },
         createdAt: new Date("2025-06-01"),
-        items: [{ id: "oi-1", variantId: "var-1", quantity: 2 }],
-        shipment: { trackingNumber: "TRK123", carrier: "UPS", status: "IN_TRANSIT" },
+        items: [{ id: "oi-1", productName: "T-Shirt", variantName: "Large", quantity: 2 }],
+        shipments: [{ trackingNumber: "TRK123", carrier: "UPS", status: "IN_TRANSIT" }],
       });
 
       const handler = registry.handlers.get("merch_get_order")!;
@@ -161,7 +162,7 @@ describe("merch tools", () => {
       expect(text).toContain("Order Details");
       expect(text).toContain("SHIPPED");
       expect(text).toContain("50");
-      expect(text).toContain("var-1");
+      expect(text).toContain("T-Shirt");
       expect(text).toContain("TRK123");
       expect(text).toContain("UPS");
     });
@@ -183,7 +184,7 @@ describe("merch tools", () => {
         carrier: "FedEx",
         status: "DELIVERED",
         shippedAt: new Date("2025-06-01"),
-        estimatedDelivery: new Date("2025-06-05"),
+        deliveredAt: new Date("2025-06-05"),
       });
 
       const handler = registry.handlers.get("merch_track_shipment")!;
@@ -193,7 +194,7 @@ describe("merch tools", () => {
       expect(text).toContain("TRK456");
       expect(text).toContain("FedEx");
       expect(text).toContain("DELIVERED");
-      expect(text).toContain("Estimated Delivery");
+      expect(text).toContain("Delivered At");
     });
 
     it("should return error for missing shipment", async () => {

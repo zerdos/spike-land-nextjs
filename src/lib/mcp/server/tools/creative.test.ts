@@ -58,40 +58,44 @@ describe("creative tools", () => {
       expect(mockPrisma.creativeVariant.create).toHaveBeenCalledTimes(3);
     });
 
-    it("should use platform when provided", async () => {
+    it("should include name in output", async () => {
       mockPrisma.creativeSet.create.mockResolvedValue({ id: "cs-2" });
       mockPrisma.creativeVariant.create.mockResolvedValue({ id: "cv-4" });
 
       const handler = registry.handlers.get("creative_generate_variants")!;
       const result = await handler({
         workspace_slug: "test-ws",
+        name: "Summer Campaign",
         content: "Sale now!",
-        platform: "INSTAGRAM",
         variant_count: 1,
       });
 
       const text = getText(result);
-      expect(text).toContain("INSTAGRAM");
-      expect(mockPrisma.creativeSet.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ platform: "INSTAGRAM" }),
-        }),
-      );
+      expect(text).toContain("Summer Campaign");
+      expect(text).toContain("cs-2");
+      expect(text).toContain("cv-4");
     });
 
-    it("should default platform to 'all' in output when not provided", async () => {
+    it("should pass content as seed and prompt", async () => {
       mockPrisma.creativeSet.create.mockResolvedValue({ id: "cs-3" });
       mockPrisma.creativeVariant.create.mockResolvedValue({ id: "cv-5" });
 
       const handler = registry.handlers.get("creative_generate_variants")!;
-      const result = await handler({
+      await handler({
         workspace_slug: "test-ws",
+        name: "Test Set",
         content: "Content",
         variant_count: 1,
       });
 
-      const text = getText(result);
-      expect(text).toContain("Platform:** all");
+      expect(mockPrisma.creativeSet.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            seedContent: "Content",
+            generationPrompt: "Content",
+          }),
+        }),
+      );
     });
   });
 
@@ -99,10 +103,11 @@ describe("creative tools", () => {
     it("should return fatigue alerts", async () => {
       mockPrisma.creativeFatigueAlert.findMany.mockResolvedValue([
         {
-          creativeId: "cr-1",
-          fatigueType: "DECLINING_CTR",
-          metricsDecline: 25,
-          recommendation: "Refresh creative content",
+          variantId: "cv-1",
+          ctrDecayPercent: 25,
+          daysActive: 14,
+          recommendedAction: "Refresh creative content",
+          isResolved: false,
           detectedAt: new Date("2025-06-01"),
         },
       ]);
@@ -112,9 +117,9 @@ describe("creative tools", () => {
 
       const text = getText(result);
       expect(text).toContain("Creative Fatigue Alerts");
-      expect(text).toContain("cr-1");
-      expect(text).toContain("DECLINING_CTR");
+      expect(text).toContain("cv-1");
       expect(text).toContain("25%");
+      expect(text).toContain("14");
       expect(text).toContain("Refresh creative content");
     });
 
@@ -146,11 +151,17 @@ describe("creative tools", () => {
         variants: [
           {
             id: "cv-1",
-            performance: { impressions: 1000, clicks: 50, conversions: 10 },
+            impressions: 1000,
+            clicks: 50,
+            conversions: 10,
+            performanceHistory: [],
           },
           {
             id: "cv-2",
-            performance: { impressions: 1000, clicks: 80, conversions: 15 },
+            impressions: 1000,
+            clicks: 80,
+            conversions: 15,
+            performanceHistory: [],
           },
         ],
       });
@@ -169,10 +180,10 @@ describe("creative tools", () => {
       expect(text).toContain("8.00%");
     });
 
-    it("should handle variant without performance data", async () => {
+    it("should handle variant with zero impressions", async () => {
       mockPrisma.creativeSet.findFirst.mockResolvedValue({
         id: "cs-1",
-        variants: [{ id: "cv-1", performance: null }],
+        variants: [{ id: "cv-1", impressions: 0, clicks: 0, conversions: 0, performanceHistory: [] }],
       });
 
       const handler = registry.handlers.get("creative_get_performance")!;
@@ -183,7 +194,7 @@ describe("creative tools", () => {
 
       const text = getText(result);
       expect(text).toContain("cv-1");
-      expect(text).toContain("- | - | - | -");
+      expect(text).toContain("0.00%");
     });
 
     it("should return NOT_FOUND for missing creative set", async () => {
@@ -202,7 +213,7 @@ describe("creative tools", () => {
       mockPrisma.creativeSet.findFirst.mockResolvedValue({
         id: "cs-1",
         variants: [
-          { id: "cv-1", performance: { impressions: 0, clicks: 0, conversions: 0 } },
+          { id: "cv-1", impressions: 0, clicks: 0, conversions: 0, performanceHistory: [] },
         ],
       });
 
@@ -221,13 +232,15 @@ describe("creative tools", () => {
       mockPrisma.creativeSet.findMany.mockResolvedValue([
         {
           id: "cs-1",
-          platform: "INSTAGRAM",
+          name: "Summer Campaign",
+          status: "ACTIVE",
           createdAt: new Date("2025-06-01"),
           _count: { variants: 3 },
         },
         {
           id: "cs-2",
-          platform: null,
+          name: "Winter Campaign",
+          status: "DRAFT",
           createdAt: new Date("2025-06-02"),
           _count: { variants: 5 },
         },
@@ -239,11 +252,11 @@ describe("creative tools", () => {
       const text = getText(result);
       expect(text).toContain("Creative Sets");
       expect(text).toContain("cs-1");
+      expect(text).toContain("Summer Campaign");
       expect(text).toContain("3");
-      expect(text).toContain("INSTAGRAM");
       expect(text).toContain("cs-2");
+      expect(text).toContain("Winter Campaign");
       expect(text).toContain("5");
-      expect(text).toContain("all");
     });
 
     it("should return empty message when no sets", async () => {

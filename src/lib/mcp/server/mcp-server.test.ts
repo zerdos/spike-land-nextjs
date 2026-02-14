@@ -54,6 +54,26 @@ const {
   mockRegisterSentryBridgeTools,
   mockRegisterVercelBridgeTools,
   mockRegisterGitHubAdminTools,
+  mockRegisterSocialAccountsTools,
+  mockRegisterPulseTools,
+  mockRegisterInboxTools,
+  mockRegisterRelayTools,
+  mockRegisterAllocatorTools,
+  mockRegisterBrandBrainTools,
+  mockRegisterScoutTools,
+  mockRegisterCalendarTools,
+  mockRegisterBoostTools,
+  mockRegisterCreativeTools,
+  mockRegisterAbTestingTools,
+  mockRegisterCrisisTools,
+  mockRegisterMerchTools,
+  mockRegisterTrackingTools,
+  mockRegisterWorkflowsTools,
+  mockRegisterAssetsTools,
+  mockRegisterEmailTools,
+  mockRegisterAgencyTools,
+  mockRegisterAuditTools,
+  mockRegisterNotificationsTools,
   mockRegistryInstance,
 } = vi.hoisted(() => ({
   mockRegistryInstance: {} as Record<string, unknown>,
@@ -115,6 +135,26 @@ const {
   mockRegisterSentryBridgeTools: vi.fn(),
   mockRegisterVercelBridgeTools: vi.fn(),
   mockRegisterGitHubAdminTools: vi.fn(),
+  mockRegisterSocialAccountsTools: vi.fn(),
+  mockRegisterPulseTools: vi.fn(),
+  mockRegisterInboxTools: vi.fn(),
+  mockRegisterRelayTools: vi.fn(),
+  mockRegisterAllocatorTools: vi.fn(),
+  mockRegisterBrandBrainTools: vi.fn(),
+  mockRegisterScoutTools: vi.fn(),
+  mockRegisterCalendarTools: vi.fn(),
+  mockRegisterBoostTools: vi.fn(),
+  mockRegisterCreativeTools: vi.fn(),
+  mockRegisterAbTestingTools: vi.fn(),
+  mockRegisterCrisisTools: vi.fn(),
+  mockRegisterMerchTools: vi.fn(),
+  mockRegisterTrackingTools: vi.fn(),
+  mockRegisterWorkflowsTools: vi.fn(),
+  mockRegisterAssetsTools: vi.fn(),
+  mockRegisterEmailTools: vi.fn(),
+  mockRegisterAgencyTools: vi.fn(),
+  mockRegisterAuditTools: vi.fn(),
+  mockRegisterNotificationsTools: vi.fn(),
 }));
 
 // Mock McpServer constructor - must use function keyword for `new` support
@@ -183,6 +223,33 @@ vi.mock("./tools/environment", () => ({ registerEnvironmentTools: mockRegisterEn
 vi.mock("./tools/sentry-bridge", () => ({ registerSentryBridgeTools: mockRegisterSentryBridgeTools }));
 vi.mock("./tools/vercel-bridge", () => ({ registerVercelBridgeTools: mockRegisterVercelBridgeTools }));
 vi.mock("./tools/github-admin", () => ({ registerGitHubAdminTools: mockRegisterGitHubAdminTools }));
+
+// Orbit core tools (Tier 1)
+vi.mock("./tools/social-accounts", () => ({ registerSocialAccountsTools: mockRegisterSocialAccountsTools }));
+vi.mock("./tools/pulse", () => ({ registerPulseTools: mockRegisterPulseTools }));
+vi.mock("./tools/inbox", () => ({ registerInboxTools: mockRegisterInboxTools }));
+vi.mock("./tools/relay", () => ({ registerRelayTools: mockRegisterRelayTools }));
+vi.mock("./tools/allocator", () => ({ registerAllocatorTools: mockRegisterAllocatorTools }));
+vi.mock("./tools/brand-brain", () => ({ registerBrandBrainTools: mockRegisterBrandBrainTools }));
+vi.mock("./tools/scout", () => ({ registerScoutTools: mockRegisterScoutTools }));
+
+// Orbit growth tools (Tier 2)
+vi.mock("./tools/calendar", () => ({ registerCalendarTools: mockRegisterCalendarTools }));
+vi.mock("./tools/boost", () => ({ registerBoostTools: mockRegisterBoostTools }));
+vi.mock("./tools/creative", () => ({ registerCreativeTools: mockRegisterCreativeTools }));
+vi.mock("./tools/ab-testing", () => ({ registerAbTestingTools: mockRegisterAbTestingTools }));
+vi.mock("./tools/crisis", () => ({ registerCrisisTools: mockRegisterCrisisTools }));
+vi.mock("./tools/merch", () => ({ registerMerchTools: mockRegisterMerchTools }));
+
+// Platform infrastructure tools (Tier 3)
+vi.mock("./tools/tracking", () => ({ registerTrackingTools: mockRegisterTrackingTools }));
+vi.mock("./tools/workflows", () => ({ registerWorkflowsTools: mockRegisterWorkflowsTools }));
+vi.mock("./tools/assets", () => ({ registerAssetsTools: mockRegisterAssetsTools }));
+vi.mock("./tools/email", () => ({ registerEmailTools: mockRegisterEmailTools }));
+vi.mock("./tools/agency", () => ({ registerAgencyTools: mockRegisterAgencyTools }));
+vi.mock("./tools/audit", () => ({ registerAuditTools: mockRegisterAuditTools }));
+vi.mock("./tools/notifications", () => ({ registerNotificationsTools: mockRegisterNotificationsTools }));
+
 vi.mock("./capability-filtered-registry", () => {
   const MockCapabilityFilteredRegistry = vi.fn(function CapabilityFilteredRegistry() {
     return mockRegistryInstance;
@@ -283,6 +350,29 @@ describe("createMcpServer", () => {
       mockRegisterSwarmTools,
       mockRegisterDashboardTools,
       mockRegisterEnvironmentTools,
+      // Orbit core tools (Tier 1)
+      mockRegisterSocialAccountsTools,
+      mockRegisterPulseTools,
+      mockRegisterInboxTools,
+      mockRegisterRelayTools,
+      mockRegisterAllocatorTools,
+      mockRegisterBrandBrainTools,
+      mockRegisterScoutTools,
+      // Orbit growth tools (Tier 2)
+      mockRegisterCalendarTools,
+      mockRegisterBoostTools,
+      mockRegisterCreativeTools,
+      mockRegisterAbTestingTools,
+      mockRegisterCrisisTools,
+      mockRegisterMerchTools,
+      // Platform infrastructure tools (Tier 3)
+      mockRegisterTrackingTools,
+      mockRegisterWorkflowsTools,
+      mockRegisterAssetsTools,
+      mockRegisterEmailTools,
+      mockRegisterAgencyTools,
+      mockRegisterAuditTools,
+      mockRegisterNotificationsTools,
     ];
 
     for (const registerFn of unconditionalRegisters) {

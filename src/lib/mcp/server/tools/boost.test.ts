@@ -95,12 +95,15 @@ describe("boost tools", () => {
       mockPrisma.postBoostRecommendation.findFirst.mockResolvedValue({
         id: "rec-1",
         workspaceId: "ws-1",
+        postId: "post-1",
+        postType: "SOCIAL",
+        recommendedPlatforms: ["FACEBOOK"],
       });
       mockPrisma.appliedBoost.create.mockResolvedValue({
         id: "boost-1",
         recommendationId: "rec-1",
         budget: 100,
-        status: "PENDING",
+        status: "ACTIVE",
       });
       const handler = registry.handlers.get("boost_apply")!;
       const result = await handler({
@@ -118,8 +121,11 @@ describe("boost tools", () => {
         data: {
           workspaceId: "ws-1",
           recommendationId: "rec-1",
+          postId: "post-1",
+          postType: "SOCIAL",
+          platform: "FACEBOOK",
           budget: 100,
-          status: "PENDING",
+          status: "ACTIVE",
         },
       });
     });
