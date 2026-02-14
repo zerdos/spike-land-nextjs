@@ -8,6 +8,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { Prisma } from "@/generated/prisma";
+import logger from "@/lib/logger";
 import type { ToolDefinition } from "./tool-registry";
 import { ToolRegistry } from "./tool-registry";
 import { evaluateCapability, createPermissionRequest } from "./capability-evaluator";
@@ -117,6 +118,6 @@ async function recordAuditAndDeductBudget(data: {
       }),
     ]);
   } catch (err) {
-    console.error("Failed to record audit/deduct budget:", err);
+    logger.error("Failed to record audit/deduct budget", { error: err });
   }
 }

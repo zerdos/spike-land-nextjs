@@ -19,6 +19,11 @@ const querySchema = z.object({
  * Get relationships for a topic
  */
 export async function GET(req: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+
   const { searchParams } = new URL(req.url);
   const parsed = querySchema.safeParse({
     slug: searchParams.get("slug"),

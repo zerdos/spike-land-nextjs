@@ -7,6 +7,7 @@
 
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { Prisma } from "@/generated/prisma";
+import logger from "@/lib/logger";
 import { McpError, McpErrorCode, MCP_ERROR_MESSAGES, MCP_ERROR_RETRYABLE } from "../../errors";
 
 const SPIKE_LAND_BASE_URL =
@@ -156,7 +157,7 @@ export async function safeToolCall(
         durationMs: Date.now() - startTime,
         isError: false,
         parentInvocationId: options.parentInvocationId,
-      }).catch((err: unknown) => console.error("Failed to record tool invocation:", err));
+      }).catch((err: unknown) => logger.error("Failed to record tool invocation", { error: err }));
     }
 
     return result;
@@ -175,7 +176,7 @@ export async function safeToolCall(
         isError: true,
         error: classified.message,
         parentInvocationId: options.parentInvocationId,
-      }).catch((err: unknown) => console.error("Failed to record tool invocation:", err));
+      }).catch((err: unknown) => logger.error("Failed to record tool invocation", { error: err }));
     }
 
     return formatErrorResult(classified);

@@ -9,6 +9,7 @@
  */
 
 import { createCipheriv, createDecipheriv, createHmac, randomBytes } from "crypto";
+import logger from "@/lib/logger";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12; // GCM standard
@@ -46,9 +47,7 @@ export function getMasterKey(): Buffer {
     );
   }
   // Dev-only fallback — logged as warning
-  console.warn(
-    "[VAULT] WARNING: Using dev fallback key. Set VAULT_MASTER_KEY for production.",
-  );
+  logger.warn("[VAULT] Using dev fallback key. Set VAULT_MASTER_KEY for production.");
   const fallback = createHmac("sha256", "spike-land-dev-vault-key");
   fallback.update("dev-master-key");
   return fallback.digest();

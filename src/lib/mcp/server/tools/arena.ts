@@ -9,6 +9,7 @@ import { z } from "zod";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { ToolRegistry } from "../tool-registry";
 import prisma from "@/lib/prisma";
+import logger from "@/lib/logger";
 import { arenaGenerateFromPrompt } from "@/lib/arena/arena-generator";
 import { submitReview } from "@/lib/arena/review";
 import type { ArenaBug } from "@/lib/arena/types";
@@ -250,10 +251,7 @@ export function registerArenaTools(
 
         // Kick off generation async
         arenaGenerateFromPrompt(submission.id).catch((err) => {
-          console.error(
-            `Arena generation failed for ${submission.id}:`,
-            err,
-          );
+          logger.error(`Arena generation failed for ${submission.id}`, { error: err });
         });
 
         return {
