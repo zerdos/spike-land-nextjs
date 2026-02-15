@@ -1,0 +1,21 @@
+# Development workerd Docker image
+#
+# Uses `workerd serve --watch` for hot reload during development.
+# Source files are mounted as volumes for instant updates.
+#
+# Usage:
+#   docker compose up workerd
+
+FROM node:22-slim
+
+RUN npm install -g workerd@latest
+
+WORKDIR /app
+
+# Copy config (will be overridden by volume mount in dev)
+COPY config.capnp ./
+COPY services/ ./services/
+
+EXPOSE 8080
+
+CMD ["workerd", "serve", "config.capnp", "--watch", "--verbose"]

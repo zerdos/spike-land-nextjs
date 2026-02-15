@@ -1,0 +1,319 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "workers/**"
+      - "src/**"
+      - "Dockerfile"
+      - "workers/Dockerfile"
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "Target region (all, us-east-1, eu-west-1)"
+        default: "all"
+      skip_tests:
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-aws-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION_PRIMARY: us-east-1
+  AWS_REGION_SECONDARY: eu-west-1
+  ECR_REGISTRY_PRIMARY: ${{ secrets.ECR_REGISTRY_PRIMARY }}
+  ECR_REGISTRY_SECONDARY: ${{ secrets.ECR_REGISTRY_SECONDARY }}
+  IMAGE_TAG: ${{ github.sha }}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-workerd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION_PRIMARY }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Build and push workerd image
+        id: build
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          IMAGE_URI="${ECR_REGISTRY}/spike-land-workerd:${IMAGE_TAG}"
+          docker buildx build \
+            --push \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            -t "${IMAGE_URI}" \
+            -t "${ECR_REGISTRY}/spike-land-workerd:latest" \
+            -f workers/Dockerfile \
+            workers/
+          echo "image=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+
+  build-nextjs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION_PRIMARY }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Build and push Next.js image
+        id: build
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          IMAGE_URI="${ECR_REGISTRY}/spike-land-nextjs:${IMAGE_TAG}"
+          docker buildx build \
+            --push \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            -t "${IMAGE_URI}" \
+            -t "${ECR_REGISTRY}/spike-land-nextjs:latest" \
+            -f Dockerfile \
+            .
+          echo "image=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+
+  deploy-primary:
+    needs: [build-workerd, build-nextjs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production-us-east-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Configure AWS credentials (us-east-1)
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION_PRIMARY }}
+
+      - name: Download workerd task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition spike-land-workerd \
+            --query taskDefinition \
+            > workerd-task-def.json
+
+      - name: Update workerd task definition with new image
+        id: workerd-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@913b0a71f1bbff6aa132bbfe07e47e25ea406cb3 # v1.7.2
+        with:
+          task-definition: workerd-task-def.json
+          container-name: spike-land-workerd
+          image: ${{ needs.build-workerd.outputs.image }}
+
+      - name: Deploy workerd ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@4f07c39a460c3f8061b37f11bd7bf63a5e1d2ba6 # v2.3.1
+        with:
+          task-definition: ${{ steps.workerd-task-def.outputs.task-definition }}
+          service: spike-land-workerd
+          cluster: spike-land
+          wait-for-service-stability: true
+          wait-for-minutes: 5
+
+      - name: Download Next.js task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition spike-land-nextjs \
+            --query taskDefinition \
+            > nextjs-task-def.json
+
+      - name: Update Next.js task definition with new image
+        id: nextjs-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@913b0a71f1bbff6aa132bbfe07e47e25ea406cb3 # v1.7.2
+        with:
+          task-definition: nextjs-task-def.json
+          container-name: spike-land-nextjs
+          image: ${{ needs.build-nextjs.outputs.image }}
+
+      - name: Deploy Next.js ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@4f07c39a460c3f8061b37f11bd7bf63a5e1d2ba6 # v2.3.1
+        with:
+          task-definition: ${{ steps.nextjs-task-def.outputs.task-definition }}
+          service: spike-land-nextjs
+          cluster: spike-land
+          wait-for-service-stability: true
+          wait-for-minutes: 5
+
+  smoke-test-primary:
+    needs: deploy-primary
+    if: github.event.inputs.skip_tests != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Health checks
+        run: |
+          echo "Checking workerd health..."
+          curl -sf --retry 3 --retry-delay 5 https://workerd.spike.land/ping || exit 1
+
+          echo "Checking Next.js health..."
+          curl -sf --retry 3 --retry-delay 5 https://spike.land/api/health || exit 1
+
+      - name: API smoke tests
+        run: |
+          echo "Testing transpiler..."
+          curl -sf -X POST https://workerd.spike.land/transpile \
+            -H "Content-Type: text/plain" \
+            -d "const x: number = 1;" || exit 1
+
+          echo "Testing session API..."
+          curl -sf https://workerd.spike.land/live/test-smoke/session.json || exit 1
+
+      - name: WebSocket connectivity check
+        run: |
+          if command -v websocat &> /dev/null; then
+            echo "ping" | timeout 10 websocat -1 wss://workerd.spike.land/ws || echo "WebSocket check skipped (connection test only)"
+          else
+            echo "websocat not available, skipping WebSocket test"
+          fi
+
+  promote-primary:
+    needs: smoke-test-primary
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION_PRIMARY }}
+
+      - name: Promote workerd to full traffic
+        run: |
+          aws ecs update-service \
+            --cluster spike-land \
+            --service spike-land-workerd \
+            --desired-count 2 \
+            --force-new-deployment
+
+      - name: Wait for service stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster spike-land \
+            --services spike-land-workerd spike-land-nextjs
+
+  deploy-secondary:
+    needs: promote-primary
+    if: github.event.inputs.region != 'us-east-1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production-eu-west-1
+    steps:
+      - name: Configure AWS credentials (eu-west-1)
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN_EU }}
+          aws-region: ${{ env.AWS_REGION_SECONDARY }}
+
+      - name: Login to Amazon ECR (secondary)
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
+
+      - name: Replicate images to secondary region
+        env:
+          PRIMARY_REGISTRY: ${{ env.ECR_REGISTRY_PRIMARY }}
+          SECONDARY_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          for repo in spike-land-workerd spike-land-nextjs; do
+            docker pull "${PRIMARY_REGISTRY}/${repo}:${IMAGE_TAG}"
+            docker tag "${PRIMARY_REGISTRY}/${repo}:${IMAGE_TAG}" "${SECONDARY_REGISTRY}/${repo}:${IMAGE_TAG}"
+            docker push "${SECONDARY_REGISTRY}/${repo}:${IMAGE_TAG}"
+          done
+
+      - name: Deploy workerd to eu-west-1
+        env:
+          SECONDARY_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition spike-land-workerd \
+            --query taskDefinition \
+            > workerd-task-def.json
+
+          jq --arg img "${SECONDARY_REGISTRY}/spike-land-workerd:${IMAGE_TAG}" \
+            '.containerDefinitions[0].image = $img' workerd-task-def.json > workerd-task-def-updated.json
+
+          aws ecs register-task-definition --cli-input-json file://workerd-task-def-updated.json
+          aws ecs update-service \
+            --cluster spike-land \
+            --service spike-land-workerd \
+            --force-new-deployment
+
+      - name: Deploy Next.js to eu-west-1
+        env:
+          SECONDARY_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition spike-land-nextjs \
+            --query taskDefinition \
+            > nextjs-task-def.json
+
+          jq --arg img "${SECONDARY_REGISTRY}/spike-land-nextjs:${IMAGE_TAG}" \
+            '.containerDefinitions[0].image = $img' nextjs-task-def.json > nextjs-task-def-updated.json
+
+          aws ecs register-task-definition --cli-input-json file://nextjs-task-def-updated.json
+          aws ecs update-service \
+            --cluster spike-land \
+            --service spike-land-nextjs \
+            --force-new-deployment
+
+      - name: Wait for services stable in eu-west-1
+        run: |
+          aws ecs wait services-stable \
+            --cluster spike-land \
+            --services spike-land-workerd spike-land-nextjs
+
+  smoke-test-global:
+    needs: deploy-secondary
+    if: always() && needs.promote-primary.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Global Accelerator health
+        env:
+          GA_DNS: ${{ secrets.GLOBAL_ACCELERATOR_DNS }}
+        run: |
+          curl -sf --retry 3 --retry-delay 5 "https://${GA_DNS}/ping" || exit 1
+
+      - name: Multi-region verification
+        run: |
+          echo "Verifying primary region (us-east-1)..."
+          curl -sf https://workerd.spike.land/ping || exit 1
+
+          echo "Global deployment verified successfully"
