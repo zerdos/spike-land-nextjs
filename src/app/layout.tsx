@@ -7,7 +7,8 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { ConsoleCapture } from "@/components/errors/ConsoleCapture";
 import { IframeErrorBridge } from "@/components/errors/IframeErrorBridge";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
-import { Footer } from "@/components/footer/Footer";
+import { FooterContent } from "@/components/footer/FooterContent";
+import { FooterWrapper } from "@/components/footer/FooterWrapper";
 import { ConditionalHeader } from "@/components/platform-landing";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -110,7 +111,9 @@ export default async function RootLayout({
               <SessionProvider>
                 <ConditionalHeader />
                 {children}
-                <Footer />
+                <FooterWrapper>
+                  <FooterContent />
+                </FooterWrapper>
                 <FeedbackButton />
                 <Suspense fallback={null}>
                   <SessionTracker />
