@@ -30,7 +30,7 @@ export const Scene03_BeforeState: React.FC = () => {
       }}
     >
       {/* Part 1: Single shot diagram */}
-      <Sequence from={0} durationInFrames={600}>
+      <Sequence from={0} durationInFrames={180}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -45,7 +45,7 @@ export const Scene03_BeforeState: React.FC = () => {
               fontSize: 28,
               fontWeight: 700,
               color: COLORS.textSecondary,
-              opacity: interpolate(frame, [0, 20], [0, 1], {
+              opacity: interpolate(frame, [0, 6], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
@@ -53,12 +53,12 @@ export const Scene03_BeforeState: React.FC = () => {
           >
             The Single-Shot Problem
           </div>
-          <SingleShotDiagram delay={10} attemptCount={10} />
+          <SingleShotDiagram delay={3} attemptCount={10} />
         </AbsoluteFill>
       </Sequence>
 
       {/* Part 2: Old code with naive retry */}
-      <Sequence from={600} durationInFrames={450}>
+      <Sequence from={180} durationInFrames={144}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -74,7 +74,7 @@ export const Scene03_BeforeState: React.FC = () => {
               fontSize: 24,
               fontWeight: 700,
               color: COLORS.error,
-              opacity: interpolate(frame - 600, [0, 20], [0, 1], {
+              opacity: interpolate(frame - 180, [0, 6], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
@@ -86,8 +86,8 @@ export const Scene03_BeforeState: React.FC = () => {
             <CodeBlock
               code={OLD_CODE}
               language="typescript"
-              delay={615}
-              typingSpeed={45}
+              delay={196}
+              typingSpeed={90}
               borderColor={COLORS.error}
             />
           </div>
@@ -98,7 +98,7 @@ export const Scene03_BeforeState: React.FC = () => {
               textAlign: "center",
               maxWidth: 600,
               lineHeight: 1.5,
-              opacity: interpolate(frame - 600, [150, 180], [0, 1], {
+              opacity: interpolate(frame - 180, [48, 57], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
@@ -111,7 +111,7 @@ export const Scene03_BeforeState: React.FC = () => {
       </Sequence>
 
       {/* Part 3: Exam metaphor with memory wipe */}
-      <Sequence from={1050} durationInFrames={300}>
+      <Sequence from={324} durationInFrames={100}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -126,7 +126,7 @@ export const Scene03_BeforeState: React.FC = () => {
               fontSize: 26,
               fontWeight: 700,
               color: COLORS.textPrimary,
-              opacity: interpolate(frame - 1050, [0, 20], [0, 1], {
+              opacity: interpolate(frame - 324, [0, 6], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
@@ -134,12 +134,12 @@ export const Scene03_BeforeState: React.FC = () => {
           >
             Like retaking an exam with your memory wiped
           </div>
-          <ExamMetaphor delay={1065} showMemoryWipe />
+          <ExamMetaphor delay={340} showMemoryWipe />
         </AbsoluteFill>
       </Sequence>
 
       {/* Part 4: Comparison table */}
-      <Sequence from={1350} durationInFrames={450}>
+      <Sequence from={424} durationInFrames={150}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -147,7 +147,7 @@ export const Scene03_BeforeState: React.FC = () => {
             justifyContent: "center",
           }}
         >
-          <ComparisonTable delay={1365} />
+          <ComparisonTable delay={435} />
         </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>

@@ -14,19 +14,19 @@ import { ModelCascadeTable } from "../../components/diagrams/ModelCascadeTable";
 export const Scene05_FixLoop: React.FC = () => {
   const frame = useCurrentFrame();
 
-  // Animate DarwinianTree generations (frames 0-750)
+  // Animate DarwinianTree generations (frames 0-412)
   const treeGenerations = Math.min(
     3,
-    Math.floor(interpolate(frame, [60, 600], [1, 3.9], {
+    Math.floor(interpolate(frame, [33, 330], [1, 3.9], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     })),
   ) as 1 | 2 | 3;
 
-  // Cycle active state through 0-6 for AgentLoopDiagram (frames 750-1350)
-  const loopLocalFrame = frame - 750;
+  // Cycle active state through 0-6 for AgentLoopDiagram (frames 412-742)
+  const loopLocalFrame = frame - 412;
   const activeState =
-    loopLocalFrame > 30 ? Math.floor((loopLocalFrame - 30) / 60) % 7 : -1;
+    loopLocalFrame > 17 ? Math.floor((loopLocalFrame - 17) / 33) % 7 : -1;
 
   return (
     <AbsoluteFill
@@ -36,7 +36,7 @@ export const Scene05_FixLoop: React.FC = () => {
       }}
     >
       {/* Part 1: Darwinian tree - evolutionary pruning */}
-      <Sequence from={0} durationInFrames={750}>
+      <Sequence from={0} durationInFrames={412}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -52,7 +52,7 @@ export const Scene05_FixLoop: React.FC = () => {
               fontSize: 28,
               fontWeight: 700,
               color: COLORS.textPrimary,
-              opacity: interpolate(frame, [0, 20], [0, 1], {
+              opacity: interpolate(frame, [0, 11], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
@@ -61,12 +61,12 @@ export const Scene05_FixLoop: React.FC = () => {
           >
             Darwinian Code Selection
           </div>
-          <DarwinianTree generations={treeGenerations} delay={20} />
+          <DarwinianTree generations={treeGenerations} delay={11} />
         </AbsoluteFill>
       </Sequence>
 
       {/* Part 2: Agent loop diagram with cycling active state */}
-      <Sequence from={750} durationInFrames={600}>
+      <Sequence from={412} durationInFrames={330}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -84,7 +84,7 @@ export const Scene05_FixLoop: React.FC = () => {
       </Sequence>
 
       {/* Part 3: Temperature gauge */}
-      <Sequence from={1350} durationInFrames={450}>
+      <Sequence from={742} durationInFrames={248}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -99,7 +99,7 @@ export const Scene05_FixLoop: React.FC = () => {
               fontSize: 28,
               fontWeight: 700,
               color: COLORS.textPrimary,
-              opacity: interpolate(frame - 1350, [0, 20], [0, 1], {
+              opacity: interpolate(frame - 742, [0, 11], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
@@ -107,12 +107,12 @@ export const Scene05_FixLoop: React.FC = () => {
           >
             Temperature Tuning by Role
           </div>
-          <TemperatureGauge delay={1365} showLabels />
+          <TemperatureGauge delay={751} showLabels />
         </AbsoluteFill>
       </Sequence>
 
       {/* Part 4: Model cascade table */}
-      <Sequence from={1800} durationInFrames={450}>
+      <Sequence from={990} durationInFrames={247}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -120,7 +120,7 @@ export const Scene05_FixLoop: React.FC = () => {
             justifyContent: "center",
           }}
         >
-          <ModelCascadeTable delay={1815} revealCount={3} />
+          <ModelCascadeTable delay={998} revealCount={3} />
         </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>

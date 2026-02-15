@@ -7,9 +7,9 @@ import { ImpedanceMatchingAnalogy } from "../../components/diagrams/ImpedanceMat
 export const Scene07_SkillMatching: React.FC = () => {
   const frame = useCurrentFrame();
 
-  // Second half: matched for first 450 frames, mismatched for last 450
-  const impedanceFrame = frame - 900;
-  const isMatched = impedanceFrame < 450;
+  // Second half: matched for first 260 frames, mismatched for last 259
+  const impedanceFrame = frame - 520;
+  const isMatched = impedanceFrame < 260;
 
   return (
     <AbsoluteFill
@@ -18,8 +18,8 @@ export const Scene07_SkillMatching: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Skill matching diagram with URL parsing (0-900, 30s) */}
-      <Sequence from={0} durationInFrames={900}>
+      {/* Part 1: Skill matching diagram with URL parsing (0-520) */}
+      <Sequence from={0} durationInFrames={520}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -27,12 +27,12 @@ export const Scene07_SkillMatching: React.FC = () => {
             justifyContent: "center",
           }}
         >
-          <SkillMatchingDiagram url="spike.land/create/games/tetris" delay={10} />
+          <SkillMatchingDiagram url="spike.land/create/games/tetris" delay={6} />
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: Impedance matching analogy (900-1800, 30s) */}
-      <Sequence from={900} durationInFrames={900}>
+      {/* Part 2: Impedance matching analogy (520-1039) */}
+      <Sequence from={520} durationInFrames={519}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -40,7 +40,7 @@ export const Scene07_SkillMatching: React.FC = () => {
             justifyContent: "center",
           }}
         >
-          <ImpedanceMatchingAnalogy matched={isMatched} delay={10} />
+          <ImpedanceMatchingAnalogy matched={isMatched} delay={6} />
         </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>

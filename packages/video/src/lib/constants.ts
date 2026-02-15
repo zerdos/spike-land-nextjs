@@ -5,23 +5,24 @@ export const VIDEO_CONFIG = {
   width: 1920,
   height: 1080,
   fps: 30,
-  durationInFrames: 19800, // 11 minutes
+  durationInFrames: 11194, // ~6m13s (audio-driven)
 } as const;
 
 /**
  * Vibe Coding Paradox — Scene Durations (frames @ 30fps)
+ * Audio-driven: ceil(audioDuration * 30) + 30 (~1s buffer)
  */
 export const VCP_DURATIONS = {
-  hook: 1800,               // 60s
-  physicsOfAttention: 2700,  // 90s
-  beforeState: 1800,         // 60s
-  fiveLayerStack: 2700,      // 90s
-  fixLoop: 2250,             // 75s
-  agentMemory: 2250,         // 75s
-  skillMatching: 1800,       // 60s
-  metaBuild: 1350,           // 45s
-  results: 1800,             // 60s
-  endCard: 1350,             // 45s
+  hook: 1514,               // ~50.5s (audio: 49.5s)
+  physicsOfAttention: 1708,  // ~56.9s (audio: 55.9s)
+  beforeState: 574,          // ~19.1s (audio: 18.1s)
+  fiveLayerStack: 1520,      // ~50.7s (audio: 49.6s)
+  fixLoop: 1237,             // ~41.2s (audio: 40.2s)
+  agentMemory: 1238,         // ~41.3s (audio: 40.3s)
+  skillMatching: 1039,       // ~34.6s (audio: 33.6s)
+  metaBuild: 671,            // ~22.4s (audio: 21.4s)
+  results: 917,              // ~30.6s (audio: 29.5s)
+  endCard: 776,              // ~25.9s (audio: 24.8s)
 } as const;
 
 export const VERITASIUM_DURATIONS = {
@@ -34,7 +35,7 @@ export const VERITASIUM_DURATIONS = {
   cta: 30 * 5,
 } as const;
 export const VCP_TIMING = {
-  totalFrames: 19800,  // 11 minutes
+  totalFrames: 11194,  // ~6m13s (audio-driven)
   fps: 30,
   transitionFrames: 20,
 } as const;

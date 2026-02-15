@@ -17,10 +17,10 @@ export const Scene02_PhysicsOfAttention: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps: _fps } = useVideoConfig();
 
-  // Animate token count for AttentionSpotlight (frames 1080-1620)
-  const spotlightLocalFrame = frame - 1080;
+  // Animate token count for AttentionSpotlight (frames 684-1026)
+  const spotlightLocalFrame = frame - 684;
   const animatedTokenCount = Math.round(
-    interpolate(spotlightLocalFrame, [0, 540], [3, 20], {
+    interpolate(spotlightLocalFrame, [0, 342], [3, 20], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     }),
@@ -49,6 +49,12 @@ export const Scene02_PhysicsOfAttention: React.FC = () => {
     ][i % 8]!,
   }));
 
+  // Subtle continuous camera zoom for visual momentum
+  const sceneZoom = interpolate(frame, [0, 1708], [1.0, 1.02], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
   return (
     <AbsoluteFill
       style={{
@@ -56,173 +62,181 @@ export const Scene02_PhysicsOfAttention: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Token visualization */}
-      <Sequence from={0} durationInFrames={540}>
-        <TokenVisualization
-          text="A token is the atomic unit of an AI model's world"
-          delay={15}
-          tokensPerWord={2}
-        />
-      </Sequence>
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          transform: `scale(${sceneZoom})`,
+        }}
+      >
+        {/* Part 1: Token visualization */}
+        <Sequence from={0} durationInFrames={342}>
+          <TokenVisualization
+            text="A token is the atomic unit of an AI model's world"
+            delay={9}
+            tokensPerWord={2}
+          />
+        </Sequence>
 
-      {/* Part 2: Softmax equation */}
-      <Sequence from={540} durationInFrames={540}>
-        <AbsoluteFill
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 40,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 28,
-              fontWeight: 700,
-              color: COLORS.textSecondary,
-              opacity: interpolate(frame - 540, [0, 20], [0, 1], {
-                extrapolateLeft: "clamp",
-                extrapolateRight: "clamp",
-              }),
-            }}
-          >
-            The Attention Mechanism
-          </div>
-          <SoftmaxEquation variant="softmax" delay={560} />
-          <div
-            style={{
-              fontSize: 18,
-              color: COLORS.textMuted,
-              maxWidth: 700,
-              textAlign: "center",
-              lineHeight: 1.6,
-              fontFamily: TYPOGRAPHY.fontFamily.mono,
-              opacity: interpolate(frame - 540, [60, 90], [0, 1], {
-                extrapolateLeft: "clamp",
-                extrapolateRight: "clamp",
-              }),
-            }}
-          >
-            Each token competes for attention. More tokens = less attention per
-            token.
-          </div>
-        </AbsoluteFill>
-      </Sequence>
-
-      {/* Part 3: Attention spotlight - growing token count */}
-      <Sequence from={1080} durationInFrames={540}>
-        <AttentionSpotlight tokenCount={animatedTokenCount} delay={5} />
-      </Sequence>
-
-      {/* Part 4: Two AttentionPie charts side-by-side */}
-      <Sequence from={1620} durationInFrames={540}>
-        <AbsoluteFill
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 120,
-          }}
-        >
-          {/* Engineered prompt - 3 segments */}
-          <div
+        {/* Part 2: Softmax equation */}
+        <Sequence from={342} durationInFrames={342}>
+          <AbsoluteFill
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 20,
+              justifyContent: "center",
+              gap: 40,
             }}
           >
             <div
               style={{
-                fontSize: 22,
+                fontSize: 28,
                 fontWeight: 700,
-                color: COLORS.success,
-                opacity: interpolate(frame - 1620, [0, 20], [0, 1], {
+                color: COLORS.textSecondary,
+                opacity: interpolate(frame - 342, [0, 13], [0, 1], {
                   extrapolateLeft: "clamp",
                   extrapolateRight: "clamp",
                 }),
               }}
             >
-              Engineered Prompt
+              The Attention Mechanism
             </div>
-            <AttentionPie
-              segments={engineeredSegments}
-              size={360}
-              delay={1635}
-            />
+            <SoftmaxEquation variant="softmax" delay={354} />
             <div
               style={{
-                fontSize: 16,
+                fontSize: 18,
                 color: COLORS.textMuted,
+                maxWidth: 700,
+                textAlign: "center",
+                lineHeight: 1.6,
                 fontFamily: TYPOGRAPHY.fontFamily.mono,
-                opacity: interpolate(frame - 1620, [40, 60], [0, 1], {
+                opacity: interpolate(frame - 342, [38, 57], [0, 1], {
                   extrapolateLeft: "clamp",
                   extrapolateRight: "clamp",
                 }),
               }}
             >
-              3 sections — high attention each
+              Each token competes for attention. More tokens = less attention per
+              token.
             </div>
-          </div>
+          </AbsoluteFill>
+        </Sequence>
 
-          {/* Vibe coded - 20 segments */}
-          <div
+        {/* Part 3: Attention spotlight - growing token count */}
+        <Sequence from={684} durationInFrames={342}>
+          <AttentionSpotlight tokenCount={animatedTokenCount} delay={5} />
+        </Sequence>
+
+        {/* Part 4: Two AttentionPie charts side-by-side */}
+        <Sequence from={1026} durationInFrames={341}>
+          <AbsoluteFill
             style={{
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
-              gap: 20,
+              justifyContent: "center",
+              gap: 120,
             }}
           >
+            {/* Engineered prompt - 3 segments */}
             <div
               style={{
-                fontSize: 22,
-                fontWeight: 700,
-                color: COLORS.error,
-                opacity: interpolate(frame - 1620, [30, 50], [0, 1], {
-                  extrapolateLeft: "clamp",
-                  extrapolateRight: "clamp",
-                }),
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 20,
               }}
             >
-              Vibe Coded Prompt
+              <div
+                style={{
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: COLORS.success,
+                  opacity: interpolate(frame - 1026, [0, 13], [0, 1], {
+                    extrapolateLeft: "clamp",
+                    extrapolateRight: "clamp",
+                  }),
+                }}
+              >
+                Engineered Prompt
+              </div>
+              <AttentionPie
+                segments={engineeredSegments}
+                size={360}
+                delay={1035}
+              />
+              <div
+                style={{
+                  fontSize: 16,
+                  color: COLORS.textMuted,
+                  fontFamily: TYPOGRAPHY.fontFamily.mono,
+                  opacity: interpolate(frame - 1026, [25, 38], [0, 1], {
+                    extrapolateLeft: "clamp",
+                    extrapolateRight: "clamp",
+                  }),
+                }}
+              >
+                3 sections — high attention each
+              </div>
             </div>
-            <AttentionPie
-              segments={vibeSegments}
-              size={360}
-              delay={1665}
-            />
-            <div
-              style={{
-                fontSize: 16,
-                color: COLORS.textMuted,
-                fontFamily: TYPOGRAPHY.fontFamily.mono,
-                opacity: interpolate(frame - 1620, [70, 90], [0, 1], {
-                  extrapolateLeft: "clamp",
-                  extrapolateRight: "clamp",
-                }),
-              }}
-            >
-              20 fragments — diluted attention
-            </div>
-          </div>
-        </AbsoluteFill>
-      </Sequence>
 
-      {/* Part 5: Accuracy drop chart */}
-      <Sequence from={2160} durationInFrames={540}>
-        <AbsoluteFill
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <AccuracyDropChart delay={2175} />
-        </AbsoluteFill>
-      </Sequence>
+            {/* Vibe coded - 20 segments */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 20,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: COLORS.error,
+                  opacity: interpolate(frame - 1026, [19, 32], [0, 1], {
+                    extrapolateLeft: "clamp",
+                    extrapolateRight: "clamp",
+                  }),
+                }}
+              >
+                Vibe Coded Prompt
+              </div>
+              <AttentionPie
+                segments={vibeSegments}
+                size={360}
+                delay={1054}
+              />
+              <div
+                style={{
+                  fontSize: 16,
+                  color: COLORS.textMuted,
+                  fontFamily: TYPOGRAPHY.fontFamily.mono,
+                  opacity: interpolate(frame - 1026, [44, 57], [0, 1], {
+                    extrapolateLeft: "clamp",
+                    extrapolateRight: "clamp",
+                  }),
+                }}
+              >
+                20 fragments — diluted attention
+              </div>
+            </div>
+          </AbsoluteFill>
+        </Sequence>
+
+        {/* Part 5: Accuracy drop chart */}
+        <Sequence from={1367} durationInFrames={341}>
+          <AbsoluteFill
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <AccuracyDropChart delay={1377} />
+          </AbsoluteFill>
+        </Sequence>
+      </div>
     </AbsoluteFill>
   );
 };

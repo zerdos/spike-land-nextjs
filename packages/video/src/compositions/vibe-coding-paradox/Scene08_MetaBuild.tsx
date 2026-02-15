@@ -21,10 +21,10 @@ export const Scene08_MetaBuild: React.FC = () => {
       }}
     >
       {/* Full scene: Recursive zoom through layers */}
-      <RecursiveZoom labels={ZOOM_LABELS} delay={10} />
+      <RecursiveZoom labels={ZOOM_LABELS} delay={5} />
 
-      {/* Overlay text at frame 900+ */}
-      <Sequence from={900} durationInFrames={450}>
+      {/* Overlay text at frame 447+ */}
+      <Sequence from={447} durationInFrames={224}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -38,7 +38,7 @@ export const Scene08_MetaBuild: React.FC = () => {
             text="Context engineering all the way down"
             fontSize={42}
             color={COLORS.cyan}
-            delay={910}
+            delay={452}
           />
         </AbsoluteFill>
       </Sequence>

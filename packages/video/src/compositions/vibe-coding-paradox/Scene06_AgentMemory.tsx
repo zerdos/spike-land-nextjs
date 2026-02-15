@@ -25,8 +25,8 @@ export const Scene06_AgentMemory: React.FC = () => {
   const frame = useCurrentFrame();
 
   // Cycle activeStage for NoteLifecycle (0->1->2 over the segment)
-  const lifecycleFrame = frame - 1050;
-  const cycleLength = 150; // 5 seconds per stage
+  const lifecycleFrame = frame - 578;
+  const cycleLength = 83;
   const activeStage = Math.min(2, Math.floor(Math.max(0, lifecycleFrame) / cycleLength));
 
   return (
@@ -36,13 +36,13 @@ export const Scene06_AgentMemory: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Petri dish — learning notes ecosystem (0-600, 20s) */}
-      <Sequence from={0} durationInFrames={600}>
-        <PetriDishAnimation organisms={ORGANISMS} delay={10} />
+      {/* Part 1: Petri dish — learning notes ecosystem (0-330) */}
+      <Sequence from={0} durationInFrames={330}>
+        <PetriDishAnimation organisms={ORGANISMS} delay={6} />
       </Sequence>
 
-      {/* Part 2: Learning note card zoom-in (600-1050, 15s) */}
-      <Sequence from={600} durationInFrames={450}>
+      {/* Part 2: Learning note card zoom-in (330-578) */}
+      <Sequence from={330} durationInFrames={248}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -56,13 +56,13 @@ export const Scene06_AgentMemory: React.FC = () => {
             confidence={0.5}
             status="CANDIDATE"
             timesApplied={0}
-            delay={10}
+            delay={6}
           />
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 3: Laplace smoothing equation (1050-1500, 15s) */}
-      <Sequence from={1050} durationInFrames={450}>
+      {/* Part 3: Laplace smoothing equation (578-826) */}
+      <Sequence from={578} durationInFrames={248}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -70,12 +70,12 @@ export const Scene06_AgentMemory: React.FC = () => {
             justifyContent: "center",
           }}
         >
-          <SoftmaxEquation variant="laplace" delay={10} />
+          <SoftmaxEquation variant="laplace" delay={6} />
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 4: Note lifecycle — candidate -> active -> deprecated (1500-1875, 12.5s) */}
-      <Sequence from={1500} durationInFrames={375}>
+      {/* Part 4: Note lifecycle — candidate -> active -> deprecated (826-1032) */}
+      <Sequence from={826} durationInFrames={206}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -83,12 +83,12 @@ export const Scene06_AgentMemory: React.FC = () => {
             justifyContent: "center",
           }}
         >
-          <NoteLifecycle revealCount={3} activeStage={activeStage} delay={10} />
+          <NoteLifecycle revealCount={3} activeStage={activeStage} delay={6} />
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 5: Token budget meter (1875-2250, 12.5s) */}
-      <Sequence from={1875} durationInFrames={375}>
+      {/* Part 5: Token budget meter (1032-1238) */}
+      <Sequence from={1032} durationInFrames={206}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -96,7 +96,7 @@ export const Scene06_AgentMemory: React.FC = () => {
             justifyContent: "center",
           }}
         >
-          <TokenBudgetMeter notes={BUDGET_NOTES} delay={10} />
+          <TokenBudgetMeter notes={BUDGET_NOTES} delay={6} />
         </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>

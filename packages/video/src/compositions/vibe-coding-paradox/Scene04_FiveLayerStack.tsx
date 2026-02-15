@@ -24,11 +24,11 @@ export const Scene04_FiveLayerStack: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Animate reveal count from 1 to 5 over 900 frames
-  const revealCount = Math.min(5, Math.floor(frame / 180) + 1);
+  // Animate reveal count from 1 to 5 over 507 frames
+  const revealCount = Math.min(5, Math.floor(frame / 101) + 1);
 
-  // Cost multiplier countUp (frames 2100-2700)
-  const costValue = countUp(frame, fps, 10, 2, 2150);
+  // Cost multiplier countUp (frames 1183-1520)
+  const costValue = countUp(frame, fps, 10, 2, 1210);
 
   return (
     <AbsoluteFill
@@ -38,7 +38,7 @@ export const Scene04_FiveLayerStack: React.FC = () => {
       }}
     >
       {/* Part 1: Five layer stack revealing over time */}
-      <Sequence from={0} durationInFrames={900}>
+      <Sequence from={0} durationInFrames={507}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -62,12 +62,12 @@ export const Scene04_FiveLayerStack: React.FC = () => {
           >
             The Five-Layer System Prompt
           </div>
-          <FiveLayerStack revealCount={revealCount} delay={15} />
+          <FiveLayerStack revealCount={revealCount} delay={8} />
         </AbsoluteFill>
       </Sequence>
 
       {/* Part 2: Physics mapping diagram */}
-      <Sequence from={900} durationInFrames={600}>
+      <Sequence from={507} durationInFrames={338}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -82,7 +82,7 @@ export const Scene04_FiveLayerStack: React.FC = () => {
               fontSize: 26,
               fontWeight: 700,
               color: COLORS.textSecondary,
-              opacity: interpolate(frame - 900, [0, 20], [0, 1], {
+              opacity: interpolate(frame - 507, [0, 11], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
@@ -90,12 +90,12 @@ export const Scene04_FiveLayerStack: React.FC = () => {
           >
             Physics Maps to Code
           </div>
-          <PhysicsMapping delay={915} revealCount={5} />
+          <PhysicsMapping delay={515} revealCount={5} />
         </AbsoluteFill>
       </Sequence>
 
       {/* Part 3: Code block showing system prompt builder */}
-      <Sequence from={1500} durationInFrames={600}>
+      <Sequence from={845} durationInFrames={338}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -111,7 +111,7 @@ export const Scene04_FiveLayerStack: React.FC = () => {
               fontSize: 24,
               fontWeight: 700,
               color: COLORS.cyan,
-              opacity: interpolate(frame - 1500, [0, 20], [0, 1], {
+              opacity: interpolate(frame - 845, [0, 11], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
@@ -123,7 +123,7 @@ export const Scene04_FiveLayerStack: React.FC = () => {
             <CodeBlock
               code={SYSTEM_PROMPT_CODE}
               language="typescript"
-              delay={1520}
+              delay={856}
               typingSpeed={35}
               borderColor={COLORS.cyan}
             />
@@ -135,7 +135,7 @@ export const Scene04_FiveLayerStack: React.FC = () => {
               textAlign: "center",
               maxWidth: 700,
               lineHeight: 1.5,
-              opacity: interpolate(frame - 1500, [200, 230], [0, 1], {
+              opacity: interpolate(frame - 845, [113, 130], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
@@ -147,7 +147,7 @@ export const Scene04_FiveLayerStack: React.FC = () => {
       </Sequence>
 
       {/* Part 4: Cost savings with countUp */}
-      <Sequence from={2100} durationInFrames={600}>
+      <Sequence from={1183} durationInFrames={337}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -169,7 +169,7 @@ export const Scene04_FiveLayerStack: React.FC = () => {
               fontSize={160}
               color={COLORS.cyan}
               type="scale"
-              delay={2120}
+              delay={1194}
             />
           </div>
           <KineticText
@@ -178,14 +178,14 @@ export const Scene04_FiveLayerStack: React.FC = () => {
             color={COLORS.textPrimary}
             type="slide"
             direction="bottom"
-            delay={2200}
+            delay={1239}
           />
           <div
             style={{
               fontSize: 22,
               color: COLORS.textSecondary,
               marginTop: 20,
-              opacity: interpolate(frame - 2100, [180, 210], [0, 1], {
+              opacity: interpolate(frame - 1183, [101, 118], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
