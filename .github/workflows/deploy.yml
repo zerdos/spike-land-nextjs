@@ -582,7 +582,9 @@ jobs:
     env:
       STAGING_CLUSTER: staging-spike-land
       STAGING_SERVICE_WORKERD: staging-workerd
+      STAGING_TASK_DEF_FAMILY_WORKERD: staging-spike-land-workerd
       STAGING_SERVICE_NEXTJS: staging-nextjs
+      STAGING_TASK_DEF_FAMILY_NEXTJS: staging-spike-land-nextjs
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -596,7 +598,7 @@ jobs:
       - name: Download staging workerd task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition ${{ env.STAGING_SERVICE_WORKERD }} \
+            --task-definition ${{ env.STAGING_TASK_DEF_FAMILY_WORKERD }} \
             --query taskDefinition \
             > workerd-task-def.json
 
@@ -620,7 +622,7 @@ jobs:
       - name: Download staging Next.js task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition ${{ env.STAGING_SERVICE_NEXTJS }} \
+            --task-definition ${{ env.STAGING_TASK_DEF_FAMILY_NEXTJS }} \
             --query taskDefinition \
             > nextjs-task-def.json
 
