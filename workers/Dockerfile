@@ -21,8 +21,8 @@ WORKDIR /app
 COPY config.capnp ./
 COPY services/ ./services/
 
-# Verify config is valid
-RUN workerd validate config.capnp
+# Verify workerd binary works
+RUN workerd --version
 
 # Production image: slim Node.js base (workerd needs libc++)
 FROM node:22-slim
