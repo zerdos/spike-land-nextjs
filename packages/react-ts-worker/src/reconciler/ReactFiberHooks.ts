@@ -9,7 +9,6 @@ import {
   mergeLanes,
   isSubsetOfLanes,
   removeLanes,
-  includesBlockingLane,
   includesOnlyNonUrgentLanes,
 } from './ReactFiberLane.js';
 import {
@@ -17,7 +16,6 @@ import {
   Update as UpdateEffect,
   LayoutStatic as LayoutStaticEffect,
   PassiveStatic as PassiveStaticEffect,
-  StoreConsistency,
 } from './ReactFiberFlags.js';
 import ReactSharedInternals from '../react/ReactSharedInternals.js';
 import { REACT_CONTEXT_TYPE } from '../react/ReactSymbols.js';
@@ -37,12 +35,12 @@ interface EffectInstance {
 
 // --- Module-level state ---
 let renderLanes: Lanes = NoLanes;
-let currentlyRenderingFiber: Fiber = null as any;
+let currentlyRenderingFiber: Fiber = null as unknown as Fiber;
 let currentHook: Hook | null = null;
 let workInProgressHook: Hook | null = null;
-let didScheduleRenderPhaseUpdate: boolean = false;
+let _didScheduleRenderPhaseUpdate: boolean = false;
 let didScheduleRenderPhaseUpdateDuringThisPass: boolean = false;
-let localIdCounter: number = 0;
+const _localIdCounter: number = 0;
 let globalClientIdCounter: number = 0;
 
 const RE_RENDER_LIMIT = 25;
@@ -52,7 +50,7 @@ const RE_RENDER_LIMIT = 25;
 let scheduleUpdateOnFiberFn: ((root: FiberRoot, fiber: Fiber, lane: Lane) => void) | null = null;
 let requestUpdateLaneFn: (() => Lane) | null = null;
 let workInProgressRoot: FiberRoot | null = null;
-let workInProgressRootRenderLanes: Lanes = NoLanes;
+let _workInProgressRootRenderLanes: Lanes = NoLanes;
 let markWorkInProgressReceivedUpdateFn: (() => void) | null = null;
 
 export function setHooksExternals(externals: {
@@ -67,7 +65,7 @@ export function setHooksExternals(externals: {
 
 export function setWorkInProgressRoot(root: FiberRoot | null, lanes: Lanes): void {
   workInProgressRoot = root;
-  workInProgressRootRenderLanes = lanes;
+  _workInProgressRootRenderLanes = lanes;
 }
 
 // --- Helper functions ---
@@ -77,8 +75,8 @@ function basicStateReducer<S>(state: S, action: S | ((s: S) => S)): S {
 }
 
 function areHookInputsEqual(
-  nextDeps: Array<any>,
-  prevDeps: Array<any> | null,
+  nextDeps: Array<unknown>,
+  prevDeps: Array<unknown> | null,
 ): boolean {
   if (prevDeps === null) {
     return false;
@@ -128,7 +126,7 @@ function updateWorkInProgressHook(): Hook {
   if (currentHook === null) {
     const current = currentlyRenderingFiber.alternate;
     if (current !== null) {
-      nextCurrentHook = current.memoizedState;
+      nextCurrentHook = current.memoizedState as Hook | null;
     } else {
       nextCurrentHook = null;
     }
@@ -138,7 +136,7 @@ function updateWorkInProgressHook(): Hook {
 
   let nextWorkInProgressHook: Hook | null;
   if (workInProgressHook === null) {
-    nextWorkInProgressHook = currentlyRenderingFiber.memoizedState;
+    nextWorkInProgressHook = currentlyRenderingFiber.memoizedState as Hook | null;
   } else {
     nextWorkInProgressHook = workInProgressHook.next;
   }
@@ -179,7 +177,7 @@ function pushSimpleEffect(
   tag: number,
   inst: EffectInstance,
   create: () => (() => void) | void,
-  deps: Array<any> | null,
+  deps: Array<unknown> | null,
 ): Effect {
   const effect: Effect = {
     tag,
@@ -193,7 +191,7 @@ function pushSimpleEffect(
 
 function pushEffectImpl(effect: Effect): Effect {
   let componentUpdateQueue: FunctionComponentUpdateQueue | null =
-    currentlyRenderingFiber.updateQueue as any;
+    currentlyRenderingFiber.updateQueue as unknown as FunctionComponentUpdateQueue | null;
   if (componentUpdateQueue === null) {
     componentUpdateQueue = createFunctionComponentUpdateQueue();
     currentlyRenderingFiber.updateQueue = componentUpdateQueue;
@@ -224,7 +222,7 @@ function enqueueRenderPhaseUpdate<S, A>(
   queue: UpdateQueue<S, A>,
   update: Update<S, A>,
 ): void {
-  didScheduleRenderPhaseUpdateDuringThisPass = didScheduleRenderPhaseUpdate = true;
+  didScheduleRenderPhaseUpdateDuringThisPass = _didScheduleRenderPhaseUpdate = true;
   const pending = queue.pending;
   if (pending === null) {
     update.next = update;
@@ -269,7 +267,7 @@ function markUpdateLaneFromFiberToRoot(
   let node = fiber.return;
   let root: FiberRoot | null = null;
   if (node === null && fiber.tag === 3 /* HostRoot */) {
-    root = fiber.stateNode;
+    root = fiber.stateNode as FiberRoot;
   } else {
     while (node !== null) {
       node.childLanes = mergeLanes(node.childLanes, lane);
@@ -278,7 +276,7 @@ function markUpdateLaneFromFiberToRoot(
         nodeAlternate.childLanes = mergeLanes(nodeAlternate.childLanes, lane);
       }
       if (node.return === null && node.tag === 3 /* HostRoot */) {
-        root = node.stateNode;
+        root = node.stateNode as FiberRoot;
         break;
       }
       node = node.return;
@@ -295,14 +293,14 @@ function mountStateImpl<S>(initialState: (() => S) | S): Hook {
     initialState = (initialState as () => S)();
   }
   hook.memoizedState = hook.baseState = initialState;
-  const queue: UpdateQueue<S, any> = {
+  const queue: UpdateQueue<S, S | ((s: S) => S)> = {
     pending: null,
     lanes: NoLanes,
     dispatch: null,
     lastRenderedReducer: basicStateReducer,
     lastRenderedState: initialState,
   };
-  hook.queue = queue;
+  hook.queue = queue as unknown as UpdateQueue<unknown, unknown>;
   return hook;
 }
 
@@ -315,15 +313,15 @@ function mountState<S>(
     null,
     currentlyRenderingFiber,
     queue,
-  ) as any);
-  queue.dispatch = dispatch;
-  return [hook.memoizedState, dispatch];
+  ) as unknown as (action: S | ((s: S) => S)) => void);
+  queue.dispatch = dispatch as unknown as ((action: unknown) => void) | null;
+  return [hook.memoizedState as S, dispatch];
 }
 
 function updateState<S>(
   _initialState: (() => S) | S,
 ): [S, (action: S | ((s: S) => S)) => void] {
-  return updateReducer(basicStateReducer as any, _initialState as any);
+  return updateReducer(basicStateReducer as unknown as (state: S, action: S | ((s: S) => S)) => S, _initialState as unknown as S);
 }
 
 function mountReducer<S, I, A>(
@@ -336,7 +334,7 @@ function mountReducer<S, I, A>(
   if (init !== undefined) {
     initialState = init(initialArg);
   } else {
-    initialState = initialArg as any as S;
+    initialState = initialArg as unknown as S;
   }
   hook.memoizedState = hook.baseState = initialState;
   const queue: UpdateQueue<S, A> = {
@@ -346,14 +344,14 @@ function mountReducer<S, I, A>(
     lastRenderedReducer: reducer,
     lastRenderedState: initialState,
   };
-  hook.queue = queue;
+  hook.queue = queue as unknown as UpdateQueue<unknown, unknown>;
   const dispatch = (dispatchReducerAction.bind(
     null,
     currentlyRenderingFiber,
-    queue as any,
-  ) as any);
-  queue.dispatch = dispatch;
-  return [hook.memoizedState, dispatch];
+    queue as unknown as UpdateQueue<unknown, unknown>,
+  ) as unknown as (action: A) => void);
+  queue.dispatch = dispatch as unknown as ((action: A) => void) | null;
+  return [hook.memoizedState as S, dispatch];
 }
 
 function updateReducer<S, I, A>(
@@ -370,10 +368,10 @@ function updateReducerImpl<S, A>(
   current: Hook,
   reducer: (state: S, action: A) => S,
 ): [S, (action: A) => void] {
-  const queue: UpdateQueue<S, A> = hook.queue!;
+  const queue = hook.queue! as unknown as UpdateQueue<S, A>;
   queue.lastRenderedReducer = reducer;
 
-  let baseQueue = hook.baseQueue;
+  let baseQueue = hook.baseQueue as Update<S, A> | null;
   const pendingQueue = queue.pending;
 
   if (pendingQueue !== null) {
@@ -388,7 +386,7 @@ function updateReducerImpl<S, A>(
     queue.pending = null;
   }
 
-  const baseState = hook.baseState;
+  const baseState = hook.baseState as S;
   if (baseQueue === null) {
     hook.memoizedState = baseState;
   } else {
@@ -416,7 +414,7 @@ function updateReducerImpl<S, A>(
           newBaseQueueFirst = newBaseQueueLast = clone;
           newBaseState = newState;
         } else {
-          (newBaseQueueLast as any).next = clone;
+          newBaseQueueLast.next = clone;
           newBaseQueueLast = clone;
         }
         currentlyRenderingFiber.lanes = mergeLanes(
@@ -433,7 +431,7 @@ function updateReducerImpl<S, A>(
             eagerState: update!.eagerState,
             next: null,
           };
-          (newBaseQueueLast as any).next = clone;
+          newBaseQueueLast.next = clone;
           newBaseQueueLast = clone;
         }
 
@@ -465,7 +463,7 @@ function updateReducerImpl<S, A>(
   }
 
   const dispatch = queue.dispatch!;
-  return [hook.memoizedState, dispatch];
+  return [hook.memoizedState as S, dispatch];
 }
 
 // --- Ref hooks ---
@@ -479,7 +477,7 @@ function mountRef<T>(initialValue: T): { current: T } {
 
 function updateRef<T>(_initialValue: T): { current: T } {
   const hook = updateWorkInProgressHook();
-  return hook.memoizedState;
+  return hook.memoizedState as { current: T };
 }
 
 // --- Effect hooks ---
@@ -488,7 +486,7 @@ function mountEffectImpl(
   fiberFlags: Flags,
   hookFlags: number,
   create: () => (() => void) | void,
-  deps: Array<any> | void | null,
+  deps: Array<unknown> | void | null,
 ): void {
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
@@ -505,17 +503,17 @@ function updateEffectImpl(
   fiberFlags: Flags,
   hookFlags: number,
   create: () => (() => void) | void,
-  deps: Array<any> | void | null,
+  deps: Array<unknown> | void | null,
 ): void {
   const hook = updateWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
-  const effect: Effect = hook.memoizedState;
+  const effect: Effect = hook.memoizedState as Effect;
   const inst = createEffectInstance();
-  inst.destroy = effect.destroy as any;
+  inst.destroy = effect.destroy as unknown as void | (() => void);
 
   if (currentHook !== null) {
     if (nextDeps !== null) {
-      const prevEffect: Effect = currentHook.memoizedState;
+      const prevEffect: Effect = currentHook.memoizedState as Effect;
       const prevDeps = prevEffect.deps;
       if (areHookInputsEqual(nextDeps, prevDeps)) {
         hook.memoizedState = pushSimpleEffect(hookFlags, inst, create, nextDeps);
@@ -535,7 +533,7 @@ function updateEffectImpl(
 
 function mountEffect(
   create: () => (() => void) | void,
-  deps?: Array<any> | null,
+  deps?: Array<unknown> | null,
 ): void {
   mountEffectImpl(
     PassiveEffect | PassiveStaticEffect,
@@ -547,14 +545,14 @@ function mountEffect(
 
 function updateEffect(
   create: () => (() => void) | void,
-  deps?: Array<any> | null,
+  deps?: Array<unknown> | null,
 ): void {
   updateEffectImpl(PassiveEffect, HookPassive, create, deps);
 }
 
 function mountLayoutEffect(
   create: () => (() => void) | void,
-  deps?: Array<any> | null,
+  deps?: Array<unknown> | null,
 ): void {
   mountEffectImpl(
     UpdateEffect | LayoutStaticEffect,
@@ -566,21 +564,21 @@ function mountLayoutEffect(
 
 function updateLayoutEffect(
   create: () => (() => void) | void,
-  deps?: Array<any> | null,
+  deps?: Array<unknown> | null,
 ): void {
   updateEffectImpl(UpdateEffect, HookLayout, create, deps);
 }
 
 function mountInsertionEffect(
   create: () => (() => void) | void,
-  deps?: Array<any> | null,
+  deps?: Array<unknown> | null,
 ): void {
   mountEffectImpl(UpdateEffect, HookInsertion, create, deps);
 }
 
 function updateInsertionEffect(
   create: () => (() => void) | void,
-  deps?: Array<any> | null,
+  deps?: Array<unknown> | null,
 ): void {
   updateEffectImpl(UpdateEffect, HookInsertion, create, deps);
 }
@@ -611,14 +609,14 @@ function imperativeHandleEffect<T>(
 function mountImperativeHandle<T>(
   ref: { current: T | null } | ((inst: T | null) => void) | null | undefined,
   create: () => T,
-  deps?: Array<any> | null,
+  deps?: Array<unknown> | null,
 ): void {
   const effectDeps =
     deps !== null && deps !== undefined ? deps.concat([ref]) : null;
   mountEffectImpl(
     UpdateEffect | LayoutStaticEffect,
     HookLayout,
-    imperativeHandleEffect.bind(null, create, ref as any),
+    (imperativeHandleEffect<T>).bind(null, create, ref) as unknown as () => (() => void) | void,
     effectDeps,
   );
 }
@@ -626,33 +624,33 @@ function mountImperativeHandle<T>(
 function updateImperativeHandle<T>(
   ref: { current: T | null } | ((inst: T | null) => void) | null | undefined,
   create: () => T,
-  deps?: Array<any> | null,
+  deps?: Array<unknown> | null,
 ): void {
   const effectDeps =
     deps !== null && deps !== undefined ? deps.concat([ref]) : null;
   updateEffectImpl(
     UpdateEffect,
     HookLayout,
-    imperativeHandleEffect.bind(null, create, ref as any),
+    (imperativeHandleEffect<T>).bind(null, create, ref) as unknown as () => (() => void) | void,
     effectDeps,
   );
 }
 
 // --- Callback and Memo hooks ---
 
-function mountCallback<T>(callback: T, deps: Array<any> | void | null): T {
+function mountCallback<T>(callback: T, deps: Array<unknown> | void | null): T {
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
   hook.memoizedState = [callback, nextDeps];
   return callback;
 }
 
-function updateCallback<T>(callback: T, deps: Array<any> | void | null): T {
+function updateCallback<T>(callback: T, deps: Array<unknown> | void | null): T {
   const hook = updateWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
-  const prevState = hook.memoizedState;
+  const prevState = hook.memoizedState as [T, Array<unknown> | null];
   if (nextDeps !== null) {
-    const prevDeps: Array<any> | null = prevState[1];
+    const prevDeps: Array<unknown> | null = prevState[1];
     if (areHookInputsEqual(nextDeps, prevDeps)) {
       return prevState[0];
     }
@@ -661,7 +659,7 @@ function updateCallback<T>(callback: T, deps: Array<any> | void | null): T {
   return callback;
 }
 
-function mountMemo<T>(nextCreate: () => T, deps: Array<any> | void | null): T {
+function mountMemo<T>(nextCreate: () => T, deps: Array<unknown> | void | null): T {
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
   const nextValue = nextCreate();
@@ -669,12 +667,12 @@ function mountMemo<T>(nextCreate: () => T, deps: Array<any> | void | null): T {
   return nextValue;
 }
 
-function updateMemo<T>(nextCreate: () => T, deps: Array<any> | void | null): T {
+function updateMemo<T>(nextCreate: () => T, deps: Array<unknown> | void | null): T {
   const hook = updateWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
-  const prevState = hook.memoizedState;
+  const prevState = hook.memoizedState as [T, Array<unknown> | null];
   if (nextDeps !== null) {
-    const prevDeps: Array<any> | null = prevState[1];
+    const prevDeps: Array<unknown> | null = prevState[1];
     if (areHookInputsEqual(nextDeps, prevDeps)) {
       return prevState[0];
     }
@@ -704,7 +702,7 @@ function mountDeferredValue<T>(value: T, _initialValue?: T): T {
 
 function updateDeferredValue<T>(value: T, _initialValue?: T): T {
   const hook = updateWorkInProgressHook();
-  const prevValue: T = (currentHook as Hook).memoizedState;
+  const prevValue: T = (currentHook as Hook).memoizedState as T;
   if (objectIs(value, prevValue)) {
     return value;
   }
@@ -739,7 +737,7 @@ function mountTransition(): [boolean, (callback: () => void) => void] {
 function updateTransition(): [boolean, (callback: () => void) => void] {
   const [booleanOrThenable] = updateState(false);
   const hook = updateWorkInProgressHook();
-  const start = hook.memoizedState;
+  const start = hook.memoizedState as (callback: () => void) => void;
   const isPending =
     typeof booleanOrThenable === 'boolean' ? booleanOrThenable : false;
   return [isPending, start];
@@ -747,15 +745,15 @@ function updateTransition(): [boolean, (callback: () => void) => void] {
 
 function startTransition(
   fiber: Fiber,
-  queue: UpdateQueue<any, any>,
-  pendingState: any,
-  finishedState: any,
+  queue: UpdateQueue<unknown, unknown>,
+  pendingState: unknown,
+  finishedState: unknown,
   callback: () => void,
 ): void {
   const lane = requestUpdateLaneFn?.() ?? SyncLane;
 
   // Set pending state
-  const pendingUpdate: Update<any, any> = {
+  const pendingUpdate: Update<unknown, unknown> = {
     lane,
     action: pendingState,
     hasEagerState: false,
@@ -776,7 +774,7 @@ function startTransition(
     callback();
   } finally {
     // Set finished state
-    const finishedUpdate: Update<any, any> = {
+    const finishedUpdate: Update<unknown, unknown> = {
       lane,
       action: finishedState,
       hasEagerState: false,
@@ -842,10 +840,10 @@ function mountSyncExternalStore<T>(
     value: nextSnapshot,
     getSnapshot,
   };
-  hook.queue = inst as any;
+  hook.queue = inst as unknown as UpdateQueue<unknown, unknown>;
 
   // Subscribe effect
-  mountEffect(subscribeToStore.bind(null, fiber, inst, subscribe) as any, [subscribe]);
+  mountEffect(subscribeToStore.bind(null, fiber, inst, subscribe) as unknown as () => (() => void) | void, [subscribe]);
 
   // Update store instance effect
   fiber.flags |= PassiveEffect;
@@ -886,8 +884,8 @@ function updateSyncExternalStore<T>(
     markWorkInProgressReceivedUpdateFn?.();
   }
 
-  const inst = hook.queue as any as { value: T; getSnapshot: () => T };
-  updateEffect(subscribeToStore.bind(null, fiber, inst, subscribe) as any, [subscribe]);
+  const inst = hook.queue as unknown as { value: T; getSnapshot: () => T };
+  updateEffect(subscribeToStore.bind(null, fiber, inst, subscribe) as unknown as () => (() => void) | void, [subscribe]);
 
   if (
     inst.getSnapshot !== getSnapshot ||
@@ -921,12 +919,12 @@ function mountId(): string {
 
 function updateId(): string {
   const hook = updateWorkInProgressHook();
-  return hook.memoizedState;
+  return hook.memoizedState as string;
 }
 
 // --- Debug Value ---
 
-function mountDebugValue<T>(_value: T, _formatterFn?: (value: T) => any): void {
+function mountDebugValue<T>(_value: T, _formatterFn?: (value: T) => unknown): void {
   // No-op
 }
 
@@ -934,12 +932,13 @@ const updateDebugValue = mountDebugValue;
 
 // --- use hook ---
 
-function use<T>(usable: any): T {
+function use<T>(usable: unknown): T {
   if (usable !== null && typeof usable === 'object') {
-    if (typeof usable.then === 'function') {
+    const obj = usable as Record<string, unknown>;
+    if (typeof obj.then === 'function') {
       throw usable; // Suspend (throw the thenable)
-    } else if (usable.$$typeof === REACT_CONTEXT_TYPE) {
-      return readContext(usable);
+    } else if (obj.$$typeof === REACT_CONTEXT_TYPE) {
+      return readContext(usable as ReactContext<T>);
     }
   }
   throw new Error('An unsupported type was passed to use(): ' + String(usable));
@@ -960,12 +959,12 @@ function mountOptimistic<S, A>(
     lastRenderedReducer: null,
     lastRenderedState: null,
   };
-  hook.queue = queue;
+  hook.queue = queue as unknown as UpdateQueue<unknown, unknown>;
   const dispatch = ((action: A) => {
     // Simplified: dispatch optimistic update
-    dispatchSetState(currentlyRenderingFiber, queue as any, action as any);
+    dispatchSetState(currentlyRenderingFiber, queue, action);
   }) as (action: A) => void;
-  queue.dispatch = dispatch as any;
+  queue.dispatch = dispatch as unknown as ((action: A) => void) | null;
   return [passthrough, dispatch];
 }
 
@@ -975,7 +974,7 @@ function updateOptimistic<S, A>(
 ): [S, (action: A) => void] {
   const hook = updateWorkInProgressHook();
   hook.baseState = passthrough;
-  const resolvedReducer = typeof reducer === 'function' ? reducer : basicStateReducer as any;
+  const resolvedReducer = typeof reducer === 'function' ? reducer : basicStateReducer as unknown as (state: S, action: A) => S;
   return updateReducerImpl(hook, currentHook as Hook, resolvedReducer);
 }
 
@@ -989,7 +988,7 @@ function mountActionState<S, P>(
   const stateHook = mountWorkInProgressHook();
   stateHook.memoizedState = stateHook.baseState = initialState;
 
-  const stateQueue: UpdateQueue<any, any> = {
+  const stateQueue: UpdateQueue<unknown, unknown> = {
     pending: null,
     lanes: NoLanes,
     dispatch: null,
@@ -997,8 +996,8 @@ function mountActionState<S, P>(
     lastRenderedState: initialState,
   };
   stateHook.queue = stateQueue;
-  const dispatch = dispatchSetState.bind(null, currentlyRenderingFiber, stateQueue) as any;
-  stateQueue.dispatch = dispatch;
+  const dispatch = dispatchSetState.bind(null, currentlyRenderingFiber, stateQueue) as unknown as (payload: P) => void;
+  stateQueue.dispatch = dispatch as unknown as (action: unknown) => void;
 
   // pending hook
   const pendingHook = mountWorkInProgressHook();
@@ -1016,9 +1015,9 @@ function updateActionState<S, P>(
   _initialState: Awaited<S>,
   _permalink?: string,
 ): [Awaited<S>, (payload: P) => void, boolean] {
-  const [state, dispatch] = updateReducer(basicStateReducer as any, null);
+  const [state, dispatch] = updateReducer(basicStateReducer as unknown as (state: Awaited<S>, action: unknown) => Awaited<S>, null);
   // pending
-  const [isPending] = updateReducer(basicStateReducer as any, null);
+  const [isPending] = updateReducer(basicStateReducer as unknown as (state: boolean, action: unknown) => boolean, null);
   // action
   const actionHook = updateWorkInProgressHook();
   actionHook.memoizedState = _action;
@@ -1107,65 +1106,65 @@ function dispatchReducerAction<S, A>(
 
 const HooksDispatcherOnMount: Dispatcher = {
   useState: mountState,
-  useReducer: mountReducer as any,
+  useReducer: mountReducer as unknown as Dispatcher['useReducer'],
   useEffect: mountEffect,
   useLayoutEffect: mountLayoutEffect,
   useInsertionEffect: mountInsertionEffect,
-  useCallback: mountCallback as any,
-  useMemo: mountMemo as any,
+  useCallback: mountCallback as unknown as Dispatcher['useCallback'],
+  useMemo: mountMemo as unknown as Dispatcher['useMemo'],
   useRef: mountRef,
   useContext: mountContext,
-  useImperativeHandle: mountImperativeHandle as any,
+  useImperativeHandle: mountImperativeHandle as unknown as Dispatcher['useImperativeHandle'],
   useDebugValue: mountDebugValue,
   useDeferredValue: mountDeferredValue,
   useTransition: mountTransition,
   useSyncExternalStore: mountSyncExternalStore,
   useId: mountId,
   use,
-  useOptimistic: mountOptimistic as any,
-  useActionState: mountActionState as any,
+  useOptimistic: mountOptimistic as unknown as Dispatcher['useOptimistic'],
+  useActionState: mountActionState as unknown as Dispatcher['useActionState'],
 };
 
 const HooksDispatcherOnUpdate: Dispatcher = {
   useState: updateState,
-  useReducer: updateReducer as any,
+  useReducer: updateReducer as unknown as Dispatcher['useReducer'],
   useEffect: updateEffect,
   useLayoutEffect: updateLayoutEffect,
   useInsertionEffect: updateInsertionEffect,
-  useCallback: updateCallback as any,
-  useMemo: updateMemo as any,
+  useCallback: updateCallback as unknown as Dispatcher['useCallback'],
+  useMemo: updateMemo as unknown as Dispatcher['useMemo'],
   useRef: updateRef,
   useContext: updateContext,
-  useImperativeHandle: updateImperativeHandle as any,
+  useImperativeHandle: updateImperativeHandle as unknown as Dispatcher['useImperativeHandle'],
   useDebugValue: updateDebugValue,
   useDeferredValue: updateDeferredValue,
   useTransition: updateTransition,
   useSyncExternalStore: updateSyncExternalStore,
   useId: updateId,
   use,
-  useOptimistic: updateOptimistic as any,
-  useActionState: updateActionState as any,
+  useOptimistic: updateOptimistic as unknown as Dispatcher['useOptimistic'],
+  useActionState: updateActionState as unknown as Dispatcher['useActionState'],
 };
 
 const ContextOnlyDispatcher: Dispatcher = {
-  useState: throwInvalidHookError as any,
-  useReducer: throwInvalidHookError as any,
-  useEffect: throwInvalidHookError as any,
-  useLayoutEffect: throwInvalidHookError as any,
-  useInsertionEffect: throwInvalidHookError as any,
-  useCallback: throwInvalidHookError as any,
-  useMemo: throwInvalidHookError as any,
-  useRef: throwInvalidHookError as any,
-  useContext: throwInvalidHookError as any,
-  useImperativeHandle: throwInvalidHookError as any,
-  useDebugValue: throwInvalidHookError as any,
-  useDeferredValue: throwInvalidHookError as any,
-  useTransition: throwInvalidHookError as any,
-  useSyncExternalStore: throwInvalidHookError as any,
-  useId: throwInvalidHookError as any,
-  use: throwInvalidHookError as any,
-  useOptimistic: throwInvalidHookError as any,
-  useActionState: throwInvalidHookError as any,
+  useState: throwInvalidHookError as unknown as Dispatcher['useState'],
+  useReducer: throwInvalidHookError as unknown as Dispatcher['useReducer'],
+  useEffect: throwInvalidHookError as unknown as Dispatcher['useEffect'],
+  useLayoutEffect: throwInvalidHookError as unknown as Dispatcher['useLayoutEffect'],
+  useInsertionEffect: throwInvalidHookError as unknown as Dispatcher['useInsertionEffect'],
+  useCallback: throwInvalidHookError as unknown as Dispatcher['useCallback'],
+  useMemo: throwInvalidHookError as unknown as Dispatcher['useMemo'],
+  useRef: throwInvalidHookError as unknown as Dispatcher['useRef'],
+  useContext: throwInvalidHookError as unknown as Dispatcher['useContext'],
+  useImperativeHandle: throwInvalidHookError as unknown as Dispatcher['useImperativeHandle'],
+  useDebugValue: throwInvalidHookError as unknown as Dispatcher['useDebugValue'],
+  useDeferredValue: throwInvalidHookError as unknown as Dispatcher['useDeferredValue'],
+  useTransition: throwInvalidHookError as unknown as Dispatcher['useTransition'],
+  useSyncExternalStore: throwInvalidHookError as unknown as Dispatcher['useSyncExternalStore'],
+  useId: throwInvalidHookError as unknown as Dispatcher['useId'],
+  use: throwInvalidHookError as unknown as Dispatcher['use'],
+  useOptimistic: throwInvalidHookError as unknown as Dispatcher['useOptimistic'],
+  useActionState: throwInvalidHookError as unknown as Dispatcher['useActionState'],
 };
 
 function throwInvalidHookError(): never {
@@ -1179,11 +1178,11 @@ function throwInvalidHookError(): never {
 export function renderWithHooks<Props>(
   current: Fiber | null,
   workInProgress: Fiber,
-  Component: (props: Props, secondArg?: any) => any,
+  Component: (props: Props, secondArg?: unknown) => unknown,
   props: Props,
-  secondArg: any,
+  secondArg: unknown,
   nextRenderLanes: Lanes,
-): any {
+): unknown {
   renderLanes = nextRenderLanes;
   currentlyRenderingFiber = workInProgress;
 
@@ -1211,10 +1210,10 @@ export function renderWithHooks<Props>(
 
 function renderWithHooksAgain<Props>(
   workInProgress: Fiber,
-  Component: (props: Props, secondArg?: any) => any,
+  Component: (props: Props, secondArg?: unknown) => unknown,
   props: Props,
-  secondArg: any,
-): any {
+  secondArg: unknown,
+): unknown {
   let children;
   let numberOfReRenders = 0;
 
@@ -1251,12 +1250,12 @@ function finishRenderingHooks(
   ReactSharedInternals.H = ContextOnlyDispatcher;
 
   renderLanes = NoLanes;
-  currentlyRenderingFiber = null as any;
+  currentlyRenderingFiber = null as unknown as Fiber;
 
   currentHook = null;
   workInProgressHook = null;
 
-  didScheduleRenderPhaseUpdate = false;
+  _didScheduleRenderPhaseUpdate = false;
 }
 
 // --- Bailout hooks ---
@@ -1273,10 +1272,10 @@ export function bailoutHooks(
 
 // Export for use by work loop
 export function resetHooksAfterThrow(): void {
-  currentlyRenderingFiber = null as any;
+  currentlyRenderingFiber = null as unknown as Fiber;
   currentHook = null;
   workInProgressHook = null;
-  didScheduleRenderPhaseUpdate = false;
+  _didScheduleRenderPhaseUpdate = false;
   didScheduleRenderPhaseUpdateDuringThisPass = false;
   ReactSharedInternals.H = ContextOnlyDispatcher;
 }

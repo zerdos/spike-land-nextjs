@@ -1,17 +1,17 @@
 // Class Component Lifecycle Management
 
-import type { Fiber, FiberRoot, ClassUpdateQueue, ClassUpdate } from './ReactFiberTypes.js';
+import type { Fiber, ClassUpdateQueue, ClassUpdate } from './ReactFiberTypes.js';
 import type { Lanes, Lane } from './ReactFiberLane.js';
-import type { ComponentInstance, ComponentClass, ReactNode } from '../react/ReactTypes.js';
-import { NoFlags, Update, Snapshot, Callback } from './ReactFiberFlags.js';
-import { NoLanes, mergeLanes, SyncLane } from './ReactFiberLane.js';
+import type { ComponentInstance, ComponentClass } from '../react/ReactTypes.js';
+import { Update, Snapshot, Callback } from './ReactFiberFlags.js';
+import { SyncLane } from './ReactFiberLane.js';
 import assign from '../shared/assign.js';
 
 // Update tags
 const UpdateState = 0;
 const ReplaceState = 1;
 const ForceUpdate = 2;
-const CaptureUpdate = 3;
+const _CaptureUpdate = 3;
 
 export function initializeClassUpdateQueue<S>(fiber: Fiber): void {
   const queue: ClassUpdateQueue<S> = {
@@ -53,9 +53,9 @@ export function enqueueClassUpdate(fiber: Fiber, update: ClassUpdate): void {
 
 export function processClassUpdateQueue<S>(
   fiber: Fiber,
-  props: any,
-  instance: any,
-  renderLanes: Lanes,
+  props: unknown,
+  instance: unknown,
+  _renderLanes: Lanes,
 ): void {
   const queue = fiber.updateQueue as ClassUpdateQueue<S>;
   if (!queue) return;
@@ -82,9 +82,9 @@ export function processClassUpdateQueue<S>(
 
   if (firstBaseUpdate !== null) {
     let newState: S = queue.baseState;
-    let newBaseState: S = newState;
-    let newFirstBaseUpdate: ClassUpdate<S> | null = null;
-    let newLastBaseUpdate: ClassUpdate<S> | null = null;
+    const newBaseState: S = newState;
+    const newFirstBaseUpdate: ClassUpdate<S> | null = null;
+    const newLastBaseUpdate: ClassUpdate<S> | null = null;
     let update: ClassUpdate<S> | null = firstBaseUpdate;
 
     do {
@@ -124,7 +124,7 @@ export function processClassUpdateQueue<S>(
 export function constructClassInstance(
   fiber: Fiber,
   Component: ComponentClass,
-  props: any,
+  props: unknown,
 ): ComponentInstance {
   const context = {};
 
@@ -133,27 +133,27 @@ export function constructClassInstance(
   fiber.memoizedState = state;
 
   instance.props = props;
-  instance.state = state as any;
+  instance.state = state as unknown;
   instance.refs = {};
   instance.context = context;
 
   // Set up updater
-  (instance as any).updater = {
+  (instance as unknown as Record<string, unknown>).updater = {
     isMounted: () => true,
-    enqueueSetState: (inst: any, payload: any, callback: any) => {
+    enqueueSetState: (inst: unknown, payload: unknown, callback: unknown) => {
       const update = createClassUpdate(SyncLane);
       update.payload = payload;
       if (callback) update.callback = callback;
       enqueueClassUpdate(fiber, update);
     },
-    enqueueReplaceState: (inst: any, payload: any, callback: any) => {
+    enqueueReplaceState: (inst: unknown, payload: unknown, callback: unknown) => {
       const update = createClassUpdate(SyncLane);
       update.tag = ReplaceState;
       update.payload = payload;
       if (callback) update.callback = callback;
       enqueueClassUpdate(fiber, update);
     },
-    enqueueForceUpdate: (inst: any, callback: any) => {
+    enqueueForceUpdate: (inst: unknown, callback: unknown) => {
       const update = createClassUpdate(SyncLane);
       update.tag = ForceUpdate;
       if (callback) update.callback = callback;
@@ -163,7 +163,7 @@ export function constructClassInstance(
 
   fiber.stateNode = instance;
   // Store fiber reference on instance for setState
-  (instance as any)._reactInternals = fiber;
+  (instance as unknown as Record<string, unknown>)._reactInternals = fiber;
 
   return instance;
 }
@@ -171,7 +171,7 @@ export function constructClassInstance(
 export function mountClassInstance(
   fiber: Fiber,
   Component: ComponentClass,
-  nextProps: any,
+  nextProps: unknown,
   renderLanes: Lanes,
 ): void {
   const instance = fiber.stateNode as ComponentInstance;
@@ -185,7 +185,7 @@ export function mountClassInstance(
   instance.state = fiber.memoizedState;
 
   // Call getDerivedStateFromProps
-  const getDerivedStateFromProps = (Component as any).getDerivedStateFromProps;
+  const getDerivedStateFromProps = (Component as unknown as Record<string, unknown>).getDerivedStateFromProps;
   if (typeof getDerivedStateFromProps === 'function') {
     const partialState = getDerivedStateFromProps(nextProps, instance.state);
     if (partialState != null) {
@@ -204,7 +204,7 @@ export function updateClassInstance(
   current: Fiber,
   fiber: Fiber,
   Component: ComponentClass,
-  nextProps: any,
+  nextProps: unknown,
   renderLanes: Lanes,
 ): boolean {
   const instance = fiber.stateNode as ComponentInstance;
@@ -215,7 +215,7 @@ export function updateClassInstance(
 
   // Call getDerivedStateFromProps
   let newState = oldState;
-  const getDerivedStateFromProps = (Component as any).getDerivedStateFromProps;
+  const getDerivedStateFromProps = (Component as unknown as Record<string, unknown>).getDerivedStateFromProps;
   if (typeof getDerivedStateFromProps === 'function') {
     const partialState = getDerivedStateFromProps(nextProps, oldState);
     if (partialState != null) {

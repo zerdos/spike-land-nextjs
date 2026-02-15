@@ -135,7 +135,7 @@ function renderNodeToChunks(node: ReactNode, chunks: string[]): void {
   }
 }
 
-function isReactElement(node: any): node is ReactElement {
+function isReactElement(node: unknown): node is ReactElement {
   return (
     typeof node === 'object' &&
     node !== null &&
@@ -181,11 +181,11 @@ function renderElementToChunks(element: ReactElement, chunks: string[]): void {
 
   // Special element types
   if (typeof type === 'object' && type !== null) {
-    const typeObj = type as any;
+    const typeObj = type as Record<string, unknown>;
 
     // Forward ref
     if (typeObj.$$typeof === REACT_FORWARD_REF_TYPE) {
-      const rendered = typeObj.render(props, element.ref);
+      const rendered = (typeObj.render as (props: Record<string, unknown>, ref: unknown) => ReactNode)(props, element.ref);
       renderNodeToChunks(rendered, chunks);
       return;
     }
@@ -194,7 +194,7 @@ function renderElementToChunks(element: ReactElement, chunks: string[]): void {
     if (typeObj.$$typeof === REACT_MEMO_TYPE) {
       const innerType = typeObj.type;
       if (typeof innerType === 'function') {
-        renderComponentElement(innerType, props, chunks);
+        renderComponentElement(innerType as FunctionComponent | ComponentClass, props, chunks);
       } else {
         // memo wrapping another special type
         const innerElement: ReactElement = {
@@ -212,7 +212,7 @@ function renderElementToChunks(element: ReactElement, chunks: string[]): void {
 
     // Context provider
     if (typeObj.$$typeof === REACT_CONTEXT_TYPE) {
-      const context = typeObj as ReactContext<any>;
+      const context = typeObj as unknown as ReactContext<unknown>;
       const previousValue = context._currentValue;
       context._currentValue = props.value;
       try {
@@ -226,7 +226,7 @@ function renderElementToChunks(element: ReactElement, chunks: string[]): void {
     // Lazy component
     if (typeObj.$$typeof === REACT_LAZY_TYPE) {
       const payload = typeObj._payload;
-      const init = typeObj._init;
+      const init = typeObj._init as (payload: unknown) => unknown;
       const resolvedType = init(payload);
       const resolvedElement: ReactElement = {
         $$typeof: REACT_ELEMENT_TYPE,
@@ -248,7 +248,7 @@ function renderElementToChunks(element: ReactElement, chunks: string[]): void {
 
 function renderHostElement(
   type: string,
-  props: Record<string, any>,
+  props: Record<string, unknown>,
   chunks: string[],
 ): void {
   // Push opening tag with attributes
@@ -258,7 +258,7 @@ function renderHostElement(
   if (!isVoidElement(type)) {
     const children = props.children;
     if (children != null && typeof children !== 'string' && typeof children !== 'number') {
-      renderNodeToChunks(children, chunks);
+      renderNodeToChunks(children as ReactNode, chunks);
     }
 
     // Push closing tag
@@ -268,7 +268,7 @@ function renderHostElement(
 
 function renderComponentElement(
   type: FunctionComponent | ComponentClass,
-  props: Record<string, any>,
+  props: Record<string, unknown>,
   chunks: string[],
 ): void {
   // Check if it's a class component
@@ -277,11 +277,12 @@ function renderComponentElement(
     const instance = new Ctor(props);
 
     // Call componentWillMount if exists (legacy)
-    if (typeof (instance as any).componentWillMount === 'function') {
-      (instance as any).componentWillMount();
+    const instanceRecord = instance as unknown as Record<string, unknown>;
+    if (typeof instanceRecord.componentWillMount === 'function') {
+      (instanceRecord.componentWillMount as () => void)();
     }
-    if (typeof (instance as any).UNSAFE_componentWillMount === 'function') {
-      (instance as any).UNSAFE_componentWillMount();
+    if (typeof instanceRecord.UNSAFE_componentWillMount === 'function') {
+      (instanceRecord.UNSAFE_componentWillMount as () => void)();
     }
 
     const rendered = instance.render();
@@ -293,6 +294,7 @@ function renderComponentElement(
   }
 }
 
-function isClassComponent(type: any): boolean {
-  return !!(type.prototype && type.prototype.isReactComponent);
+function isClassComponent(type: unknown): boolean {
+  const proto = (type as Record<string, unknown>).prototype as Record<string, unknown> | undefined;
+  return !!(proto && proto.isReactComponent);
 }

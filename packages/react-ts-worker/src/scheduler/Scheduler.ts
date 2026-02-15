@@ -230,7 +230,7 @@ function requestHostTimeout(
 }
 
 function cancelHostTimeout(): void {
-  localClearTimeout!(taskTimeoutID as any);
+  localClearTimeout!(taskTimeoutID as ReturnType<typeof setTimeout>);
   taskTimeoutID = -1;
 }
 

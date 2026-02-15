@@ -12,7 +12,7 @@ function createCursor<T>(defaultValue: T): StackCursor<T> {
   return { current: defaultValue };
 }
 
-const contextStack: Array<any> = [];
+const contextStack: Array<unknown> = [];
 let contextIndex = -1;
 
 function push<T>(cursor: StackCursor<T>, value: T): void {
@@ -30,8 +30,8 @@ function pop<T>(cursor: StackCursor<T>): void {
   contextIndex--;
 }
 
-const rootInstanceCursor: StackCursor<any> = createCursor(null);
-const hostContextCursor: StackCursor<any> = createCursor(null);
+const rootInstanceCursor: StackCursor<unknown> = createCursor(null);
+const hostContextCursor: StackCursor<unknown> = createCursor(null);
 const hostConfigCursor: StackCursor<HostConfig | null> = createCursor(null);
 
 function getHostConfigFromFiber(fiber: Fiber): HostConfig {
@@ -49,11 +49,11 @@ function getHostConfigFromFiber(fiber: Fiber): HostConfig {
   throw new Error('Could not find host config');
 }
 
-export function getRootHostContainer(): any {
+export function getRootHostContainer(): unknown {
   return rootInstanceCursor.current;
 }
 
-export function getHostContext(): any {
+export function getHostContext(): unknown {
   return hostContextCursor.current;
 }
 

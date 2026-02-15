@@ -53,7 +53,7 @@ export const ServerDispatcher: Dispatcher = {
     // No-op on server
   },
 
-  useCallback<T extends (...args: any[]) => any>(
+  useCallback<T extends (...args: unknown[]) => unknown>(
     callback: T,
     _deps: DependencyList,
   ): T {
@@ -73,7 +73,7 @@ export const ServerDispatcher: Dispatcher = {
   },
 
   useImperativeHandle<T>(
-    _ref: any,
+    _ref: unknown,
     _create: () => T,
     _deps?: DependencyList,
   ): void {
@@ -82,7 +82,7 @@ export const ServerDispatcher: Dispatcher = {
 
   useDebugValue<T>(
     _value: T,
-    _format?: (value: T) => any,
+    _format?: (value: T) => unknown,
   ): void {
     // No-op on server
   },
@@ -114,7 +114,7 @@ export const ServerDispatcher: Dispatcher = {
 
   use<T>(usable: Usable<T>): T {
     if (usable !== null && typeof usable === 'object') {
-      if ('$$typeof' in usable && (usable as any).$$typeof === REACT_CONTEXT_TYPE) {
+      if ('$$typeof' in usable && (usable as unknown as Record<string, unknown>).$$typeof === REACT_CONTEXT_TYPE) {
         const context = usable as ReactContext<T>;
         return context._currentValue;
       }

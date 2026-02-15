@@ -128,7 +128,7 @@ export function markRootFinished(root: { pendingLanes: Lanes; suspendedLanes: La
   root.entangledLanes &= remainingLanes;
 }
 
-export function getNextLanes(root: { pendingLanes: Lanes; suspendedLanes: Lanes; pingedLanes: Lanes }, wipLanes: Lanes): Lanes {
+export function getNextLanes(root: { pendingLanes: Lanes; suspendedLanes: Lanes; pingedLanes: Lanes }, _wipLanes: Lanes): Lanes {
   const pendingLanes = root.pendingLanes;
   if (pendingLanes === NoLanes) {
     return NoLanes;

@@ -2,7 +2,6 @@ import type { ReactContext } from '../react/ReactTypes.js';
 import type { Fiber, ContextDependency } from './ReactFiberTypes.js';
 import type { Lanes } from './ReactFiberLane.js';
 import { NoLanes, mergeLanes, isSubsetOfLanes } from './ReactFiberLane.js';
-import objectIs from '../shared/objectIs.js';
 
 // Simple value stack for context
 interface StackCursor<T> {
@@ -13,7 +12,7 @@ function createCursor<T>(defaultValue: T): StackCursor<T> {
   return { current: defaultValue };
 }
 
-const valueStack: Array<any> = [];
+const valueStack: Array<unknown> = [];
 let index = -1;
 
 function push<T>(cursor: StackCursor<T>, value: T): void {
@@ -31,7 +30,7 @@ function pop<T>(cursor: StackCursor<T>): void {
   index--;
 }
 
-const valueCursor: StackCursor<any> = createCursor(null);
+const valueCursor: StackCursor<unknown> = createCursor(null);
 
 let currentlyRenderingFiber: Fiber | null = null;
 let lastContextDependency: ContextDependency | null = null;
@@ -51,7 +50,7 @@ export function pushProvider<T>(
 }
 
 export function popProvider(
-  context: ReactContext<any>,
+  context: ReactContext<unknown>,
   _providerFiber?: Fiber,
 ): void {
   const currentValue = valueCursor.current;
@@ -122,7 +121,7 @@ function readContextForConsumer<T>(
 // Check if context has changed since the last render
 export function propagateContextChange(
   workInProgress: Fiber,
-  context: ReactContext<any>,
+  context: ReactContext<unknown>,
   renderLanes: Lanes,
 ): void {
   let fiber: Fiber | null = workInProgress.child;
@@ -133,7 +132,7 @@ export function propagateContextChange(
   while (fiber !== null) {
     const dependencies = fiber.dependencies;
     if (dependencies !== null) {
-      let nextFiber: Fiber | null = fiber.child;
+      const nextFiber: Fiber | null = fiber.child;
 
       let dependency = dependencies.firstContext;
       while (dependency !== null) {

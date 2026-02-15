@@ -30,7 +30,7 @@ import {
 
 function createFiber(
   tag: WorkTag,
-  pendingProps: any,
+  pendingProps: unknown,
   key: string | null,
 ): Fiber {
   return {
@@ -65,16 +65,16 @@ function createFiber(
   };
 }
 
-function shouldConstruct(Component: Function): boolean {
+function shouldConstruct(Component: (...args: unknown[]) => unknown): boolean {
   const prototype = Component.prototype;
   return !!(prototype && prototype.isReactComponent);
 }
 
-export function isSimpleFunctionComponent(type: any): boolean {
+export function isSimpleFunctionComponent(type: unknown): boolean {
   return (
     typeof type === 'function' &&
-    !shouldConstruct(type) &&
-    type.defaultProps === undefined
+    !shouldConstruct(type as (...args: unknown[]) => unknown) &&
+    (type as unknown as Record<string, unknown>).defaultProps === undefined
   );
 }
 
@@ -89,16 +89,16 @@ export function createFiberFromElement(
 }
 
 export function createFiberFromTypeAndProps(
-  type: any,
+  type: unknown,
   key: string | null,
-  pendingProps: any,
+  pendingProps: unknown,
   lanes: Lanes,
 ): Fiber {
   let fiberTag: WorkTag = FunctionComponent;
   let resolvedType = type;
 
   if (typeof type === 'function') {
-    if (shouldConstruct(type)) {
+    if (shouldConstruct(type as (...args: unknown[]) => unknown)) {
       fiberTag = ClassComponent;
     }
   } else if (typeof type === 'string') {
@@ -106,12 +106,12 @@ export function createFiberFromTypeAndProps(
   } else {
     switch (type) {
       case REACT_FRAGMENT_TYPE:
-        return createFiberFromFragment(pendingProps.children, lanes, key);
+        return createFiberFromFragment((pendingProps as Record<string, unknown>).children, lanes, key);
       case REACT_SUSPENSE_TYPE:
         return createFiberFromSuspense(pendingProps, lanes, key);
       default: {
         if (typeof type === 'object' && type !== null) {
-          switch (type.$$typeof) {
+          switch ((type as Record<string, unknown>).$$typeof) {
             case REACT_CONTEXT_TYPE:
               fiberTag = ContextProvider;
               break;
@@ -151,7 +151,7 @@ export function createFiberFromText(
 }
 
 export function createFiberFromFragment(
-  elements: any,
+  elements: unknown,
   lanes: Lanes,
   key: string | null,
 ): Fiber {
@@ -161,7 +161,7 @@ export function createFiberFromFragment(
 }
 
 function createFiberFromSuspense(
-  pendingProps: any,
+  pendingProps: unknown,
   lanes: Lanes,
   key: string | null,
 ): Fiber {
@@ -178,7 +178,7 @@ export function createHostRootFiber(): Fiber {
 // Double buffering: creates a work-in-progress fiber from the current fiber
 export function createWorkInProgress(
   current: Fiber,
-  pendingProps: any,
+  pendingProps: unknown,
 ): Fiber {
   let workInProgress = current.alternate;
 

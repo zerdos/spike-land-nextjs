@@ -6,8 +6,8 @@ export function createContext<T>(defaultValue: T): ReactContext<T> {
     $$typeof: REACT_CONTEXT_TYPE,
     _currentValue: defaultValue,
     _currentValue2: defaultValue,
-    Provider: null as any,
-    Consumer: null as any,
+    Provider: null as unknown as ReactContext<T>,
+    Consumer: null as unknown as { $$typeof: symbol; _context: ReactContext<T> },
   };
 
   context.Provider = context;

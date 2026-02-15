@@ -59,7 +59,7 @@ export interface HostConfig<
   getChildHostContext(parentHostContext: HostContext, type: Type): HostContext;
 
   // Commit lifecycle
-  prepareForCommit(container: Container): Record<string, any> | null;
+  prepareForCommit(container: Container): Record<string, unknown> | null;
   resetAfterCommit(container: Container): void;
   finalizeInitialChildren(
     instance: Instance,
@@ -90,7 +90,7 @@ export interface HostConfig<
 // Type aliases for DOM-specific host config
 export type DOMHostConfigType = HostConfig<
   string,
-  Record<string, any>,
+  Record<string, unknown>,
   Element,
   Element,
   Text,

@@ -1,6 +1,6 @@
 // React DOM Client - createRoot and hydrateRoot entry points
 
-import type { ReactElement, ReactNode } from '../react/ReactTypes.js';
+import type { ReactNode } from '../react/ReactTypes.js';
 import { DOMHostConfig } from '../host-config/DOMHostConfig.js';
 import { createContainer, updateContainer } from '../reconciler/ReactFiberReconciler.js';
 import { listenToAllSupportedEvents } from './events/EventDelegation.js';
@@ -17,7 +17,7 @@ export interface CreateRootOptions {
 
 export function createRoot(
   container: Element | Document,
-  options?: CreateRootOptions,
+  _options?: CreateRootOptions,
 ): Root {
   if (!container) {
     throw new Error('createRoot(...): Target container is not a DOM element.');

@@ -5,7 +5,7 @@ import type { HostConfig } from './HostConfigInterface.js';
 
 export interface VNode {
   type: string;
-  props: Record<string, any>;
+  props: Record<string, unknown>;
   children: (VNode | VTextNode)[];
 }
 
@@ -19,7 +19,7 @@ interface StreamHostContext {
 
 export const StreamHostConfig: HostConfig<
   string,
-  Record<string, any>,
+  Record<string, unknown>,
   VNode,
   VNode,
   VTextNode,
@@ -31,7 +31,7 @@ export const StreamHostConfig: HostConfig<
 
   createInstance(
     type: string,
-    props: Record<string, any>,
+    props: Record<string, unknown>,
     _rootContainer: VNode,
     _hostContext: StreamHostContext,
   ): VNode {
@@ -101,8 +101,8 @@ export const StreamHostConfig: HostConfig<
   commitUpdate(
     instance: VNode,
     _type: string,
-    _oldProps: Record<string, any>,
-    newProps: Record<string, any>,
+    _oldProps: Record<string, unknown>,
+    newProps: Record<string, unknown>,
   ): void {
     instance.props = newProps;
   },
@@ -115,7 +115,7 @@ export const StreamHostConfig: HostConfig<
     instance.children = [];
   },
 
-  shouldSetTextContent(_type: string, props: Record<string, any>): boolean {
+  shouldSetTextContent(_type: string, props: Record<string, unknown>): boolean {
     return (
       typeof props.children === 'string' ||
       typeof props.children === 'number'

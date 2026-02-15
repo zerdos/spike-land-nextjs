@@ -1,9 +1,9 @@
 import type { ReactElement } from './ReactTypes.js';
 import { REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE } from './ReactSymbols.js';
 
-const hasOwnProperty = Object.prototype.hasOwnProperty;
+const _hasOwnProperty = Object.prototype.hasOwnProperty;
 
-function jsxProd(type: any, config: any, maybeKey?: any): ReactElement {
+function jsxProd(type: unknown, config: Record<string, unknown>, maybeKey?: unknown): ReactElement {
   let key: string | null = null;
 
   if (maybeKey !== undefined) {
@@ -14,11 +14,11 @@ function jsxProd(type: any, config: any, maybeKey?: any): ReactElement {
     key = '' + config.key;
   }
 
-  let props: any;
+  let props: Record<string, unknown>;
   if (!('key' in config)) {
     props = config;
   } else {
-    props = {} as Record<string, any>;
+    props = {} as Record<string, unknown>;
     for (const propName in config) {
       if (propName !== 'key') {
         props[propName] = config[propName];
@@ -26,11 +26,11 @@ function jsxProd(type: any, config: any, maybeKey?: any): ReactElement {
     }
   }
 
-  const ref = props.ref !== undefined ? props.ref : null;
+  const ref = props.ref !== undefined ? props.ref as ReactElement['ref'] : null;
 
   return {
     $$typeof: REACT_ELEMENT_TYPE,
-    type,
+    type: type as ReactElement['type'],
     key,
     ref,
     props,

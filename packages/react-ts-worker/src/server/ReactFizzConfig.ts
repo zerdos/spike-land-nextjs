@@ -50,7 +50,7 @@ const SKIP_PROPS = new Set([
 
 export function pushStartInstance(
   type: string,
-  props: Record<string, any>,
+  props: Record<string, unknown>,
 ): string {
   let html = '<' + type;
 
@@ -63,7 +63,7 @@ export function pushStartInstance(
     if (propValue == null || propValue === false) continue;
 
     if (propKey === 'style') {
-      html += ' style="' + renderStyleAttribute(propValue) + '"';
+      html += ' style="' + renderStyleAttribute(propValue as Record<string, unknown>) + '"';
     } else {
       const attrName = PROP_TO_ATTR[propKey] || propKey.toLowerCase();
 
@@ -81,7 +81,7 @@ export function pushStartInstance(
 
   // Handle raw HTML content (from React's __html prop)
   if (props.rawHtml != null) {
-    html += props.rawHtml;
+    html += String(props.rawHtml);
   } else if (
     typeof props.children === 'string' ||
     typeof props.children === 'number'
@@ -103,7 +103,7 @@ export function pushTextInstance(text: string): string {
   return escapeHtml(text);
 }
 
-function renderStyleAttribute(style: Record<string, any>): string {
+function renderStyleAttribute(style: Record<string, unknown>): string {
   let result = '';
   for (const key in style) {
     if (!style.hasOwnProperty(key)) continue;

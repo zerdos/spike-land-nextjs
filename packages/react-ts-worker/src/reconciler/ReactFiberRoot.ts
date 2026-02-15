@@ -4,12 +4,12 @@ import { createHostRootFiber } from './ReactFiber.js';
 import { NoLane, NoLanes, createLaneMap } from './ReactFiberLane.js';
 
 export function createFiberRoot(
-  containerInfo: any,
+  containerInfo: unknown,
   hostConfig: HostConfig,
 ): FiberRoot {
   const root: FiberRoot = {
     containerInfo,
-    current: null as any, // Will be set below
+    current: null as unknown as Fiber, // Will be set below
     finishedWork: null,
 
     callbackNode: null,

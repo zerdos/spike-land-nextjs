@@ -13,20 +13,20 @@ function lazyInitializer<T>(payload: LazyPayload<T>): T {
     thenable.then(
       (moduleObject: { default: T }) => {
         if (payload._status === Pending || payload._status === Uninitialized) {
-          (payload as any)._status = Resolved;
-          (payload as any)._result = moduleObject;
+          (payload as unknown as { _status: number })._status = Resolved;
+          (payload as unknown as { _result: unknown })._result = moduleObject;
         }
       },
-      (error: any) => {
+      (error: unknown) => {
         if (payload._status === Pending || payload._status === Uninitialized) {
-          (payload as any)._status = Rejected;
-          (payload as any)._result = error;
+          (payload as unknown as { _status: number })._status = Rejected;
+          (payload as unknown as { _result: unknown })._result = error;
         }
       },
     );
     if (payload._status === Uninitialized) {
-      (payload as any)._status = Pending;
-      (payload as any)._result = thenable;
+      (payload as unknown as { _status: number })._status = Pending;
+      (payload as unknown as { _result: unknown })._result = thenable;
     }
   }
   if (payload._status === Resolved) {
@@ -42,7 +42,7 @@ export function lazy<T>(
 ): LazyComponent<T> {
   const payload: LazyPayload<T> = {
     _status: Uninitialized,
-    _result: ctor as any,
+    _result: ctor as unknown as T | PromiseLike<T> | ((payload: LazyPayload<T>) => T),
   };
 
   const lazyType: LazyComponent<T> = {

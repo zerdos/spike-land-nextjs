@@ -14,31 +14,31 @@ const PROPS_KEY = '__reactProps$';
 // Internal fiber type - minimal interface needed for event dispatch
 interface MinimalFiber {
   tag: number;
-  stateNode: any;
+  stateNode: unknown;
   return: MinimalFiber | null;
-  memoizedProps: Record<string, any> | null;
+  memoizedProps: Record<string, unknown> | null;
 }
 
-export function setFiberOnNode(node: Node, fiber: any): void {
-  (node as any)[FIBER_KEY] = fiber;
+export function setFiberOnNode(node: Node, fiber: unknown): void {
+  (node as unknown as Record<string, unknown>)[FIBER_KEY] = fiber;
 }
 
-export function setPropsOnNode(node: Node, props: Record<string, any>): void {
-  (node as any)[PROPS_KEY] = props;
+export function setPropsOnNode(node: Node, props: Record<string, unknown>): void {
+  (node as unknown as Record<string, unknown>)[PROPS_KEY] = props;
 }
 
 function getFiberFromNode(node: Node): MinimalFiber | null {
-  return (node as any)[FIBER_KEY] || null;
+  return (node as unknown as Record<string, unknown>)[FIBER_KEY] as MinimalFiber || null;
 }
 
-function getPropsFromNode(node: Node): Record<string, any> | null {
-  return (node as any)[PROPS_KEY] || null;
+function getPropsFromNode(node: Node): Record<string, unknown> | null {
+  return (node as unknown as Record<string, unknown>)[PROPS_KEY] as Record<string, unknown> || null;
 }
 
 // Collect all React event listeners along the fiber path (from target to root)
 interface DispatchListener {
   fiber: MinimalFiber;
-  handler: (event: any) => void;
+  handler: (event: unknown) => void;
   currentTarget: EventTarget;
 }
 
@@ -53,15 +53,15 @@ function collectListeners(
   while (fiber !== null) {
     // Only HostComponent fibers (tag=5) have DOM nodes with event props
     if (fiber.tag === 5 && fiber.stateNode) {
-      const props = getPropsFromNode(fiber.stateNode) || fiber.memoizedProps;
+      const props = getPropsFromNode(fiber.stateNode as Node) || fiber.memoizedProps;
       if (props) {
         const propName = isCapture ? reactName + 'Capture' : reactName;
         const handler = props[propName];
         if (typeof handler === 'function') {
           listeners.push({
             fiber,
-            handler,
-            currentTarget: fiber.stateNode,
+            handler: handler as (event: unknown) => void,
+            currentTarget: fiber.stateNode as EventTarget,
           });
         }
       }
@@ -75,7 +75,7 @@ function collectListeners(
 function dispatchEvent(
   nativeEventName: string,
   nativeEvent: Event,
-  container: Element,
+  _container: Element,
 ): void {
   const target = nativeEvent.target || nativeEvent.srcElement;
   if (!target) return;

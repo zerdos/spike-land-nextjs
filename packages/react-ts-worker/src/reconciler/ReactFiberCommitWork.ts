@@ -9,12 +9,9 @@ import {
   HostRoot,
   HostComponent,
   HostText,
-  Fragment,
-  ContextProvider,
   ForwardRef,
   MemoComponent,
   SimpleMemoComponent,
-  SuspenseComponent,
 } from './ReactWorkTags.js';
 import {
   NoFlags,
@@ -38,18 +35,7 @@ const HookPassive = 0b1000;
 const HookLayout = 0b0100;
 const HookInsertion = 0b0010;
 
-function getHostConfig(fiber: Fiber): HostConfig {
-  let node: Fiber | null = fiber;
-  while (node !== null) {
-    if (node.tag === HostRoot) {
-      return (node.stateNode as FiberRoot).hostConfig;
-    }
-    node = node.return;
-  }
-  throw new Error('Could not find host config');
-}
-
-function getHostParent(fiber: Fiber): { parent: any; isContainer: boolean } {
+function getHostParent(fiber: Fiber): { parent: unknown; isContainer: boolean } {
   let node: Fiber | null = fiber.return;
   while (node !== null) {
     if (node.tag === HostComponent) {
@@ -63,7 +49,7 @@ function getHostParent(fiber: Fiber): { parent: any; isContainer: boolean } {
   throw new Error('Could not find host parent');
 }
 
-function getHostSibling(fiber: Fiber): any {
+function getHostSibling(fiber: Fiber): unknown {
   let node: Fiber = fiber;
 
   siblings: while (true) {
@@ -269,7 +255,7 @@ function commitDeletion(
 
 function removeHostChildren(
   fiber: Fiber,
-  parent: any,
+  parent: unknown,
   isContainer: boolean,
   hostConfig: HostConfig,
 ): void {
@@ -387,7 +373,7 @@ function commitLayoutEffectsOnFiber(fiber: Fiber, root: FiberRoot): void {
               instance.componentDidUpdate(
                 current.memoizedProps,
                 current.memoizedState,
-                (instance as any).__snapshot,
+                (instance as unknown as Record<string, unknown>).__snapshot,
               );
             }
           }
@@ -398,8 +384,8 @@ function commitLayoutEffectsOnFiber(fiber: Fiber, root: FiberRoot): void {
         // Auto-focus if needed
         if (current === null && flags & Update) {
           const instance = fiber.stateNode as Element;
-          if (fiber.memoizedProps?.autoFocus && typeof (instance as any).focus === 'function') {
-            (instance as any).focus();
+          if (fiber.memoizedProps?.autoFocus && typeof (instance as unknown as Record<string, unknown>).focus === 'function') {
+            (instance as unknown as Record<string, unknown> & { focus: () => void }).focus();
           }
         }
         break;

@@ -23,8 +23,6 @@ import {
   Update,
   Ref,
   RefStatic,
-  ContentReset,
-  Snapshot,
 } from './ReactFiberFlags.js';
 import { popProvider } from './ReactFiberNewContext.js';
 import { popHostContext, popHostContainer, getHostContext } from './ReactFiberHostContext.js';
@@ -44,7 +42,7 @@ function bubbleProperties(completedWork: Fiber): void {
 }
 
 function appendAllChildren(
-  parent: any,
+  parent: unknown,
   workInProgress: Fiber,
   hostConfig: HostConfig,
 ): void {
@@ -79,22 +77,10 @@ function markRef(workInProgress: Fiber): void {
   workInProgress.flags |= Ref | RefStatic;
 }
 
-function getHostConfigFromRoot(fiber: Fiber): HostConfig {
-  let node: Fiber | null = fiber;
-  while (node !== null) {
-    if (node.stateNode && node.stateNode.hostConfig) {
-      return node.stateNode.hostConfig;
-    }
-    node = node.return;
-  }
-  // Shouldn't reach here
-  throw new Error('Could not find host config');
-}
-
 export function completeWork(
   current: Fiber | null,
   workInProgress: Fiber,
-  renderLanes: Lanes,
+  _renderLanes: Lanes,
 ): Fiber | null {
   const newProps = workInProgress.pendingProps;
 
@@ -111,7 +97,7 @@ export function completeWork(
 
     case HostRoot: {
       popHostContainer(workInProgress);
-      const fiberRoot: FiberRoot = workInProgress.stateNode;
+      const _fiberRoot: FiberRoot = workInProgress.stateNode;
       if (current === null || current.child === null) {
         // First mount
       }

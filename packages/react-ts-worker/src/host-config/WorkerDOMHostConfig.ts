@@ -52,7 +52,7 @@ const BOOLEAN_ATTRS = new Set([
 
 function setWorkerProps(
   element: WorkerElement,
-  props: Record<string, any>,
+  props: Record<string, unknown>,
   eventRegistry?: WorkerEventRegistry,
 ): void {
   for (const key in props) {
@@ -61,9 +61,10 @@ function setWorkerProps(
     if (value == null || key === 'children' || key === 'key' || key === 'ref') continue;
 
     if (key === 'style') {
-      if (typeof value === 'object') {
-        for (const styleProp in value) {
-          element.style[styleProp] = value[styleProp] == null ? '' : String(value[styleProp]);
+      if (typeof value === 'object' && value !== null) {
+        const styleObj = value as Record<string, unknown>;
+        for (const styleProp in styleObj) {
+          element.style[styleProp] = styleObj[styleProp] == null ? '' : String(styleObj[styleProp]);
         }
       }
     } else if (key.startsWith('on')) {
@@ -72,7 +73,7 @@ function setWorkerProps(
         eventRegistry.setHandler(
           (element as WorkerElement & { __nodeId: number }).__nodeId,
           key,
-          value,
+          value as (event: unknown) => void,
         );
       }
     } else {
@@ -98,7 +99,7 @@ export function createWorkerDOMHostConfig(
   eventRegistry?: WorkerEventRegistry,
 ): HostConfig<
   string,
-  Record<string, any>,
+  Record<string, unknown>,
   WorkerElement,
   WorkerElement,
   WorkerText,
@@ -111,7 +112,7 @@ export function createWorkerDOMHostConfig(
 
     createInstance(
       type: string,
-      props: Record<string, any>,
+      props: Record<string, unknown>,
       _rootContainer: WorkerElement,
       hostContext: WorkerHostContext,
     ): WorkerElement {
@@ -174,8 +175,8 @@ export function createWorkerDOMHostConfig(
     commitUpdate(
       instance: WorkerElement,
       _type: string,
-      oldProps: Record<string, any>,
-      newProps: Record<string, any>,
+      oldProps: Record<string, unknown>,
+      newProps: Record<string, unknown>,
     ): void {
       for (const key in oldProps) {
         if (key === 'children' || key === 'key' || key === 'ref') continue;
@@ -204,7 +205,7 @@ export function createWorkerDOMHostConfig(
       instance.textContent = '';
     },
 
-    shouldSetTextContent(_type: string, props: Record<string, any>): boolean {
+    shouldSetTextContent(_type: string, props: Record<string, unknown>): boolean {
       return (
         typeof props.children === 'string' ||
         typeof props.children === 'number'
@@ -242,8 +243,8 @@ export function createWorkerDOMHostConfig(
     prepareUpdate(
       _instance: WorkerElement,
       _type: string,
-      oldProps: Record<string, any>,
-      newProps: Record<string, any>,
+      oldProps: Record<string, unknown>,
+      newProps: Record<string, unknown>,
     ): boolean | null {
       for (const key in oldProps) {
         if (key === 'children' || key === 'key' || key === 'ref') continue;

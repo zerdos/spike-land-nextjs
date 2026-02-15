@@ -5,10 +5,10 @@ import assign from '../shared/assign.js';
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 function ReactElement(
-  type: any,
+  type: unknown,
   key: string | null,
-  ref: any,
-  props: any,
+  ref: unknown,
+  props: unknown,
 ): ReactElementType {
   return {
     $$typeof: REACT_ELEMENT_TYPE,
@@ -17,14 +17,14 @@ function ReactElement(
     ref,
     props,
     _owner: null,
-  };
+  } as ReactElementType;
 }
 
-export function createElement(type: any, config: any, ...args: any[]): ReactElementType {
-  const props: Record<string, any> = {};
+export function createElement(type: unknown, config: Record<string, unknown> | null | undefined, ...args: unknown[]): ReactElementType {
+  const props: Record<string, unknown> = {};
 
   let key: string | null = null;
-  let ref: any = null;
+  let ref: unknown = null;
 
   if (config != null) {
     if (config.ref !== undefined) {
@@ -60,11 +60,13 @@ export function createElement(type: any, config: any, ...args: any[]): ReactElem
   }
 
   // Resolve default props
-  if (type && type.defaultProps) {
-    const defaultProps = type.defaultProps;
-    for (const propName in defaultProps) {
-      if (props[propName] === undefined) {
-        props[propName] = defaultProps[propName];
+  if (type && typeof type === 'object' && 'defaultProps' in type) {
+    const defaultProps = (type as Record<string, unknown>).defaultProps as Record<string, unknown> | undefined;
+    if (defaultProps) {
+      for (const propName in defaultProps) {
+        if (props[propName] === undefined) {
+          props[propName] = defaultProps[propName];
+        }
       }
     }
   }
@@ -72,7 +74,7 @@ export function createElement(type: any, config: any, ...args: any[]): ReactElem
   return ReactElement(type, key, ref, props);
 }
 
-export function cloneElement(element: ReactElementType, config: any, ...args: any[]): ReactElementType {
+export function cloneElement(element: ReactElementType, config: Record<string, unknown> | null | undefined, ...args: unknown[]): ReactElementType {
   if (element === null || element === undefined) {
     throw new Error(
       `The argument must be a React element, but you passed ${element}.`,
@@ -119,11 +121,12 @@ export function cloneElement(element: ReactElementType, config: any, ...args: an
   return ReactElement(element.type, key, ref, props);
 }
 
-export function isValidElement(object: any): object is ReactElementType {
+export function isValidElement(object: unknown): object is ReactElementType {
   return (
     typeof object === 'object' &&
     object !== null &&
-    object.$$typeof === REACT_ELEMENT_TYPE
+    '$$typeof' in object &&
+    (object as ReactElementType).$$typeof === REACT_ELEMENT_TYPE
   );
 }
 

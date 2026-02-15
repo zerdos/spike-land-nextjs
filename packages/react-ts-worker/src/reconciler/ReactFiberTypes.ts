@@ -8,9 +8,9 @@ import type { ReactContext } from '../react/ReactTypes.js';
 export interface Fiber {
   tag: WorkTag;
   key: string | null;
-  elementType: any;
-  type: any;
-  stateNode: any;
+  elementType: unknown;
+  type: unknown;
+  stateNode: unknown;
 
   // Fiber tree structure
   return: Fiber | null;
@@ -18,14 +18,14 @@ export interface Fiber {
   sibling: Fiber | null;
   index: number;
 
-  ref: any;
+  ref: unknown;
   refCleanup: (() => void) | null;
 
   // Props & state
-  pendingProps: any;
-  memoizedProps: any;
-  updateQueue: any;
-  memoizedState: any;
+  pendingProps: unknown;
+  memoizedProps: unknown;
+  updateQueue: unknown;
+  memoizedState: unknown;
 
   // Context dependencies
   dependencies: Dependencies | null;
@@ -44,7 +44,7 @@ export interface Fiber {
 }
 
 // Dependencies for context
-export interface ContextDependency<T = any> {
+export interface ContextDependency<T = unknown> {
   context: ReactContext<T>;
   next: ContextDependency | null;
   memoizedValue: T;
@@ -57,12 +57,12 @@ export interface Dependencies {
 
 // FiberRoot is the root of a React tree
 export interface FiberRoot {
-  containerInfo: any;
+  containerInfo: unknown;
   current: Fiber;
   finishedWork: Fiber | null;
 
   // Scheduler
-  callbackNode: any;
+  callbackNode: unknown;
   callbackPriority: Lane;
 
   // Lanes
@@ -92,15 +92,15 @@ export interface PendingPassiveEffects {
 
 // Hook is a linked list node
 export interface Hook {
-  memoizedState: any;
-  baseState: any;
-  baseQueue: Update<any, any> | null;
-  queue: UpdateQueue<any, any> | null;
+  memoizedState: unknown;
+  baseState: unknown;
+  baseQueue: Update<unknown, unknown> | null;
+  queue: UpdateQueue<unknown, unknown> | null;
   next: Hook | null;
 }
 
 // Update object for state updates
-export interface Update<S = any, A = any> {
+export interface Update<S = unknown, A = unknown> {
   lane: Lane;
   action: A;
   hasEagerState: boolean;
@@ -109,7 +109,7 @@ export interface Update<S = any, A = any> {
 }
 
 // UpdateQueue for state updates (used by hooks and class components)
-export interface UpdateQueue<S = any, A = any> {
+export interface UpdateQueue<S = unknown, A = unknown> {
   pending: Update<S, A> | null;
   lanes: Lanes;
   dispatch: ((action: A) => void) | null;
@@ -118,7 +118,7 @@ export interface UpdateQueue<S = any, A = any> {
 }
 
 // Class component update queue
-export interface ClassUpdateQueue<S = any> {
+export interface ClassUpdateQueue<S = unknown> {
   baseState: S;
   firstBaseUpdate: ClassUpdate<S> | null;
   lastBaseUpdate: ClassUpdate<S> | null;
@@ -128,10 +128,10 @@ export interface ClassUpdateQueue<S = any> {
   callbacks: Array<() => void> | null;
 }
 
-export interface ClassUpdate<S = any> {
+export interface ClassUpdate<S = unknown> {
   lane: Lane;
   tag: 0 | 1 | 2 | 3; // UpdateState, ReplaceState, ForceUpdate, CaptureUpdate
-  payload: any;
+  payload: unknown;
   callback: (() => void) | null;
   next: ClassUpdate<S> | null;
 }
@@ -141,15 +141,15 @@ export interface Effect {
   tag: number;
   create: () => (() => void) | void;
   destroy: (() => void) | void | null;
-  deps: Array<any> | null;
+  deps: Array<unknown> | null;
   next: Effect | null;
 }
 
 // Effect list stored on fiber's updateQueue for function components
 export interface FunctionComponentUpdateQueue {
   lastEffect: Effect | null;
-  events: Array<any> | null;
-  stores: Array<StoreConsistencyCheck<any>> | null;
+  events: Array<unknown> | null;
+  stores: Array<StoreConsistencyCheck<unknown>> | null;
 }
 
 export interface StoreConsistencyCheck<T> {

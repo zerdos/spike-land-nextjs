@@ -38,7 +38,7 @@ export function useReducer<S, I, A>(
   init?: (arg: I) => S,
 ): [S, Dispatch<A>] {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useReducer(reducer as any, initialArg as any, init as any);
+  return (dispatcher as unknown as { useReducer: (reducer: (state: S, action: A) => S, initialArg: I, init?: (arg: I) => S) => [S, Dispatch<A>] }).useReducer(reducer, initialArg, init);
 }
 
 export function useEffect(
@@ -65,7 +65,7 @@ export function useInsertionEffect(
   return dispatcher.useInsertionEffect(create, deps);
 }
 
-export function useCallback<T extends (...args: any[]) => any>(
+export function useCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
   deps: DependencyList,
 ): T {
@@ -98,8 +98,8 @@ export function useImperativeHandle<T>(
 }
 
 export function useDebugValue<T>(
-  value: T,
-  format?: (value: T) => any,
+  _value: T,
+  _format?: (value: T) => unknown,
 ): void {
   // useDebugValue is a no-op in production
 }

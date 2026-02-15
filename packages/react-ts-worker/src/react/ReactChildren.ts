@@ -27,35 +27,35 @@ function escapeUserProvidedKey(text: string): string {
   return text.replace(userProvidedKeyEscapeRegex, '$&/');
 }
 
-function getElementKey(element: any, index: number): string {
-  if (typeof element === 'object' && element !== null && element.key != null) {
-    return escape('' + element.key);
+function getElementKey(element: unknown, index: number): string {
+  if (typeof element === 'object' && element !== null && (element as Record<string, unknown>).key != null) {
+    return escape('' + (element as Record<string, unknown>).key);
   }
   return index.toString(36);
 }
 
-function resolveThenable<T>(thenable: PromiseLike<T> & { status?: string; value?: T; reason?: any }): T {
+function resolveThenable<T>(thenable: PromiseLike<T> & { status?: string; value?: T; reason?: unknown }): T {
   switch (thenable.status) {
     case 'fulfilled': {
-      return (thenable as any).value;
+      return (thenable as unknown as { value: T }).value;
     }
     case 'rejected': {
-      throw (thenable as any).reason;
+      throw (thenable as unknown as { reason: unknown }).reason;
     }
     default: {
       if (typeof thenable.status === 'string') {
         thenable.then(() => {}, () => {});
       } else {
-        const pendingThenable = thenable as any;
+        const pendingThenable = thenable as unknown as { status: string; value?: T; reason?: unknown; then: PromiseLike<T>['then'] };
         pendingThenable.status = 'pending';
         pendingThenable.then(
-          (fulfilledValue: any) => {
+          (fulfilledValue: unknown) => {
             if (pendingThenable.status === 'pending') {
               pendingThenable.status = 'fulfilled';
-              pendingThenable.value = fulfilledValue;
+              pendingThenable.value = fulfilledValue as T;
             }
           },
-          (error: any) => {
+          (error: unknown) => {
             if (pendingThenable.status === 'pending') {
               pendingThenable.status = 'rejected';
               pendingThenable.reason = error;
@@ -64,12 +64,12 @@ function resolveThenable<T>(thenable: PromiseLike<T> & { status?: string; value?
         );
       }
 
-      switch ((thenable as any).status) {
+      switch ((thenable as unknown as { status: string }).status) {
         case 'fulfilled': {
-          return (thenable as any).value;
+          return (thenable as unknown as { value: T }).value;
         }
         case 'rejected': {
-          throw (thenable as any).reason;
+          throw (thenable as unknown as { reason: unknown }).reason;
         }
       }
     }
@@ -78,11 +78,11 @@ function resolveThenable<T>(thenable: PromiseLike<T> & { status?: string; value?
 }
 
 function mapIntoArray(
-  children: any,
-  array: any[],
+  children: unknown,
+  array: unknown[],
   escapedPrefix: string,
   nameSoFar: string,
-  callback: (child: any) => any,
+  callback: (child: unknown) => unknown,
 ): number {
   const type = typeof children;
 
@@ -102,14 +102,14 @@ function mapIntoArray(
         invokeCallback = true;
         break;
       case 'object':
-        switch ((children as any).$$typeof) {
+        switch ((children as unknown as { $$typeof: symbol }).$$typeof) {
           case REACT_ELEMENT_TYPE:
           case REACT_PORTAL_TYPE:
             invokeCallback = true;
             break;
           case REACT_LAZY_TYPE: {
-            const payload = (children as any)._payload;
-            const init = (children as any)._init;
+            const payload = (children as unknown as { _payload: unknown })._payload;
+            const init = (children as unknown as { _init: (payload: unknown) => unknown })._init;
             return mapIntoArray(
               init(payload),
               array,
@@ -139,7 +139,7 @@ function mapIntoArray(
           mappedChild,
           escapedPrefix +
             (mappedChild.key != null &&
-            (!child || child.key !== mappedChild.key)
+            (!child || (child as Record<string, unknown>).key !== mappedChild.key)
               ? escapeUserProvidedKey('' + mappedChild.key) + '/'
               : '') +
             childKey,
@@ -187,9 +187,9 @@ function mapIntoArray(
         );
       }
     } else if (type === 'object') {
-      if (typeof (children as any).then === 'function') {
+      if (typeof (children as unknown as { then?: unknown }).then === 'function') {
         return mapIntoArray(
-          resolveThenable(children as any),
+          resolveThenable(children as PromiseLike<unknown> & { status?: string; value?: unknown; reason?: unknown }),
           array,
           escapedPrefix,
           nameSoFar,
@@ -202,7 +202,7 @@ function mapIntoArray(
         `Objects are not valid as a React child (found: ${
           childrenString === '[object Object]'
             ? 'object with keys {' +
-              Object.keys(children as any).join(', ') +
+              Object.keys(children as Record<string, unknown>).join(', ') +
               '}'
             : childrenString
         }). ` +
@@ -218,7 +218,7 @@ function mapIntoArray(
 export function mapChildren(
   children: ReactNode,
   func: (child: ReactNode, index: number) => ReactNode,
-  context?: any,
+  context?: unknown,
 ): ReactNode[] | null | undefined {
   if (children == null) {
     return children as null | undefined;
@@ -226,7 +226,7 @@ export function mapChildren(
   const result: ReactNode[] = [];
   let count = 0;
   mapIntoArray(children, result, '', '', function (child) {
-    return func.call(context, child, count++);
+    return func.call(context, child as ReactNode, count++);
   });
   return result;
 }
@@ -234,13 +234,13 @@ export function mapChildren(
 export function forEachChildren(
   children: ReactNode,
   forEachFunc: (child: ReactNode, index: number) => void,
-  forEachContext?: any,
+  forEachContext?: unknown,
 ): void {
   mapChildren(
     children,
-    function (this: any) {
-      forEachFunc.apply(this, arguments as any);
-    } as any,
+    function (this: unknown, ...args: unknown[]) {
+      forEachFunc.apply(this as undefined, args as [ReactNode, number]);
+    } as (child: ReactNode, index: number) => ReactNode,
     forEachContext,
   );
 }

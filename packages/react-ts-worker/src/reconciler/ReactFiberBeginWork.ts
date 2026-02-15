@@ -1,9 +1,9 @@
 // BeginWork - Render phase down-traversal
 // Processes each fiber and returns the next child to work on
 
-import type { Fiber, FiberRoot } from './ReactFiberTypes.js';
+import type { Fiber } from './ReactFiberTypes.js';
 import type { Lanes } from './ReactFiberLane.js';
-import type { ReactElement, ReactContext } from '../react/ReactTypes.js';
+import type { ReactContext, ComponentClass, ComponentInstance } from '../react/ReactTypes.js';
 import {
   FunctionComponent,
   ClassComponent,
@@ -21,26 +21,19 @@ import {
 import {
   NoFlags,
   PerformedWork,
-  Placement,
-  Update,
   ContentReset,
-  ChildDeletion,
   Ref,
   DidCapture,
-  ForceClientRender,
   RefStatic,
 } from './ReactFiberFlags.js';
-import { NoLanes, includesSomeLane, mergeLanes } from './ReactFiberLane.js';
+import { NoLanes, includesSomeLane } from './ReactFiberLane.js';
 import {
-  REACT_FRAGMENT_TYPE,
-  REACT_LAZY_TYPE,
   REACT_MEMO_TYPE,
   REACT_FORWARD_REF_TYPE,
-  REACT_CONTEXT_TYPE,
 } from '../react/ReactSymbols.js';
 import { reconcileChildFibers, mountChildFibers } from './ReactChildFiber.js';
 import { renderWithHooks, bailoutHooks } from './ReactFiberHooks.js';
-import { pushProvider, readContext } from './ReactFiberNewContext.js';
+import { pushProvider } from './ReactFiberNewContext.js';
 import { pushHostContext, pushHostContainer } from './ReactFiberHostContext.js';
 import {
   constructClassInstance,
@@ -53,7 +46,7 @@ import shallowEqual from '../shared/shallowEqual.js';
 function reconcileChildren(
   current: Fiber | null,
   workInProgress: Fiber,
-  nextChildren: any,
+  nextChildren: unknown,
   renderLanes: Lanes,
 ): void {
   if (current === null) {
@@ -82,14 +75,14 @@ function markRef(current: Fiber | null, workInProgress: Fiber): void {
 function updateFunctionComponent(
   current: Fiber | null,
   workInProgress: Fiber,
-  Component: Function,
-  nextProps: any,
+  Component: (...args: unknown[]) => unknown,
+  nextProps: unknown,
   renderLanes: Lanes,
 ): Fiber | null {
   const nextChildren = renderWithHooks(
     current,
     workInProgress,
-    Component as any,
+    Component,
     nextProps,
     null,
     renderLanes,
@@ -108,23 +101,24 @@ function updateFunctionComponent(
 function updateClassComponent(
   current: Fiber | null,
   workInProgress: Fiber,
-  Component: any,
-  nextProps: any,
+  Component: unknown,
+  nextProps: unknown,
   renderLanes: Lanes,
 ): Fiber | null {
-  let instance = workInProgress.stateNode;
+  const Ctor = Component as ComponentClass;
+  let instance = workInProgress.stateNode as ComponentInstance | null;
 
   if (instance === null) {
-    instance = constructClassInstance(workInProgress, Component, nextProps);
-    mountClassInstance(workInProgress, Component, nextProps, renderLanes);
+    instance = constructClassInstance(workInProgress, Ctor, nextProps);
+    mountClassInstance(workInProgress, Ctor, nextProps, renderLanes);
   } else if (current === null) {
     // Re-mount (component was previously deleted but fiber is being reused)
-    mountClassInstance(workInProgress, Component, nextProps, renderLanes);
+    mountClassInstance(workInProgress, Ctor, nextProps, renderLanes);
   } else {
     const shouldUpdate = updateClassInstance(
       current,
       workInProgress,
-      Component,
+      Ctor,
       nextProps,
       renderLanes,
     );
@@ -133,7 +127,7 @@ function updateClassComponent(
     }
   }
 
-  const nextChildren = instance.render();
+  const nextChildren = instance!.render();
   workInProgress.flags |= PerformedWork;
   reconcileChildren(current, workInProgress, nextChildren, renderLanes);
   return workInProgress.child;
@@ -146,7 +140,7 @@ function updateHostRoot(
 ): Fiber | null {
   pushHostContainer(workInProgress);
 
-  const nextChildren = workInProgress.memoizedState?.element ?? null;
+  const nextChildren = (workInProgress.memoizedState as Record<string, unknown> | null)?.element ?? null;
   reconcileChildren(current, workInProgress, nextChildren, renderLanes);
   return workInProgress.child;
 }
@@ -158,9 +152,9 @@ function updateHostComponent(
 ): Fiber | null {
   pushHostContext(workInProgress);
 
-  const type = workInProgress.type;
-  const nextProps = workInProgress.pendingProps;
-  const prevProps = current !== null ? current.memoizedProps : null;
+  const _type = workInProgress.type;
+  const nextProps = workInProgress.pendingProps as Record<string, unknown>;
+  const prevProps = current !== null ? current.memoizedProps as Record<string, unknown> | null : null;
 
   let nextChildren = nextProps.children;
 
@@ -206,8 +200,8 @@ function updateContextProvider(
   workInProgress: Fiber,
   renderLanes: Lanes,
 ): Fiber | null {
-  const context: ReactContext<any> = workInProgress.type;
-  const newProps = workInProgress.pendingProps;
+  const context: ReactContext<unknown> = workInProgress.type as ReactContext<unknown>;
+  const newProps = workInProgress.pendingProps as Record<string, unknown>;
   const newValue = newProps.value;
 
   pushProvider(workInProgress, context, newValue);
@@ -220,11 +214,11 @@ function updateContextProvider(
 function updateForwardRef(
   current: Fiber | null,
   workInProgress: Fiber,
-  Component: any,
-  nextProps: any,
+  Component: unknown,
+  nextProps: unknown,
   renderLanes: Lanes,
 ): Fiber | null {
-  const render = Component.render;
+  const render = (Component as Record<string, unknown>).render as (props: unknown, secondArg?: unknown) => unknown;
   const ref = workInProgress.ref;
 
   const nextChildren = renderWithHooks(
@@ -249,24 +243,25 @@ function updateForwardRef(
 function updateMemoComponent(
   current: Fiber | null,
   workInProgress: Fiber,
-  Component: any,
-  nextProps: any,
+  Component: unknown,
+  nextProps: unknown,
   renderLanes: Lanes,
 ): Fiber | null {
+  const comp = Component as Record<string, unknown>;
   if (current === null) {
-    const type = Component.type;
+    const _type = comp.type;
     if (
-      typeof type === 'function' &&
-      Component.compare === null &&
-      Component.defaultProps === undefined
+      typeof _type === 'function' &&
+      comp.compare === null &&
+      comp.defaultProps === undefined
     ) {
       // Simple memo shortcut
       workInProgress.tag = SimpleMemoComponent;
-      workInProgress.type = type;
+      workInProgress.type = _type;
       return updateSimpleMemoComponent(
         current,
         workInProgress,
-        type,
+        _type,
         nextProps,
         renderLanes,
       );
@@ -275,7 +270,7 @@ function updateMemoComponent(
     const child = createFiberFromElement(
       {
         $$typeof: Symbol.for('react.transitional.element'),
-        type,
+        type: _type as string | ((...args: unknown[]) => unknown),
         key: null,
         ref: null,
         props: nextProps,
@@ -292,7 +287,7 @@ function updateMemoComponent(
   // Update path
   const currentChild = current.child!;
   const prevProps = currentChild.memoizedProps;
-  const compare = Component.compare || shallowEqual;
+  const compare = (comp.compare || shallowEqual) as (a: unknown, b: unknown) => boolean;
 
   if (compare(prevProps, nextProps) && current.ref === workInProgress.ref) {
     return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
@@ -302,7 +297,7 @@ function updateMemoComponent(
   const newChild = createFiberFromElement(
     {
       $$typeof: Symbol.for('react.transitional.element'),
-      type: Component.type,
+      type: comp.type as string | ((...args: unknown[]) => unknown),
       key: null,
       ref: null,
       props: nextProps,
@@ -319,8 +314,8 @@ function updateMemoComponent(
 function updateSimpleMemoComponent(
   current: Fiber | null,
   workInProgress: Fiber,
-  Component: any,
-  nextProps: any,
+  Component: unknown,
+  nextProps: unknown,
   renderLanes: Lanes,
 ): Fiber | null {
   if (current !== null) {
@@ -334,7 +329,7 @@ function updateSimpleMemoComponent(
       return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
   }
-  return updateFunctionComponent(current, workInProgress, Component, nextProps, renderLanes);
+  return updateFunctionComponent(current, workInProgress, Component as (...args: unknown[]) => unknown, nextProps, renderLanes);
 }
 
 function updateSuspenseComponent(
@@ -342,14 +337,14 @@ function updateSuspenseComponent(
   workInProgress: Fiber,
   renderLanes: Lanes,
 ): Fiber | null {
-  const nextProps = workInProgress.pendingProps;
+  const nextProps = workInProgress.pendingProps as Record<string, unknown>;
 
   const showFallback = (workInProgress.flags & DidCapture) !== NoFlags;
 
   if (showFallback) {
     workInProgress.flags &= ~DidCapture;
     const fallback = nextProps.fallback;
-    const primaryChildren = nextProps.children;
+    const _primaryChildren = nextProps.children;
 
     // Render fallback
     reconcileChildren(current, workInProgress, fallback, renderLanes);
@@ -365,12 +360,12 @@ function updateSuspenseComponent(
 function updateLazyComponent(
   current: Fiber | null,
   workInProgress: Fiber,
-  lazyComponent: any,
-  nextProps: any,
+  lazyComponent: unknown,
+  nextProps: unknown,
   renderLanes: Lanes,
 ): Fiber | null {
-  const payload = lazyComponent._payload;
-  const init = lazyComponent._init;
+  const payload = (lazyComponent as Record<string, unknown>)._payload;
+  const init = (lazyComponent as Record<string, unknown>)._init as (payload: unknown) => unknown;
   const Component = init(payload);
 
   workInProgress.type = Component;
@@ -381,15 +376,15 @@ function updateLazyComponent(
       return updateClassComponent(current, workInProgress, Component, nextProps, renderLanes);
     }
     workInProgress.tag = FunctionComponent;
-    return updateFunctionComponent(current, workInProgress, Component, nextProps, renderLanes);
+    return updateFunctionComponent(current, workInProgress, Component as (...args: unknown[]) => unknown, nextProps, renderLanes);
   }
 
   if (typeof Component === 'object' && Component !== null) {
-    if (Component.$$typeof === REACT_FORWARD_REF_TYPE) {
+    if ((Component as Record<string, unknown>).$$typeof === REACT_FORWARD_REF_TYPE) {
       workInProgress.tag = ForwardRef;
       return updateForwardRef(current, workInProgress, Component, nextProps, renderLanes);
     }
-    if (Component.$$typeof === REACT_MEMO_TYPE) {
+    if ((Component as Record<string, unknown>).$$typeof === REACT_MEMO_TYPE) {
       workInProgress.tag = MemoComponent;
       return updateMemoComponent(current, workInProgress, Component, nextProps, renderLanes);
     }
@@ -401,8 +396,9 @@ function updateLazyComponent(
   );
 }
 
-function isClassComponent(Component: any): boolean {
-  return !!(Component.prototype && Component.prototype.isReactComponent);
+function isClassComponent(Component: unknown): boolean {
+  const proto = (Component as Record<string, unknown>).prototype as Record<string, unknown> | undefined;
+  return !!(proto && proto.isReactComponent);
 }
 
 // Track whether we received an update during this beginWork
@@ -474,8 +470,8 @@ export function beginWork(
           pushHostContext(workInProgress);
           break;
         case ContextProvider: {
-          const context: ReactContext<any> = workInProgress.type;
-          pushProvider(workInProgress, context, workInProgress.memoizedProps.value);
+          const context: ReactContext<unknown> = workInProgress.type as ReactContext<unknown>;
+          pushProvider(workInProgress, context, (workInProgress.memoizedProps as Record<string, unknown>).value);
           break;
         }
       }
@@ -488,7 +484,7 @@ export function beginWork(
 
   switch (workInProgress.tag) {
     case FunctionComponent: {
-      const Component = workInProgress.type;
+      const Component = workInProgress.type as (...args: unknown[]) => unknown;
       const unresolvedProps = workInProgress.pendingProps;
       return updateFunctionComponent(
         current,

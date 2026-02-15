@@ -134,7 +134,7 @@ export class SyntheticKeyboardEvent extends SyntheticEvent {
     this.altKey = nativeEvent.altKey;
     this.metaKey = nativeEvent.metaKey;
     this.repeat = nativeEvent.repeat;
-    this.locale = (nativeEvent as any).locale || '';
+    this.locale = (nativeEvent as unknown as Record<string, string>).locale || '';
   }
 }
 

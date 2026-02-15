@@ -3,7 +3,7 @@ import type { Lanes } from './ReactFiberLane.js';
 import { SuspenseComponent } from './ReactWorkTags.js';
 
 export interface SuspenseState {
-  dehydrated: any;
+  dehydrated: unknown;
   retryLane: Lanes;
 }
 
@@ -57,7 +57,7 @@ export interface SuspenseException {
 }
 
 // Check if a thrown value is a thenable (Promise-like)
-export function isThenable(value: any): value is SuspenseException {
+export function isThenable(value: unknown): value is SuspenseException {
   return (
     typeof value === 'object' &&
     value !== null &&

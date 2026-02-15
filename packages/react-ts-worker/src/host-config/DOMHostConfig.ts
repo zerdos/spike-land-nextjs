@@ -25,7 +25,7 @@ const BOOLEAN_ATTRS = new Set([
 function setInitialProperties(
   domElement: Element,
   type: string,
-  props: Record<string, any>,
+  props: Record<string, unknown>,
 ): void {
   for (const propKey in props) {
     if (!props.hasOwnProperty(propKey)) continue;
@@ -37,10 +37,10 @@ function setInitialProperties(
         domElement.textContent = String(propValue);
       }
     } else if (propKey === 'style') {
-      setStyles(domElement as HTMLElement, propValue);
+      setStyles(domElement as HTMLElement, propValue as Record<string, unknown>);
     } else if (propKey === 'innerHTML') {
       // React's dangerouslySetInnerHTML.__html maps to this
-      (domElement as any).innerHTML = propValue;
+      (domElement as HTMLElement).innerHTML = propValue as string;
     } else if (propKey === 'ref' || propKey === 'key') {
       // Skip
     } else if (propKey.startsWith('on')) {
@@ -54,8 +54,8 @@ function setInitialProperties(
 function updateProperties(
   domElement: Element,
   type: string,
-  oldProps: Record<string, any>,
-  newProps: Record<string, any>,
+  oldProps: Record<string, unknown>,
+  newProps: Record<string, unknown>,
 ): void {
   // Remove old props
   for (const propKey in oldProps) {
@@ -64,7 +64,7 @@ function updateProperties(
 
     if (propKey === 'style') {
       const style = (domElement as HTMLElement).style;
-      const oldStyle = oldProps[propKey];
+      const oldStyle = oldProps[propKey] as Record<string, unknown> | undefined;
       if (oldStyle) {
         for (const styleName in oldStyle) {
           style.setProperty(styleName, '');
@@ -92,7 +92,7 @@ function updateProperties(
         domElement.textContent = String(newValue);
       }
     } else if (propKey === 'style') {
-      setStyles(domElement as HTMLElement, newValue, oldProps.style);
+      setStyles(domElement as HTMLElement, newValue as Record<string, unknown>, oldProps.style as Record<string, unknown>);
     } else if (propKey.startsWith('on')) {
       // Event listeners handled by event delegation
     } else {
@@ -105,7 +105,7 @@ function updateProperties(
   }
 }
 
-function setAttribute(domElement: Element, key: string, value: any): void {
+function setAttribute(domElement: Element, key: string, value: unknown): void {
   const attrName = PROP_TO_ATTRIBUTE[key] || key;
 
   if (BOOLEAN_ATTRS.has(key)) {
@@ -116,7 +116,7 @@ function setAttribute(domElement: Element, key: string, value: any): void {
     }
   } else if (key === 'value') {
     // Special handling for value property on input/select/textarea
-    (domElement as any).value = value == null ? '' : value;
+    (domElement as HTMLInputElement).value = value == null ? '' : String(value);
   } else {
     domElement.setAttribute(attrName, String(value));
   }
@@ -124,8 +124,8 @@ function setAttribute(domElement: Element, key: string, value: any): void {
 
 function setStyles(
   element: HTMLElement,
-  newStyles: Record<string, any>,
-  oldStyles?: Record<string, any>,
+  newStyles: Record<string, unknown>,
+  oldStyles?: Record<string, unknown>,
 ): void {
   const style = element.style;
 
@@ -136,7 +136,7 @@ function setStyles(
         if (key.indexOf('-') > -1) {
           style.removeProperty(key);
         } else {
-          (style as any)[key] = '';
+          (style as unknown as Record<string, string>)[key] = '';
         }
       }
     }
@@ -149,7 +149,7 @@ function setStyles(
       if (key.indexOf('-') > -1) {
         style.setProperty(key, value == null ? '' : String(value));
       } else {
-        (style as any)[key] = value == null ? '' : value;
+        (style as unknown as Record<string, string>)[key] = value == null ? '' : String(value);
       }
     }
   }
@@ -157,7 +157,7 @@ function setStyles(
 
 export const DOMHostConfig: HostConfig<
   string,
-  Record<string, any>,
+  Record<string, unknown>,
   Element,
   Element,
   Text,
@@ -169,7 +169,7 @@ export const DOMHostConfig: HostConfig<
 
   createInstance(
     type: string,
-    props: Record<string, any>,
+    props: Record<string, unknown>,
     rootContainer: Element,
     hostContext: HostContextValue,
   ): Element {
@@ -235,8 +235,8 @@ export const DOMHostConfig: HostConfig<
   commitUpdate(
     instance: Element,
     type: string,
-    oldProps: Record<string, any>,
-    newProps: Record<string, any>,
+    oldProps: Record<string, unknown>,
+    newProps: Record<string, unknown>,
   ): void {
     updateProperties(instance, type, oldProps, newProps);
   },
@@ -249,7 +249,7 @@ export const DOMHostConfig: HostConfig<
     instance.textContent = '';
   },
 
-  shouldSetTextContent(type: string, props: Record<string, any>): boolean {
+  shouldSetTextContent(type: string, props: Record<string, unknown>): boolean {
     return (
       type === 'textarea' ||
       type === 'noscript' ||
@@ -279,7 +279,7 @@ export const DOMHostConfig: HostConfig<
     return parentHostContext;
   },
 
-  prepareForCommit(_container: Element): Record<string, any> | null {
+  prepareForCommit(_container: Element): Record<string, unknown> | null {
     return null;
   },
 
@@ -288,7 +288,7 @@ export const DOMHostConfig: HostConfig<
   finalizeInitialChildren(
     _instance: Element,
     _type: string,
-    props: Record<string, any>,
+    props: Record<string, unknown>,
     _hostContext: HostContextValue,
   ): boolean {
     return !!props.autoFocus;
@@ -297,8 +297,8 @@ export const DOMHostConfig: HostConfig<
   prepareUpdate(
     _instance: Element,
     _type: string,
-    oldProps: Record<string, any>,
-    newProps: Record<string, any>,
+    oldProps: Record<string, unknown>,
+    newProps: Record<string, unknown>,
     _hostContext: HostContextValue,
   ): boolean | null {
     for (const key in oldProps) {

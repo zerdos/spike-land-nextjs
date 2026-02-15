@@ -11,15 +11,16 @@ export const REACT_SUSPENSE_TYPE: symbol = Symbol.for('react.suspense');
 export const REACT_MEMO_TYPE: symbol = Symbol.for('react.memo');
 export const REACT_LAZY_TYPE: symbol = Symbol.for('react.lazy');
 
-export function getIteratorFn(maybeIterable: any): (() => Iterator<any>) | null {
+export function getIteratorFn(maybeIterable: unknown): (() => Iterator<unknown>) | null {
   if (maybeIterable === null || typeof maybeIterable !== 'object') {
     return null;
   }
+  const iterableObj = maybeIterable as Record<string | symbol, unknown>;
   const maybeIterator =
-    (Symbol.iterator && maybeIterable[Symbol.iterator]) ||
-    maybeIterable['@@iterator'];
+    (Symbol.iterator && iterableObj[Symbol.iterator]) ||
+    iterableObj['@@iterator'];
   if (typeof maybeIterator === 'function') {
-    return maybeIterator;
+    return maybeIterator as () => Iterator<unknown>;
   }
   return null;
 }

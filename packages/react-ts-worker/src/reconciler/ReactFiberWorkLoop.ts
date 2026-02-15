@@ -8,24 +8,16 @@ import {
   SyncLane,
   mergeLanes,
   getHighestPriorityLane,
-  includesSomeLane,
   markRootUpdated,
   markRootFinished,
   getNextLanes,
 } from './ReactFiberLane.js';
 import {
   NoFlags,
-  Placement,
-  Update,
-  ChildDeletion,
-  Passive,
   MutationMask,
   LayoutMask,
   PassiveMask,
-  Incomplete,
-  HostEffectMask,
 } from './ReactFiberFlags.js';
-import { HostRoot } from './ReactWorkTags.js';
 import { createWorkInProgress } from './ReactFiber.js';
 import { beginWork } from './ReactFiberBeginWork.js';
 import { completeWork } from './ReactFiberCompleteWork.js';
@@ -44,7 +36,6 @@ import {
   ImmediatePriority,
 } from '../scheduler/Scheduler.js';
 import type { PriorityLevel } from '../scheduler/SchedulerPriorities.js';
-import ReactSharedInternals from '../react/ReactSharedInternals.js';
 import { setHooksExternals, setWorkInProgressRoot } from './ReactFiberHooks.js';
 import { markWorkInProgressReceivedUpdate } from './ReactFiberBeginWork.js';
 
@@ -219,7 +210,7 @@ function workLoopSync(): void {
   }
 }
 
-function workLoopConcurrent(): void {
+function _workLoopConcurrent(): void {
   while (workInProgress !== null && !shouldYield()) {
     performUnitOfWork(workInProgress);
   }
@@ -302,7 +293,7 @@ function commitRoot(root: FiberRoot): void {
     const hostConfig = root.hostConfig;
 
     // Before mutation phase
-    const previousState = hostConfig.prepareForCommit(root.containerInfo);
+    const _previousState = hostConfig.prepareForCommit(root.containerInfo);
     commitBeforeMutationEffects(root, finishedWork);
 
     // Mutation phase - modify the DOM

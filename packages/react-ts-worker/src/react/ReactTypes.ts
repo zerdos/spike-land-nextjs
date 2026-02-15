@@ -13,39 +13,39 @@ export type ReactNode =
   | PromiseLike<ReactNode>;
 
 export interface ReactElement<
-  P = any,
+  P = unknown,
   T extends string | symbol | ReactComponentType | object = string | symbol | ReactComponentType | object,
 > {
   $$typeof: symbol;
   type: T;
   key: string | null;
-  ref: Ref<any> | null;
+  ref: Ref<unknown> | null;
   props: P;
-  _owner: any; // Fiber | null
+  _owner: unknown; // Fiber | null
 }
 
 export interface ReactPortal extends ReactElement {
   children: ReactNode;
 }
 
-export type ReactComponentType<P = any> =
+export type ReactComponentType<P = unknown> =
   | FunctionComponent<P>
   | ComponentClass<P>;
 
-export type FunctionComponent<P = {}> = (props: P) => ReactNode;
+export type FunctionComponent<P = Record<string, unknown>> = (props: P) => ReactNode;
 
-export interface ComponentClass<P = {}> {
-  new (props: P, context?: any): ComponentInstance<P>;
+export interface ComponentClass<P = Record<string, unknown>> {
+  new (props: P, context?: unknown): ComponentInstance<P>;
   defaultProps?: Partial<P>;
   displayName?: string;
-  contextType?: ReactContext<any>;
+  contextType?: ReactContext<unknown>;
 }
 
-export interface ComponentInstance<P = {}, S = {}> {
+export interface ComponentInstance<P = Record<string, unknown>, S = Record<string, unknown>> {
   props: Readonly<P>;
   state: Readonly<S>;
-  context: any;
-  refs: Record<string, any>;
+  context: unknown;
+  refs: Record<string, unknown>;
   setState(
     state: S | ((prevState: Readonly<S>, props: Readonly<P>) => S | null) | null,
     callback?: () => void,
@@ -53,10 +53,10 @@ export interface ComponentInstance<P = {}, S = {}> {
   forceUpdate(callback?: () => void): void;
   render(): ReactNode;
   componentDidMount?(): void;
-  componentDidUpdate?(prevProps: Readonly<P>, prevState: Readonly<S>, snapshot?: any): void;
+  componentDidUpdate?(prevProps: Readonly<P>, prevState: Readonly<S>, snapshot?: unknown): void;
   componentWillUnmount?(): void;
-  shouldComponentUpdate?(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean;
-  getSnapshotBeforeUpdate?(prevProps: Readonly<P>, prevState: Readonly<S>): any;
+  shouldComponentUpdate?(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: unknown): boolean;
+  getSnapshotBeforeUpdate?(prevProps: Readonly<P>, prevState: Readonly<S>): unknown;
   componentDidCatch?(error: Error, errorInfo: { componentStack: string }): void;
 }
 
@@ -92,20 +92,20 @@ export interface ReactProviderType<T> {
 
 export type Usable<T> = PromiseLike<T> | ReactContext<T>;
 
-export interface MemoComponent<P = any> {
+export interface MemoComponent<P = unknown> {
   $$typeof: symbol;
   type: FunctionComponent<P>;
   compare: ((prevProps: P, nextProps: P) => boolean) | null;
   displayName?: string;
 }
 
-export interface ForwardRefComponent<P = any, T = any> {
+export interface ForwardRefComponent<P = unknown, T = unknown> {
   $$typeof: symbol;
   render: (props: P, ref: Ref<T>) => ReactNode;
   displayName?: string;
 }
 
-export interface LazyComponent<T = any> {
+export interface LazyComponent<T = unknown> {
   $$typeof: symbol;
   _payload: LazyPayload<T>;
   _init: (payload: LazyPayload<T>) => T;
@@ -123,12 +123,12 @@ export type Dispatcher = {
   useEffect(create: () => (() => void) | void, deps?: DependencyList): void;
   useLayoutEffect(create: () => (() => void) | void, deps?: DependencyList): void;
   useInsertionEffect(create: () => (() => void) | void, deps?: DependencyList): void;
-  useCallback<T extends (...args: any[]) => any>(callback: T, deps: DependencyList): T;
+  useCallback<T extends (...args: unknown[]) => unknown>(callback: T, deps: DependencyList): T;
   useMemo<T>(create: () => T, deps: DependencyList): T;
   useRef<T>(initialValue: T): RefObject<T>;
   useContext<T>(context: ReactContext<T>): T;
   useImperativeHandle<T>(ref: Ref<T> | undefined, create: () => T, deps?: DependencyList): void;
-  useDebugValue<T>(value: T, format?: (value: T) => any): void;
+  useDebugValue<T>(value: T, format?: (value: T) => unknown): void;
   useTransition(): [boolean, (callback: () => void) => void];
   useDeferredValue<T>(value: T, initialValue?: T): T;
   useId(): string;
@@ -148,4 +148,4 @@ export type Transition = {
 
 export type SetStateAction<S> = S | ((prevState: S) => S);
 export type Dispatch<A> = (action: A) => void;
-export type DependencyList = readonly unknown[] | any[] | null;
+export type DependencyList = readonly unknown[] | unknown[] | null;

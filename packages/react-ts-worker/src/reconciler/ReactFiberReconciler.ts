@@ -1,15 +1,14 @@
 // ReactFiberReconciler - Public API for creating and updating containers
 
-import type { Fiber, FiberRoot } from './ReactFiberTypes.js';
+import type { FiberRoot } from './ReactFiberTypes.js';
 import type { HostConfig } from '../host-config/HostConfigInterface.js';
-import type { ReactNode, ReactElement } from '../react/ReactTypes.js';
-import { REACT_ELEMENT_TYPE } from '../react/ReactSymbols.js';
+import type { ReactNode } from '../react/ReactTypes.js';
 import { createFiberRoot } from './ReactFiberRoot.js';
 import { SyncLane } from './ReactFiberLane.js';
 import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop.js';
 
 export function createContainer(
-  containerInfo: any,
+  containerInfo: unknown,
   hostConfig: HostConfig,
 ): FiberRoot {
   return createFiberRoot(containerInfo, hostConfig);
@@ -33,7 +32,7 @@ export function updateContainer(
   scheduleUpdateOnFiber(container, current, lane);
 }
 
-export function getPublicRootInstance(container: FiberRoot): any {
+export function getPublicRootInstance(container: FiberRoot): unknown {
   const containerFiber = container.current;
   if (!containerFiber.child) {
     return null;

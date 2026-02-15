@@ -1,11 +1,10 @@
-import type { ReactNode } from './ReactTypes.js';
 import assign from '../shared/assign.js';
 
 const emptyObject = {};
 
 interface Updater {
-  enqueueSetState(inst: any, payload: any, callback: any, callerName: string): void;
-  enqueueForceUpdate(inst: any, callback: any, callerName: string): void;
+  enqueueSetState(inst: unknown, payload: unknown, callback: unknown, callerName: string): void;
+  enqueueForceUpdate(inst: unknown, callback: unknown, callerName: string): void;
 }
 
 const ReactNoopUpdateQueue: Updater = {
@@ -14,9 +13,9 @@ const ReactNoopUpdateQueue: Updater = {
 };
 
 export function Component(
-  this: any,
-  props: any,
-  context: any,
+  this: Record<string, unknown>,
+  props: unknown,
+  context: unknown,
   updater?: Updater,
 ) {
   this.props = props;
@@ -28,7 +27,7 @@ export function Component(
 Component.prototype.isReactComponent = {};
 
 Component.prototype.setState = function (
-  partialState: any,
+  partialState: unknown,
   callback?: () => void,
 ) {
   if (
@@ -48,13 +47,13 @@ Component.prototype.forceUpdate = function (callback?: () => void) {
   this.updater.enqueueForceUpdate(this, callback, 'forceUpdate');
 };
 
-function ComponentDummy(this: any) {}
+function ComponentDummy(this: Record<string, unknown>) {}
 ComponentDummy.prototype = Component.prototype;
 
 export function PureComponent(
-  this: any,
-  props: any,
-  context: any,
+  this: Record<string, unknown>,
+  props: unknown,
+  context: unknown,
   updater?: Updater,
 ) {
   this.props = props;
@@ -64,7 +63,7 @@ export function PureComponent(
 }
 
 const pureComponentPrototype = (PureComponent.prototype =
-  new (ComponentDummy as any)());
+  new (ComponentDummy as unknown as new () => Record<string, unknown>)());
 pureComponentPrototype.constructor = PureComponent;
 assign(pureComponentPrototype, Component.prototype);
 pureComponentPrototype.isPureReactComponent = true;
