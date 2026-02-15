@@ -83,6 +83,9 @@ const {
   mockRegisterAgencyTools,
   mockRegisterAuditTools,
   mockRegisterNotificationsTools,
+  mockRegisterPagesTools,
+  mockRegisterBlocksTools,
+  mockRegisterPageAiTools,
   mockRegistryInstance,
 } = vi.hoisted(() => ({
   mockRegistryInstance: {} as Record<string, unknown>,
@@ -173,6 +176,9 @@ const {
   mockRegisterAgencyTools: vi.fn(),
   mockRegisterAuditTools: vi.fn(),
   mockRegisterNotificationsTools: vi.fn(),
+  mockRegisterPagesTools: vi.fn(),
+  mockRegisterBlocksTools: vi.fn(),
+  mockRegisterPageAiTools: vi.fn(),
 }));
 
 // Mock McpServer constructor - must use function keyword for `new` support
@@ -276,6 +282,11 @@ vi.mock("./tools/email", () => ({ registerEmailTools: mockRegisterEmailTools }))
 vi.mock("./tools/agency", () => ({ registerAgencyTools: mockRegisterAgencyTools }));
 vi.mock("./tools/audit", () => ({ registerAuditTools: mockRegisterAuditTools }));
 vi.mock("./tools/notifications", () => ({ registerNotificationsTools: mockRegisterNotificationsTools }));
+
+// Dynamic pages tools
+vi.mock("./tools/pages", () => ({ registerPagesTools: mockRegisterPagesTools }));
+vi.mock("./tools/blocks", () => ({ registerBlocksTools: mockRegisterBlocksTools }));
+vi.mock("./tools/page-ai", () => ({ registerPageAiTools: mockRegisterPageAiTools }));
 
 vi.mock("./capability-filtered-registry", () => {
   const MockCapabilityFilteredRegistry = vi.fn(function CapabilityFilteredRegistry() {
