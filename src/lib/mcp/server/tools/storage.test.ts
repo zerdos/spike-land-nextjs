@@ -10,7 +10,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 vi.mock("@/lib/logger", () => ({ default: { error: vi.fn(), info: vi.fn(), warn: vi.fn() } }));
 
-import { createMockRegistry, getText } from "../__test-utils__";
+import { createMockRegistry, getText, isError } from "../__test-utils__";
 import { registerStorageTools } from "./storage";
 
 describe("storage tools", () => {
@@ -52,7 +52,7 @@ describe("storage tools", () => {
         purpose: "image",
       });
 
-      expect(result.isError).toBe(true);
+      expect(isError(result)).toBe(true);
       expect(getText(result)).toContain("Access denied");
     });
 
@@ -65,7 +65,7 @@ describe("storage tools", () => {
         purpose: "image",
       });
 
-      expect(result.isError).toBeUndefined();
+      expect(isError(result)).toBe(false);
       expect(getText(result)).toContain(`uploads/${userId}/image/file.jpg`);
 
       vi.unstubAllEnvs();

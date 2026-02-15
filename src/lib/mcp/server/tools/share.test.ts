@@ -18,7 +18,7 @@ vi.mock("crypto", () => ({
 }));
 vi.mock("@/lib/logger", () => ({ default: { error: vi.fn(), info: vi.fn(), warn: vi.fn() } }));
 
-import { createMockRegistry, getText } from "../__test-utils__";
+import { createMockRegistry, getText, isError } from "../__test-utils__";
 import { registerShareTools } from "./share";
 
 describe("share tools", () => {
@@ -75,7 +75,7 @@ describe("share tools", () => {
       const handler = registry.handlers.get("share_create_token")!;
       const result = await handler({ imageId: "nonexistent" });
 
-      expect(result.isError).toBe(true);
+      expect(isError(result)).toBe(true);
     });
   });
 
@@ -100,7 +100,7 @@ describe("share tools", () => {
       const handler = registry.handlers.get("share_get_info")!;
       const result = await handler({ token: "invalid" });
 
-      expect(result.isError).toBe(true);
+      expect(isError(result)).toBe(true);
     });
   });
 });

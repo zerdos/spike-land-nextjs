@@ -22,7 +22,7 @@ const mockPrisma = vi.hoisted(() => ({
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
 vi.mock("@/lib/logger", () => ({ default: { error: vi.fn(), info: vi.fn(), warn: vi.fn() } }));
 
-import { createMockRegistry, getText } from "../__test-utils__";
+import { createMockRegistry, getText, isError } from "../__test-utils__";
 import { registerGalleryTools } from "./gallery";
 
 describe("gallery tools", () => {
@@ -90,7 +90,7 @@ describe("gallery tools", () => {
       const handler = registry.handlers.get("gallery_public_albums")!;
       const result = await handler({ limit: 12 });
 
-      expect(result.isError).toBe(true);
+      expect(isError(result)).toBe(true);
       expect(getText(result)).toContain("not found");
     });
   });

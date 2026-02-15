@@ -35,7 +35,7 @@ vi.mock("@/lib/boxes/provisioning", () => ({
 }));
 vi.mock("@/lib/logger", () => ({ default: { error: vi.fn(), info: vi.fn(), warn: vi.fn() } }));
 
-import { createMockRegistry, getText } from "../__test-utils__";
+import { createMockRegistry, getText, isError } from "../__test-utils__";
 import { registerBoxesTools } from "./boxes";
 
 describe("boxes tools", () => {
@@ -95,7 +95,7 @@ describe("boxes tools", () => {
       const result = await handler({ name: "Fail Box", tierId: "tier-1" });
 
       expect(mockCreditManager.refundCredits).toHaveBeenCalledWith(userId, 10);
-      expect(result.isError).toBe(true);
+      expect(isError(result)).toBe(true);
     });
 
     it("should reject when insufficient credits", async () => {
@@ -105,7 +105,7 @@ describe("boxes tools", () => {
       const handler = registry.handlers.get("boxes_create")!;
       const result = await handler({ name: "No Credits", tierId: "tier-1" });
 
-      expect(result.isError).toBe(true);
+      expect(isError(result)).toBe(true);
       expect(getText(result)).toContain("Insufficient credits");
     });
   });
@@ -133,7 +133,7 @@ describe("boxes tools", () => {
       const handler = registry.handlers.get("boxes_action")!;
       const result = await handler({ id: "nonexistent", action: "STOP" });
 
-      expect(result.isError).toBe(true);
+      expect(isError(result)).toBe(true);
     });
   });
 
@@ -154,7 +154,7 @@ describe("boxes tools", () => {
       const handler = registry.handlers.get("boxes_get")!;
       const result = await handler({ id: "nonexistent" });
 
-      expect(result.isError).toBe(true);
+      expect(isError(result)).toBe(true);
     });
   });
 });

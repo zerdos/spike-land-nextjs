@@ -14,7 +14,7 @@ const mockPrisma = vi.hoisted(() => ({
 vi.mock("@/lib/prisma", () => ({ default: mockPrisma }));
 vi.mock("@/lib/logger", () => ({ default: { error: vi.fn(), info: vi.fn(), warn: vi.fn() } }));
 
-import { createMockRegistry, getText } from "../__test-utils__";
+import { createMockRegistry, getText, isError } from "../__test-utils__";
 import { registerJobsTools } from "./jobs";
 
 describe("jobs tools", () => {
@@ -49,7 +49,7 @@ describe("jobs tools", () => {
       const handler = registry.handlers.get("jobs_get")!;
       const result = await handler({ jobId: "nonexistent" });
 
-      expect(result.isError).toBe(true);
+      expect(isError(result)).toBe(true);
     });
   });
 
@@ -106,7 +106,7 @@ describe("jobs tools", () => {
       const handler = registry.handlers.get("jobs_cancel")!;
       const result = await handler({ jobId: "nonexistent" });
 
-      expect(result.isError).toBe(true);
+      expect(isError(result)).toBe(true);
       expect(getText(result)).toContain("not found");
     });
 
@@ -120,7 +120,7 @@ describe("jobs tools", () => {
       const handler = registry.handlers.get("jobs_cancel")!;
       const result = await handler({ jobId: "job-1" });
 
-      expect(result.isError).toBe(true);
+      expect(isError(result)).toBe(true);
       expect(getText(result)).toContain("cannot be cancelled");
     });
   });
