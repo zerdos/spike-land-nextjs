@@ -1,0 +1,12 @@
+{
+  "name": "spike-land-transpiler",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "download-wasm": "node -e \"fetch('https://unpkg.com/esbuild-wasm@latest/esbuild.wasm').then(r=>r.arrayBuffer()).then(b=>require('fs').writeFileSync('esbuild.wasm',Buffer.from(b)))\""
+  },
+  "dependencies": {
+    "esbuild-wasm": "^0.24.0"
+  }
+}

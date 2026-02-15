@@ -52,18 +52,18 @@ const sessionCache = new Map();
 // Hash computation
 // ---------------------------------------------------------------------------
 
-async function md5(text) {
+async function sha256hex(text) {
   const data = new TextEncoder().encode(text);
-  const hashBuffer = await crypto.subtle.digest("MD5", data);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   return [...new Uint8Array(hashBuffer)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 async function computeSessionHash(codeSpace, code, html, css, transpiled) {
-  const codeMd5 = await md5(code || "");
-  const htmlMd5 = await md5(html || "");
-  const cssMd5 = await md5(css || "");
-  const transpiledMd5 = await md5(transpiled || "");
-  return md5(JSON.stringify({ codeSpace, code_md5: codeMd5, html_md5: htmlMd5, css_md5: cssMd5, transpiled_md5: transpiledMd5 }));
+  const codeMd5 = await sha256hex(code || "");
+  const htmlMd5 = await sha256hex(html || "");
+  const cssMd5 = await sha256hex(css || "");
+  const transpiledMd5 = await sha256hex(transpiled || "");
+  return sha256hex(JSON.stringify({ codeSpace, code_md5: codeMd5, html_md5: htmlMd5, css_md5: cssMd5, transpiled_md5: transpiledMd5 }));
 }
 
 // ---------------------------------------------------------------------------

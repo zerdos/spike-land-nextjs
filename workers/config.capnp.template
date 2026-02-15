@@ -30,8 +30,8 @@ const config :Workerd.Config = (
           (name = "worker", esModule = embed "services/collab/index.js"),
         ],
         bindings = [
-          (name = "REDIS_URL", text = ""),
-          (name = "REDIS_TOKEN", text = ""),
+          (name = "REDIS_URL", text = "${REDIS_URL}"),
+          (name = "REDIS_TOKEN", text = "${REDIS_TOKEN}"),
         ],
         globalOutbound = "internet",
       )
@@ -59,11 +59,11 @@ const config :Workerd.Config = (
           (name = "worker", esModule = embed "services/storage-proxy/index.js"),
         ],
         bindings = [
-          (name = "AWS_ACCESS_KEY_ID", text = ""),
-          (name = "AWS_SECRET_ACCESS_KEY", text = ""),
-          (name = "AWS_REGION", text = "us-east-1"),
-          (name = "DYNAMODB_TABLE", text = "spike-land-kv"),
-          (name = "S3_BUCKET", text = "spike-land-storage"),
+          (name = "AWS_ACCESS_KEY_ID", text = "${AWS_ACCESS_KEY_ID}"),
+          (name = "AWS_SECRET_ACCESS_KEY", text = "${AWS_SECRET_ACCESS_KEY}"),
+          (name = "AWS_REGION", text = "${AWS_REGION}"),
+          (name = "DYNAMODB_TABLE", text = "${DYNAMODB_TABLE}"),
+          (name = "S3_BUCKET", text = "${S3_BUCKET}"),
         ],
         globalOutbound = "internet",
       )
@@ -78,9 +78,9 @@ const config :Workerd.Config = (
           (name = "worker", esModule = embed "services/ai-proxy/index.js"),
         ],
         bindings = [
-          (name = "OPENAI_API_KEY", text = ""),
-          (name = "ANTHROPIC_API_KEY", text = ""),
-          (name = "REPLICATE_API_TOKEN", text = ""),
+          (name = "OPENAI_API_KEY", text = "${OPENAI_API_KEY}"),
+          (name = "ANTHROPIC_API_KEY", text = "${ANTHROPIC_API_KEY}"),
+          (name = "REPLICATE_API_TOKEN", text = "${REPLICATE_API_TOKEN}"),
         ],
         globalOutbound = "internet",
       )
@@ -95,8 +95,8 @@ const config :Workerd.Config = (
           (name = "worker", esModule = embed "services/auth-worker/index.js"),
         ],
         bindings = [
-          (name = "JWT_SECRET", text = "dev-secret"),
-          (name = "AUTH_ISSUER", text = "spike.land"),
+          (name = "JWT_SECRET", text = "${JWT_SECRET}"),
+          (name = "AUTH_ISSUER", text = "${AUTH_ISSUER}"),
         ],
         globalOutbound = "internet",
       )

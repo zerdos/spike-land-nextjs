@@ -44,7 +44,7 @@ resource "aws_globalaccelerator_endpoint_group" "primary" {
   endpoint_group_region = var.primary_region
   traffic_dial_percentage = 100
 
-  health_check_port             = 8080
+  health_check_port             = 443
   health_check_protocol         = "TCP"
   health_check_interval_seconds = 30
   threshold_count               = 3
@@ -65,7 +65,7 @@ resource "aws_globalaccelerator_endpoint_group" "secondary" {
   endpoint_group_region = var.secondary_region
   traffic_dial_percentage = 100
 
-  health_check_port             = 8080
+  health_check_port             = 443
   health_check_protocol         = "TCP"
   health_check_interval_seconds = 30
   threshold_count               = 3

@@ -19,16 +19,23 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./workers/config.capnp:/app/config.capnp
+      - ./workers/config.capnp.template:/app/config.capnp.template
       - ./workers/services:/app/services
+      - ./workers/entrypoint.sh:/app/entrypoint.sh
     environment:
       - REDIS_URL=redis://redis:6379
+      - REDIS_TOKEN=
       - DATABASE_URL=postgresql://dev:dev@postgres:5432/spike_land
       - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - DYNAMODB_TABLE=spike-land-kv
+      - S3_BUCKET=spike-land-storage
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN:-}
       - JWT_SECRET=${AUTH_SECRET:-dev-secret}
+      - AUTH_ISSUER=spike.land
     depends_on:
       redis:
         condition: service_healthy

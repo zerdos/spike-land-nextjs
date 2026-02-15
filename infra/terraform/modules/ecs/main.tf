@@ -70,6 +70,29 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# Allow task execution role to read SSM parameters and Secrets Manager for
+# sensitive env vars (DATABASE_URL, REDIS_URL, API keys)
+resource "aws_iam_role_policy" "ecs_task_execution_secrets" {
+  name_prefix = "${var.environment}-ecs-secrets-"
+  role        = aws_iam_role.ecs_task_execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "ssm:GetParameters",
+        "ssm:GetParameter",
+        "secretsmanager:GetSecretValue",
+      ]
+      Resource = [
+        "arn:aws:ssm:${var.region}:*:parameter/${var.environment}/spike-land/*",
+        "arn:aws:secretsmanager:${var.region}:*:secret:${var.environment}/spike-land/*",
+      ]
+    }]
+  })
+}
+
 resource "aws_iam_role" "ecs_task" {
   name_prefix = "${var.environment}-ecs-task-"
 
