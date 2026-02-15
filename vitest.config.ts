@@ -24,6 +24,7 @@ export default defineConfig({
       "src/lib/tracking/**/*.{test,spec}.{ts,tsx}",
       "src/lib/ab-test/**/*.{test,spec}.{ts,tsx}",
       "src/lib/bazdmeg/**/*.{test,spec}.{ts,tsx}",
+      "src/app/store/**/*.{test,spec}.{ts,tsx}",
     ],
     exclude: [
       "**/node_modules/**",
