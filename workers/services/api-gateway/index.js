@@ -69,6 +69,9 @@ function resolveRoute(pathname) {
   if (pathname.startsWith("/auth/")) return { service: "AUTH_WORKER" };
   if (pathname.startsWith("/storage/")) return { service: "STORAGE_PROXY" };
 
+  // MCP gateway
+  if (pathname.startsWith("/mcp")) return { service: "MCP_GATEWAY" };
+
   // AI proxy routes
   if (pathname.startsWith("/openai")) return { service: "AI_PROXY" };
   if (pathname.startsWith("/anthropic")) return { service: "AI_PROXY" };

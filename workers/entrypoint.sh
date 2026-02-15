@@ -17,6 +17,7 @@ export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
 export REPLICATE_API_TOKEN="${REPLICATE_API_TOKEN:-}"
 export JWT_SECRET="${JWT_SECRET:-dev-secret}"
 export AUTH_ISSUER="${AUTH_ISSUER:-spike.land}"
+export NEXT_APP_URL="${NEXT_APP_URL:-https://spike.land}"
 
 envsubst < /app/config.capnp.template > /app/config.capnp
 
