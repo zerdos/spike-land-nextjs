@@ -31,7 +31,7 @@ export function createMockEnv() {
       getWithMetadata: vi.fn(),
     } as unknown as KVNamespace,
     REPLICATE_API_TOKEN: "test-replicate-api-token",
-    CLAUDE_CODE_OAUTH_TOKEN: "test-anthropic-auth-token",
+    ANTHROPIC_AUTH_TOKEN: "test-anthropic-auth-token",
     CF_REAL_TURN_TOKEN: "test-cf-real-turn-token",
     ESBUILD: {
       fetch: vi.fn(),

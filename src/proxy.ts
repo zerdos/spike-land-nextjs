@@ -59,34 +59,6 @@ export function constantTimeCompare(a: string, b: string): boolean {
 }
 
 /**
- * Known route prefixes that should NOT be rewritten to /g/<path>.
- * Any unknown route is rewritten so the dynamic generation pipeline handles it.
- */
-const KNOWN_PREFIXES = new Set([
-  "about", "admin", "agents", "albums", "api", "apps", "auth",
-  "bazdmeg", "blog", "boxes", "canvas", "career", "cart", "checkout",
-  "community", "connect", "cookies", "create", "cv", "docs",
-  "g", "gallery", "generate", "learnit", "live", "mcp", "merch",
-  "my-apps", "orbit", "orders", "p", "pixel", "portfolio", "press",
-  "pricing", "privacy", "profile", "remote", "services", "settings",
-  "share", "social", "store", "storybook", "terms", "test-enhancement",
-  "tokens", "_next",
-]);
-
-/**
- * Check if a route is unknown and should be rewritten to /g/<path>
- * for dynamic app generation.
- */
-export function shouldRewriteToGenerate(pathname: string): boolean {
-  if (pathname === "/") return false;
-  const firstSegment = pathname.split("/")[1];
-  if (!firstSegment) return false;
-  if (KNOWN_PREFIXES.has(firstSegment)) return false;
-  if (firstSegment.includes(".")) return false;
-  return true;
-}
-
-/**
  * List of path patterns that require authentication
  * Paths are matched using startsWith for path prefixes
  */
@@ -177,13 +149,6 @@ export async function proxy(request: NextRequest) {
       response.headers.set("Access-Control-Allow-Credentials", "true");
     }
     return response;
-  }
-
-  // Rewrite unknown routes to /g/<path> for dynamic generation
-  if (shouldRewriteToGenerate(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = `/g${pathname}`;
-    return NextResponse.rewrite(url);
   }
 
   // Embed routes serve self-contained HTML with inline scripts and esm.sh

@@ -409,6 +409,7 @@ function ClientPageContent() {
       mounted = false;
 
       // Cleanup - access current state via refs, not dependencies
+      // Note: We intentionally don't add camera state to dependencies to avoid infinite loops
       if (frontPeerRef.current) {
         frontPeerRef.current.destroy();
       }
@@ -416,7 +417,8 @@ function ClientPageContent() {
         backPeerRef.current.destroy();
       }
     };
-  }, [displayId, isDualCameraMode, startCamera, createCameraCall]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayId, isDualCameraMode]);
 
   // Toggle dual camera mode
   const handleToggleDualCamera = useCallback(async () => {

@@ -71,9 +71,3 @@ tmp
 .claude
 .eslintcache
 .husky
-
-# Directories unused by main Dockerfile (reduces build context ~10MB)
-workers/
-.github/
-docs/
-terraform/

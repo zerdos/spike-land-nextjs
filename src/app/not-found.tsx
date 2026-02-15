@@ -1,25 +1,71 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+
+function reportNotFound(): void {
+  const error = {
+    message: `404 Not Found: ${typeof window !== "undefined" ? window.location.pathname : "unknown"}`,
+    stack: undefined,
+    errorType: "NotFound",
+    route: typeof window !== "undefined" ? window.location.pathname : undefined,
+    metadata: { source: "not-found-page" },
+    timestamp: new Date().toISOString(),
+    environment: "FRONTEND" as const,
+  };
+
+  try {
+    fetch("/api/errors/report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ errors: [error] }),
+    }).catch(() => {
+      // Silently fail - don't cause more errors
+    });
+  } catch {
+    // Silently fail
+  }
+}
 
 export default function NotFound() {
-  const router = useRouter();
-
   useEffect(() => {
-    // Safety net: if middleware didn't catch this route, redirect to /g/
-    const pathname = typeof window !== "undefined" ? window.location.pathname : "";
-    if (pathname && pathname !== "/" && !pathname.startsWith("/g/")) {
-      router.replace(`/g${pathname}`);
-    }
-  }, [router]);
+    reportNotFound();
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="text-center space-y-4">
-        <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin mx-auto" />
-        <p className="text-muted-foreground text-sm">Redirecting...</p>
-      </div>
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Page not found</CardTitle>
+          <CardDescription>
+            The page you're looking for doesn't exist or has been moved.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            If you think this is a mistake, please let us know.
+          </p>
+        </CardContent>
+        <CardFooter className="flex gap-2">
+          <Button onClick={() => window.location.href = "/"} variant="default">
+            Go home
+          </Button>
+          <Button
+            onClick={() => window.location.href = "/my-apps"}
+            variant="outline"
+          >
+            Back to My Apps
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

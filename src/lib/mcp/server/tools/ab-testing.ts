@@ -310,42 +310,4 @@ export function registerAbTestingTools(
         return textResult(text);
       }, { timeoutMs: 30_000 }),
   });
-
-  const AssignVariantSchema = z.object({
-    test_id: z.string().min(1).describe("A/B test ID."),
-    visitor_id: z.string().min(1).describe("Visitor ID to assign."),
-  });
-
-  registry.register({
-    name: "abtest_assign_variant",
-    description: "Assign a visitor to an A/B test variant. Returns the assigned variant name.",
-    category: "ab-testing",
-    tier: "free",
-    inputSchema: AssignVariantSchema.shape,
-    handler: async (args: z.infer<typeof AssignVariantSchema>): Promise<CallToolResult> =>
-      safeToolCall("abtest_assign_variant", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
-        const test = await prisma.socialPostAbTest.findFirst({
-          where: { id: args.test_id },
-          include: { variants: { orderBy: { createdAt: "asc" } } },
-        });
-        if (!test) {
-          return textResult("**Error: NOT_FOUND**\nA/B test not found.\n**Retryable:** false");
-        }
-        if (test.variants.length === 0) {
-          return textResult("**Error: VALIDATION_ERROR**\nNo variants configured for this test.\n**Retryable:** false");
-        }
-        // Simple hash-based assignment for consistency
-        const hash = args.visitor_id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-        const variantIndex = hash % test.variants.length;
-        const variant = test.variants[variantIndex]!;
-        return textResult(
-          `**Variant Assigned**\n\n` +
-          `**Test:** \`${args.test_id}\`\n` +
-          `**Visitor:** ${args.visitor_id}\n` +
-          `**Variant:** \`${variant.id}\`\n` +
-          `**Type:** ${variant.variationType}`
-        );
-      }),
-  });
 }

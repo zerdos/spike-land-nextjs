@@ -54,15 +54,6 @@ const {
   mockRegisterSentryBridgeTools,
   mockRegisterVercelBridgeTools,
   mockRegisterGitHubAdminTools,
-  mockRegisterStorageTools,
-  mockRegisterGalleryTools,
-  mockRegisterBoxesTools,
-  mockRegisterJobsTools,
-  mockRegisterRemindersTools,
-  mockRegisterShareTools,
-  mockRegisterPermissionsTools,
-  mockRegisterPolicyTools,
-  mockRegisterWhiteLabelTools,
   mockRegisterSocialAccountsTools,
   mockRegisterPulseTools,
   mockRegisterInboxTools,
@@ -83,9 +74,6 @@ const {
   mockRegisterAgencyTools,
   mockRegisterAuditTools,
   mockRegisterNotificationsTools,
-  mockRegisterPagesTools,
-  mockRegisterBlocksTools,
-  mockRegisterPageAiTools,
   mockRegistryInstance,
 } = vi.hoisted(() => ({
   mockRegistryInstance: {} as Record<string, unknown>,
@@ -147,15 +135,6 @@ const {
   mockRegisterSentryBridgeTools: vi.fn(),
   mockRegisterVercelBridgeTools: vi.fn(),
   mockRegisterGitHubAdminTools: vi.fn(),
-  mockRegisterStorageTools: vi.fn(),
-  mockRegisterGalleryTools: vi.fn(),
-  mockRegisterBoxesTools: vi.fn(),
-  mockRegisterJobsTools: vi.fn(),
-  mockRegisterRemindersTools: vi.fn(),
-  mockRegisterShareTools: vi.fn(),
-  mockRegisterPermissionsTools: vi.fn(),
-  mockRegisterPolicyTools: vi.fn(),
-  mockRegisterWhiteLabelTools: vi.fn(),
   mockRegisterSocialAccountsTools: vi.fn(),
   mockRegisterPulseTools: vi.fn(),
   mockRegisterInboxTools: vi.fn(),
@@ -176,9 +155,6 @@ const {
   mockRegisterAgencyTools: vi.fn(),
   mockRegisterAuditTools: vi.fn(),
   mockRegisterNotificationsTools: vi.fn(),
-  mockRegisterPagesTools: vi.fn(),
-  mockRegisterBlocksTools: vi.fn(),
-  mockRegisterPageAiTools: vi.fn(),
 }));
 
 // Mock McpServer constructor - must use function keyword for `new` support
@@ -247,15 +223,6 @@ vi.mock("./tools/environment", () => ({ registerEnvironmentTools: mockRegisterEn
 vi.mock("./tools/sentry-bridge", () => ({ registerSentryBridgeTools: mockRegisterSentryBridgeTools }));
 vi.mock("./tools/vercel-bridge", () => ({ registerVercelBridgeTools: mockRegisterVercelBridgeTools }));
 vi.mock("./tools/github-admin", () => ({ registerGitHubAdminTools: mockRegisterGitHubAdminTools }));
-vi.mock("./tools/storage", () => ({ registerStorageTools: mockRegisterStorageTools }));
-vi.mock("./tools/gallery", () => ({ registerGalleryTools: mockRegisterGalleryTools }));
-vi.mock("./tools/boxes", () => ({ registerBoxesTools: mockRegisterBoxesTools }));
-vi.mock("./tools/jobs", () => ({ registerJobsTools: mockRegisterJobsTools }));
-vi.mock("./tools/reminders", () => ({ registerRemindersTools: mockRegisterRemindersTools }));
-vi.mock("./tools/share", () => ({ registerShareTools: mockRegisterShareTools }));
-vi.mock("./tools/permissions", () => ({ registerPermissionsTools: mockRegisterPermissionsTools }));
-vi.mock("./tools/policy", () => ({ registerPolicyTools: mockRegisterPolicyTools }));
-vi.mock("./tools/white-label", () => ({ registerWhiteLabelTools: mockRegisterWhiteLabelTools }));
 
 // Orbit core tools (Tier 1)
 vi.mock("./tools/social-accounts", () => ({ registerSocialAccountsTools: mockRegisterSocialAccountsTools }));
@@ -282,11 +249,6 @@ vi.mock("./tools/email", () => ({ registerEmailTools: mockRegisterEmailTools }))
 vi.mock("./tools/agency", () => ({ registerAgencyTools: mockRegisterAgencyTools }));
 vi.mock("./tools/audit", () => ({ registerAuditTools: mockRegisterAuditTools }));
 vi.mock("./tools/notifications", () => ({ registerNotificationsTools: mockRegisterNotificationsTools }));
-
-// Dynamic pages tools
-vi.mock("./tools/pages", () => ({ registerPagesTools: mockRegisterPagesTools }));
-vi.mock("./tools/blocks", () => ({ registerBlocksTools: mockRegisterBlocksTools }));
-vi.mock("./tools/page-ai", () => ({ registerPageAiTools: mockRegisterPageAiTools }));
 
 vi.mock("./capability-filtered-registry", () => {
   const MockCapabilityFilteredRegistry = vi.fn(function CapabilityFilteredRegistry() {
@@ -388,16 +350,6 @@ describe("createMcpServer", () => {
       mockRegisterSwarmTools,
       mockRegisterDashboardTools,
       mockRegisterEnvironmentTools,
-      // Storage, gallery, boxes, jobs, reminders, share, permissions, policy, white-label
-      mockRegisterStorageTools,
-      mockRegisterGalleryTools,
-      mockRegisterBoxesTools,
-      mockRegisterJobsTools,
-      mockRegisterRemindersTools,
-      mockRegisterShareTools,
-      mockRegisterPermissionsTools,
-      mockRegisterPolicyTools,
-      mockRegisterWhiteLabelTools,
       // Orbit core tools (Tier 1)
       mockRegisterSocialAccountsTools,
       mockRegisterPulseTools,

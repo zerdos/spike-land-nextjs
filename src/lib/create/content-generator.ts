@@ -217,17 +217,6 @@ export async function generateAppContent(
       maxTokens: 32768,
       temperature: 0.5,
       thinkingBudget: 32768,
-      responseJsonSchema: {
-        type: "object",
-        properties: {
-          plan: { type: "string", nullable: true },
-          title: { type: "string" },
-          description: { type: "string" },
-          code: { type: "string" },
-          relatedApps: { type: "array", items: { type: "string" } },
-        },
-        required: ["title", "description", "code", "relatedApps"],
-      },
     });
 
     // Extract rawCode before validation so it's available even if other fields fail

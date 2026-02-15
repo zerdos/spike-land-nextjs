@@ -8,7 +8,7 @@ export interface Env {
   KV: KVNamespace;
   __STATIC_CONTENT: KVNamespace;
   REPLICATE_API_TOKEN: string;
-  CLAUDE_CODE_OAUTH_TOKEN: string;
+  ANTHROPIC_AUTH_TOKEN: string;
   readonly caches: CloudflareCache;
 }
 

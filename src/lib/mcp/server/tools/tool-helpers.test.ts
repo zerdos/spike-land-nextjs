@@ -373,15 +373,13 @@ describe("tool-helpers", () => {
         slug: "my-workspace",
         name: "My Workspace",
       });
-      expect(mockPrisma.workspace.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            slug: "my-workspace",
-            members: { some: { userId: "user-1" } },
-          },
-          select: expect.objectContaining({ id: true, slug: true, name: true, subscriptionTier: true }),
-        }),
-      );
+      expect(mockPrisma.workspace.findFirst).toHaveBeenCalledWith({
+        where: {
+          slug: "my-workspace",
+          members: { some: { userId: "user-1" } },
+        },
+        select: { id: true, slug: true, name: true },
+      });
     });
 
     it("should throw McpError when workspace not found", async () => {

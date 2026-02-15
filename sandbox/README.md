@@ -38,7 +38,7 @@ EOF
 npm install
 
 # Set auth token and run
-CLAUDE_CODE_OAUTH_TOKEN=your-token node agent-executor.js
+ANTHROPIC_AUTH_TOKEN=your-token node agent-executor.js
 ```
 
 ## Note

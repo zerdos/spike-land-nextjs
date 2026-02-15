@@ -101,13 +101,7 @@ describe("RouteHandler", () => {
       it("should handle websocket upgrade", async () => {
         // Mock Response to support Cloudflare Workers' webSocket property and 101 status
         const OrigResponse = globalThis.Response;
-        interface MockResponseInit extends ResponseInit {
-          webSocket?: WebSocket;
-        }
-        interface MockResponse extends Response {
-          webSocket?: WebSocket;
-        }
-        vi.stubGlobal("Response", function(body: BodyInit | null, init: MockResponseInit) {
+        vi.stubGlobal("Response", function(this: any, body: any, init: any) {
           if (init?.status === 101) {
             // Cloudflare Workers Response supports 101 + webSocket; Node.js doesn't
             return {
@@ -116,9 +110,9 @@ describe("RouteHandler", () => {
               webSocket: init.webSocket,
               headers: new Headers(),
               body: null,
-            } as MockResponse;
+            };
           }
-          return new OrigResponse(body, init) as MockResponse;
+          return new OrigResponse(body, init);
         });
 
         const request = new Request("https://example.com/websocket", {

@@ -10,8 +10,6 @@
   "scripts": {
     "dev": "remotion studio",
     "render:vcp": "remotion render VibeCodingParadox out/vibe-coding-paradox.mp4 --codec h264 --crf 18",
-    "render:n404": "remotion render NoMore404s out/no-more-404s.mp4 --codec h264 --crf 18",
-    "generate-audio:n404": "tsx scripts/generate-audio-n404.ts",
     "render:scene": "remotion render",
     "upgrade": "remotion upgrade",
     "lint": "eslint src/",

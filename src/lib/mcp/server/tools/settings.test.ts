@@ -17,17 +17,14 @@ vi.mock("@/lib/mcp/api-key-manager", () => ({
 import { createMockRegistry, getText } from "../__test-utils__";
 import { registerSettingsTools } from "./settings";
 
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
-
 describe("settings tools", () => {
   const userId = "test-user-123";
   let registry: ReturnType<typeof createMockRegistry>;
 
   beforeEach(() => { vi.clearAllMocks(); registry = createMockRegistry(); registerSettingsTools(registry, userId); });
 
-  it("should register 5 settings tools", () => {
-    expect(registry.register).toHaveBeenCalledTimes(5);
+  it("should register 3 settings tools", () => {
+    expect(registry.register).toHaveBeenCalledTimes(3);
   });
 
   describe("settings_list_api_keys", () => {
@@ -141,193 +138,6 @@ describe("settings tools", () => {
       const result = await handler({ key_id: "key-unknown" });
       expect(getText(result)).toContain("NOT_FOUND");
       expect(getText(result)).toContain("API key not found");
-    });
-  });
-
-  describe("settings_mcp_history", () => {
-    it("should list MCP job history", async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            jobs: [
-              {
-                id: "job-1",
-                type: "GENERATE",
-                status: "COMPLETED",
-                prompt: "A cute cat",
-                tokensCost: 100,
-                createdAt: "2025-01-01T00:00:00Z",
-              },
-            ],
-            total: 1,
-            hasMore: false,
-          }),
-      });
-
-      const handler = registry.handlers.get("settings_mcp_history")!;
-      const result = await handler({ limit: 12, offset: 0 });
-      const text = getText(result);
-      expect(text).toContain("MCP History");
-      expect(text).toContain("1 of 1");
-      expect(text).toContain("GENERATE");
-      expect(text).toContain("COMPLETED");
-      expect(text).toContain("100 tokens");
-      expect(text).toContain("A cute cat");
-      expect(text).toContain("job-1");
-    });
-
-    it("should show empty message when no jobs", async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            jobs: [],
-            total: 0,
-            hasMore: false,
-          }),
-      });
-
-      const handler = registry.handlers.get("settings_mcp_history")!;
-      const result = await handler({ limit: 12, offset: 0 });
-      expect(getText(result)).toContain("No jobs found");
-    });
-
-    it("should show pagination hint when hasMore is true", async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            jobs: [
-              {
-                id: "job-1",
-                type: "MODIFY",
-                status: "COMPLETED",
-                prompt: "Edit this image",
-                tokensCost: 50,
-                createdAt: "2025-01-01T00:00:00Z",
-              },
-            ],
-            total: 25,
-            hasMore: true,
-          }),
-      });
-
-      const handler = registry.handlers.get("settings_mcp_history")!;
-      const result = await handler({ limit: 12, offset: 0 });
-      const text = getText(result);
-      expect(text).toContain("More results available");
-      expect(text).toContain("offset=12");
-    });
-
-    it("should filter by type when provided", async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            jobs: [],
-            total: 0,
-            hasMore: false,
-          }),
-      });
-
-      const handler = registry.handlers.get("settings_mcp_history")!;
-      await handler({ type: "GENERATE", limit: 12, offset: 0 });
-
-      const [url] = mockFetch.mock.calls[0] as [string];
-      expect(url).toContain("type=GENERATE");
-    });
-
-    it("should truncate long prompts", async () => {
-      const longPrompt = "A".repeat(200);
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            jobs: [
-              {
-                id: "job-long",
-                type: "GENERATE",
-                status: "COMPLETED",
-                prompt: longPrompt,
-                tokensCost: 100,
-                createdAt: "2025-01-01T00:00:00Z",
-              },
-            ],
-            total: 1,
-            hasMore: false,
-          }),
-      });
-
-      const handler = registry.handlers.get("settings_mcp_history")!;
-      const result = await handler({ limit: 12, offset: 0 });
-      const text = getText(result);
-      expect(text).toContain("...");
-      expect(text).not.toContain("A".repeat(200));
-    });
-  });
-
-  describe("settings_mcp_job_detail", () => {
-    it("should show full job detail", async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            id: "job-detail-1",
-            type: "GENERATE",
-            status: "COMPLETED",
-            prompt: "A scenic landscape",
-            tokensCost: 200,
-            tier: "TIER_1",
-            createdAt: "2025-01-01T00:00:00Z",
-            processingCompletedAt: "2025-01-01T00:01:00Z",
-            outputImageUrl: "https://example.com/image.png",
-            outputWidth: 1024,
-            outputHeight: 768,
-            apiKeyName: "My Key",
-          }),
-      });
-
-      const handler = registry.handlers.get("settings_mcp_job_detail")!;
-      const result = await handler({ job_id: "job-detail-1" });
-      const text = getText(result);
-      expect(text).toContain("MCP Job Detail");
-      expect(text).toContain("job-detail-1");
-      expect(text).toContain("GENERATE");
-      expect(text).toContain("COMPLETED");
-      expect(text).toContain("TIER_1");
-      expect(text).toContain("200");
-      expect(text).toContain("A scenic landscape");
-      expect(text).toContain("https://example.com/image.png");
-      expect(text).toContain("1024x768");
-      expect(text).toContain("Completed:");
-      expect(text).toContain("My Key");
-    });
-
-    it("should handle job without optional fields", async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            id: "job-minimal",
-            type: "MODIFY",
-            status: "PROCESSING",
-            prompt: "Fix colors",
-            tokensCost: 50,
-            tier: "TIER_2",
-            createdAt: "2025-01-01T00:00:00Z",
-          }),
-      });
-
-      const handler = registry.handlers.get("settings_mcp_job_detail")!;
-      const result = await handler({ job_id: "job-minimal" });
-      const text = getText(result);
-      expect(text).toContain("MCP Job Detail");
-      expect(text).toContain("job-minimal");
-      expect(text).not.toContain("Output:");
-      expect(text).not.toContain("Dimensions:");
-      expect(text).not.toContain("Completed:");
-      expect(text).not.toContain("API Key:");
     });
   });
 });

@@ -14,7 +14,8 @@ const components = {
     if (props.href && props.href.startsWith("/learnit/")) {
       return <WikiLink topic={props.children as string} className="no-underline" />;
     }
-    // eslint-disable-next-line jsx-a11y/anchor-has-content -- children provided via props spread from MDX runtime
+    // Props includes children from MDX, let prose-blog handle regular link styling
+    // eslint-disable-next-line jsx-a11y/anchor-has-content
     return <a {...props} />;
   },
   // Paragraphs with read-aloud button

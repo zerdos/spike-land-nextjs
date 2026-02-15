@@ -1,9 +1,69 @@
 "use client";
 
-import { generateCodespaceId } from "@/lib/apps/codespace-id";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useState } from "react";
 import { TemplateSelector } from "./template-selector";
+
+// Word lists for generating random codespace IDs
+const ADJECTIVES = [
+  "swift",
+  "bright",
+  "cosmic",
+  "digital",
+  "clever",
+  "stellar",
+  "nimble",
+  "sleek",
+  "vibrant",
+  "dynamic",
+  "agile",
+  "bold",
+  "smart",
+  "rapid",
+  "fresh",
+];
+const NOUNS = [
+  "forge",
+  "spark",
+  "wave",
+  "pulse",
+  "flow",
+  "nexus",
+  "orbit",
+  "prism",
+  "grid",
+  "core",
+  "hub",
+  "vault",
+  "bridge",
+  "beacon",
+  "studio",
+];
+const VERBS = [
+  "launch",
+  "build",
+  "craft",
+  "sync",
+  "boost",
+  "stream",
+  "dash",
+  "snap",
+  "blend",
+  "shift",
+  "link",
+  "push",
+  "rise",
+  "glow",
+  "zoom",
+];
+
+function generateCodespaceId(): string {
+  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+  const verb = VERBS[Math.floor(Math.random() * VERBS.length)];
+  const suffix = Math.random().toString(36).substring(2, 6);
+  return `${adj}.${noun}.${verb}.${suffix}`;
+}
 
 export default function NewAppPage() {
   const router = useRouter();
@@ -14,8 +74,10 @@ export default function NewAppPage() {
   const handleTemplateSelect = (templateId: string | null) => {
     setSelectedTemplate(templateId);
 
+    // Generate a random ID and redirect to the codespace with template info
     const tempId = generateCodespaceId();
 
+    // Build URL with template parameter if selected
     const url = templateId
       ? `/my-apps/${tempId}?template=${templateId}`
       : `/my-apps/${tempId}`;
@@ -23,6 +85,7 @@ export default function NewAppPage() {
     router.push(url);
   };
 
+  // Show template selector first
   if (selectedTemplate === undefined) {
     return (
       <div className="min-h-screen bg-background pt-24 pb-12">
@@ -33,6 +96,7 @@ export default function NewAppPage() {
     );
   }
 
+  // After selection, show loading state while redirecting
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4 animate-pulse">

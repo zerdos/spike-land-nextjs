@@ -219,8 +219,6 @@ async function recordInvocation(data: {
   });
 }
 
-import { type SubscriptionTier } from "@prisma/client";
-
 /**
  * Resolve and validate workspace membership for a user.
  * Returns the workspace or throws an McpError.
@@ -228,7 +226,7 @@ import { type SubscriptionTier } from "@prisma/client";
 export async function resolveWorkspace(
   userId: string,
   slug: string,
-): Promise<{ id: string; slug: string; name: string; subscriptionTier: SubscriptionTier }> {
+): Promise<{ id: string; slug: string; name: string }> {
   const prisma = (await import("@/lib/prisma")).default;
 
   const workspace = await prisma.workspace.findFirst({
@@ -236,7 +234,7 @@ export async function resolveWorkspace(
       slug,
       members: { some: { userId } },
     },
-    select: { id: true, slug: true, name: true, subscriptionTier: true },
+    select: { id: true, slug: true, name: true },
   });
 
   if (!workspace) {
@@ -247,7 +245,7 @@ export async function resolveWorkspace(
     );
   }
 
-  return workspace as { id: string; slug: string; name: string; subscriptionTier: SubscriptionTier };
+  return workspace;
 }
 
 /**

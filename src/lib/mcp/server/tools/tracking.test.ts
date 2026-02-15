@@ -3,7 +3,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const mockPrisma = {
   visitorSession: { findMany: vi.fn(), groupBy: vi.fn() },
   pageView: { findMany: vi.fn() },
-  analyticsEvent: { findMany: vi.fn(), create: vi.fn() },
+  analyticsEvent: { findMany: vi.fn() },
   workspace: { findFirst: vi.fn() },
 };
 
@@ -25,13 +25,12 @@ describe("tracking tools", () => {
     mockPrisma.workspace.findFirst.mockResolvedValue(WORKSPACE);
   });
 
-  it("should register 5 tracking tools", () => {
-    expect(registry.register).toHaveBeenCalledTimes(5);
+  it("should register 4 tracking tools", () => {
+    expect(registry.register).toHaveBeenCalledTimes(4);
     expect(registry.handlers.has("tracking_get_sessions")).toBe(true);
     expect(registry.handlers.has("tracking_get_attribution")).toBe(true);
     expect(registry.handlers.has("tracking_get_journey")).toBe(true);
     expect(registry.handlers.has("tracking_query_events")).toBe(true);
-    expect(registry.handlers.has("tracking_record_engagement")).toBe(true);
   });
 
   describe("tracking_get_sessions", () => {
@@ -180,72 +179,6 @@ describe("tracking tools", () => {
       const result = await handler({ workspace_slug: "my-ws" });
       const text = getText(result);
       expect(text).toContain("No analytics events found");
-    });
-  });
-
-  describe("tracking_record_engagement", () => {
-    it("should record engagement data", async () => {
-      mockPrisma.analyticsEvent.create.mockResolvedValue({ id: "evt-1" });
-
-      const handler = registry.handlers.get("tracking_record_engagement")!;
-      const result = await handler({
-        visitor_id: "v-1",
-        session_id: "sess-1",
-        page: "/home",
-        scroll_depth: 75,
-        time_ms: 30000,
-        sections_viewed: ["hero", "features"],
-      });
-
-      const text = getText(result);
-      expect(text).toContain("Engagement Recorded");
-      expect(text).toContain("v-1");
-      expect(text).toContain("/home");
-      expect(text).toContain("75%");
-      expect(text).toContain("30s");
-      expect(text).toContain("Sections: 2");
-
-      expect(mockPrisma.analyticsEvent.create).toHaveBeenCalledWith({
-        data: {
-          sessionId: "sess-1",
-          name: "page_engagement",
-          category: "engagement",
-          value: 75,
-          metadata: {
-            visitorId: "v-1",
-            page: "/home",
-            scrollDepth: 75,
-            timeMs: 30000,
-            sectionsViewed: ["hero", "features"],
-          },
-        },
-      });
-    });
-
-    it("should handle missing sections_viewed", async () => {
-      mockPrisma.analyticsEvent.create.mockResolvedValue({ id: "evt-2" });
-
-      const handler = registry.handlers.get("tracking_record_engagement")!;
-      const result = await handler({
-        visitor_id: "v-2",
-        session_id: "sess-2",
-        page: "/about",
-        scroll_depth: 50,
-        time_ms: 5000,
-      });
-
-      const text = getText(result);
-      expect(text).toContain("Sections: 0");
-
-      expect(mockPrisma.analyticsEvent.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            metadata: expect.objectContaining({
-              sectionsViewed: [],
-            }),
-          }),
-        }),
-      );
     });
   });
 });
