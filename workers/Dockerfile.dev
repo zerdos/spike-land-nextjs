@@ -1,0 +1,35 @@
+# Development workerd Docker image
+#
+# Uses `workerd serve --watch` for hot reload during development.
+# Source files are mounted as volumes for instant updates.
+# Environment variables are injected via entrypoint.sh.
+#
+# Usage:
+#   docker compose up workerd
+
+FROM node:22-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gettext-base \
+    && rm -rf /var/lib/apt/lists/*
+RUN npm install -g workerd@latest
+
+WORKDIR /app
+
+# Copy config (will be overridden by volume mount in dev)
+COPY config.capnp.template ./
+COPY config.capnp ./
+COPY services/ ./services/
+
+# Build the transpiler bundle (esbuild-wasm + worker code → single file)
+WORKDIR /app/services/transpiler
+RUN npm install --production && node build.mjs
+WORKDIR /app
+
+COPY entrypoint.sh ./
+RUN chmod +x /app/entrypoint.sh
+
+EXPOSE 8080
+
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["--watch", "--verbose"]

@@ -1,0 +1,21 @@
+import type { ReactContext, Usable, Ref, RefObject, DependencyList, SetStateAction, Dispatch } from './ReactTypes.js';
+export declare function useState<S>(initialState: (() => S) | S): [S, Dispatch<SetStateAction<S>>];
+export declare function useReducer<S, A>(reducer: (state: S, action: A) => S, initialArg: S, init?: undefined): [S, Dispatch<A>];
+export declare function useReducer<S, I, A>(reducer: (state: S, action: A) => S, initialArg: I, init: (arg: I) => S): [S, Dispatch<A>];
+export declare function useEffect(create: () => (() => void) | void, deps?: DependencyList): void;
+export declare function useLayoutEffect(create: () => (() => void) | void, deps?: DependencyList): void;
+export declare function useInsertionEffect(create: () => (() => void) | void, deps?: DependencyList): void;
+export declare function useCallback<T extends (...args: unknown[]) => unknown>(callback: T, deps: DependencyList): T;
+export declare function useMemo<T>(create: () => T, deps: DependencyList): T;
+export declare function useRef<T>(initialValue: T): RefObject<T>;
+export declare function useContext<T>(context: ReactContext<T>): T;
+export declare function useImperativeHandle<T>(ref: Ref<T> | undefined, create: () => T, deps?: DependencyList): void;
+export declare function useDebugValue<T>(_value: T, _format?: (value: T) => unknown): void;
+export declare function useTransition(): [boolean, (callback: () => void) => void];
+export declare function useDeferredValue<T>(value: T, initialValue?: T): T;
+export declare function useId(): string;
+export declare function useSyncExternalStore<T>(subscribe: (onStoreChange: () => void) => () => void, getSnapshot: () => T, getServerSnapshot?: () => T): T;
+export declare function use<T>(usable: Usable<T>): T;
+export declare function useOptimistic<S, A>(passthrough: S, reducer?: (state: S, action: A) => S): [S, (action: A) => void];
+export declare function useActionState<S, P>(action: (state: Awaited<S>, payload: P) => S, initialState: Awaited<S>, permalink?: string): [Awaited<S>, (payload: P) => void, boolean];
+//# sourceMappingURL=ReactHooks.d.ts.map

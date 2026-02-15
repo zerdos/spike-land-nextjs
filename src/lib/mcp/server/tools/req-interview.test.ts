@@ -447,6 +447,154 @@ describe("req-interview tools", () => {
     });
   });
 
+  describe("defensive branch coverage via internal state mutation", () => {
+    /**
+     * These tests exercise defensive branches that are unreachable through the
+     * public API. We capture the internal Interview object by reference (via a
+     * Map.prototype.set spy during interview_start), then mutate it to create
+     * the conditions needed to hit these branches.
+     */
+
+    function captureInterviewOnStart(): {
+      getInterview: () => {
+        questions: Array<{ id: string; question: string; answer?: string; answeredAt?: Date }>;
+        completedAt?: Date;
+      } | null;
+      restore: () => void;
+    } {
+      let captured: {
+        questions: Array<{ id: string; question: string; answer?: string; answeredAt?: Date }>;
+        completedAt?: Date;
+      } | null = null;
+      const originalSet = Map.prototype.set;
+      const spy = vi.spyOn(Map.prototype, "set").mockImplementation(function (
+        this: Map<unknown, unknown>,
+        key: unknown,
+        value: unknown,
+      ) {
+        if (
+          value !== null &&
+          typeof value === "object" &&
+          "questions" in value &&
+          Array.isArray((value as Record<string, unknown>)["questions"])
+        ) {
+          captured = value as typeof captured;
+        }
+        return originalSet.call(this, key, value);
+      });
+      return {
+        getInterview: () => captured,
+        restore: () => spy.mockRestore(),
+      };
+    }
+
+    it("skips answer when find() cannot locate question (line 185 false branch)", async () => {
+      const capture = captureInterviewOnStart();
+
+      const startHandler = registry.tools.get("interview_start")!.handler;
+      const startResult = await startHandler({
+        project_name: "Shifting",
+        initial_description: "Shifting ID test",
+      });
+      const idMatch = getText(startResult).match(/`([0-9a-f-]{36})`/);
+      const interviewId = idMatch![1]!;
+      capture.restore();
+
+      const interview = capture.getInterview()!;
+      expect(interview).not.toBeNull();
+
+      // Add a question with a shifting ID: returns "phantom" on first read (for
+      // validIds Set construction via .map(q => q.id)), then returns "gone" on
+      // subsequent reads (for .find(q => q.id === "phantom")), so find() fails.
+      let readCount = 0;
+      const shiftingQuestion = {
+        get id(): string {
+          readCount++;
+          // First read: during questions.map(q => q.id) to build validIds
+          // Subsequent reads: during questions.find(q => q.id === a.question_id)
+          return readCount <= 1 ? "phantom" : "gone";
+        },
+        question: "Phantom question?",
+      };
+      interview.questions.push(
+        shiftingQuestion as { id: string; question: string },
+      );
+
+      const submitHandler = registry.tools.get("interview_submit")!.handler;
+      const result = await submitHandler({
+        interview_id: interviewId,
+        answers: [{ question_id: "phantom", answer: "Should be skipped" }],
+      });
+
+      // Remove the shifting question to restore clean state
+      interview.questions.pop();
+
+      // Remove the shifting question before assertions
+      interview.questions.pop();
+
+      expect(isError(result)).toBe(false);
+      const text = getText(result);
+      expect(text).toContain("Answers recorded");
+      // "phantom" passed validIds check but find() returned undefined,
+      // so the if(q) false branch was taken and no answer was recorded
+      expect(text).toContain("Answered:** 0/7");
+    });
+
+    it("uses ?? fallback when answerMap has missing keys (lines 253-271)", async () => {
+      const capture = captureInterviewOnStart();
+
+      const startHandler = registry.tools.get("interview_start")!.handler;
+      const startResult = await startHandler({
+        project_name: "MissingKeys",
+        initial_description: "Missing answerMap keys test",
+      });
+      const idMatch = getText(startResult).match(/`([0-9a-f-]{36})`/);
+      const interviewId = idMatch![1]!;
+      capture.restore();
+
+      const interview = capture.getInterview()!;
+      expect(interview).not.toBeNull();
+
+      // Answer all 7 questions normally so the interview is complete
+      const submitHandler = registry.tools.get("interview_submit")!.handler;
+      await submitHandler({
+        interview_id: interviewId,
+        answers: [
+          { question_id: "problem", answer: "P" },
+          { question_id: "data", answer: "D" },
+          { question_id: "user_flow", answer: "Step A\nStep B" },
+          { question_id: "constraints", answer: "C" },
+          { question_id: "failure", answer: "F" },
+          { question_id: "verification", answer: "V" },
+          { question_id: "explainability", answer: "E" },
+        ],
+      });
+
+      // Now mutate internal state: remove all questions from the array.
+      // The unanswered filter (q.answer === undefined) will find 0 unanswered
+      // (because the array is empty). Then answerMap will be empty, so all
+      // answerMap.get("problem") calls return undefined, triggering ?? "".
+      interview.questions.length = 0;
+
+      const genHandler = registry.tools.get("interview_generate_spec")!.handler;
+      const result = await genHandler({ interview_id: interviewId });
+
+      expect(isError(result)).toBe(false);
+      const text = getText(result);
+      expect(text).toContain("# Specification: MissingKeys");
+      // All ?? "" fallbacks produce empty strings
+      expect(text).toContain("## Problem Statement\n\n");
+      expect(text).toContain("## Data Sources\n\n");
+      expect(text).toContain("## User Flows\n\n");
+      expect(text).toContain("## Constraints\n\n");
+      expect(text).toContain("## Failure Modes\n\n");
+      expect(text).toContain("## Test Plan\n\n");
+      expect(text).toContain("## Explainability\n\n");
+      expect(text).toContain("Decomposed Tasks (0)");
+    });
+
+  });
+
   describe("full lifecycle", () => {
     it("start -> partial submit -> remaining submit -> generate spec", async () => {
       // Step 1: Start

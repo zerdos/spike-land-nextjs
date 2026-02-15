@@ -19,6 +19,13 @@ export default defineConfig({
       "src/lib/mcp/**/*.{test,spec}.{ts,tsx}",
       "src/lib/agents/**/*.{test,spec}.{ts,tsx}",
       "src/lib/chat/**/*.{test,spec}.{ts,tsx}",
+      "src/lib/apps/**/*.{test,spec}.{ts,tsx}",
+      "src/lib/format/**/*.{test,spec}.{ts,tsx}",
+      "src/lib/tracking/**/*.{test,spec}.{ts,tsx}",
+      "src/lib/ab-test/**/*.{test,spec}.{ts,tsx}",
+      "src/lib/bazdmeg/**/*.{test,spec}.{ts,tsx}",
+      "src/lib/dynamic-pages/**/*.{test,spec}.{ts,tsx}",
+      "src/app/store/**/*.{test,spec}.{ts,tsx}",
     ],
     exclude: [
       "**/node_modules/**",
@@ -47,6 +54,8 @@ export default defineConfig({
       include: [
         "src/lib/mcp/**/*.ts",
         "src/lib/agents/**/*.ts",
+        "src/lib/apps/**/*.ts",
+        "src/lib/format/**/*.ts",
       ],
       exclude: [
         "src/**/*.d.ts",

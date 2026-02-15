@@ -543,6 +543,42 @@ describe("orchestrator tools", () => {
       expect(isError(result)).toBe(false);
       expect(getText(result)).toContain("Merged Output");
     });
+
+    it("should merge subtasks in topological order with diamond dependency", async () => {
+      const createHandler = registry.handlers.get("orchestrator_create_plan")!;
+      const submitHandler = registry.handlers.get("orchestrator_submit_result")!;
+      const mergeHandler = registry.handlers.get("orchestrator_merge")!;
+
+      // Diamond: A -> B, A -> C, B+C -> D
+      const createResult = await createHandler({
+        description: "Diamond merge",
+        subtasks: [
+          { description: "Root" },
+          { description: "Left", dependencies: ["subtask-1"] },
+          { description: "Right", dependencies: ["subtask-1"] },
+          { description: "Join", dependencies: ["subtask-2", "subtask-3"] },
+        ],
+      });
+      const planId = extractPlanId(getText(createResult));
+
+      for (let i = 1; i <= 4; i++) {
+        await submitHandler({
+          plan_id: planId,
+          subtask_id: `subtask-${i}`,
+          status: "completed",
+          result: `Result-${i}`,
+        });
+      }
+
+      const result = await mergeHandler({ plan_id: planId });
+      expect(isError(result)).toBe(false);
+      const text = getText(result);
+      // Root must appear before Left, Right, and Join
+      expect(text.indexOf("Result-1")).toBeLessThan(text.indexOf("Result-4"));
+      // Both Left and Right must appear before Join
+      expect(text.indexOf("Result-2")).toBeLessThan(text.indexOf("Result-4"));
+      expect(text.indexOf("Result-3")).toBeLessThan(text.indexOf("Result-4"));
+    });
   });
 
   describe("full lifecycle", () => {

@@ -1,110 +1,705 @@
-name: Deploy to Production
+name: Deploy to AWS ECS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "Target region (all, us-east-1, eu-west-1)"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - us-east-1
+          - eu-west-1
+      skip_smoke_tests:
+        description: "Skip smoke tests after deployment"
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-${{ github.event_name == 'pull_request' && format('staging-{0}', github.event.pull_request.number) || 'production' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  AWS_REGION_PRIMARY: us-east-1
+  AWS_REGION_SECONDARY: eu-west-1
+  ECR_REPO_WORKERD: spike-land-workerd
+  ECR_REPO_NEXTJS: spike-land-nextjs
+  ECS_CLUSTER: production-spike-land
+  ECS_SERVICE_WORKERD: production-workerd
+  ECS_SERVICE_NEXTJS: production-nextjs
+  IMAGE_TAG: ${{ github.sha }}
 
 permissions:
   contents: read
-  deployments: write
 
-on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: "Environment to deploy to"
-        required: true
-        default: "production"
-        type: choice
-        options:
-          - production
-          - staging
-
-# Prevent concurrent deployments to the same environment
-concurrency:
-  group: deploy-${{ github.event.inputs.environment || 'production' }}
-  cancel-in-progress: false
+# ==============================================================================
+# PRODUCTION PIPELINE: push to main / workflow_dispatch
+# ==============================================================================
 
 jobs:
-  deploy:
-    name: Deploy to ${{ github.event.inputs.environment || 'production' }}
+  # ----------------------------------------------------------------------------
+  # Build: Docker images (parallel)
+  # ----------------------------------------------------------------------------
+  build-workerd:
+    name: Build workerd image
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'production' }}
-
+    timeout-minutes: 20
+    outputs:
+      image: ${{ steps.build.outputs.image }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          node-version-file: ".nvmrc"
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION_PRIMARY }}
 
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Install dependencies (PnP zero-install - fast)
-        run: yarn install --immutable
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
-
-      - name: Pull Vercel Environment Info
-        run: vercel pull --yes --environment=${{ github.event.inputs.environment == 'production' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build and push workerd image
+        id: build
         env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Build with Vercel
-        run: vercel build ${{ github.event.inputs.environment == 'production' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Deploy to Vercel
-        id: deploy
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
         run: |
-          if [ "$DEPLOY_ENV" = "production" ]; then
-            DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
-          else
-            DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
-            # Alias staging deployment to next.spike.land
-            vercel alias "$DEPLOYMENT_URL" next.spike.land --token=${{ secrets.VERCEL_TOKEN }} || echo "Alias failed, continuing..."
-          fi
-          echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPO_WORKERD}:${IMAGE_TAG}"
+          docker buildx build \
+            --platform linux/amd64 \
+            --push \
+            --provenance=false \
+            --cache-from type=gha,scope=workerd \
+            --cache-to type=gha,scope=workerd,mode=max \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            -t "${IMAGE_URI}" \
+            -t "${ECR_REGISTRY}/${ECR_REPO_WORKERD}:latest" \
+            -f workers/Dockerfile \
+            workers/
+          echo "image=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+
+  build-nextjs:
+    name: Build Next.js image
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION_PRIMARY }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Next.js image
+        id: build
         env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          DEPLOY_ENV: ${{ github.event.inputs.environment }}
-
-      - name: Health Check
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
-          echo "Waiting for deployment to be ready..."
-          sleep 30
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPO_NEXTJS}:${IMAGE_TAG}"
+          docker buildx build \
+            --platform linux/amd64 \
+            --push \
+            --provenance=false \
+            --cache-from type=gha,scope=nextjs \
+            --cache-to type=gha,scope=nextjs,mode=max \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --build-arg BUILD_SHA="${COMMIT_SHA}" \
+            --build-arg BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --target production \
+            -t "${IMAGE_URI}" \
+            -t "${ECR_REGISTRY}/${ECR_REPO_NEXTJS}:latest" \
+            -f Dockerfile \
+            .
+          echo "image=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
 
-          echo "Checking health at: $DEPLOY_URL"
+  # ----------------------------------------------------------------------------
+  # Deploy: us-east-1 (canary / primary)
+  # ----------------------------------------------------------------------------
+  deploy-us-east-1:
+    name: Deploy to us-east-1 (canary)
+    needs: [build-workerd, build-nextjs]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production-us-east-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-          for i in {1..5}; do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOY_URL" || echo "000")
-            if [ "$HTTP_STATUS" = "200" ]; then
-              echo "Health check passed!"
+      - name: Configure AWS credentials (us-east-1)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION_PRIMARY }}
+
+      - name: Download current workerd task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_SERVICE_WORKERD }} \
+            --query taskDefinition \
+            > workerd-task-def.json
+
+      - name: Update workerd task definition with new image
+        id: workerd-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: workerd-task-def.json
+          container-name: ${{ env.ECR_REPO_WORKERD }}
+          image: ${{ needs.build-workerd.outputs.image }}
+
+      - name: Deploy workerd to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.workerd-task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE_WORKERD }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 8
+
+      - name: Download current Next.js task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_SERVICE_NEXTJS }} \
+            --query taskDefinition \
+            > nextjs-task-def.json
+
+      - name: Update Next.js task definition with new image
+        id: nextjs-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: nextjs-task-def.json
+          container-name: ${{ env.ECR_REPO_NEXTJS }}
+          image: ${{ needs.build-nextjs.outputs.image }}
+
+      - name: Deploy Next.js to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.nextjs-task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE_NEXTJS }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 8
+
+  # ----------------------------------------------------------------------------
+  # Smoke tests: us-east-1
+  # ----------------------------------------------------------------------------
+  smoke-test-us-east-1:
+    name: Smoke tests (us-east-1)
+    needs: deploy-us-east-1
+    if: github.event.inputs.skip_smoke_tests != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Health check - workerd
+        run: |
+          echo "Checking workerd health endpoint..."
+          for i in $(seq 1 5); do
+            if curl -sf --max-time 10 --retry 3 --retry-delay 5 https://workerd.spike.land/ping; then
+              echo ""
+              echo "workerd health check passed on attempt $i"
               exit 0
             fi
-            echo "Attempt $i: Got HTTP $HTTP_STATUS, retrying..."
+            echo "Attempt $i failed, waiting 10s..."
             sleep 10
           done
-
-          echo "Health check failed after 5 attempts"
+          echo "workerd health check failed after 5 attempts"
           exit 1
-        env:
-          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
 
-      - name: Deployment Summary
+      - name: Health check - Next.js
         run: |
-          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment:** $DEPLOY_ENV" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL:** $DEPLOY_URL" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** $COMMIT_SHA" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branch:** $BRANCH_NAME" >> $GITHUB_STEP_SUMMARY
+          echo "Checking Next.js health endpoint..."
+          for i in $(seq 1 5); do
+            if curl -sf --max-time 10 --retry 3 --retry-delay 5 https://spike.land/api/health; then
+              echo ""
+              echo "Next.js health check passed on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i failed, waiting 10s..."
+            sleep 10
+          done
+          echo "Next.js health check failed after 5 attempts"
+          exit 1
+
+      - name: API smoke tests
+        run: |
+          echo "Testing transpiler endpoint..."
+          RESPONSE=$(curl -sf -X POST https://workerd.spike.land/transpile \
+            -H "Content-Type: text/plain" \
+            -d "const x: number = 1;")
+          echo "Transpiler response received (${#RESPONSE} bytes)"
+
+          echo ""
+          echo "Testing session API..."
+          curl -sf https://workerd.spike.land/live/test-smoke/session.json > /dev/null
+          echo "Session API responded successfully"
+
+      - name: Verify HTTP response codes
+        run: |
+          echo "Verifying workerd returns 200..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://workerd.spike.land/ping)
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Expected 200, got $HTTP_CODE"
+            exit 1
+          fi
+
+          echo "Verifying Next.js returns 200..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://spike.land/)
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Expected 200, got $HTTP_CODE"
+            exit 1
+          fi
+
+          echo "All HTTP response code checks passed"
+
+  # ----------------------------------------------------------------------------
+  # Deploy: eu-west-1 (secondary, after canary passes)
+  # ----------------------------------------------------------------------------
+  deploy-eu-west-1:
+    name: Deploy to eu-west-1
+    needs: smoke-test-us-east-1
+    if: >-
+      github.event_name != 'pull_request' &&
+      (github.event.inputs.region == 'all' || github.event.inputs.region == 'eu-west-1' || github.event.inputs.region == '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production-eu-west-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (eu-west-1)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION_SECONDARY }}
+
+      - name: Login to Amazon ECR (eu-west-1)
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Wait for ECR cross-region replication
+        run: |
+          echo "Waiting for ECR replication from us-east-1 to eu-west-1..."
+          for repo in "${ECR_REPO_WORKERD}" "${ECR_REPO_NEXTJS}"; do
+            for i in $(seq 1 30); do
+              if aws ecr describe-images \
+                --repository-name "${repo}" \
+                --image-ids imageTag="${IMAGE_TAG}" \
+                > /dev/null 2>&1; then
+                echo "${repo}:${IMAGE_TAG} available in eu-west-1"
+                break
+              fi
+              if [ "$i" -eq 30 ]; then
+                echo "Timed out waiting for ${repo}:${IMAGE_TAG} replication"
+                exit 1
+              fi
+              echo "Waiting for ${repo}:${IMAGE_TAG} (attempt $i/30)..."
+              sleep 10
+            done
+          done
+
+      - name: Download current workerd task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_SERVICE_WORKERD }} \
+            --query taskDefinition \
+            > workerd-task-def.json
+
+      - name: Update workerd task definition with new image
+        id: workerd-task-def
         env:
-          DEPLOY_ENV: ${{ github.event.inputs.environment }}
-          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: workerd-task-def.json
+          container-name: ${{ env.ECR_REPO_WORKERD }}
+          image: ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPO_WORKERD }}:${{ env.IMAGE_TAG }}
+
+      - name: Deploy workerd to ECS (eu-west-1)
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.workerd-task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE_WORKERD }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 8
+
+      - name: Download current Next.js task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_SERVICE_NEXTJS }} \
+            --query taskDefinition \
+            > nextjs-task-def.json
+
+      - name: Update Next.js task definition with new image
+        id: nextjs-task-def
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: nextjs-task-def.json
+          container-name: ${{ env.ECR_REPO_NEXTJS }}
+          image: ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPO_NEXTJS }}:${{ env.IMAGE_TAG }}
+
+      - name: Deploy Next.js to ECS (eu-west-1)
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.nextjs-task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE_NEXTJS }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 8
+
+  # ----------------------------------------------------------------------------
+  # Smoke tests: eu-west-1
+  # ----------------------------------------------------------------------------
+  smoke-test-eu-west-1:
+    name: Smoke tests (eu-west-1)
+    needs: deploy-eu-west-1
+    if: github.event.inputs.skip_smoke_tests != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Configure AWS credentials (eu-west-1)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION_SECONDARY }}
+
+      - name: Verify ECS service health
+        run: |
+          echo "Checking ECS service status in eu-west-1..."
+          for service in "${{ env.ECS_SERVICE_WORKERD }}" "${{ env.ECS_SERVICE_NEXTJS }}"; do
+            STATUS=$(aws ecs describe-services \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --services "${service}" \
+              --query 'services[0].deployments[0].rolloutState' \
+              --output text)
+            echo "${service}: ${STATUS}"
+            if [ "$STATUS" != "COMPLETED" ]; then
+              echo "WARNING: ${service} rollout state is ${STATUS}, expected COMPLETED"
+            fi
+
+            RUNNING=$(aws ecs describe-services \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --services "${service}" \
+              --query 'services[0].runningCount' \
+              --output text)
+            DESIRED=$(aws ecs describe-services \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --services "${service}" \
+              --query 'services[0].desiredCount' \
+              --output text)
+            echo "${service}: ${RUNNING}/${DESIRED} tasks running"
+
+            if [ "$RUNNING" -lt "$DESIRED" ]; then
+              echo "ERROR: ${service} has fewer running tasks than desired"
+              exit 1
+            fi
+          done
+
+      - name: Health check - workerd (eu-west-1)
+        run: |
+          echo "Checking workerd health in eu-west-1..."
+          curl -sf --max-time 10 --retry 5 --retry-delay 5 https://workerd.spike.land/ping || exit 1
+          echo "workerd health check passed"
+
+      - name: Health check - Next.js (eu-west-1)
+        run: |
+          echo "Checking Next.js health in eu-west-1..."
+          curl -sf --max-time 10 --retry 5 --retry-delay 5 https://spike.land/api/health || exit 1
+          echo "Next.js health check passed"
+
+  # ----------------------------------------------------------------------------
+  # Deployment summary
+  # ----------------------------------------------------------------------------
+  deployment-summary:
+    name: Deployment summary
+    needs: [build-workerd, build-nextjs, deploy-us-east-1, smoke-test-us-east-1, deploy-eu-west-1, smoke-test-eu-west-1]
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Generate summary
+        env:
+          BUILD_WORKERD_RESULT: ${{ needs.build-workerd.result }}
+          BUILD_NEXTJS_RESULT: ${{ needs.build-nextjs.result }}
+          DEPLOY_PRIMARY_RESULT: ${{ needs.deploy-us-east-1.result }}
+          SMOKE_PRIMARY_RESULT: ${{ needs.smoke-test-us-east-1.result }}
+          DEPLOY_SECONDARY_RESULT: ${{ needs.deploy-eu-west-1.result }}
+          SMOKE_SECONDARY_RESULT: ${{ needs.smoke-test-eu-west-1.result }}
           COMMIT_SHA: ${{ github.sha }}
-          BRANCH_NAME: ${{ github.ref_name }}
+          REF_NAME: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build workerd | ${BUILD_WORKERD_RESULT} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Next.js | ${BUILD_NEXTJS_RESULT} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy us-east-1 | ${DEPLOY_PRIMARY_RESULT} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Smoke tests us-east-1 | ${SMOKE_PRIMARY_RESULT} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy eu-west-1 | ${DEPLOY_SECONDARY_RESULT} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Smoke tests eu-west-1 | ${SMOKE_SECONDARY_RESULT} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${COMMIT_SHA}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${REF_NAME}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${ACTOR}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Images:**" >> $GITHUB_STEP_SUMMARY
+          echo "- workerd: \`${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/spike-land-workerd:${COMMIT_SHA}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- nextjs: \`${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/spike-land-nextjs:${COMMIT_SHA}\`" >> $GITHUB_STEP_SUMMARY
+
+  # ==============================================================================
+  # STAGING PIPELINE: pull_request only
+  # ==============================================================================
+
+  staging-build-workerd:
+    name: "[Staging] Build workerd"
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION_PRIMARY }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push workerd image (staging)
+        id: build
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          STAGING_TAG: staging-pr-${{ github.event.pull_request.number }}
+        run: |
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPO_WORKERD}:${STAGING_TAG}"
+          docker buildx build \
+            --platform linux/amd64 \
+            --push \
+            --provenance=false \
+            --cache-from type=gha,scope=workerd-staging \
+            --cache-to type=gha,scope=workerd-staging,mode=max \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            -t "${IMAGE_URI}" \
+            -f workers/Dockerfile \
+            workers/
+          echo "image=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+
+  staging-build-nextjs:
+    name: "[Staging] Build Next.js"
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION_PRIMARY }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Next.js image (staging)
+        id: build
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          STAGING_TAG: staging-pr-${{ github.event.pull_request.number }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPO_NEXTJS}:${STAGING_TAG}"
+          docker buildx build \
+            --platform linux/amd64 \
+            --push \
+            --provenance=false \
+            --cache-from type=gha,scope=nextjs-staging \
+            --cache-to type=gha,scope=nextjs-staging,mode=max \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --build-arg BUILD_SHA="${COMMIT_SHA}" \
+            --build-arg BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --target production \
+            -t "${IMAGE_URI}" \
+            -f Dockerfile \
+            .
+          echo "image=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+
+  staging-deploy:
+    name: "[Staging] Deploy to staging ECS"
+    needs: [staging-build-workerd, staging-build-nextjs]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging
+    env:
+      STAGING_CLUSTER: staging-spike-land
+      STAGING_SERVICE_WORKERD: staging-workerd
+      STAGING_SERVICE_NEXTJS: staging-nextjs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION_PRIMARY }}
+
+      - name: Download staging workerd task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.STAGING_SERVICE_WORKERD }} \
+            --query taskDefinition \
+            > workerd-task-def.json
+
+      - name: Update staging workerd task definition
+        id: workerd-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: workerd-task-def.json
+          container-name: ${{ env.ECR_REPO_WORKERD }}
+          image: ${{ needs.staging-build-workerd.outputs.image }}
+
+      - name: Deploy workerd to staging ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.workerd-task-def.outputs.task-definition }}
+          service: ${{ env.STAGING_SERVICE_WORKERD }}
+          cluster: ${{ env.STAGING_CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 8
+
+      - name: Download staging Next.js task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.STAGING_SERVICE_NEXTJS }} \
+            --query taskDefinition \
+            > nextjs-task-def.json
+
+      - name: Update staging Next.js task definition
+        id: nextjs-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: nextjs-task-def.json
+          container-name: ${{ env.ECR_REPO_NEXTJS }}
+          image: ${{ needs.staging-build-nextjs.outputs.image }}
+
+      - name: Deploy Next.js to staging ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.nextjs-task-def.outputs.task-definition }}
+          service: ${{ env.STAGING_SERVICE_NEXTJS }}
+          cluster: ${{ env.STAGING_CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 8
+
+  staging-smoke-test:
+    name: "[Staging] Smoke tests"
+    needs: staging-deploy
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Health check - staging workerd
+        run: |
+          echo "Checking staging workerd health..."
+          curl -sf --max-time 10 --retry 5 --retry-delay 5 https://staging-workerd.spike.land/ping || exit 1
+          echo "Staging workerd health check passed"
+
+      - name: Health check - staging Next.js
+        run: |
+          echo "Checking staging Next.js health..."
+          curl -sf --max-time 10 --retry 5 --retry-delay 5 https://staging.spike.land/api/health || exit 1
+          echo "Staging Next.js health check passed"
+
+      - name: API smoke tests
+        run: |
+          echo "Testing staging transpiler..."
+          curl -sf -X POST https://staging-workerd.spike.land/transpile \
+            -H "Content-Type: text/plain" \
+            -d "const x: number = 1;" > /dev/null || exit 1
+          echo "Transpiler test passed"
+
+          echo "Testing staging session API..."
+          curl -sf https://staging-workerd.spike.land/live/test-smoke/session.json > /dev/null || exit 1
+          echo "Session API test passed"
+
+      - name: Post staging status to PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}' === 'success' ? 'passed' : 'failed';
+            const icon = status === 'passed' ? 'white_check_mark' : 'x';
+            const sha = context.sha.substring(0, 8);
+            const body = [
+              `### Staging Deployment :${icon}:`,
+              '',
+              `**Status:** Smoke tests ${status}`,
+              `**Commit:** \`${sha}\``,
+              `**Staging URLs:**`,
+              `- workerd: https://staging-workerd.spike.land`,
+              `- Next.js: https://staging.spike.land`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

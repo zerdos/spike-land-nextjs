@@ -1065,4 +1065,76 @@ const helper = () => {};
       expect(text).toContain("No notable patterns detected");
     });
   });
+
+  // ── extractExports dedup and fallback branches ───────────────────
+
+  describe("explain_flow - extractExports uncovered branches", () => {
+    it("should deduplicate class export already seen from named export", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      // export { MyClass } appears first (namedPattern won't help since classPattern runs first),
+      // so we need a class name that also appears via another pattern before classPattern.
+      // export const MyWidget = ... then export default class MyWidget — const pattern sees it first
+      const content = `
+export const MyWidget = 1;
+export default class MyWidget {}
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/widget.ts",
+      });
+      const text = getText(result);
+      const exportsSection = text.split("## Exports")[1]!.split("## Functions")[0]!;
+      const widgetMatches = exportsSection.match(/`MyWidget`/g);
+      expect(widgetMatches).toHaveLength(1);
+    });
+
+    it("should deduplicate type/interface export already seen from another pattern", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      // export const Config = ... then export interface Config — const pattern sees it first
+      const content = `
+export const Config = {};
+export interface Config {}
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/cfg.ts",
+      });
+      const text = getText(result);
+      const exportsSection = text.split("## Exports")[1]!.split("## Functions")[0]!;
+      const configMatches = exportsSection.match(/`Config`/g);
+      expect(configMatches).toHaveLength(1);
+    });
+
+    it("should not include 'default' export when content has no export default", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      const content = `
+export function helper() {}
+export const VALUE = 42;
+`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/nodefault.ts",
+      });
+      const text = getText(result);
+      const exportsSection = text.split("## Exports")[1]!.split("## Functions")[0]!;
+      expect(exportsSection).not.toContain("`default`");
+      expect(exportsSection).toContain("`helper`");
+      expect(exportsSection).toContain("`VALUE`");
+    });
+
+    it("should deduplicate 'default' when already captured by earlier pattern", async () => {
+      const handler = registry.handlers.get("explain_flow")!;
+      // "export default class default" — classPattern captures "default" as (\w+),
+      // adding it to seen before the export default check at line 636 runs
+      const content = `export default class default {}`;
+      const result = await handler({
+        file_content: content,
+        file_path: "src/dedup-default.ts",
+      });
+      const text = getText(result);
+      const exportsSection = text.split("## Exports")[1]!.split("## Functions")[0]!;
+      const defaultMatches = exportsSection.match(/`default`/g);
+      expect(defaultMatches).toHaveLength(1);
+    });
+  });
 });

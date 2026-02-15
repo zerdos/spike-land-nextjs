@@ -48,7 +48,7 @@ export async function handleAnthropicRequest(
     headers.delete("Authorization");
     headers.delete("X-Api-Key");
 
-    headers.set("Authorization", `Bearer ${env.ANTHROPIC_AUTH_TOKEN}`);
+    headers.set("Authorization", `Bearer ${env.CLAUDE_CODE_OAUTH_TOKEN}`);
     headers.set("accept", "application/json");
     headers.set(
       "anthropic-beta",

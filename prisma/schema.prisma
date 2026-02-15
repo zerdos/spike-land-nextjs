@@ -95,6 +95,7 @@ model User {
   permissionRequests       PermissionRequest[]
   agentAuditLogs           AgentAuditLog[]
   agentTrustScores         AgentTrustScore[]
+  dynamicPages             DynamicPage[]
 
   @@map("users")
 }
@@ -5218,4 +5219,106 @@ model AgentTrustScore {
   @@index([userId])
   @@index([trustLevel])
   @@map("agent_trust_scores")
+}
+
+// ─── Dynamic Pages ──────────────────────────────────────────────────────────────
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PageLayout {
+  LANDING
+  FEATURE
+  STORE
+  DASHBOARD
+  ARTICLE
+  GALLERY
+  CUSTOM
+}
+
+enum BlockType {
+  HERO
+  FEATURE_GRID
+  FEATURE_LIST
+  CTA
+  TESTIMONIALS
+  PRICING
+  STATS
+  GALLERY
+  FAQ
+  FOOTER
+  COMPARISON_TABLE
+  APP_GRID
+  MARKDOWN
+  CUSTOM_REACT
+}
+
+model DynamicPage {
+  id             String      @id @default(cuid())
+  slug           String      @unique
+  title          String
+  description    String?
+  layout         PageLayout  @default(LANDING)
+  status         PageStatus  @default(DRAFT)
+  themeData      Json?
+  seoTitle       String?
+  seoDescription String?
+  ogImageUrl     String?
+  viewCount      Int         @default(0)
+  tags           String[]
+  customCss      String?
+  publishedAt    DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  parentId       String?
+  parent         DynamicPage?  @relation("PageHierarchy", fields: [parentId], references: [id])
+  children       DynamicPage[] @relation("PageHierarchy")
+
+  blocks         PageBlock[]
+  versions       PageVersion[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([layout])
+  @@index([slug])
+  @@map("dynamic_pages")
+}
+
+model PageBlock {
+  id         String    @id @default(cuid())
+  pageId     String
+  blockType  BlockType
+  variant    String?
+  content    Json
+  sortOrder  Int
+  isVisible  Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  page       DynamicPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, sortOrder])
+  @@map("page_blocks")
+}
+
+model PageVersion {
+  id         String   @id @default(cuid())
+  pageId     String
+  version    Int
+  snapshot   Json
+  changedBy  String
+  changeNote String?
+  createdAt  DateTime @default(now())
+
+  page       DynamicPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, version])
+  @@map("page_versions")
 }

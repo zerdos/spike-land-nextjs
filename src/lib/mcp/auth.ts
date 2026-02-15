@@ -150,6 +150,77 @@ export async function authenticateMcpRequest(
 }
 
 /**
+ * Authenticates an SSE request using a token from the query string
+ * Used because EventSource doesn't support custom headers
+ */
+export async function authenticateSseRequest(
+  request: NextRequest,
+): Promise<McpAuthResult> {
+  const { searchParams } = new URL(request.url);
+  const token = searchParams.get("token");
+
+  if (!token) {
+    return {
+      success: false,
+      error: "Missing token query parameter",
+    };
+  }
+
+  // Check if this is an MCP OAuth token (prefixed with "mcp_")
+  if (token.startsWith("mcp_")) {
+    const { data: payload, error: oauthError } = await tryCatch(
+      verifyAccessToken(token),
+    );
+
+    if (oauthError) {
+      return {
+        success: false,
+        error: "OAuth token verification failed",
+      };
+    }
+
+    if (!payload) {
+      return {
+        success: false,
+        error: "Invalid or expired OAuth token",
+      };
+    }
+
+    return {
+      success: true,
+      userId: payload.userId,
+      oauthClientId: payload.clientId,
+    };
+  }
+
+  // Fall back to API key validation
+  const { data: validationResult, error: validationError } = await tryCatch<
+    ApiKeyValidationResult,
+    Error
+  >(validateApiKey(token));
+
+  if (validationError) {
+    return {
+      success: false,
+      error: validationError.message || "API key validation failed",
+    };
+  }
+
+  if (!validationResult.isValid) {
+    return {
+      success: false,
+      error: validationResult.error || "Invalid API key",
+    };
+  }
+
+  return {
+    success: true,
+    userId: validationResult.userId,
+    apiKeyId: validationResult.apiKeyId,
+  };
+}
+
+/**
  * Extracts the API key from a request without validating it
  * Useful for logging or debugging
  */

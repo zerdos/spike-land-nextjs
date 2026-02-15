@@ -171,6 +171,8 @@ jobs:
           # Skip TypeScript during build - it runs in parallel via quality-checks job
           # Note: Next.js 16 no longer runs ESLint during build by default
           SKIP_TS_BUILD_CHECK: "true"
+          # Sentry auth token for source map uploads (main branch only)
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Save Next.js build cache
         if: success()

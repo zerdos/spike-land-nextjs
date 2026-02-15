@@ -356,7 +356,7 @@ bucket_name = "spike-land-assets"
 ```bash
 # .dev.vars for local development
 OPENAI_API_KEY=sk-xxx
-ANTHROPIC_AUTH_TOKEN=your-oauth-token
+CLAUDE_CODE_OAUTH_TOKEN=your-oauth-token
 ```
 
 ### CI/CD Pipeline

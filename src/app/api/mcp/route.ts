@@ -135,14 +135,14 @@ export async function POST(request: NextRequest) {
         setHeader(name: string, value: string | string[]) {
           responseHeaders[name] = Array.isArray(value) ? value.join(", ") : value;
         },
-        write(chunk: string | Buffer) {
-          const text = typeof chunk === "string" ? chunk : chunk.toString();
+        write(chunk: string | Uint8Array) {
+          const text = typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
           writer.write(encoder.encode(text));
           return true;
         },
-        end(chunk?: string | Buffer) {
+        end(chunk?: string | Uint8Array) {
           if (chunk) {
-            const text = typeof chunk === "string" ? chunk : chunk.toString();
+            const text = typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
             writer.write(encoder.encode(text));
           }
           writer.close();
@@ -157,8 +157,8 @@ export async function POST(request: NextRequest) {
         url: "/api/mcp",
         body: bodyStream,
         on(event: string, handler: (...args: unknown[]) => void) {
-          if (event === "data") handler(Buffer.from(bodyStr));
-          if (event === "end") handler();
+          if (event === "data") queueMicrotask(() => handler(Buffer.from(bodyStr)));
+          if (event === "end") queueMicrotask(() => handler());
           return mockReq;
         },
       };
@@ -197,13 +197,13 @@ export async function POST(request: NextRequest) {
           setHeader(name: string, value: string | string[]) {
             responseHeaders[name] = Array.isArray(value) ? value.join(", ") : value;
           },
-          write(chunk: string | Buffer) {
-            responseBody += typeof chunk === "string" ? chunk : chunk.toString();
+          write(chunk: string | Uint8Array) {
+            responseBody += typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
             return true;
           },
-          end(chunk?: string | Buffer) {
+          end(chunk?: string | Uint8Array) {
             if (chunk) {
-              responseBody += typeof chunk === "string" ? chunk : chunk.toString();
+              responseBody += typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
             }
             resolve({ status: statusCode, headers: responseHeaders, body: responseBody });
           },
@@ -216,8 +216,8 @@ export async function POST(request: NextRequest) {
           url: "/api/mcp",
           body: bodyStream,
           on(event: string, handler: (...args: unknown[]) => void) {
-            if (event === "data") handler(Buffer.from(bodyStr));
-            if (event === "end") handler();
+            if (event === "data") queueMicrotask(() => handler(Buffer.from(bodyStr)));
+            if (event === "end") queueMicrotask(() => handler());
             return mockReq;
           },
         };
@@ -227,11 +227,12 @@ export async function POST(request: NextRequest) {
 
       const result = await responsePromise;
 
+      const { "content-type": contentType, ...restHeaders } = result.headers;
       return new NextResponse(result.body, {
         status: result.status,
         headers: {
-          "Content-Type": result.headers["content-type"] || "application/json",
-          ...result.headers,
+          "Content-Type": contentType || "application/json",
+          ...restHeaders,
         },
       });
     }

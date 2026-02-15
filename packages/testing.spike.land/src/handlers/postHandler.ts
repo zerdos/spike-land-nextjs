@@ -185,9 +185,9 @@ export class PostHandler {
 
       await this.storageService.saveRequestBody(codeSpace, body);
 
-      if (!this.env.ANTHROPIC_AUTH_TOKEN) {
+      if (!this.env.CLAUDE_CODE_OAUTH_TOKEN) {
         return this.createErrorResponse(
-          "ANTHROPIC_AUTH_TOKEN not configured. Please add your OAuth token to .dev.vars file.",
+          "CLAUDE_CODE_OAUTH_TOKEN not configured. Please add your OAuth token to .dev.vars file.",
           503,
         );
       }

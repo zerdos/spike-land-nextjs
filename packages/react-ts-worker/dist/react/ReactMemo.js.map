@@ -1,0 +1,1 @@
+{"version":3,"file":"ReactMemo.js","sourceRoot":"","sources":["../../src/react/ReactMemo.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,eAAe,EAAE,MAAM,mBAAmB,CAAC;AAEpD,MAAM,UAAU,IAAI,CAClB,IAA0B,EAC1B,OAA0D;IAE1D,OAAO;QACL,QAAQ,EAAE,eAAe;QACzB,IAAI;QACJ,OAAO,EAAE,OAAO,IAAI,IAAI;KACzB,CAAC;AACJ,CAAC"}

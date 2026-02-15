@@ -726,7 +726,7 @@ cd packages/testing.spike.land
 # Create environment file
 cat > .dev.vars << EOF
 OPENAI_API_KEY=your_openai_key
-ANTHROPIC_AUTH_TOKEN=your_anthropic_oauth_token
+CLAUDE_CODE_OAUTH_TOKEN=your_anthropic_oauth_token
 EOF
 
 # Start local worker
@@ -820,7 +820,7 @@ yarn deploy:prod  # Production
 ```
 DATABASE_URL=postgresql://...
 NEXTAUTH_SECRET=...
-ANTHROPIC_AUTH_TOKEN=...
+CLAUDE_CODE_OAUTH_TOKEN=...
 SPIKE_LAND_API_KEY=sk_live_...
 ```
 
@@ -828,7 +828,7 @@ SPIKE_LAND_API_KEY=sk_live_...
 
 ```
 OPENAI_API_KEY=...
-ANTHROPIC_AUTH_TOKEN=...
+CLAUDE_CODE_OAUTH_TOKEN=...
 ```
 
 ---
@@ -903,7 +903,7 @@ paths only exist on testing.spike.land).
 
 **Agent not responding**:
 
-- Verify `ANTHROPIC_AUTH_TOKEN` is set
+- Verify `CLAUDE_CODE_OAUTH_TOKEN` is set
 - Check `/api/apps/[id]/agent/chat` logs
 - Ensure codespace exists on testing.spike.land
 
