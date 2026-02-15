@@ -444,6 +444,38 @@ See [README.md](./README.md) for full development setup.
 
 ---
 
+## ADHD-Safe Development Protocol (HARD RULES)
+
+### Rule 1: YOU NEVER TOUCH GIT OR GITHUB DIRECTLY
+- No `git push`, `git merge`, `git rebase`, `git reset` from your terminal
+- No GitHub UI: no merge buttons, no closing PRs, no editing files in browser
+- No `gh pr merge` from your terminal
+- **ONLY** Claude Code agents run git/gh commands
+
+### Rule 2: ONE BRANCH, ONE AGENT, ONE CONVERSATION
+- You work on `main` locally (read-only effectively since you can't push)
+- Claude Code creates feature branches, pushes, creates PRs
+- You stay in the same conversation until the feature is done
+- If you need to switch context: tell Claude to "park" the current work first
+
+### Rule 3: THE PIPELINE IS THE BOSS
+- If CI fails, Claude fixes it — you don't touch the code to "quickly fix" it
+- If a review requests changes, Claude (or Jules) makes them
+- You never push a "quick fix" to unblock a merge
+
+### Rule 4: NO YOLO MERGES
+- Branch protection enforces: 1 approval + all CI green
+- Claude Code Review auto-approves+merges good PRs
+- Claude Code Review tags @Jules for fixes on bad PRs
+- You literally CANNOT merge even if you wanted to (enforce_admins=true)
+
+### Rule 5: CONTEXT SWITCHING PROTOCOL
+- Before switching tasks: tell Claude "save state" — it will commit WIP, note the branch
+- When resuming: tell Claude "where was I?" — it checks open PRs and branches
+- Never have more than 2 open PRs at once (Claude should warn you)
+
+---
+
 ## 🚨 Troubleshooting
 
 ### Coverage Not 100%

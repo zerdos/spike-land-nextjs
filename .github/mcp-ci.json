@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "vitest": {
+      "type": "stdio",
+      "command": "yarn",
+      "args": ["vitest-mcp"]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "yarn",
+      "args": ["@playwright/mcp"]
+    }
+  }
+}
