@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "yarn install --immutable",
-  "buildCommand": "cd packages/shared && yarn build && DATABASE_URL='postgresql://dummy:dummy@dummy/dummy' NODE_OPTIONS='--max-old-space-size=4096' yarn next build --turbopack",
+  "buildCommand": "cd packages/shared && yarn build && cd ../.. &&  DATABASE_URL='postgresql://dummy:dummy@dummy/dummy' NODE_OPTIONS='--max-old-space-size=4096' yarn next build --turbopack",
   "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]",
   "redirects": [
     {
