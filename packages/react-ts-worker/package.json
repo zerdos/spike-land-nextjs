@@ -1,0 +1,26 @@
+{
+  "name": "react-ts-worker",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./react": "./dist/react/index.js",
+    "./react/jsx-runtime": "./dist/react/jsx-runtime.js",
+    "./react-dom": "./dist/react-dom/index.js",
+    "./react-dom/client": "./dist/react-dom/client.js",
+    "./react-dom/server": "./dist/react-dom/server.js",
+    "./react-worker-dom": "./dist/react-worker-dom/index.js",
+    "./react-worker-dom/main": "./dist/react-worker-dom/main-entry.js",
+    "./scheduler": "./dist/scheduler/Scheduler.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.8",
+    "vitest": "^3.0",
+    "jsdom": "^26.0"
+  }
+}

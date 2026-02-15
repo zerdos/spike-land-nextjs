@@ -1,0 +1,88 @@
+import type { Fiber, FiberRoot } from './ReactFiberTypes.js';
+import type { HostConfig } from '../host-config/HostConfigInterface.js';
+import { HostRoot } from './ReactWorkTags.js';
+
+// Simple stack-based host context tracking
+
+interface StackCursor<T> {
+  current: T;
+}
+
+function createCursor<T>(defaultValue: T): StackCursor<T> {
+  return { current: defaultValue };
+}
+
+const contextStack: Array<any> = [];
+let contextIndex = -1;
+
+function push<T>(cursor: StackCursor<T>, value: T): void {
+  contextIndex++;
+  contextStack[contextIndex] = cursor.current;
+  cursor.current = value;
+}
+
+function pop<T>(cursor: StackCursor<T>): void {
+  if (contextIndex < 0) {
+    return;
+  }
+  cursor.current = contextStack[contextIndex];
+  contextStack[contextIndex] = null;
+  contextIndex--;
+}
+
+const rootInstanceCursor: StackCursor<any> = createCursor(null);
+const hostContextCursor: StackCursor<any> = createCursor(null);
+const hostConfigCursor: StackCursor<HostConfig | null> = createCursor(null);
+
+function getHostConfigFromFiber(fiber: Fiber): HostConfig {
+  let node: Fiber | null = fiber;
+  while (node !== null) {
+    if (node.tag === HostRoot && node.stateNode) {
+      return (node.stateNode as FiberRoot).hostConfig;
+    }
+    node = node.return;
+  }
+  // Fallback to stored config
+  if (hostConfigCursor.current) {
+    return hostConfigCursor.current;
+  }
+  throw new Error('Could not find host config');
+}
+
+export function getRootHostContainer(): any {
+  return rootInstanceCursor.current;
+}
+
+export function getHostContext(): any {
+  return hostContextCursor.current;
+}
+
+export function pushHostContainer(fiber: Fiber): void {
+  const fiberRoot = fiber.stateNode as FiberRoot;
+  const container = fiberRoot.containerInfo;
+  const hostConfig = fiberRoot.hostConfig;
+
+  push(rootInstanceCursor, container);
+  push(hostConfigCursor, hostConfig);
+  push(hostContextCursor, hostConfig.getRootHostContext(container));
+}
+
+export function popHostContainer(_fiber: Fiber): void {
+  pop(hostContextCursor);
+  pop(hostConfigCursor);
+  pop(rootInstanceCursor);
+}
+
+export function pushHostContext(fiber: Fiber): void {
+  const hostConfig = getHostConfigFromFiber(fiber);
+  const context = hostContextCursor.current;
+  const nextContext = hostConfig.getChildHostContext(context, fiber.type);
+
+  if (context !== nextContext) {
+    push(hostContextCursor, nextContext);
+  }
+}
+
+export function popHostContext(_fiber: Fiber): void {
+  pop(hostContextCursor);
+}
