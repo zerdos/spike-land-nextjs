@@ -14,7 +14,19 @@ import {
   Scene10_EndCard,
 } from "./compositions/vibe-coding-paradox";
 import { VCP_DURATIONS, VCP_TIMING, VIDEO_CONFIG, COLORS, TYPOGRAPHY } from "./lib/constants";
+import { N404_DURATIONS, N404_TIMING } from "./lib/n404-constants";
 import { VeritasiumPitch, VERITASIUM_SCENE_DURATION } from "./compositions/veritasium/VeritasiumPitch";
+import {
+  NoMore404s,
+  Scene01_Hook as N404_Scene01_Hook,
+  Scene02_Problem as N404_Scene02_Problem,
+  Scene03_Pipeline as N404_Scene03_Pipeline,
+  Scene04_Reviewers as N404_Scene04_Reviewers,
+  Scene05_Demo as N404_Scene05_Demo,
+  Scene06_BridgeMind as N404_Scene06_BridgeMind,
+  Scene07_Flywheel as N404_Scene07_Flywheel,
+  Scene08_EndCard as N404_Scene08_EndCard,
+} from "./compositions/no-more-404s";
 
 // Component imports for preview compositions
 import { TokenVisualization } from "./components/animations/TokenVisualization";
@@ -122,6 +134,16 @@ export const RemotionRoot = () => {
         height={VIDEO_CONFIG.height}
       />
 
+      {/* No More 404s — 5-minute composition */}
+      <Composition
+        id="NoMore404s"
+        component={NoMore404s}
+        durationInFrames={N404_TIMING.totalFrames}
+        fps={N404_TIMING.fps}
+        width={VIDEO_CONFIG.width}
+        height={VIDEO_CONFIG.height}
+      />
+
       {/* Individual scenes for preview */}
       <Folder name="Scenes">
         <Composition
@@ -201,6 +223,74 @@ export const RemotionRoot = () => {
           component={Scene10_EndCard}
           durationInFrames={VCP_DURATIONS.endCard}
           fps={VCP_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+      </Folder>
+
+      {/* N404 individual scenes for preview */}
+      <Folder name="N404-Scenes">
+        <Composition
+          id="N404-Scene01-Hook"
+          component={N404_Scene01_Hook}
+          durationInFrames={N404_DURATIONS.hook}
+          fps={N404_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="N404-Scene02-Problem"
+          component={N404_Scene02_Problem}
+          durationInFrames={N404_DURATIONS.problem}
+          fps={N404_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="N404-Scene03-Pipeline"
+          component={N404_Scene03_Pipeline}
+          durationInFrames={N404_DURATIONS.pipeline}
+          fps={N404_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="N404-Scene04-Reviewers"
+          component={N404_Scene04_Reviewers}
+          durationInFrames={N404_DURATIONS.reviewers}
+          fps={N404_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="N404-Scene05-Demo"
+          component={N404_Scene05_Demo}
+          durationInFrames={N404_DURATIONS.demo}
+          fps={N404_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="N404-Scene06-BridgeMind"
+          component={N404_Scene06_BridgeMind}
+          durationInFrames={N404_DURATIONS.bridgemind}
+          fps={N404_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="N404-Scene07-Flywheel"
+          component={N404_Scene07_Flywheel}
+          durationInFrames={N404_DURATIONS.flywheel}
+          fps={N404_TIMING.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+        <Composition
+          id="N404-Scene08-EndCard"
+          component={N404_Scene08_EndCard}
+          durationInFrames={N404_DURATIONS.endCard}
+          fps={N404_TIMING.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
