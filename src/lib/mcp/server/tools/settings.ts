@@ -7,7 +7,7 @@
 import { z } from "zod";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { ToolRegistry } from "../tool-registry";
-import { safeToolCall, textResult } from "./tool-helpers";
+import { safeToolCall, apiRequest, textResult } from "./tool-helpers";
 
 const ListApiKeysSchema = z.object({});
 
@@ -89,6 +89,68 @@ export function registerSettingsTools(
           return textResult(`**Error: NOT_FOUND**\n${result.error || "API key not found."}\n**Retryable:** false`);
         }
         return textResult(`**API Key Revoked!** ID: ${key_id}`);
+      }),
+  });
+
+  const McpHistorySchema = z.object({
+    type: z.enum(["GENERATE", "MODIFY"]).optional().describe("Filter by job type."),
+    limit: z.number().int().min(1).max(50).optional().default(12).describe("Max jobs to return (default 12)."),
+    offset: z.number().int().min(0).optional().default(0).describe("Offset for pagination (default 0)."),
+  });
+
+  registry.register({
+    name: "settings_mcp_history",
+    description: "List MCP job history with pagination and optional type filter.",
+    category: "settings",
+    tier: "free",
+    inputSchema: McpHistorySchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: async ({ type, limit, offset }: z.infer<typeof McpHistorySchema>): Promise<CallToolResult> =>
+      safeToolCall("settings_mcp_history", async () => {
+        const params = new URLSearchParams({ limit: String(limit ?? 12), offset: String(offset ?? 0) });
+        if (type) params.append("type", type);
+        const data = await apiRequest<{ jobs: Array<{ id: string; type: string; status: string; prompt: string; tokensCost: number; createdAt: string }>; total: number; hasMore: boolean }>(
+          `/api/mcp/history?${params}`
+        );
+        if (data.jobs.length === 0) return textResult("**MCP History**\n\nNo jobs found.");
+        let text = `**MCP History** (${data.jobs.length} of ${data.total})\n\n`;
+        for (const job of data.jobs) {
+          text += `- **${job.type}** [${job.status}] — ${job.tokensCost} tokens\n`;
+          text += `  Prompt: ${job.prompt.slice(0, 100)}${job.prompt.length > 100 ? "..." : ""}\n`;
+          text += `  ID: \`${job.id}\` | ${job.createdAt}\n\n`;
+        }
+        if (data.hasMore) text += `_More results available. Use offset=${(offset ?? 0) + (limit ?? 12)}._`;
+        return textResult(text);
+      }),
+  });
+
+  const McpJobDetailSchema = z.object({
+    job_id: z.string().min(1).describe("MCP job ID."),
+  });
+
+  registry.register({
+    name: "settings_mcp_job_detail",
+    description: "Get full detail for a single MCP job including images and processing time.",
+    category: "settings",
+    tier: "free",
+    inputSchema: McpJobDetailSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: async ({ job_id }: z.infer<typeof McpJobDetailSchema>): Promise<CallToolResult> =>
+      safeToolCall("settings_mcp_job_detail", async () => {
+        const job = await apiRequest<{ id: string; type: string; status: string; prompt: string; tokensCost: number; tier: string; createdAt: string; processingCompletedAt?: string; outputImageUrl?: string; outputWidth?: number; outputHeight?: number; apiKeyName?: string }>(
+          `/api/mcp/history/${encodeURIComponent(job_id)}`
+        );
+        let text = `**MCP Job Detail**\n\n`;
+        text += `**ID:** \`${job.id}\`\n`;
+        text += `**Type:** ${job.type}\n**Status:** ${job.status}\n`;
+        text += `**Tier:** ${job.tier}\n**Tokens:** ${job.tokensCost}\n`;
+        text += `**Prompt:** ${job.prompt}\n`;
+        if (job.outputImageUrl) text += `**Output:** ${job.outputImageUrl}\n`;
+        if (job.outputWidth) text += `**Dimensions:** ${job.outputWidth}x${job.outputHeight}\n`;
+        text += `**Created:** ${job.createdAt}\n`;
+        if (job.processingCompletedAt) text += `**Completed:** ${job.processingCompletedAt}\n`;
+        if (job.apiKeyName) text += `**API Key:** ${job.apiKeyName}\n`;
+        return textResult(text);
       }),
   });
 }

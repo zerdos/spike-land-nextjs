@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useMcpHistory } from "@/hooks/useMcpHistory";
+import { formatDate, formatDuration } from "@/lib/format/date";
 import {
   AlertCircle,
   CheckCircle2,
@@ -25,160 +27,78 @@ import {
   Wand2,
 } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
 
-interface McpJob {
-  id: string;
-  type: "GENERATE" | "MODIFY";
-  tier: string;
-  tokensCost: number;
-  status: string;
-  prompt: string;
-  inputImageUrl?: string;
-  outputImageUrl?: string;
-  outputWidth?: number;
-  outputHeight?: number;
-  createdAt: string;
-  processingCompletedAt?: string;
-  apiKeyName?: string;
-}
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case "COMPLETED":
+      return (
+        <Badge className="bg-green-500">
+          <CheckCircle2 className="h-3 w-3 mr-1" />
+          Completed
+        </Badge>
+      );
+    case "PROCESSING":
+      return (
+        <Badge className="bg-blue-500">
+          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+          Processing
+        </Badge>
+      );
+    case "FAILED":
+      return (
+        <Badge variant="destructive">
+          <AlertCircle className="h-3 w-3 mr-1" />
+          Failed
+        </Badge>
+      );
+    case "REFUNDED":
+      return (
+        <Badge variant="secondary">
+          <Coins className="h-3 w-3 mr-1" />
+          Refunded
+        </Badge>
+      );
+    default:
+      return <Badge variant="secondary">{status}</Badge>;
+  }
+};
 
-interface HistoryResponse {
-  jobs: McpJob[];
-  total: number;
-  hasMore: boolean;
-}
+const getTypeBadge = (type: string) => {
+  switch (type) {
+    case "GENERATE":
+      return (
+        <Badge variant="outline">
+          <ImagePlus className="h-3 w-3 mr-1" />
+          Generate
+        </Badge>
+      );
+    case "MODIFY":
+      return (
+        <Badge variant="outline">
+          <Wand2 className="h-3 w-3 mr-1" />
+          Modify
+        </Badge>
+      );
+    default:
+      return <Badge variant="outline">{type}</Badge>;
+  }
+};
 
 export function McpHistoryClient() {
-  const [jobs, setJobs] = useState<McpJob[]>([]);
-  const [total, setTotal] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [page, setPage] = useState(0);
-  const [selectedJob, setSelectedJob] = useState<McpJob | null>(null);
-
-  const limit = 12;
-
-  const fetchHistory = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const params = new URLSearchParams({
-        limit: String(limit),
-        offset: String(page * limit),
-      });
-
-      if (typeFilter !== "all") {
-        params.append("type", typeFilter);
-      }
-
-      const response = await fetch(`/api/mcp/history?${params}`);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch history");
-      }
-
-      const data: HistoryResponse = await response.json();
-      setJobs(data.jobs);
-      setTotal(data.total);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load history");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [page, typeFilter]);
-
-  useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
-
-  const handleTypeFilterChange = (value: string) => {
-    setTypeFilter(value);
-    setPage(0);
-  };
-
-  const totalPages = Math.ceil(total / limit);
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "COMPLETED":
-        return (
-          <Badge className="bg-green-500">
-            <CheckCircle2 className="h-3 w-3 mr-1" />
-            Completed
-          </Badge>
-        );
-      case "PROCESSING":
-        return (
-          <Badge className="bg-blue-500">
-            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            Processing
-          </Badge>
-        );
-      case "FAILED":
-        return (
-          <Badge variant="destructive">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            Failed
-          </Badge>
-        );
-      case "REFUNDED":
-        return (
-          <Badge variant="secondary">
-            <Coins className="h-3 w-3 mr-1" />
-            Refunded
-          </Badge>
-        );
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
-
-  const getTypeBadge = (type: string) => {
-    switch (type) {
-      case "GENERATE":
-        return (
-          <Badge variant="outline">
-            <ImagePlus className="h-3 w-3 mr-1" />
-            Generate
-          </Badge>
-        );
-      case "MODIFY":
-        return (
-          <Badge variant="outline">
-            <Wand2 className="h-3 w-3 mr-1" />
-            Modify
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{type}</Badge>;
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatDuration = (start: string, end?: string) => {
-    if (!end) return "In progress";
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const diffMs = endDate.getTime() - startDate.getTime();
-    const diffSecs = Math.floor(diffMs / 1000);
-
-    if (diffSecs < 60) return `${diffSecs}s`;
-    const diffMins = Math.floor(diffSecs / 60);
-    const remainingSecs = diffSecs % 60;
-    return `${diffMins}m ${remainingSecs}s`;
-  };
+  const {
+    jobs,
+    total,
+    totalPages,
+    isLoading,
+    error,
+    typeFilter,
+    page,
+    selectedJob,
+    fetchHistory,
+    handleTypeFilterChange,
+    setPage,
+    setSelectedJob,
+  } = useMcpHistory();
 
   return (
     <div className="container mx-auto pt-24 pb-8 px-4 max-w-6xl">
