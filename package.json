@@ -28,7 +28,7 @@
     "review": "./scripts/get-review-url.sh",
     "silent:install": "yarn install --immutable > /dev/null 2>&1 || true",
     "jules:clear": "expect scripts/jules-clear.sh",
-    "postinstall": "yarn prisma generate --no-hints",
+    "postinstall": "prisma generate --no-hints",
     "prisma": "prisma",
     "db:generate": "yarn prisma generate --no-hints",
     "deploy:staging": "vercel deploy --prebuilt",
