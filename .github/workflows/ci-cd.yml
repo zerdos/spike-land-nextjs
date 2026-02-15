@@ -164,7 +164,7 @@ jobs:
       - name: Build application
         run: yarn build
         env:
-          NODE_OPTIONS: "--max-old-space-size=8192 --require ./scripts/debug-uncaught.cjs"
+          NODE_OPTIONS: "--max-old-space-size=8192 --require ${{ github.workspace }}/scripts/debug-uncaught.cjs"
           # Provide dummy DATABASE_URL for Prisma 7 client engine initialization
           # Actual database connection only happens at runtime with real credentials
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
