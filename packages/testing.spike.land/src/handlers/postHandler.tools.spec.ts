@@ -44,7 +44,7 @@ describe("PostHandler - Tool Schema Validation", () => {
 
     // Setup mock environment
     mockEnv = {
-      ANTHROPIC_AUTH_TOKEN: "test-key",
+      CLAUDE_CODE_OAUTH_TOKEN: "test-key",
     } as Env;
 
     // Setup mock MCP tools with correct schema

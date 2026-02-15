@@ -6,7 +6,7 @@ export default interface Env {
   KV: KVNamespace;
   __STATIC_CONTENT: KVNamespace;
   REPLICATE_API_TOKEN: string;
-  ANTHROPIC_AUTH_TOKEN: string;
+  CLAUDE_CODE_OAUTH_TOKEN: string;
   GEMINI_API_KEY: string;
   CF_REAL_TURN_TOKEN: string;
   ESBUILD: Fetcher;

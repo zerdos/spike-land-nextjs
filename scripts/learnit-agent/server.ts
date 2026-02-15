@@ -2,7 +2,7 @@
  * LearnIt Agent Server — "Spike"
  *
  * Generates LearnIt content via Anthropic SDK.
- * Auth: ANTHROPIC_AUTH_TOKEN > CLAUDE_CODE_OAUTH_TOKEN (OAuth-only)
+ * Auth: CLAUDE_CODE_OAUTH_TOKEN > CLAUDE_CODE_OAUTH_TOKEN (OAuth-only)
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -14,11 +14,11 @@ const AGENT_NAME = "Spike";
 const CLAUDE_MODEL = "claude-opus-4-6";
 const AGENT_SECRET = process.env["LEARNIT_AGENT_SECRET"] ?? "spike-learnit-2026";
 
-// Auth resolution: ANTHROPIC_AUTH_TOKEN > CLAUDE_CODE_OAUTH_TOKEN (OAuth-only)
-const authToken = process.env["ANTHROPIC_AUTH_TOKEN"] ?? process.env["CLAUDE_CODE_OAUTH_TOKEN"];
+// Auth resolution: CLAUDE_CODE_OAUTH_TOKEN > CLAUDE_CODE_OAUTH_TOKEN (OAuth-only)
+const authToken = process.env["CLAUDE_CODE_OAUTH_TOKEN"] ?? process.env["CLAUDE_CODE_OAUTH_TOKEN"];
 
 if (!authToken) {
-  console.error("No Anthropic credentials found. Set ANTHROPIC_AUTH_TOKEN or CLAUDE_CODE_OAUTH_TOKEN.");
+  console.error("No Anthropic credentials found. Set CLAUDE_CODE_OAUTH_TOKEN or CLAUDE_CODE_OAUTH_TOKEN.");
   process.exit(1);
 }
 
@@ -148,7 +148,7 @@ async function handleGenerate(req: IncomingMessage, res: ServerResponse): Promis
   } catch (error) {
     const message = error instanceof Error ? error.message : "Generation failed";
     if (message.includes("401") || message.includes("Invalid bearer token")) {
-      console.error(`[AUTH] OAuth token may be expired. Update ANTHROPIC_AUTH_TOKEN in .env.local`);
+      console.error(`[AUTH] OAuth token may be expired. Update CLAUDE_CODE_OAUTH_TOKEN in .env.local`);
     }
     console.error(`[${new Date().toISOString()}] Error:`, error);
     res.write(`data: ${JSON.stringify({ type: "error", message })}\n\n`);

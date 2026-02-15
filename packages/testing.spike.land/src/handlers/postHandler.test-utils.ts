@@ -140,7 +140,7 @@ export const createMockCode = (mcpServer = createMockMcpServer()): Code =>
 // Create mock Env
 export const createMockEnv = (): Env =>
   ({
-    ANTHROPIC_AUTH_TOKEN: "test-api-key",
+    CLAUDE_CODE_OAUTH_TOKEN: "test-api-key",
     R2: {} as unknown as R2Bucket,
   }) as unknown as Env;
 
