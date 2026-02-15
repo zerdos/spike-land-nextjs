@@ -25,7 +25,7 @@ export function findNearestSuspenseBoundary(
 export function isSuspenseBoundaryShowingFallback(
   fiber: Fiber,
 ): boolean {
-  const memoizedState: SuspenseState | null = fiber.memoizedState;
+  const memoizedState: SuspenseState | null = fiber.memoizedState as SuspenseState | null;
   return memoizedState !== null;
 }
 
@@ -61,6 +61,6 @@ export function isThenable(value: unknown): value is SuspenseException {
   return (
     typeof value === 'object' &&
     value !== null &&
-    typeof value.then === 'function'
+    typeof (value as Record<string, unknown>).then === 'function'
   );
 }

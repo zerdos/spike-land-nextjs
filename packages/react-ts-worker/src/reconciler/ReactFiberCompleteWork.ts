@@ -4,6 +4,7 @@
 import type { Fiber, FiberRoot } from './ReactFiberTypes.js';
 import type { Lanes } from './ReactFiberLane.js';
 import type { HostConfig } from '../host-config/HostConfigInterface.js';
+import type { ReactContext } from '../react/ReactTypes.js';
 import {
   FunctionComponent,
   ClassComponent,
@@ -97,7 +98,7 @@ export function completeWork(
 
     case HostRoot: {
       popHostContainer(workInProgress);
-      const _fiberRoot: FiberRoot = workInProgress.stateNode;
+      const _fiberRoot = workInProgress.stateNode as FiberRoot;
       if (current === null || current.child === null) {
         // First mount
       }
@@ -115,7 +116,7 @@ export function completeWork(
       while (root !== null && root.tag !== HostRoot) {
         root = root.return;
       }
-      const fiberRoot: FiberRoot = root!.stateNode;
+      const fiberRoot = root!.stateNode as FiberRoot;
       const hostConfig = fiberRoot.hostConfig;
 
       if (current !== null && workInProgress.stateNode != null) {
@@ -130,8 +131,8 @@ export function completeWork(
       } else {
         // Mount - create the DOM instance
         const instance = hostConfig.createInstance(
-          type,
-          newProps,
+          type as string,
+          newProps as Record<string, unknown>,
           fiberRoot.containerInfo,
           hostContext,
         );
@@ -139,7 +140,7 @@ export function completeWork(
         appendAllChildren(instance, workInProgress, hostConfig);
         workInProgress.stateNode = instance;
 
-        if (hostConfig.finalizeInitialChildren(instance, type, newProps, hostContext)) {
+        if (hostConfig.finalizeInitialChildren(instance, type as string, newProps as Record<string, unknown>, hostContext)) {
           markUpdate(workInProgress);
         }
 
@@ -159,7 +160,7 @@ export function completeWork(
       while (root !== null && root.tag !== HostRoot) {
         root = root.return;
       }
-      const fiberRoot: FiberRoot = root!.stateNode;
+      const fiberRoot = root!.stateNode as FiberRoot;
       const hostConfig = fiberRoot.hostConfig;
 
       if (current !== null && workInProgress.stateNode != null) {
@@ -184,7 +185,7 @@ export function completeWork(
 
     case ContextProvider: {
       const context = workInProgress.type;
-      popProvider(context);
+      popProvider(context as ReactContext<unknown>);
       bubbleProperties(workInProgress);
       return null;
     }

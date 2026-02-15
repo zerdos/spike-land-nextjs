@@ -101,7 +101,8 @@ function isReactElement(node) {
         node.$$typeof === REACT_ELEMENT_TYPE);
 }
 function renderElementToChunks(element, chunks) {
-    const { type, props } = element;
+    const type = element.type;
+    const props = element.props;
     // Fragment
     if (type === REACT_FRAGMENT_TYPE) {
         renderNodeToChunks(props.children, chunks);
@@ -212,11 +213,12 @@ function renderComponentElement(type, props, chunks) {
         const Ctor = type;
         const instance = new Ctor(props);
         // Call componentWillMount if exists (legacy)
-        if (typeof instance.componentWillMount === 'function') {
-            instance.componentWillMount();
+        const instanceRecord = instance;
+        if (typeof instanceRecord.componentWillMount === 'function') {
+            instanceRecord.componentWillMount();
         }
-        if (typeof instance.UNSAFE_componentWillMount === 'function') {
-            instance.UNSAFE_componentWillMount();
+        if (typeof instanceRecord.UNSAFE_componentWillMount === 'function') {
+            instanceRecord.UNSAFE_componentWillMount();
         }
         const rendered = instance.render();
         renderNodeToChunks(rendered, chunks);
@@ -228,6 +230,7 @@ function renderComponentElement(type, props, chunks) {
     }
 }
 function isClassComponent(type) {
-    return !!(type.prototype && type.prototype.isReactComponent);
+    const proto = type.prototype;
+    return !!(proto && proto.isReactComponent);
 }
 //# sourceMappingURL=ReactFizzServer.js.map

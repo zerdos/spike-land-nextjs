@@ -10,7 +10,7 @@ export declare function setHooksExternals(externals: {
     markWorkInProgressReceivedUpdate: () => void;
 }): void;
 export declare function setWorkInProgressRoot(root: FiberRoot | null, lanes: Lanes): void;
-export declare function renderWithHooks<Props>(current: Fiber | null, workInProgress: Fiber, Component: (props: Props, secondArg?: any) => any, props: Props, secondArg: any, nextRenderLanes: Lanes): any;
+export declare function renderWithHooks<Props>(current: Fiber | null, workInProgress: Fiber, Component: (props: Props, secondArg?: unknown) => unknown, props: Props, secondArg: unknown, nextRenderLanes: Lanes): unknown;
 export declare function bailoutHooks(current: Fiber, workInProgress: Fiber, lanes: Lanes): void;
 export declare function resetHooksAfterThrow(): void;
 //# sourceMappingURL=ReactFiberHooks.d.ts.map

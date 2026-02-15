@@ -81,13 +81,13 @@ export function cloneElement(element: ReactElementType, config: Record<string, u
     );
   }
 
-  const props = assign({}, element.props);
+  const props: Record<string, unknown> = assign({}, element.props as Record<string, unknown>);
   let key = element.key;
   let ref = element.ref;
 
   if (config != null) {
     if (config.ref !== undefined) {
-      ref = config.ref;
+      ref = config.ref as typeof ref;
     }
     if (config.key !== undefined) {
       key = '' + config.key;

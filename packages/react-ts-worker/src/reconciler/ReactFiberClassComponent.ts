@@ -15,7 +15,7 @@ const _CaptureUpdate = 3;
 
 export function initializeClassUpdateQueue<S>(fiber: Fiber): void {
   const queue: ClassUpdateQueue<S> = {
-    baseState: fiber.memoizedState,
+    baseState: fiber.memoizedState as S,
     firstBaseUpdate: null,
     lastBaseUpdate: null,
     shared: {
@@ -97,7 +97,7 @@ export function processClassUpdateQueue<S>(
           newState = assign({}, newState, payload);
         }
       } else if (update!.tag === ReplaceState) {
-        newState = update!.payload;
+        newState = update!.payload as S;
       } else if (update!.tag === ForceUpdate) {
         // Force update doesn't change state
       }
@@ -128,12 +128,12 @@ export function constructClassInstance(
 ): ComponentInstance {
   const context = {};
 
-  const instance = new Component(props, context);
+  const instance = new Component(props as Record<string, unknown>, context);
   const state = instance.state !== undefined ? instance.state : null;
   fiber.memoizedState = state;
 
-  instance.props = props;
-  instance.state = state as unknown;
+  instance.props = props as Readonly<Record<string, unknown>>;
+  instance.state = state as Readonly<Record<string, unknown>>;
   instance.refs = {};
   instance.context = context;
 
@@ -143,20 +143,20 @@ export function constructClassInstance(
     enqueueSetState: (inst: unknown, payload: unknown, callback: unknown) => {
       const update = createClassUpdate(SyncLane);
       update.payload = payload;
-      if (callback) update.callback = callback;
+      if (callback) update.callback = callback as () => void;
       enqueueClassUpdate(fiber, update);
     },
     enqueueReplaceState: (inst: unknown, payload: unknown, callback: unknown) => {
       const update = createClassUpdate(SyncLane);
       update.tag = ReplaceState;
       update.payload = payload;
-      if (callback) update.callback = callback;
+      if (callback) update.callback = callback as () => void;
       enqueueClassUpdate(fiber, update);
     },
     enqueueForceUpdate: (inst: unknown, callback: unknown) => {
       const update = createClassUpdate(SyncLane);
       update.tag = ForceUpdate;
-      if (callback) update.callback = callback;
+      if (callback) update.callback = callback as () => void;
       enqueueClassUpdate(fiber, update);
     },
   };
@@ -176,13 +176,13 @@ export function mountClassInstance(
 ): void {
   const instance = fiber.stateNode as ComponentInstance;
 
-  instance.props = nextProps;
-  instance.state = fiber.memoizedState;
+  instance.props = nextProps as Readonly<Record<string, unknown>>;
+  instance.state = fiber.memoizedState as Readonly<Record<string, unknown>>;
   instance.refs = {};
 
   initializeClassUpdateQueue(fiber);
   processClassUpdateQueue(fiber, nextProps, instance, renderLanes);
-  instance.state = fiber.memoizedState;
+  instance.state = fiber.memoizedState as Readonly<Record<string, unknown>>;
 
   // Call getDerivedStateFromProps
   const getDerivedStateFromProps = (Component as unknown as Record<string, unknown>).getDerivedStateFromProps;
@@ -211,7 +211,7 @@ export function updateClassInstance(
   const oldProps = fiber.memoizedProps;
   const oldState = fiber.memoizedState;
 
-  instance.props = oldProps;
+  instance.props = oldProps as Readonly<Record<string, unknown>>;
 
   // Call getDerivedStateFromProps
   let newState = oldState;
@@ -232,7 +232,7 @@ export function updateClassInstance(
   // shouldComponentUpdate check
   const shouldUpdate =
     typeof instance.shouldComponentUpdate === 'function'
-      ? instance.shouldComponentUpdate(nextProps, newState, {})
+      ? instance.shouldComponentUpdate(nextProps as Readonly<Record<string, unknown>>, newState as Readonly<Record<string, unknown>>, {})
       : true;
 
   if (shouldUpdate) {
@@ -244,8 +244,8 @@ export function updateClassInstance(
     }
   }
 
-  instance.props = nextProps;
-  instance.state = newState;
+  instance.props = nextProps as Readonly<Record<string, unknown>>;
+  instance.state = newState as Readonly<Record<string, unknown>>;
   fiber.memoizedState = newState;
   fiber.memoizedProps = nextProps;
 

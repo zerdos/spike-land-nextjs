@@ -25,7 +25,7 @@ function pop<T>(cursor: StackCursor<T>): void {
   if (index < 0) {
     return;
   }
-  cursor.current = valueStack[index];
+  cursor.current = valueStack[index] as T;
   valueStack[index] = null;
   index--;
 }

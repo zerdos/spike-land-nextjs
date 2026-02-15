@@ -70,7 +70,7 @@ export function pushStartInstance(type, props) {
     html += '>';
     // Handle raw HTML content (from React's __html prop)
     if (props.rawHtml != null) {
-        html += props.rawHtml;
+        html += String(props.rawHtml);
     }
     else if (typeof props.children === 'string' ||
         typeof props.children === 'number') {

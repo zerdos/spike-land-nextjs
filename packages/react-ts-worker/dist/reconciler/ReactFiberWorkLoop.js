@@ -147,7 +147,7 @@ function workLoopSync() {
         performUnitOfWork(workInProgress);
     }
 }
-function workLoopConcurrent() {
+function _workLoopConcurrent() {
     while (workInProgress !== null && !shouldYield()) {
         performUnitOfWork(workInProgress);
     }
@@ -212,7 +212,7 @@ function commitRoot(root) {
     if (subtreeHasEffects || rootHasEffect) {
         const hostConfig = root.hostConfig;
         // Before mutation phase
-        const previousState = hostConfig.prepareForCommit(root.containerInfo);
+        const _previousState = hostConfig.prepareForCommit(root.containerInfo);
         commitBeforeMutationEffects(root, finishedWork);
         // Mutation phase - modify the DOM
         commitMutationEffects(root, finishedWork);

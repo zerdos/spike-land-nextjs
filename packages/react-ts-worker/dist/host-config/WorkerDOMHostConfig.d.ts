@@ -27,6 +27,6 @@ export interface WorkerText extends WorkerNode {
 interface WorkerHostContext {
     namespace: string;
 }
-export declare function createWorkerDOMHostConfig(workerDocument: WorkerDocument, eventRegistry?: WorkerEventRegistry): HostConfig<string, Record<string, any>, WorkerElement, WorkerElement, WorkerText, WorkerHostContext, boolean>;
+export declare function createWorkerDOMHostConfig(workerDocument: WorkerDocument, eventRegistry?: WorkerEventRegistry): HostConfig<string, Record<string, unknown>, WorkerElement, WorkerElement, WorkerText, WorkerHostContext, boolean>;
 export default createWorkerDOMHostConfig;
 //# sourceMappingURL=WorkerDOMHostConfig.d.ts.map

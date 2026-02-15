@@ -7,16 +7,6 @@ const HookHasEffect = 0b0001;
 const HookPassive = 0b1000;
 const HookLayout = 0b0100;
 const HookInsertion = 0b0010;
-function getHostConfig(fiber) {
-    let node = fiber;
-    while (node !== null) {
-        if (node.tag === HostRoot) {
-            return node.stateNode.hostConfig;
-        }
-        node = node.return;
-    }
-    throw new Error('Could not find host config');
-}
 function getHostParent(fiber) {
     let node = fiber.return;
     while (node !== null) {

@@ -25,7 +25,7 @@ function pop<T>(cursor: StackCursor<T>): void {
   if (contextIndex < 0) {
     return;
   }
-  cursor.current = contextStack[contextIndex];
+  cursor.current = contextStack[contextIndex] as T;
   contextStack[contextIndex] = null;
   contextIndex--;
 }
@@ -76,7 +76,7 @@ export function popHostContainer(_fiber: Fiber): void {
 export function pushHostContext(fiber: Fiber): void {
   const hostConfig = getHostConfigFromFiber(fiber);
   const context = hostContextCursor.current;
-  const nextContext = hostConfig.getChildHostContext(context, fiber.type);
+  const nextContext = hostConfig.getChildHostContext(context, fiber.type as string);
 
   if (context !== nextContext) {
     push(hostContextCursor, nextContext);

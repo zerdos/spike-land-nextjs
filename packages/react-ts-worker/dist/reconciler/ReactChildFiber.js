@@ -48,7 +48,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         }
         return existingChildren;
     }
-    function useFiber(fiber, pendingProps) {
+    function reuseFiber(fiber, pendingProps) {
         const clone = createWorkInProgress(fiber, pendingProps);
         clone.index = 0;
         clone.sibling = null;
@@ -172,8 +172,9 @@ function createChildReconciler(shouldTrackSideEffects) {
         if (typeof newChild === 'object' && newChild !== null) {
             switch (newChild.$$typeof) {
                 case REACT_ELEMENT_TYPE: {
-                    const matchedFiber = existingChildren.get(newChild.key === null ? newIdx : newChild.key) || null;
-                    return updateElement(returnFiber, matchedFiber, newChild, lanes);
+                    const el = newChild;
+                    const matchedFiber = existingChildren.get(el.key === null ? newIdx : el.key) || null;
+                    return updateElement(returnFiber, matchedFiber, el, lanes);
                 }
                 case REACT_LAZY_TYPE: {
                     const payload = newChild._payload;
@@ -195,7 +196,7 @@ function createChildReconciler(shouldTrackSideEffects) {
             return created;
         }
         else {
-            const existing = useFiber(current, textContent);
+            const existing = reuseFiber(current, textContent);
             existing.return = returnFiber;
             return existing;
         }
@@ -207,7 +208,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         }
         if (current !== null) {
             if (current.elementType === elementType) {
-                const existing = useFiber(current, element.props);
+                const existing = reuseFiber(current, element.props);
                 coerceRef(existing, element);
                 existing.return = returnFiber;
                 return existing;
@@ -225,7 +226,7 @@ function createChildReconciler(shouldTrackSideEffects) {
             return created;
         }
         else {
-            const existing = useFiber(current, fragment);
+            const existing = reuseFiber(current, fragment);
             existing.return = returnFiber;
             return existing;
         }
@@ -239,7 +240,7 @@ function createChildReconciler(shouldTrackSideEffects) {
                 if (elementType === REACT_FRAGMENT_TYPE) {
                     if (child.tag === Fragment) {
                         deleteRemainingChildren(returnFiber, child.sibling);
-                        const existing = useFiber(child, element.props.children);
+                        const existing = reuseFiber(child, element.props.children);
                         existing.return = returnFiber;
                         return existing;
                     }
@@ -247,7 +248,7 @@ function createChildReconciler(shouldTrackSideEffects) {
                 else {
                     if (child.elementType === elementType) {
                         deleteRemainingChildren(returnFiber, child.sibling);
-                        const existing = useFiber(child, element.props);
+                        const existing = reuseFiber(child, element.props);
                         coerceRef(existing, element);
                         existing.return = returnFiber;
                         return existing;
@@ -276,7 +277,7 @@ function createChildReconciler(shouldTrackSideEffects) {
     function reconcileSingleTextNode(returnFiber, currentFirstChild, textContent, lanes) {
         if (currentFirstChild !== null && currentFirstChild.tag === HostText) {
             deleteRemainingChildren(returnFiber, currentFirstChild.sibling);
-            const existing = useFiber(currentFirstChild, textContent);
+            const existing = reuseFiber(currentFirstChild, textContent);
             existing.return = returnFiber;
             return existing;
         }

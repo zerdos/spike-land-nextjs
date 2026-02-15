@@ -36,6 +36,7 @@ import {
   ImmediatePriority,
 } from '../scheduler/Scheduler.js';
 import type { PriorityLevel } from '../scheduler/SchedulerPriorities.js';
+import type { Task } from '../scheduler/Scheduler.js';
 import { setHooksExternals, setWorkInProgressRoot } from './ReactFiberHooks.js';
 import { markWorkInProgressReceivedUpdate } from './ReactFiberBeginWork.js';
 
@@ -77,7 +78,7 @@ function ensureRootIsScheduled(root: FiberRoot): void {
   if (nextLanes === NoLanes) {
     // No pending work
     if (root.callbackNode !== null) {
-      cancelCallback(root.callbackNode);
+      cancelCallback(root.callbackNode as Task);
       root.callbackNode = null;
     }
     root.callbackPriority = NoLane;
@@ -94,7 +95,7 @@ function ensureRootIsScheduled(root: FiberRoot): void {
 
   // Cancel existing callback if different priority
   if (root.callbackNode !== null) {
-    cancelCallback(root.callbackNode);
+    cancelCallback(root.callbackNode as Task);
   }
 
   // Schedule new callback

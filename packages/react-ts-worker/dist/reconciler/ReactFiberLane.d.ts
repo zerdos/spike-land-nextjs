@@ -44,7 +44,7 @@ export declare function getNextLanes(root: {
     pendingLanes: Lanes;
     suspendedLanes: Lanes;
     pingedLanes: Lanes;
-}, wipLanes: Lanes): Lanes;
+}, _wipLanes: Lanes): Lanes;
 export declare function getEntangledLanes(root: {
     entangledLanes: Lanes;
     entanglements: LaneMap<Lanes>;

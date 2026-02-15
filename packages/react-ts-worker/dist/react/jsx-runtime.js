@@ -1,5 +1,5 @@
 import { REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE } from './ReactSymbols.js';
-const hasOwnProperty = Object.prototype.hasOwnProperty;
+const _hasOwnProperty = Object.prototype.hasOwnProperty;
 function jsxProd(type, config, maybeKey) {
     let key = null;
     if (maybeKey !== undefined) {
@@ -23,7 +23,7 @@ function jsxProd(type, config, maybeKey) {
     const ref = props.ref !== undefined ? props.ref : null;
     return {
         $$typeof: REACT_ELEMENT_TYPE,
-        type,
+        type: type,
         key,
         ref,
         props,

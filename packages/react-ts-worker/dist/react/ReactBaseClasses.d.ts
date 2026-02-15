@@ -1,11 +1,11 @@
 interface Updater {
-    enqueueSetState(inst: any, payload: any, callback: any, callerName: string): void;
-    enqueueForceUpdate(inst: any, callback: any, callerName: string): void;
+    enqueueSetState(inst: unknown, payload: unknown, callback: unknown, callerName: string): void;
+    enqueueForceUpdate(inst: unknown, callback: unknown, callerName: string): void;
 }
-export declare function Component(this: any, props: any, context: any, updater?: Updater): void;
-export declare function PureComponent(this: any, props: any, context: any, updater?: Updater): void;
+export declare function Component(this: Record<string, unknown>, props: unknown, context: unknown, updater?: Updater): void;
+export declare function PureComponent(this: Record<string, unknown>, props: unknown, context: unknown, updater?: Updater): void;
 export declare namespace PureComponent {
-    var prototype: any;
+    var prototype: Record<string, unknown>;
 }
 export {};
 //# sourceMappingURL=ReactBaseClasses.d.ts.map

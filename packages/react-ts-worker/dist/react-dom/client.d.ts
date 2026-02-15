@@ -11,7 +11,7 @@ export interface CreateRootOptions {
         componentStack?: string;
     }) => void;
 }
-export declare function createRoot(container: Element | Document, options?: CreateRootOptions): Root;
+export declare function createRoot(container: Element | Document, _options?: CreateRootOptions): Root;
 export interface HydrateRootOptions extends CreateRootOptions {
     onRecoverableError?: (error: unknown) => void;
 }

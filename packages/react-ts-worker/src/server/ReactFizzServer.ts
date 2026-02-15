@@ -139,16 +139,17 @@ function isReactElement(node: unknown): node is ReactElement {
   return (
     typeof node === 'object' &&
     node !== null &&
-    node.$$typeof === REACT_ELEMENT_TYPE
+    (node as Record<string, unknown>).$$typeof === REACT_ELEMENT_TYPE
   );
 }
 
 function renderElementToChunks(element: ReactElement, chunks: string[]): void {
-  const { type, props } = element;
+  const type = element.type;
+  const props = element.props as Record<string, unknown>;
 
   // Fragment
   if (type === REACT_FRAGMENT_TYPE) {
-    renderNodeToChunks(props.children, chunks);
+    renderNodeToChunks(props.children as ReactNode, chunks);
     return;
   }
 
@@ -157,11 +158,11 @@ function renderElementToChunks(element: ReactElement, chunks: string[]): void {
     // On the server, render the children (not fallback)
     // If children throw, we could render the fallback instead
     try {
-      renderNodeToChunks(props.children, chunks);
+      renderNodeToChunks(props.children as ReactNode, chunks);
     } catch (_error) {
       // Render fallback on error
       if (props.fallback !== undefined) {
-        renderNodeToChunks(props.fallback, chunks);
+        renderNodeToChunks(props.fallback as ReactNode, chunks);
       }
     }
     return;
@@ -199,7 +200,7 @@ function renderElementToChunks(element: ReactElement, chunks: string[]): void {
         // memo wrapping another special type
         const innerElement: ReactElement = {
           $$typeof: REACT_ELEMENT_TYPE,
-          type: innerType,
+          type: innerType as ReactElement['type'],
           key: element.key,
           ref: element.ref,
           props,
@@ -216,7 +217,7 @@ function renderElementToChunks(element: ReactElement, chunks: string[]): void {
       const previousValue = context._currentValue;
       context._currentValue = props.value;
       try {
-        renderNodeToChunks(props.children, chunks);
+        renderNodeToChunks(props.children as ReactNode, chunks);
       } finally {
         context._currentValue = previousValue;
       }
@@ -230,7 +231,7 @@ function renderElementToChunks(element: ReactElement, chunks: string[]): void {
       const resolvedType = init(payload);
       const resolvedElement: ReactElement = {
         $$typeof: REACT_ELEMENT_TYPE,
-        type: resolvedType,
+        type: resolvedType as ReactElement['type'],
         key: element.key,
         ref: element.ref,
         props,

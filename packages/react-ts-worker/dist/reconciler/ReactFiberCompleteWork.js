@@ -44,18 +44,7 @@ function markUpdate(workInProgress) {
 function markRef(workInProgress) {
     workInProgress.flags |= Ref | RefStatic;
 }
-function getHostConfigFromRoot(fiber) {
-    let node = fiber;
-    while (node !== null) {
-        if (node.stateNode && node.stateNode.hostConfig) {
-            return node.stateNode.hostConfig;
-        }
-        node = node.return;
-    }
-    // Shouldn't reach here
-    throw new Error('Could not find host config');
-}
-export function completeWork(current, workInProgress, renderLanes) {
+export function completeWork(current, workInProgress, _renderLanes) {
     const newProps = workInProgress.pendingProps;
     switch (workInProgress.tag) {
         case FunctionComponent:
@@ -69,7 +58,7 @@ export function completeWork(current, workInProgress, renderLanes) {
             return null;
         case HostRoot: {
             popHostContainer(workInProgress);
-            const fiberRoot = workInProgress.stateNode;
+            const _fiberRoot = workInProgress.stateNode;
             if (current === null || current.child === null) {
                 // First mount
             }

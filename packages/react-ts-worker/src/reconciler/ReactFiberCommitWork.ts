@@ -108,8 +108,8 @@ function commitBeforeMutationEffectsOnFiber(fiber: Fiber): void {
       const current = fiber.alternate;
       if (current !== null && typeof instance.getSnapshotBeforeUpdate === 'function') {
         instance.getSnapshotBeforeUpdate(
-          current.memoizedProps,
-          current.memoizedState,
+          current.memoizedProps as Readonly<Record<string, unknown>>,
+          current.memoizedState as Readonly<Record<string, unknown>>,
         );
       }
     }
@@ -174,7 +174,7 @@ function commitMutationEffectsOnFiber(fiber: Fiber, root: FiberRoot): void {
           const oldProps = fiber.alternate !== null
             ? fiber.alternate.memoizedProps
             : newProps;
-          hostConfig.commitUpdate(instance, fiber.type, oldProps, newProps);
+          hostConfig.commitUpdate(instance, fiber.type as string, oldProps as Record<string, unknown>, newProps as Record<string, unknown>);
         }
         break;
       }
@@ -185,7 +185,7 @@ function commitMutationEffectsOnFiber(fiber: Fiber, root: FiberRoot): void {
           ? fiber.alternate.memoizedProps
           : newText;
         if (textInstance !== null) {
-          hostConfig.commitTextUpdate(textInstance, oldText, newText);
+          hostConfig.commitTextUpdate(textInstance, oldText as string, newText as string);
         }
         break;
       }
@@ -323,7 +323,7 @@ function commitDetachRef(fiber: Fiber): void {
     if (typeof ref === 'function') {
       ref(null);
     } else if (typeof ref === 'object') {
-      ref.current = null;
+      (ref as { current: unknown }).current = null;
     }
   }
 }
@@ -371,8 +371,8 @@ function commitLayoutEffectsOnFiber(fiber: Fiber, root: FiberRoot): void {
           } else {
             if (typeof instance.componentDidUpdate === 'function') {
               instance.componentDidUpdate(
-                current.memoizedProps,
-                current.memoizedState,
+                current.memoizedProps as Readonly<Record<string, unknown>>,
+                current.memoizedState as Readonly<Record<string, unknown>>,
                 (instance as unknown as Record<string, unknown>).__snapshot,
               );
             }
@@ -384,7 +384,7 @@ function commitLayoutEffectsOnFiber(fiber: Fiber, root: FiberRoot): void {
         // Auto-focus if needed
         if (current === null && flags & Update) {
           const instance = fiber.stateNode as Element;
-          if (fiber.memoizedProps?.autoFocus && typeof (instance as unknown as Record<string, unknown>).focus === 'function') {
+          if ((fiber.memoizedProps as Record<string, unknown> | null)?.autoFocus && typeof (instance as unknown as Record<string, unknown>).focus === 'function') {
             (instance as unknown as Record<string, unknown> & { focus: () => void }).focus();
           }
         }
@@ -410,7 +410,7 @@ function commitAttachRef(fiber: Fiber): void {
       fiber.refCleanup = cleanup;
     }
   } else if (typeof ref === 'object') {
-    ref.current = instance;
+    (ref as { current: unknown }).current = instance;
   }
 }
 

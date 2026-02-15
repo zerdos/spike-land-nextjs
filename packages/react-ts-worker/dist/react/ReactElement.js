@@ -45,11 +45,13 @@ export function createElement(type, config, ...args) {
         props.children = childArray;
     }
     // Resolve default props
-    if (type && type.defaultProps) {
+    if (type && typeof type === 'object' && 'defaultProps' in type) {
         const defaultProps = type.defaultProps;
-        for (const propName in defaultProps) {
-            if (props[propName] === undefined) {
-                props[propName] = defaultProps[propName];
+        if (defaultProps) {
+            for (const propName in defaultProps) {
+                if (props[propName] === undefined) {
+                    props[propName] = defaultProps[propName];
+                }
             }
         }
     }
@@ -96,6 +98,7 @@ export function cloneElement(element, config, ...args) {
 export function isValidElement(object) {
     return (typeof object === 'object' &&
         object !== null &&
+        '$$typeof' in object &&
         object.$$typeof === REACT_ELEMENT_TYPE);
 }
 export function cloneAndReplaceKey(oldElement, newKey) {

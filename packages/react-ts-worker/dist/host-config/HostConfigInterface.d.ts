@@ -14,7 +14,7 @@ export interface HostConfig<Type = string, Props = Record<string, unknown>, Cont
     shouldSetTextContent(type: Type, props: Props): boolean;
     getRootHostContext(rootContainer: Container): HostContext;
     getChildHostContext(parentHostContext: HostContext, type: Type): HostContext;
-    prepareForCommit(container: Container): Record<string, any> | null;
+    prepareForCommit(container: Container): Record<string, unknown> | null;
     resetAfterCommit(container: Container): void;
     finalizeInitialChildren(instance: Instance, type: Type, props: Props, hostContext: HostContext): boolean;
     prepareUpdate(instance: Instance, type: Type, oldProps: Props, newProps: Props, hostContext: HostContext): UpdatePayload | null;
@@ -24,7 +24,7 @@ export interface HostConfig<Type = string, Props = Record<string, unknown>, Cont
     getCurrentTime(): number;
     scheduleMicrotask(fn: () => void): void;
 }
-export type DOMHostConfigType = HostConfig<string, Record<string, any>, Element, Element, Text, HostContextValue, boolean>;
+export type DOMHostConfigType = HostConfig<string, Record<string, unknown>, Element, Element, Text, HostContextValue, boolean>;
 export interface HostContextValue {
     namespace: string;
 }

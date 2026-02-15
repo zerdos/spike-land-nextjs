@@ -168,8 +168,8 @@ export function mapChildren(children, func, context) {
     return result;
 }
 export function forEachChildren(children, forEachFunc, forEachContext) {
-    mapChildren(children, function () {
-        forEachFunc.apply(this, arguments);
+    mapChildren(children, function (...args) {
+        forEachFunc.apply(this, args);
     }, forEachContext);
 }
 export function countChildren(children) {

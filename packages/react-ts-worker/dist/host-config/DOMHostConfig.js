@@ -110,7 +110,7 @@ function setAttribute(domElement, key, value) {
     }
     else if (key === 'value') {
         // Special handling for value property on input/select/textarea
-        domElement.value = value == null ? '' : value;
+        domElement.value = value == null ? '' : String(value);
     }
     else {
         domElement.setAttribute(attrName, String(value));
@@ -139,7 +139,7 @@ function setStyles(element, newStyles, oldStyles) {
                 style.setProperty(key, value == null ? '' : String(value));
             }
             else {
-                style[key] = value == null ? '' : value;
+                style[key] = value == null ? '' : String(value);
             }
         }
     }

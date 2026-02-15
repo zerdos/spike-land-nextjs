@@ -14,8 +14,9 @@ export function getIteratorFn(maybeIterable) {
     if (maybeIterable === null || typeof maybeIterable !== 'object') {
         return null;
     }
-    const maybeIterator = (Symbol.iterator && maybeIterable[Symbol.iterator]) ||
-        maybeIterable['@@iterator'];
+    const iterableObj = maybeIterable;
+    const maybeIterator = (Symbol.iterator && iterableObj[Symbol.iterator]) ||
+        iterableObj['@@iterator'];
     if (typeof maybeIterator === 'function') {
         return maybeIterator;
     }

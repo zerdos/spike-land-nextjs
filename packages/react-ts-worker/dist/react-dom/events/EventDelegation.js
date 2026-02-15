@@ -29,7 +29,7 @@ function collectListeners(targetFiber, reactName, isCapture) {
                 if (typeof handler === 'function') {
                     listeners.push({
                         fiber,
-                        handler,
+                        handler: handler,
                         currentTarget: fiber.stateNode,
                     });
                 }
@@ -39,7 +39,7 @@ function collectListeners(targetFiber, reactName, isCapture) {
     }
     return listeners;
 }
-function dispatchEvent(nativeEventName, nativeEvent, container) {
+function dispatchEvent(nativeEventName, nativeEvent, _container) {
     const target = nativeEvent.target || nativeEvent.srcElement;
     if (!target)
         return;

@@ -14,9 +14,9 @@ let renderLanes = NoLanes;
 let currentlyRenderingFiber = null;
 let currentHook = null;
 let workInProgressHook = null;
-let didScheduleRenderPhaseUpdate = false;
+let _didScheduleRenderPhaseUpdate = false;
 let didScheduleRenderPhaseUpdateDuringThisPass = false;
-let localIdCounter = 0;
+const _localIdCounter = 0;
 let globalClientIdCounter = 0;
 const RE_RENDER_LIMIT = 25;
 // --- Exported functions for work loop interaction ---
@@ -24,7 +24,7 @@ const RE_RENDER_LIMIT = 25;
 let scheduleUpdateOnFiberFn = null;
 let requestUpdateLaneFn = null;
 let workInProgressRoot = null;
-let workInProgressRootRenderLanes = NoLanes;
+let _workInProgressRootRenderLanes = NoLanes;
 let markWorkInProgressReceivedUpdateFn = null;
 export function setHooksExternals(externals) {
     scheduleUpdateOnFiberFn = externals.scheduleUpdateOnFiber;
@@ -33,7 +33,7 @@ export function setHooksExternals(externals) {
 }
 export function setWorkInProgressRoot(root, lanes) {
     workInProgressRoot = root;
-    workInProgressRootRenderLanes = lanes;
+    _workInProgressRootRenderLanes = lanes;
 }
 // --- Helper functions ---
 function basicStateReducer(state, action) {
@@ -163,7 +163,7 @@ function isRenderPhaseUpdate(fiber) {
         (alternate !== null && alternate === currentlyRenderingFiber));
 }
 function enqueueRenderPhaseUpdate(queue, update) {
-    didScheduleRenderPhaseUpdateDuringThisPass = didScheduleRenderPhaseUpdate = true;
+    didScheduleRenderPhaseUpdateDuringThisPass = _didScheduleRenderPhaseUpdate = true;
     const pending = queue.pending;
     if (pending === null) {
         update.next = update;
@@ -434,11 +434,11 @@ function imperativeHandleEffect(create, ref) {
 }
 function mountImperativeHandle(ref, create, deps) {
     const effectDeps = deps !== null && deps !== undefined ? deps.concat([ref]) : null;
-    mountEffectImpl(UpdateEffect | LayoutStaticEffect, HookLayout, imperativeHandleEffect.bind(null, create, ref), effectDeps);
+    mountEffectImpl(UpdateEffect | LayoutStaticEffect, HookLayout, (imperativeHandleEffect).bind(null, create, ref), effectDeps);
 }
 function updateImperativeHandle(ref, create, deps) {
     const effectDeps = deps !== null && deps !== undefined ? deps.concat([ref]) : null;
-    updateEffectImpl(UpdateEffect, HookLayout, imperativeHandleEffect.bind(null, create, ref), effectDeps);
+    updateEffectImpl(UpdateEffect, HookLayout, (imperativeHandleEffect).bind(null, create, ref), effectDeps);
 }
 // --- Callback and Memo hooks ---
 function mountCallback(callback, deps) {
@@ -656,10 +656,11 @@ const updateDebugValue = mountDebugValue;
 // --- use hook ---
 function use(usable) {
     if (usable !== null && typeof usable === 'object') {
-        if (typeof usable.then === 'function') {
+        const obj = usable;
+        if (typeof obj.then === 'function') {
             throw usable; // Suspend (throw the thenable)
         }
-        else if (usable.$$typeof === REACT_CONTEXT_TYPE) {
+        else if (obj.$$typeof === REACT_CONTEXT_TYPE) {
             return readContext(usable);
         }
     }
@@ -892,7 +893,7 @@ function finishRenderingHooks(_current, _workInProgress) {
     currentlyRenderingFiber = null;
     currentHook = null;
     workInProgressHook = null;
-    didScheduleRenderPhaseUpdate = false;
+    _didScheduleRenderPhaseUpdate = false;
 }
 // --- Bailout hooks ---
 export function bailoutHooks(current, workInProgress, lanes) {
@@ -905,7 +906,7 @@ export function resetHooksAfterThrow() {
     currentlyRenderingFiber = null;
     currentHook = null;
     workInProgressHook = null;
-    didScheduleRenderPhaseUpdate = false;
+    _didScheduleRenderPhaseUpdate = false;
     didScheduleRenderPhaseUpdateDuringThisPass = false;
     ReactSharedInternals.H = ContextOnlyDispatcher;
 }

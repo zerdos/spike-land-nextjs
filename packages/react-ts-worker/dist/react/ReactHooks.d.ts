@@ -5,12 +5,12 @@ export declare function useReducer<S, I, A>(reducer: (state: S, action: A) => S,
 export declare function useEffect(create: () => (() => void) | void, deps?: DependencyList): void;
 export declare function useLayoutEffect(create: () => (() => void) | void, deps?: DependencyList): void;
 export declare function useInsertionEffect(create: () => (() => void) | void, deps?: DependencyList): void;
-export declare function useCallback<T extends (...args: any[]) => any>(callback: T, deps: DependencyList): T;
+export declare function useCallback<T extends (...args: unknown[]) => unknown>(callback: T, deps: DependencyList): T;
 export declare function useMemo<T>(create: () => T, deps: DependencyList): T;
 export declare function useRef<T>(initialValue: T): RefObject<T>;
 export declare function useContext<T>(context: ReactContext<T>): T;
 export declare function useImperativeHandle<T>(ref: Ref<T> | undefined, create: () => T, deps?: DependencyList): void;
-export declare function useDebugValue<T>(value: T, format?: (value: T) => any): void;
+export declare function useDebugValue<T>(_value: T, _format?: (value: T) => unknown): void;
 export declare function useTransition(): [boolean, (callback: () => void) => void];
 export declare function useDeferredValue<T>(value: T, initialValue?: T): T;
 export declare function useId(): string;

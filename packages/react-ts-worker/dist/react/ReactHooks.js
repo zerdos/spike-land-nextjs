@@ -43,7 +43,7 @@ export function useImperativeHandle(ref, create, deps) {
     const dispatcher = resolveDispatcher();
     return dispatcher.useImperativeHandle(ref, create, deps);
 }
-export function useDebugValue(value, format) {
+export function useDebugValue(_value, _format) {
     // useDebugValue is a no-op in production
 }
 export function useTransition() {

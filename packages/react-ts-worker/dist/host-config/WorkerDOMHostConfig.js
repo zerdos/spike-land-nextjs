@@ -19,9 +19,10 @@ function setWorkerProps(element, props, eventRegistry) {
         if (value == null || key === 'children' || key === 'key' || key === 'ref')
             continue;
         if (key === 'style') {
-            if (typeof value === 'object') {
-                for (const styleProp in value) {
-                    element.style[styleProp] = value[styleProp] == null ? '' : String(value[styleProp]);
+            if (typeof value === 'object' && value !== null) {
+                const styleObj = value;
+                for (const styleProp in styleObj) {
+                    element.style[styleProp] = styleObj[styleProp] == null ? '' : String(styleObj[styleProp]);
                 }
             }
         }

@@ -90,7 +90,7 @@ export function propagateContextChange(workInProgress, context, renderLanes) {
     while (fiber !== null) {
         const dependencies = fiber.dependencies;
         if (dependencies !== null) {
-            let nextFiber = fiber.child;
+            const nextFiber = fiber.child;
             let dependency = dependencies.firstContext;
             while (dependency !== null) {
                 if (dependency.context === context) {

@@ -1,5 +1,5 @@
 import type { ReactElement } from './ReactTypes.js';
-declare function jsxProd(type: any, config: any, maybeKey?: any): ReactElement;
+declare function jsxProd(type: unknown, config: Record<string, unknown>, maybeKey?: unknown): ReactElement;
 export declare const jsx: typeof jsxProd;
 export declare const jsxs: typeof jsxProd;
 export declare const Fragment: symbol;

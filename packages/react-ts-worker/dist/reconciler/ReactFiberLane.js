@@ -94,7 +94,7 @@ export function markRootFinished(root, remainingLanes) {
     root.expiredLanes &= remainingLanes;
     root.entangledLanes &= remainingLanes;
 }
-export function getNextLanes(root, wipLanes) {
+export function getNextLanes(root, _wipLanes) {
     const pendingLanes = root.pendingLanes;
     if (pendingLanes === NoLanes) {
         return NoLanes;

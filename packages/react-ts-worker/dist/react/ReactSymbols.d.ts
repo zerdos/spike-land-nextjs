@@ -9,5 +9,5 @@ export declare const REACT_FORWARD_REF_TYPE: symbol;
 export declare const REACT_SUSPENSE_TYPE: symbol;
 export declare const REACT_MEMO_TYPE: symbol;
 export declare const REACT_LAZY_TYPE: symbol;
-export declare function getIteratorFn(maybeIterable: any): (() => Iterator<any>) | null;
+export declare function getIteratorFn(maybeIterable: unknown): (() => Iterator<unknown>) | null;
 //# sourceMappingURL=ReactSymbols.d.ts.map

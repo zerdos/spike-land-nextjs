@@ -1,7 +1,7 @@
 import type { FiberRoot } from './ReactFiberTypes.js';
 import type { HostConfig } from '../host-config/HostConfigInterface.js';
 import type { ReactNode } from '../react/ReactTypes.js';
-export declare function createContainer(containerInfo: any, hostConfig: HostConfig): FiberRoot;
+export declare function createContainer(containerInfo: unknown, hostConfig: HostConfig): FiberRoot;
 export declare function updateContainer(element: ReactNode | null, container: FiberRoot): void;
-export declare function getPublicRootInstance(container: FiberRoot): any;
+export declare function getPublicRootInstance(container: FiberRoot): unknown;
 //# sourceMappingURL=ReactFiberReconciler.d.ts.map

@@ -6,7 +6,7 @@ import assign from '../shared/assign.js';
 const UpdateState = 0;
 const ReplaceState = 1;
 const ForceUpdate = 2;
-const CaptureUpdate = 3;
+const _CaptureUpdate = 3;
 export function initializeClassUpdateQueue(fiber) {
     const queue = {
         baseState: fiber.memoizedState,
@@ -43,7 +43,7 @@ export function enqueueClassUpdate(fiber, update) {
     }
     sharedQueue.pending = update;
 }
-export function processClassUpdateQueue(fiber, props, instance, renderLanes) {
+export function processClassUpdateQueue(fiber, props, instance, _renderLanes) {
     const queue = fiber.updateQueue;
     if (!queue)
         return;
@@ -66,9 +66,9 @@ export function processClassUpdateQueue(fiber, props, instance, renderLanes) {
     }
     if (firstBaseUpdate !== null) {
         let newState = queue.baseState;
-        let newBaseState = newState;
-        let newFirstBaseUpdate = null;
-        let newLastBaseUpdate = null;
+        const newBaseState = newState;
+        const newFirstBaseUpdate = null;
+        const newLastBaseUpdate = null;
         let update = firstBaseUpdate;
         do {
             // Process update

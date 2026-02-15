@@ -38,17 +38,18 @@ function updateFunctionComponent(current, workInProgress, Component, nextProps, 
     return workInProgress.child;
 }
 function updateClassComponent(current, workInProgress, Component, nextProps, renderLanes) {
+    const Ctor = Component;
     let instance = workInProgress.stateNode;
     if (instance === null) {
-        instance = constructClassInstance(workInProgress, Component, nextProps);
-        mountClassInstance(workInProgress, Component, nextProps, renderLanes);
+        instance = constructClassInstance(workInProgress, Ctor, nextProps);
+        mountClassInstance(workInProgress, Ctor, nextProps, renderLanes);
     }
     else if (current === null) {
         // Re-mount (component was previously deleted but fiber is being reused)
-        mountClassInstance(workInProgress, Component, nextProps, renderLanes);
+        mountClassInstance(workInProgress, Ctor, nextProps, renderLanes);
     }
     else {
-        const shouldUpdate = updateClassInstance(current, workInProgress, Component, nextProps, renderLanes);
+        const shouldUpdate = updateClassInstance(current, workInProgress, Ctor, nextProps, renderLanes);
         if (!shouldUpdate) {
             return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
         }
@@ -66,7 +67,7 @@ function updateHostRoot(current, workInProgress, renderLanes) {
 }
 function updateHostComponent(current, workInProgress, renderLanes) {
     pushHostContext(workInProgress);
-    const type = workInProgress.type;
+    const _type = workInProgress.type;
     const nextProps = workInProgress.pendingProps;
     const prevProps = current !== null ? current.memoizedProps : null;
     let nextChildren = nextProps.children;
@@ -116,19 +117,20 @@ function updateForwardRef(current, workInProgress, Component, nextProps, renderL
     return workInProgress.child;
 }
 function updateMemoComponent(current, workInProgress, Component, nextProps, renderLanes) {
+    const comp = Component;
     if (current === null) {
-        const type = Component.type;
-        if (typeof type === 'function' &&
-            Component.compare === null &&
-            Component.defaultProps === undefined) {
+        const _type = comp.type;
+        if (typeof _type === 'function' &&
+            comp.compare === null &&
+            comp.defaultProps === undefined) {
             // Simple memo shortcut
             workInProgress.tag = SimpleMemoComponent;
-            workInProgress.type = type;
-            return updateSimpleMemoComponent(current, workInProgress, type, nextProps, renderLanes);
+            workInProgress.type = _type;
+            return updateSimpleMemoComponent(current, workInProgress, _type, nextProps, renderLanes);
         }
         const child = createFiberFromElement({
             $$typeof: Symbol.for('react.transitional.element'),
-            type,
+            type: _type,
             key: null,
             ref: null,
             props: nextProps,
@@ -142,14 +144,14 @@ function updateMemoComponent(current, workInProgress, Component, nextProps, rend
     // Update path
     const currentChild = current.child;
     const prevProps = currentChild.memoizedProps;
-    const compare = Component.compare || shallowEqual;
+    const compare = (comp.compare || shallowEqual);
     if (compare(prevProps, nextProps) && current.ref === workInProgress.ref) {
         return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
     workInProgress.flags |= PerformedWork;
     const newChild = createFiberFromElement({
         $$typeof: Symbol.for('react.transitional.element'),
-        type: Component.type,
+        type: comp.type,
         key: null,
         ref: null,
         props: nextProps,
@@ -178,7 +180,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
     if (showFallback) {
         workInProgress.flags &= ~DidCapture;
         const fallback = nextProps.fallback;
-        const primaryChildren = nextProps.children;
+        const _primaryChildren = nextProps.children;
         // Render fallback
         reconcileChildren(current, workInProgress, fallback, renderLanes);
         return workInProgress.child;
@@ -215,7 +217,8 @@ function updateLazyComponent(current, workInProgress, lazyComponent, nextProps, 
         'Lazy element type must resolve to a class or function.');
 }
 function isClassComponent(Component) {
-    return !!(Component.prototype && Component.prototype.isReactComponent);
+    const proto = Component.prototype;
+    return !!(proto && proto.isReactComponent);
 }
 // Track whether we received an update during this beginWork
 let didReceiveUpdate = false;

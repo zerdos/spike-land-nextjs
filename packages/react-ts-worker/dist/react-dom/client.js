@@ -2,7 +2,7 @@
 import { DOMHostConfig } from '../host-config/DOMHostConfig.js';
 import { createContainer, updateContainer } from '../reconciler/ReactFiberReconciler.js';
 import { listenToAllSupportedEvents } from './events/EventDelegation.js';
-export function createRoot(container, options) {
+export function createRoot(container, _options) {
     if (!container) {
         throw new Error('createRoot(...): Target container is not a DOM element.');
     }
