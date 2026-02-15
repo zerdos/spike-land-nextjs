@@ -62,6 +62,9 @@ import { registerGalleryTools } from "./tools/gallery";
 import { registerBoxesTools } from "./tools/boxes";
 import { registerJobsTools } from "./tools/jobs";
 
+import { registerPagesTools } from "./tools/pages";
+import { registerBlocksTools } from "./tools/blocks";
+import { registerPageAiTools } from "./tools/page-ai";
 import { registerRemindersTools } from "./tools/reminders";
 import { registerShareTools } from "./tools/share";
 import { registerPermissionsTools } from "./tools/permissions";
@@ -323,6 +326,11 @@ export function createMcpServer(
   registerAgencyTools(registry, userId);
   registerAuditTools(registry, userId);
   registerNotificationsTools(registry, userId);
+
+  // Dynamic pages tools (discoverable)
+  registerPagesTools(registry, userId);
+  registerBlocksTools(registry, userId);
+  registerPageAiTools(registry, userId);
 
   // Dev workflow tools (localhost only)
   if (process.env.NODE_ENV === "development") {

@@ -164,6 +164,29 @@ const nextConfig: NextConfig = {
         destination: "/store/skills/bazdmeg",
         permanent: false,
       },
+      // Landing theme pages → dynamic pages
+      { source: "/landing/apple", destination: "/p/landing-apple", permanent: true },
+      { source: "/landing/stripe", destination: "/p/landing-stripe", permanent: true },
+      { source: "/landing/vercel", destination: "/p/landing-vercel", permanent: true },
+      { source: "/landing/linear", destination: "/p/landing-linear", permanent: true },
+      { source: "/landing/figma", destination: "/p/landing-figma", permanent: true },
+      { source: "/landing/notion", destination: "/p/landing-notion", permanent: true },
+      { source: "/landing/discord", destination: "/p/landing-discord", permanent: true },
+      { source: "/landing/framer", destination: "/p/landing-framer", permanent: true },
+      { source: "/landing/supabase", destination: "/p/landing-supabase", permanent: true },
+      { source: "/landing/brutalist", destination: "/p/landing-brutalist", permanent: true },
+      { source: "/landing", destination: "/p/landing-gallery", permanent: true },
+      // Feature pages → dynamic pages
+      { source: "/features/ab-testing", destination: "/p/features-ab-testing", permanent: true },
+      { source: "/features/ai-calendar", destination: "/p/features-ai-calendar", permanent: true },
+      { source: "/features/ai-tools", destination: "/p/features-ai-tools", permanent: true },
+      { source: "/features/analytics", destination: "/p/features-analytics", permanent: true },
+      { source: "/features/brand-brain", destination: "/p/features-brand-brain", permanent: true },
+      { source: "/features/calendar", destination: "/p/features-calendar", permanent: true },
+      { source: "/features", destination: "/p/features", permanent: true },
+      // Persona pages → dynamic pages
+      { source: "/personas/:slug", destination: "/p/persona-:slug", permanent: true },
+      { source: "/personas", destination: "/p/personas", permanent: true },
     ];
   },
   // Webpack configuration for Yarn PnP compatibility

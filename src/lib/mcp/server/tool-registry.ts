@@ -87,6 +87,9 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   sentry: "Sentry error tracking: issues, details, and project stats",
   vercel: "Vercel deployments: list, details, and analytics",
   "github-admin": "GitHub project management: roadmap, issues summary, and PR status",
+  pages: "Dynamic page management: create, update, publish, and manage content pages",
+  blocks: "Page block management: add, update, reorder, and manage content blocks within pages",
+  "page-ai": "AI-powered page generation: auto-generate pages, enhance blocks, and create themes",
 };
 
 export class ToolRegistry {

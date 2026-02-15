@@ -215,7 +215,7 @@ export const MarkdownContentSchema = z.object({
 
 export const CustomReactContentSchema = z.object({
   componentName: z.string().min(1).describe("Registered component name."),
-  props: z.record(z.unknown()).optional().default({}).describe("Component props."),
+  props: z.record(z.string(), z.unknown()).optional().default({}).describe("Component props."),
 });
 
 // ─── Schema Map ───────────────────────────────────────────────────────────────
