@@ -156,15 +156,15 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: .next/cache
-          key: ${{ runner.os }}-nextjs-v2-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('**/*.ts', '**/*.tsx') }}
+          key: ${{ runner.os }}-nextjs-v3-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('src/**/*.ts', 'src/**/*.tsx', 'src/**/*.js') }}
           restore-keys: |
-            ${{ runner.os }}-nextjs-v2-${{ hashFiles('**/yarn.lock') }}-
-            ${{ runner.os }}-nextjs-v2-
+            ${{ runner.os }}-nextjs-v3-${{ hashFiles('**/yarn.lock') }}-
+            ${{ runner.os }}-nextjs-v3-
 
       - name: Build application
         run: yarn build
         env:
-          NODE_OPTIONS: "--max-old-space-size=8192 --require ${{ github.workspace }}/scripts/debug-uncaught.cjs"
+          NODE_OPTIONS: "--max-old-space-size=8192"
           # Provide dummy DATABASE_URL for Prisma 7 client engine initialization
           # Actual database connection only happens at runtime with real credentials
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
@@ -179,7 +179,7 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: .next/cache
-          key: ${{ runner.os }}-nextjs-v2-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('**/*.ts', '**/*.tsx') }}
+          key: ${{ runner.os }}-nextjs-v3-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('src/**/*.ts', 'src/**/*.tsx', 'src/**/*.js') }}
 
       - name: Verify build output
         run: |
