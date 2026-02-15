@@ -595,6 +595,13 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION_PRIMARY }}
 
+      - name: Debug - List Task Definitions
+        run: |
+          echo "Listing all active task definitions..."
+          aws ecs list-task-definitions --status ACTIVE --max-items 50
+          echo "Searching for staging..."
+          aws ecs list-task-definitions --family-prefix staging --status ACTIVE
+
       - name: Download staging workerd task definition
         run: |
           aws ecs describe-task-definition \
