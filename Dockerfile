@@ -69,6 +69,7 @@ COPY --link src ./src
 COPY --link apps ./apps
 COPY --link public ./public
 COPY --link content ./content
+COPY --link packages ./packages
 RUN yarn db:generate
 
 # ============================================================================
