@@ -31,8 +31,8 @@ export const Scene10_EndCard: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Logo with gradient mesh (0-300) */}
-      <Sequence from={0} durationInFrames={300}>
+      {/* Part 1: Logo with gradient mesh (0-216) */}
+      <Sequence from={0} durationInFrames={216}>
         <AbsoluteFill>
           <GradientMesh animationSpeed={0.02} opacity={0.8} />
           <AbsoluteFill
@@ -42,13 +42,13 @@ export const Scene10_EndCard: React.FC = () => {
               justifyContent: "center",
             }}
           >
-            <SpikeLandLogo size={200} delay={10} />
+            <SpikeLandLogo size={200} delay={7} />
           </AbsoluteFill>
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: 3 CTA cards stacked vertically (300-600) */}
-      <Sequence from={300} durationInFrames={300}>
+      {/* Part 2: 3 CTA cards stacked vertically (216-432) */}
+      <Sequence from={216} durationInFrames={216}>
         <AbsoluteFill>
           <GradientMesh animationSpeed={0.015} opacity={0.5} />
           <AbsoluteFill
@@ -65,7 +65,7 @@ export const Scene10_EndCard: React.FC = () => {
                 key={cta.label}
                 width={700}
                 height={140}
-                delay={320 + stagger(i, 12)}
+                delay={231 + stagger(i, 9)}
                 color={cta.color}
               >
                 <div
@@ -102,8 +102,8 @@ export const Scene10_EndCard: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 3: Attribution + closing tagline (600-900) */}
-      <Sequence from={600} durationInFrames={300}>
+      {/* Part 3: Attribution + closing tagline (432-648) */}
+      <Sequence from={432} durationInFrames={216}>
         <AbsoluteFill>
           <GradientMesh animationSpeed={0.01} opacity={0.4} />
           <AbsoluteFill
@@ -121,14 +121,14 @@ export const Scene10_EndCard: React.FC = () => {
               fontSize={36}
               color={COLORS.textSecondary}
               type="reveal"
-              delay={620}
+              delay={446}
             />
             <KineticText
               text="and the Vibeathon 2026"
               fontSize={36}
               color={COLORS.textSecondary}
               type="reveal"
-              delay={660}
+              delay={475}
             />
             <div
               style={{
@@ -137,7 +137,7 @@ export const Scene10_EndCard: React.FC = () => {
                 fontStyle: "italic",
                 color: COLORS.textMuted,
                 textAlign: "center",
-                opacity: interpolate(frame, [750, 780], [0, 1], {
+                opacity: interpolate(frame, [540, 562], [0, 1], {
                   extrapolateLeft: "clamp",
                   extrapolateRight: "clamp",
                 }),

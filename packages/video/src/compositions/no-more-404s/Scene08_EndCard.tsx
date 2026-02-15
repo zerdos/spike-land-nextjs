@@ -20,8 +20,8 @@ export const Scene08_Breakthrough: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: The Breakthrough - ComparisonTable (0-350) */}
-      <Sequence from={0} durationInFrames={350}>
+      {/* Part 1: The Breakthrough - ComparisonTable (0-262) */}
+      <Sequence from={0} durationInFrames={262}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -36,10 +36,10 @@ export const Scene08_Breakthrough: React.FC = () => {
             fontSize={64}
             color={COLORS.textPrimary}
             type="reveal"
-            delay={10}
+            delay={7}
           />
           <ComparisonTable
-            delay={20}
+            delay={15}
             rows={[
               { label: "E2E Test", before: "30-300s", after: "<1ms" },
               { label: "CI Suite", before: "45 min", after: "3 min" },
@@ -51,8 +51,8 @@ export const Scene08_Breakthrough: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: BarChart - Speedup Factors (350-700) */}
-      <Sequence from={350} durationInFrames={350}>
+      {/* Part 2: BarChart - Speedup Factors (262-524) */}
+      <Sequence from={262} durationInFrames={262}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -68,7 +68,7 @@ export const Scene08_Breakthrough: React.FC = () => {
               fontWeight: 700,
               color: COLORS.textPrimary,
               textAlign: "center",
-              opacity: interpolate(frame, [360, 380], [0, 1], {
+              opacity: interpolate(frame, [269, 284], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
@@ -87,13 +87,13 @@ export const Scene08_Breakthrough: React.FC = () => {
             height={350}
             barWidth={120}
             gap={40}
-            delay={370}
+            delay={277}
           />
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 3: Dramatic closing (700-1050) */}
-      <Sequence from={700} durationInFrames={350}>
+      {/* Part 3: Dramatic closing (524-786) */}
+      <Sequence from={524} durationInFrames={262}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -108,14 +108,14 @@ export const Scene08_Breakthrough: React.FC = () => {
             fontSize={56}
             color={COLORS.textPrimary}
             type="reveal"
-            delay={720}
+            delay={539}
           />
           <KineticText
             text="gets to ten seconds"
             fontSize={72}
             color={COLORS.cyan}
             type="scale"
-            delay={780}
+            delay={584}
           />
         </AbsoluteFill>
       </Sequence>

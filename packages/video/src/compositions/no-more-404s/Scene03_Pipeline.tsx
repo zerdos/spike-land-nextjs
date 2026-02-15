@@ -29,8 +29,8 @@ export const Scene03_Codespace: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Title + Chat interaction (0-400) */}
-      <Sequence from={0} durationInFrames={400}>
+      {/* Part 1: Title + Chat interaction (0-213) */}
+      <Sequence from={0} durationInFrames={213}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -53,12 +53,12 @@ export const Scene03_Codespace: React.FC = () => {
             <ChatBubble
               message="Build me a todo app with dark mode"
               isAi={false}
-              delay={30}
+              delay={16}
             />
             <ChatBubble
               message="I'll create a React todo app with dark mode support..."
               isAi={true}
-              delay={80}
+              delay={43}
             />
             <div
               style={{
@@ -67,14 +67,14 @@ export const Scene03_Codespace: React.FC = () => {
                 marginTop: 16,
               }}
             >
-              <StatusBadge status="generating" delay={130} />
+              <StatusBadge status="generating" delay={69} />
             </div>
           </div>
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: Split screen — code on left, preview on right (400-800) */}
-      <Sequence from={400} durationInFrames={400}>
+      {/* Part 2: Split screen — code on left, preview on right (213-426) */}
+      <Sequence from={213} durationInFrames={213}>
         <SplitScreenReveal
           leftContent={
             <div
@@ -91,7 +91,7 @@ export const Scene03_Codespace: React.FC = () => {
                   code={TODO_CODE}
                   language="tsx"
                   borderColor={COLORS.cyan}
-                  delay={420}
+                  delay={225}
                   typingSpeed={50}
                 />
               </div>
@@ -108,16 +108,16 @@ export const Scene03_Codespace: React.FC = () => {
               }}
             >
               <div style={{ width: "90%" }}>
-                <LivePreviewMockup delay={450} />
+                <LivePreviewMockup delay={240} />
               </div>
             </div>
           }
-          delay={400}
+          delay={213}
         />
       </Sequence>
 
-      {/* Part 3: IDE summary text (800-1200) */}
-      <Sequence from={800} durationInFrames={400}>
+      {/* Part 3: IDE summary text (426-639) */}
+      <Sequence from={426} durationInFrames={213}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -133,7 +133,7 @@ export const Scene03_Codespace: React.FC = () => {
             color={COLORS.textPrimary}
             type="slide"
             direction="left"
-            delay={820}
+            delay={440}
           />
           <KineticText
             text="Live app on the right"
@@ -141,7 +141,7 @@ export const Scene03_Codespace: React.FC = () => {
             color={COLORS.textPrimary}
             type="slide"
             direction="right"
-            delay={860}
+            delay={460}
           />
           <div style={{ marginTop: 20 }}>
             <KineticText
@@ -149,7 +149,7 @@ export const Scene03_Codespace: React.FC = () => {
               fontSize={72}
               color={COLORS.cyan}
               type="scale"
-              delay={920}
+              delay={500}
             />
           </div>
         </AbsoluteFill>

@@ -28,8 +28,8 @@ export const Scene06_BridgeMind: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Before/After comparison (0-350) */}
-      <Sequence from={0} durationInFrames={350}>
+      {/* Part 1: Before/After comparison (0-277) */}
+      <Sequence from={0} durationInFrames={277}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -44,7 +44,7 @@ export const Scene06_BridgeMind: React.FC = () => {
             text="BridgeMind × MCP"
             fontSize={TYPOGRAPHY.fontSize["5xl"]}
             type="reveal"
-            delay={10}
+            delay={8}
           />
 
           <div
@@ -55,7 +55,7 @@ export const Scene06_BridgeMind: React.FC = () => {
               marginTop: 40,
             }}
           >
-            <GlassmorphismCard width={450} color={COLORS.error} delay={30}>
+            <GlassmorphismCard width={450} color={COLORS.error} delay={24}>
               <div style={{ padding: 30 }}>
                 <div
                   style={{
@@ -76,7 +76,7 @@ export const Scene06_BridgeMind: React.FC = () => {
                       marginBottom: 12,
                       opacity: interpolate(
                         frame,
-                        [50 + i * 15, 65 + i * 15],
+                        [40 + i * 12, 51 + i * 12],
                         [0, 1],
                         CLAMP,
                       ),
@@ -88,7 +88,7 @@ export const Scene06_BridgeMind: React.FC = () => {
               </div>
             </GlassmorphismCard>
 
-            <GlassmorphismCard width={450} color={COLORS.success} delay={50}>
+            <GlassmorphismCard width={450} color={COLORS.success} delay={40}>
               <div style={{ padding: 30 }}>
                 <div
                   style={{
@@ -109,7 +109,7 @@ export const Scene06_BridgeMind: React.FC = () => {
                       marginBottom: 12,
                       opacity: interpolate(
                         frame,
-                        [70 + i * 15, 85 + i * 15],
+                        [55 + i * 12, 67 + i * 12],
                         [0, 1],
                         CLAMP,
                       ),
@@ -124,8 +124,8 @@ export const Scene06_BridgeMind: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: Animated metric counters (350-700) */}
-      <Sequence from={350} durationInFrames={350}>
+      {/* Part 2: Animated metric counters (277-554) */}
+      <Sequence from={277} durationInFrames={277}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -153,14 +153,14 @@ export const Scene06_BridgeMind: React.FC = () => {
                   fontFamily: TYPOGRAPHY.fontFamily.mono,
                 }}
               >
-                {countUp(frame, fps, 164, 1.5, 370)}
+                {countUp(frame, fps, 164, 1.5, 293)}
               </div>
               <div
                 style={{
                   fontSize: TYPOGRAPHY.fontSize.xl,
                   color: COLORS.textSecondary,
                   marginTop: 10,
-                  opacity: interpolate(frame, [380, 400], [0, 1], CLAMP),
+                  opacity: interpolate(frame, [301, 317], [0, 1], CLAMP),
                 }}
               >
                 Tool Files
@@ -177,14 +177,14 @@ export const Scene06_BridgeMind: React.FC = () => {
                   fontFamily: TYPOGRAPHY.fontFamily.mono,
                 }}
               >
-                {countUp(frame, fps, 79, 1.5, 400)}
+                {countUp(frame, fps, 79, 1.5, 317)}
               </div>
               <div
                 style={{
                   fontSize: TYPOGRAPHY.fontSize.xl,
                   color: COLORS.textSecondary,
                   marginTop: 10,
-                  opacity: interpolate(frame, [410, 430], [0, 1], CLAMP),
+                  opacity: interpolate(frame, [325, 340], [0, 1], CLAMP),
                 }}
               >
                 Test Files
@@ -200,12 +200,12 @@ export const Scene06_BridgeMind: React.FC = () => {
                   color: COLORS.success,
                   fontFamily: TYPOGRAPHY.fontFamily.mono,
                   opacity: spring({
-                    frame: frame - 440,
+                    frame: frame - 348,
                     fps,
                     config: SPRING_CONFIGS.snappy,
                   }),
                   transform: `scale(${spring({
-                    frame: frame - 440,
+                    frame: frame - 348,
                     fps,
                     config: SPRING_CONFIGS.bouncy,
                   })})`,
@@ -218,7 +218,7 @@ export const Scene06_BridgeMind: React.FC = () => {
                   fontSize: TYPOGRAPHY.fontSize.xl,
                   color: COLORS.textSecondary,
                   marginTop: 10,
-                  opacity: interpolate(frame, [460, 480], [0, 1], CLAMP),
+                  opacity: interpolate(frame, [364, 380], [0, 1], CLAMP),
                 }}
               >
                 Ratio
@@ -230,7 +230,7 @@ export const Scene06_BridgeMind: React.FC = () => {
             style={{
               fontSize: TYPOGRAPHY.fontSize["2xl"],
               color: COLORS.textMuted,
-              opacity: interpolate(frame, [500, 530], [0, 1], CLAMP),
+              opacity: interpolate(frame, [396, 420], [0, 1], CLAMP),
             }}
           >
             Nearly one test file per tool file
@@ -238,8 +238,8 @@ export const Scene06_BridgeMind: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 3: Progressive disclosure (700-1050) */}
-      <Sequence from={700} durationInFrames={350}>
+      {/* Part 3: Progressive disclosure (554-831) */}
+      <Sequence from={554} durationInFrames={277}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -253,7 +253,7 @@ export const Scene06_BridgeMind: React.FC = () => {
             text="Five gateway tools"
             fontSize={TYPOGRAPHY.fontSize["5xl"]}
             type="reveal"
-            delay={720}
+            delay={570}
           />
 
           <KineticText
@@ -261,14 +261,14 @@ export const Scene06_BridgeMind: React.FC = () => {
             fontSize={TYPOGRAPHY.fontSize["3xl"]}
             color={COLORS.cyan}
             type="scale"
-            delay={790}
+            delay={625}
           />
 
           <div
             style={{
               fontSize: TYPOGRAPHY.fontSize["2xl"],
               color: COLORS.textMuted,
-              opacity: interpolate(frame, [860, 890], [0, 1], CLAMP),
+              opacity: interpolate(frame, [681, 705], [0, 1], CLAMP),
             }}
           >
             Progressive disclosure

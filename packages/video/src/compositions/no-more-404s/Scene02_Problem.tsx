@@ -24,8 +24,8 @@ export const Scene02_Platform: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Four platform cards (0-400) */}
-      <Sequence from={0} durationInFrames={400}>
+      {/* Part 1: Four platform cards (0-211) */}
+      <Sequence from={0} durationInFrames={211}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -42,7 +42,7 @@ export const Scene02_Platform: React.FC = () => {
               fontSize={56}
               color={COLORS.textPrimary}
               type="reveal"
-              delay={10}
+              delay={5}
             />
           </div>
           <PlatformCard
@@ -50,34 +50,34 @@ export const Scene02_Platform: React.FC = () => {
             title="Codespace"
             subtitle="Describe → AI builds live"
             color={COLORS.cyan}
-            delay={30}
+            delay={16}
           />
           <PlatformCard
             icon="📝"
             title="Blog"
             subtitle="Syntax + read-aloud"
             color={COLORS.purple}
-            delay={50}
+            delay={26}
           />
           <PlatformCard
             icon="📚"
             title="LearnIT Wiki"
             subtitle="AI-generated knowledge"
             color={COLORS.amber}
-            delay={70}
+            delay={37}
           />
           <PlatformCard
             icon="🔗"
             title="Dynamic Pages"
             subtitle="Every URL → working app"
             color={COLORS.success}
-            delay={90}
+            delay={47}
           />
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: Browser frame mockup (400-800) */}
-      <Sequence from={400} durationInFrames={400}>
+      {/* Part 2: Browser frame mockup (211-422) */}
+      <Sequence from={211} durationInFrames={211}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -89,13 +89,13 @@ export const Scene02_Platform: React.FC = () => {
           <div
             style={{
               opacity: spring({
-                frame: frame - 410,
+                frame: frame - 221,
                 fps,
                 config: SPRING_CONFIGS.smooth,
               }),
               transform: `scale(${interpolate(
                 spring({
-                  frame: frame - 410,
+                  frame: frame - 221,
                   fps,
                   config: SPRING_CONFIGS.smooth,
                 }),
@@ -124,7 +124,7 @@ export const Scene02_Platform: React.FC = () => {
                     fontWeight: 700,
                     fontFamily: TYPOGRAPHY.fontFamily.mono,
                     color: COLORS.textPrimary,
-                    opacity: interpolate(frame, [420, 450], [0, 1], {
+                    opacity: interpolate(frame, [222, 237], [0, 1], {
                       extrapolateLeft: "clamp",
                       extrapolateRight: "clamp",
                     }),
@@ -139,7 +139,7 @@ export const Scene02_Platform: React.FC = () => {
                     fontWeight: 500,
                     textAlign: "center",
                     maxWidth: 700,
-                    opacity: interpolate(frame, [470, 510], [0, 1], {
+                    opacity: interpolate(frame, [248, 269], [0, 1], {
                       extrapolateLeft: "clamp",
                       extrapolateRight: "clamp",
                     }),
@@ -153,12 +153,12 @@ export const Scene02_Platform: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 3: Closing statement (800-1200) */}
-      <Sequence from={800} durationInFrames={400}>
+      {/* Part 3: Closing statement (422-633) */}
+      <Sequence from={422} durationInFrames={211}>
         <AbsoluteFill>
           <GradientMesh
             animationSpeed={0.02}
-            opacity={interpolate(frame, [800, 860], [0, 0.8], {
+            opacity={interpolate(frame, [422, 454], [0, 0.8], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
             })}
@@ -175,7 +175,7 @@ export const Scene02_Platform: React.FC = () => {
               fontSize={64}
               color={COLORS.textPrimary}
               type="scale"
-              delay={830}
+              delay={438}
             />
           </AbsoluteFill>
         </AbsoluteFill>

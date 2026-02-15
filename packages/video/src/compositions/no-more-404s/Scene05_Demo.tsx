@@ -19,30 +19,30 @@ export const Scene05_Generate: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const browserUrl = typewriter(frame, fps, "spike.land/create/anything", 25, 10);
+  const browserUrl = typewriter(frame, fps, "spike.land/create/anything", 16, 10);
 
-  // Skull fade out around frame 200
-  const skullOpacity = interpolate(frame, [180, 220], [1, 0], {
+  // Skull fade out around frame 118
+  const skullOpacity = interpolate(frame, [118, 144], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // "Building..." text fades in after skull fades out
-  const buildingOpacity = interpolate(frame, [220, 260], [0, 1], {
+  const buildingOpacity = interpolate(frame, [144, 170], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  // Pipeline reveal count: animate from 0 to 6 across frames 400-750
+  // Pipeline reveal count: animate from 0 to 6 across frames 262-491
   const pipelineRevealCount = Math.floor(
-    interpolate(frame, [400, 750], [0, 6], {
+    interpolate(frame, [262, 491], [0, 6], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     }),
   );
 
   // "Better reviewers..." text fade-in
-  const betterReviewersOpacity = interpolate(frame, [1050, 1100], [0, 1], {
+  const betterReviewersOpacity = interpolate(frame, [688, 721], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -54,8 +54,8 @@ export const Scene05_Generate: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: FourOhFourSkull + BrowserFrame (0-400) */}
-      <Sequence from={0} durationInFrames={400}>
+      {/* Part 1: FourOhFourSkull + BrowserFrame (0-262) */}
+      <Sequence from={0} durationInFrames={262}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -135,8 +135,8 @@ export const Scene05_Generate: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: Six-Stage Pipeline (400-800) */}
-      <Sequence from={400} durationInFrames={400}>
+      {/* Part 2: Six-Stage Pipeline (262-524) */}
+      <Sequence from={262} durationInFrames={262}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -153,7 +153,7 @@ export const Scene05_Generate: React.FC = () => {
               fontWeight: 700,
               color: COLORS.textPrimary,
               opacity: spring({
-                frame: frame - 410,
+                frame: frame - 269,
                 fps,
                 config: SPRING_CONFIGS.smooth,
               }),
@@ -164,13 +164,13 @@ export const Scene05_Generate: React.FC = () => {
 
           <RoutePipelineDiagram
             revealCount={pipelineRevealCount}
-            delay={420}
+            delay={275}
           />
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 3: Reviewer Cards + ELO Chart (800-1200) */}
-      <Sequence from={800} durationInFrames={400}>
+      {/* Part 3: Reviewer Cards + ELO Chart (524-786) */}
+      <Sequence from={524} durationInFrames={262}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -196,7 +196,7 @@ export const Scene05_Generate: React.FC = () => {
               wins={142}
               losses={28}
               color={VERITASIUM_COLORS.planning}
-              delay={810}
+              delay={531}
             />
             <ReviewerAgentCard
               name="Code Reviewer"
@@ -205,12 +205,12 @@ export const Scene05_Generate: React.FC = () => {
               wins={98}
               losses={52}
               color={COLORS.amber}
-              delay={830}
+              delay={544}
             />
           </div>
 
           {/* ELO Chart */}
-          <ELOChartDiagram delay={870} />
+          <ELOChartDiagram delay={570} />
 
           {/* "Better reviewers get selected more often" */}
           <div

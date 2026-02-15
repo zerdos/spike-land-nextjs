@@ -21,8 +21,8 @@ export const Scene09_Agents: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Title + AgentRadialLayout (0-300) */}
-      <Sequence from={0} durationInFrames={300}>
+      {/* Part 1: Title + AgentRadialLayout (0-239) */}
+      <Sequence from={0} durationInFrames={239}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -37,16 +37,16 @@ export const Scene09_Agents: React.FC = () => {
             fontSize={56}
             color={COLORS.textPrimary}
             type="reveal"
-            delay={10}
+            delay={8}
           />
           <div style={{ marginTop: 60 }}>
-            <AgentRadialLayout delay={30} />
+            <AgentRadialLayout delay={24} />
           </div>
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: Dependency lines animate in (300-600) */}
-      <Sequence from={300} durationInFrames={300}>
+      {/* Part 2: Dependency lines animate in (239-478) */}
+      <Sequence from={239} durationInFrames={239}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -61,7 +61,7 @@ export const Scene09_Agents: React.FC = () => {
             fontSize={48}
             color={COLORS.cyan}
             type="scale"
-            delay={310}
+            delay={247}
           />
           <div style={{ marginTop: 60 }}>
             <AgentRadialLayout delay={-270} />
@@ -69,8 +69,8 @@ export const Scene09_Agents: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 3: Meta moment (600-900) */}
-      <Sequence from={600} durationInFrames={300}>
+      {/* Part 3: Meta moment (478-717) */}
+      <Sequence from={478} durationInFrames={239}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -85,7 +85,7 @@ export const Scene09_Agents: React.FC = () => {
             fontSize={64}
             color={COLORS.cyan}
             type="scale"
-            delay={620}
+            delay={494}
           />
           <div
             style={{
@@ -95,7 +95,7 @@ export const Scene09_Agents: React.FC = () => {
               maxWidth: 800,
               lineHeight: 1.6,
               opacity: spring({
-                frame: frame - 680,
+                frame: frame - 542,
                 fps,
                 config: SPRING_CONFIGS.smooth,
               }),

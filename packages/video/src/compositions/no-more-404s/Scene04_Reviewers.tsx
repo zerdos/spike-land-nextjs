@@ -24,9 +24,9 @@ Quantum computing uses quantum-mechanical phenomena such as superposition and en
 - **Quantum Gates**: Operations that manipulate qubit states`;
 
 const TOPICS = [
-  { title: "Python Lambda Functions", color: COLORS.cyan, delay: 360 },
-  { title: "Byzantine Fault Tolerance", color: COLORS.purple, delay: 380 },
-  { title: "Quantum Computing", color: COLORS.amber, delay: 400 },
+  { title: "Python Lambda Functions", color: COLORS.cyan, delay: 262 },
+  { title: "Byzantine Fault Tolerance", color: COLORS.purple, delay: 277 },
+  { title: "Quantum Computing", color: COLORS.amber, delay: 291 },
 ] as const;
 
 export const Scene04_LearnIT: React.FC = () => {
@@ -40,8 +40,8 @@ export const Scene04_LearnIT: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Browser frame with wiki article (0-350) */}
-      <Sequence from={0} durationInFrames={350}>
+      {/* Part 1: Browser frame with wiki article (0-255) */}
+      <Sequence from={0} durationInFrames={255}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -75,7 +75,7 @@ export const Scene04_LearnIT: React.FC = () => {
                     right: 12,
                   }}
                 >
-                  <StatusBadge status="generating" delay={40} />
+                  <StatusBadge status="generating" delay={29} />
                 </div>
 
                 {/* Wiki article with typewriter effect */}
@@ -88,7 +88,7 @@ export const Scene04_LearnIT: React.FC = () => {
                     whiteSpace: "pre-wrap",
                   }}
                 >
-                  {typewriter(frame, fps, WIKI_ARTICLE, 40, 30)}
+                  {typewriter(frame, fps, WIKI_ARTICLE, 29, 30)}
                   <span
                     style={{
                       opacity: Math.sin(frame * 0.3) > 0 ? 1 : 0,
@@ -104,8 +104,8 @@ export const Scene04_LearnIT: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: Topic cards (350-700) */}
-      <Sequence from={350} durationInFrames={350}>
+      {/* Part 2: Topic cards (255-510) */}
+      <Sequence from={255} durationInFrames={255}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -147,8 +147,8 @@ export const Scene04_LearnIT: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 3: Closing text (700-1050) */}
-      <Sequence from={700} durationInFrames={350}>
+      {/* Part 3: Closing text (510-765) */}
+      <Sequence from={510} durationInFrames={255}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -163,14 +163,14 @@ export const Scene04_LearnIT: React.FC = () => {
             fontSize={56}
             color={COLORS.textPrimary}
             type="reveal"
-            delay={720}
+            delay={525}
           />
           <KineticText
             text="is generated, not curated"
             fontSize={64}
             color={COLORS.cyan}
             type="scale"
-            delay={790}
+            delay={576}
           />
           <div
             style={{
@@ -179,7 +179,7 @@ export const Scene04_LearnIT: React.FC = () => {
               color: COLORS.textMuted,
               fontWeight: 500,
               opacity: spring({
-                frame: frame - 870,
+                frame: frame - 634,
                 fps,
                 config: SPRING_CONFIGS.smooth,
               }),
