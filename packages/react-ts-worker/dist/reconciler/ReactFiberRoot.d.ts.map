@@ -1,0 +1,1 @@
+{"version":3,"file":"ReactFiberRoot.d.ts","sourceRoot":"","sources":["../../src/reconciler/ReactFiberRoot.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,SAAS,EAAS,MAAM,sBAAsB,CAAC;AAC7D,OAAO,KAAK,EAAE,UAAU,EAAE,MAAM,uCAAuC,CAAC;AAIxE,wBAAgB,eAAe,CAC7B,aAAa,EAAE,GAAG,EAClB,UAAU,EAAE,UAAU,GACrB,SAAS,CA8CX"}

@@ -65,7 +65,7 @@ const nextConfig: NextConfig = {
   // NOTE: @spike-npm-land/code and @spike-npm-land/video are excluded because they are standalone tools
   // (Vite app / Remotion) whose build artifacts might be missing in production/CI builds where
   // SKIP_TS_BUILD_CHECK=true, causing "Cannot read properties of undefined (reading 'length')"
-  transpilePackages: ["next-mdx-remote", "@spike-npm-land/shared"],
+  transpilePackages: ["next-mdx-remote", "@spike-npm-land/shared", "react-ts-worker"],
   typescript: {
     // TypeScript checking is handled by CI's `tsc --noEmit` step
     // Skip during build to reduce memory usage when SKIP_TS_BUILD_CHECK=true

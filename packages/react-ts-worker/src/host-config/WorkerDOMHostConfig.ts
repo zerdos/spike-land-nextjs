@@ -3,6 +3,7 @@
 // Worker-dom auto-batches mutations via MutationTransfer.transfer() -> postMessage to main thread.
 
 import type { HostConfig } from './HostConfigInterface.js';
+import type { WorkerEventRegistry } from '../react-worker-dom/bridge/worker-events.js';
 
 // Worker-dom types (these come from the worker-dom library)
 export interface WorkerDocument {
@@ -49,7 +50,11 @@ const BOOLEAN_ATTRS = new Set([
   'selected', 'autoFocus', 'autoPlay', 'controls',
 ]);
 
-function setWorkerProps(element: WorkerElement, props: Record<string, any>): void {
+function setWorkerProps(
+  element: WorkerElement,
+  props: Record<string, any>,
+  eventRegistry?: WorkerEventRegistry,
+): void {
   for (const key in props) {
     if (!props.hasOwnProperty(key)) continue;
     const value = props[key];
@@ -62,7 +67,14 @@ function setWorkerProps(element: WorkerElement, props: Record<string, any>): voi
         }
       }
     } else if (key.startsWith('on')) {
-      // Event handling done through worker-dom's own event system
+      // Register event handler with the worker event bridge
+      if (typeof value === 'function' && eventRegistry && '__nodeId' in element) {
+        eventRegistry.setHandler(
+          (element as WorkerElement & { __nodeId: number }).__nodeId,
+          key,
+          value,
+        );
+      }
     } else {
       const attrName = PROP_TO_ATTRIBUTE[key] || key;
       if (BOOLEAN_ATTRS.has(key)) {
@@ -83,6 +95,7 @@ const MATH_NAMESPACE = 'http://www.w3.org/1998/Math/MathML';
 
 export function createWorkerDOMHostConfig(
   workerDocument: WorkerDocument,
+  eventRegistry?: WorkerEventRegistry,
 ): HostConfig<
   string,
   Record<string, any>,
@@ -110,7 +123,7 @@ export function createWorkerDOMHostConfig(
       } else {
         element = workerDocument.createElement(type);
       }
-      setWorkerProps(element, props);
+      setWorkerProps(element, props, eventRegistry);
       return element;
     },
 
@@ -165,12 +178,22 @@ export function createWorkerDOMHostConfig(
       newProps: Record<string, any>,
     ): void {
       for (const key in oldProps) {
-        if (key === 'children' || key === 'key' || key === 'ref' || key.startsWith('on')) continue;
+        if (key === 'children' || key === 'key' || key === 'ref') continue;
         if (newProps.hasOwnProperty(key)) continue;
+        if (key.startsWith('on')) {
+          // Remove old event handler
+          if (eventRegistry && '__nodeId' in instance) {
+            eventRegistry.removeHandler(
+              (instance as WorkerElement & { __nodeId: number }).__nodeId,
+              key,
+            );
+          }
+          continue;
+        }
         const attrName = PROP_TO_ATTRIBUTE[key] || key;
         instance.removeAttribute(attrName);
       }
-      setWorkerProps(instance, newProps);
+      setWorkerProps(instance, newProps, eventRegistry);
     },
 
     commitTextUpdate(textInstance: WorkerText, _oldText: string, newText: string): void {

@@ -4,6 +4,7 @@ import type { ReactNode } from '../react/ReactTypes.js';
 import type { WorkerDocument, WorkerElement } from '../host-config/WorkerDOMHostConfig.js';
 import { createWorkerDOMHostConfig } from '../host-config/WorkerDOMHostConfig.js';
 import { createContainer, updateContainer } from '../reconciler/ReactFiberReconciler.js';
+import type { WorkerEventRegistry } from './bridge/worker-events.js';
 
 export interface WorkerRoot {
   render(children: ReactNode): void;
@@ -13,8 +14,9 @@ export interface WorkerRoot {
 export function createRoot(
   workerDocument: WorkerDocument,
   containerElement: WorkerElement,
+  eventRegistry?: WorkerEventRegistry,
 ): WorkerRoot {
-  const hostConfig = createWorkerDOMHostConfig(workerDocument);
+  const hostConfig = createWorkerDOMHostConfig(workerDocument, eventRegistry);
   const fiberRoot = createContainer(containerElement, hostConfig);
 
   return {

@@ -10,6 +10,7 @@
     "./react-dom/server": "./dist/react-dom/server.js",
     "./react-worker-dom": "./dist/react-worker-dom/index.js",
     "./react-worker-dom/main": "./dist/react-worker-dom/main-entry.js",
+    "./react-worker-dom/bridge": "./dist/react-worker-dom/bridge/index.js",
     "./scheduler": "./dist/scheduler/Scheduler.js"
   },
   "scripts": {
@@ -19,8 +20,8 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "jsdom": "^26.0",
     "typescript": "^5.8",
-    "vitest": "^3.0",
-    "jsdom": "^26.0"
+    "vitest": "^3.0"
   }
 }
