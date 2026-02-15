@@ -787,7 +787,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/s3-request-presigner@npm:^3.990.0":
+"@aws-sdk/s3-request-presigner@npm:3.990.0":
   version: 3.990.0
   resolution: "@aws-sdk/s3-request-presigner@npm:3.990.0"
   dependencies:
@@ -22837,7 +22837,7 @@ __metadata:
     "@anthropic-ai/sdk": "npm:^0.74.0"
     "@aws-sdk/client-s3": "npm:3.990.0"
     "@aws-sdk/lib-storage": "npm:3.990.0"
-    "@aws-sdk/s3-request-presigner": "npm:^3.990.0"
+    "@aws-sdk/s3-request-presigner": "npm:3.990.0"
     "@djankies/vitest-mcp": "npm:0.5.1"
     "@dnd-kit/core": "npm:6.3.1"
     "@dnd-kit/sortable": "npm:10.0.0"
