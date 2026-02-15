@@ -26,6 +26,8 @@ const eslintConfig = tseslint.config(
       "src/app/.well-known/**",
       "live/**",
       ".github/skills/**",
+      "packages/video/**",
+      "packages/react-ts-worker/**",
     ],
   },
   // TypeScript files configuration

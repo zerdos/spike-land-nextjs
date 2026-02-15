@@ -50,7 +50,7 @@ of the error
 
 ### Common Issues:
 
-- **"ANTHROPIC_AUTH_TOKEN not configured"**: Make sure `.dev.vars` has a valid
+- **"CLAUDE_CODE_OAUTH_TOKEN not configured"**: Make sure `.dev.vars` has a valid
   OAuth token
 - **Network errors**: Ensure both frontend and backend servers are running
 - **CORS errors**: The backend should already handle CORS, but check if requests

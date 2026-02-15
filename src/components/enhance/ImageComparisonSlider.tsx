@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { GripVertical } from "lucide-react";
@@ -188,6 +187,7 @@ export function ImageComparisonSlider({
         {/* Enhanced image (background) */}
         {!enhancedError
           ? (
+            // eslint-disable-next-line @next/next/no-img-element -- Native img required for clip-path slider effect
             <img
               src={enhancedUrl}
               alt={enhancedLabel}
@@ -210,6 +210,7 @@ export function ImageComparisonSlider({
         >
           {!originalError
             ? (
+              // eslint-disable-next-line @next/next/no-img-element -- Native img required for clip-path slider effect
               <img
                 src={originalUrl}
                 alt={originalLabel}

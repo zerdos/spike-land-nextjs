@@ -25,7 +25,8 @@ export function StreamingApp({ path, className }: StreamingAppProps) {
   const abortRef = useRef<AbortController | null>(null);
 
   const pathKey = JSON.stringify(path);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Using pathKey as dependency instead of path array to avoid reference equality issues
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pathKey ensures stable reference for path array
   const stablePath = useMemo(() => path, [pathKey]);
 
   const startGeneration = useCallback(async () => {

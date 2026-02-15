@@ -18,7 +18,7 @@ import { authenticateMcpRequest } from "@/lib/mcp/auth";
 import { getMcpBaseUrl } from "@/lib/mcp/get-base-url";
 import { createMcpServer } from "@/lib/mcp/server/mcp-server";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -91,8 +91,21 @@ export async function POST(request: NextRequest) {
   // Determine response format from client Accept header
   const acceptsSSE = request.headers.get("Accept")?.includes("text/event-stream") ?? false;
 
-  // Create a stateless transport for this request
-  const transport = new StreamableHTTPServerTransport({
+  // Ensure Accept header satisfies MCP spec (requires both application/json and text/event-stream)
+  const headers = new Headers(request.headers);
+  const accept = headers.get("Accept") ?? "";
+  if (!accept.includes("application/json") || !accept.includes("text/event-stream")) {
+    headers.set("Accept", "application/json, text/event-stream");
+  }
+
+  const mcpRequest = new Request(request.url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  // Create a stateless Web Standard transport for this request
+  const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined, // Stateless — no session tracking
     enableJsonResponse: !acceptsSSE, // SSE when client requests it, JSON otherwise
   });
@@ -101,140 +114,14 @@ export async function POST(request: NextRequest) {
   await mcpServer.connect(transport);
 
   try {
-    // Create a ReadableStream from the request body for the transport
-    const bodyStr = JSON.stringify(body);
-    const bodyStream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(new TextEncoder().encode(bodyStr));
-        controller.close();
-      },
+    const response = await transport.handleRequest(mcpRequest, {
+      parsedBody: body,
     });
 
-    // Create a mock IncomingMessage-like object for the transport
-    const headers: Record<string, string> = {};
-    request.headers.forEach((value, key) => {
-      headers[key] = value;
+    return new NextResponse(response.body, {
+      status: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
     });
-
-    // StreamableHTTPServerTransport expects node-style req/res.
-    // We adapt Web API ↔ Node.js depending on response format.
-    if (acceptsSSE) {
-      // SSE mode: stream chunks via a TransformStream
-      const { readable, writable } = new TransformStream<Uint8Array>();
-      const writer = writable.getWriter();
-      const encoder = new TextEncoder();
-      let statusCode = 200;
-      const responseHeaders: Record<string, string> = {};
-
-      const mockRes = {
-        writeHead(status: number, resHeaders?: Record<string, string>) {
-          statusCode = status;
-          if (resHeaders) Object.assign(responseHeaders, resHeaders);
-          return mockRes;
-        },
-        setHeader(name: string, value: string | string[]) {
-          responseHeaders[name] = Array.isArray(value) ? value.join(", ") : value;
-        },
-        write(chunk: string | Buffer) {
-          const text = typeof chunk === "string" ? chunk : chunk.toString();
-          writer.write(encoder.encode(text));
-          return true;
-        },
-        end(chunk?: string | Buffer) {
-          if (chunk) {
-            const text = typeof chunk === "string" ? chunk : chunk.toString();
-            writer.write(encoder.encode(text));
-          }
-          writer.close();
-        },
-        on() { return mockRes; },
-        flushHeaders() { /* no-op for Web API */ },
-      };
-
-      const mockReq = {
-        method: "POST",
-        headers,
-        url: "/api/mcp",
-        body: bodyStream,
-        on(event: string, handler: (...args: unknown[]) => void) {
-          if (event === "data") handler(Buffer.from(bodyStr));
-          if (event === "end") handler();
-          return mockReq;
-        },
-      };
-
-      // Transport writes to the stream asynchronously; catch errors to close the stream gracefully
-      transport.handleRequest(
-        mockReq as unknown as import("http").IncomingMessage,
-        mockRes as unknown as import("http").ServerResponse,
-      ).catch((err: unknown) => {
-        console.error("SSE transport error:", err);
-        writer.close().catch(() => { /* already closed */ });
-      });
-
-      return new NextResponse(readable, {
-        status: statusCode,
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
-          ...responseHeaders,
-        },
-      });
-    } else {
-      // JSON mode: buffer the full response
-      const responsePromise = new Promise<{ status: number; headers: Record<string, string>; body: string }>((resolve) => {
-        let responseBody = "";
-        let statusCode = 200;
-        const responseHeaders: Record<string, string> = {};
-
-        const mockRes = {
-          writeHead(status: number, resHeaders?: Record<string, string>) {
-            statusCode = status;
-            if (resHeaders) Object.assign(responseHeaders, resHeaders);
-            return mockRes;
-          },
-          setHeader(name: string, value: string | string[]) {
-            responseHeaders[name] = Array.isArray(value) ? value.join(", ") : value;
-          },
-          write(chunk: string | Buffer) {
-            responseBody += typeof chunk === "string" ? chunk : chunk.toString();
-            return true;
-          },
-          end(chunk?: string | Buffer) {
-            if (chunk) {
-              responseBody += typeof chunk === "string" ? chunk : chunk.toString();
-            }
-            resolve({ status: statusCode, headers: responseHeaders, body: responseBody });
-          },
-          on() { return mockRes; },
-        };
-
-        const mockReq = {
-          method: "POST",
-          headers,
-          url: "/api/mcp",
-          body: bodyStream,
-          on(event: string, handler: (...args: unknown[]) => void) {
-            if (event === "data") handler(Buffer.from(bodyStr));
-            if (event === "end") handler();
-            return mockReq;
-          },
-        };
-
-        transport.handleRequest(mockReq as unknown as import("http").IncomingMessage, mockRes as unknown as import("http").ServerResponse);
-      });
-
-      const result = await responsePromise;
-
-      return new NextResponse(result.body, {
-        status: result.status,
-        headers: {
-          "Content-Type": result.headers["content-type"] || "application/json",
-          ...result.headers,
-        },
-      });
-    }
   } catch (error) {
     console.error("MCP request error:", error);
     return NextResponse.json(

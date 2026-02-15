@@ -25,13 +25,14 @@ describe("ab-testing tools", () => {
     });
   });
 
-  it("should register 5 ab-testing tools", () => {
-    expect(registry.register).toHaveBeenCalledTimes(5);
+  it("should register 6 ab-testing tools", () => {
+    expect(registry.register).toHaveBeenCalledTimes(6);
     expect(registry.handlers.has("abtest_create")).toBe(true);
     expect(registry.handlers.has("abtest_get_results")).toBe(true);
     expect(registry.handlers.has("abtest_declare_winner")).toBe(true);
     expect(registry.handlers.has("abtest_list_active")).toBe(true);
     expect(registry.handlers.has("abtest_check_significance")).toBe(true);
+    expect(registry.handlers.has("abtest_assign_variant")).toBe(true);
   });
 
   describe("abtest_create", () => {
@@ -500,6 +501,76 @@ describe("ab-testing tools", () => {
       const result = await handler({ workspace_slug: "test-ws" });
 
       expect(getText(result)).toContain("(no content)");
+    });
+  });
+
+  describe("abtest_assign_variant", () => {
+    it("should assign a visitor to a variant", async () => {
+      mockPrisma.socialPostAbTest.findFirst.mockResolvedValue({
+        id: "abt-1",
+        variants: [
+          { id: "var-1", variationType: "control", createdAt: new Date("2025-01-01") },
+          { id: "var-2", variationType: "variant_1", createdAt: new Date("2025-01-02") },
+        ],
+      });
+
+      const handler = registry.handlers.get("abtest_assign_variant")!;
+      const result = await handler({
+        test_id: "abt-1",
+        visitor_id: "visitor-abc",
+      });
+
+      const text = getText(result);
+      expect(text).toContain("Variant Assigned");
+      expect(text).toContain("abt-1");
+      expect(text).toContain("visitor-abc");
+      // Should assign to one of the variants
+      expect(text).toMatch(/var-1|var-2/);
+    });
+
+    it("should return NOT_FOUND for missing test", async () => {
+      mockPrisma.socialPostAbTest.findFirst.mockResolvedValue(null);
+
+      const handler = registry.handlers.get("abtest_assign_variant")!;
+      const result = await handler({
+        test_id: "nonexistent",
+        visitor_id: "visitor-1",
+      });
+
+      expect(getText(result)).toContain("NOT_FOUND");
+    });
+
+    it("should return VALIDATION_ERROR for test with no variants", async () => {
+      mockPrisma.socialPostAbTest.findFirst.mockResolvedValue({
+        id: "abt-1",
+        variants: [],
+      });
+
+      const handler = registry.handlers.get("abtest_assign_variant")!;
+      const result = await handler({
+        test_id: "abt-1",
+        visitor_id: "visitor-1",
+      });
+
+      expect(getText(result)).toContain("VALIDATION_ERROR");
+      expect(getText(result)).toContain("No variants configured");
+    });
+
+    it("should produce consistent assignments for the same visitor", async () => {
+      const variants = [
+        { id: "var-1", variationType: "control", createdAt: new Date("2025-01-01") },
+        { id: "var-2", variationType: "variant_1", createdAt: new Date("2025-01-02") },
+      ];
+      mockPrisma.socialPostAbTest.findFirst.mockResolvedValue({
+        id: "abt-1",
+        variants,
+      });
+
+      const handler = registry.handlers.get("abtest_assign_variant")!;
+      const result1 = await handler({ test_id: "abt-1", visitor_id: "same-visitor" });
+      const result2 = await handler({ test_id: "abt-1", visitor_id: "same-visitor" });
+
+      expect(getText(result1)).toEqual(getText(result2));
     });
   });
 

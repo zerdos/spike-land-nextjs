@@ -3,7 +3,7 @@ import { tryCatch } from "@/lib/try-catch";
 import { IMPORT_MAP } from "./html-template";
 import { ESM_CDN, ESM_DEPS_PARAM } from "./constants";
 
-const BROWSER_DEFINE: Record<string, string> = {
+export const BROWSER_DEFINE: Record<string, string> = {
   "process.env['NODE_ENV']": JSON.stringify("production"),
   "process.env['NODE_DEBUG']": JSON.stringify(false),
   "process.platform": JSON.stringify("browser"),
@@ -131,7 +131,7 @@ async function processCSS(
   return css;
 }
 
-function serverFetchPlugin(cache: Map<string, string>): Plugin {
+export function serverFetchPlugin(cache: Map<string, string>): Plugin {
   const imports = IMPORT_MAP.imports as Record<string, string>;
 
   return {

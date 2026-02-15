@@ -185,8 +185,8 @@ describe("PostHandler", () => {
       expect(body.details).toContain("Invalid JSON");
     });
 
-    it("should handle missing ANTHROPIC_AUTH_TOKEN", async () => {
-      mockEnv.ANTHROPIC_AUTH_TOKEN = "";
+    it("should handle missing CLAUDE_CODE_OAUTH_TOKEN", async () => {
+      mockEnv.CLAUDE_CODE_OAUTH_TOKEN = "";
 
       const requestBody: PostRequestBody = {
         messages: [{ role: "user", content: "Hello" }],
@@ -202,7 +202,7 @@ describe("PostHandler", () => {
 
       expect(response.status).toBe(503);
       const body = await response.json() as { error: string; };
-      expect(body.error).toContain("ANTHROPIC_AUTH_TOKEN not configured");
+      expect(body.error).toContain("CLAUDE_CODE_OAUTH_TOKEN not configured");
     });
 
     it("should log and ignore tools from request body", async () => {

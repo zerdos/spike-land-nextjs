@@ -1,5 +1,4 @@
 #!/usr/bin/env npx tsx
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Database Restore Script
  *
@@ -18,7 +17,7 @@
  */
 
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
+import { type Prisma, PrismaClient } from "@prisma/client";
 import { config } from "dotenv";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
@@ -72,14 +71,14 @@ async function restore() {
     {
       name: "users",
       restore: async () => {
-        const data = loadBackupFile<{ id: string; [key: string]: unknown; }>("users");
+        const data = loadBackupFile<Prisma.UserUncheckedCreateInput>("users");
         let count = 0;
         for (const record of data) {
           try {
             await prisma.user.upsert({
               where: { id: record.id },
-              update: record as any,
-              create: record as any,
+              update: record,
+              create: record,
             });
             count++;
           } catch (e) {
@@ -94,14 +93,14 @@ async function restore() {
     {
       name: "enhanced_images",
       restore: async () => {
-        const data = loadBackupFile<{ id: string; [key: string]: unknown; }>("enhanced_images");
+        const data = loadBackupFile<Prisma.EnhancedImageUncheckedCreateInput>("enhanced_images");
         let count = 0;
         for (const record of data) {
           try {
             await prisma.enhancedImage.upsert({
               where: { id: record.id },
-              update: record as any,
-              create: record as any,
+              update: record,
+              create: record,
             });
             count++;
           } catch (e) {
@@ -116,14 +115,14 @@ async function restore() {
     {
       name: "albums",
       restore: async () => {
-        const data = loadBackupFile<{ id: string; [key: string]: unknown; }>("albums");
+        const data = loadBackupFile<Prisma.AlbumUncheckedCreateInput>("albums");
         let count = 0;
         for (const record of data) {
           try {
             await prisma.album.upsert({
               where: { id: record.id },
-              update: record as any,
-              create: record as any,
+              update: record,
+              create: record,
             });
             count++;
           } catch (e) {
@@ -138,7 +137,7 @@ async function restore() {
     {
       name: "album_images",
       restore: async () => {
-        const data = loadBackupFile<{ albumId: string; imageId: string; [key: string]: unknown; }>(
+        const data = loadBackupFile<Prisma.AlbumImageUncheckedCreateInput>(
           "album_images",
         );
         let count = 0;
@@ -146,8 +145,8 @@ async function restore() {
           try {
             await prisma.albumImage.upsert({
               where: { albumId_imageId: { albumId: record.albumId, imageId: record.imageId } },
-              update: record as any,
-              create: record as any,
+              update: record,
+              create: record,
             });
             count++;
           } catch (e) {
@@ -162,7 +161,7 @@ async function restore() {
     {
       name: "image_enhancement_jobs",
       restore: async () => {
-        const data = loadBackupFile<{ id: string; [key: string]: unknown; }>(
+        const data = loadBackupFile<Prisma.ImageEnhancementJobUncheckedCreateInput>(
           "image_enhancement_jobs",
         );
         let count = 0;
@@ -170,8 +169,8 @@ async function restore() {
           try {
             await prisma.imageEnhancementJob.upsert({
               where: { id: record.id },
-              update: record as any,
-              create: record as any,
+              update: record,
+              create: record,
             });
             count++;
           } catch (e) {
@@ -186,14 +185,14 @@ async function restore() {
     {
       name: "api_keys",
       restore: async () => {
-        const data = loadBackupFile<{ id: string; [key: string]: unknown; }>("api_keys");
+        const data = loadBackupFile<Prisma.ApiKeyUncheckedCreateInput>("api_keys");
         let count = 0;
         for (const record of data) {
           try {
             await prisma.apiKey.upsert({
               where: { id: record.id },
-              update: record as any,
-              create: record as any,
+              update: record,
+              create: record,
             });
             count++;
           } catch (e) {
@@ -206,7 +205,7 @@ async function restore() {
     {
       name: "featured_gallery_items",
       restore: async () => {
-        const data = loadBackupFile<{ id: string; [key: string]: unknown; }>(
+        const data = loadBackupFile<Prisma.FeaturedGalleryItemUncheckedCreateInput>(
           "featured_gallery_items",
         );
         let count = 0;
@@ -214,8 +213,8 @@ async function restore() {
           try {
             await prisma.featuredGalleryItem.upsert({
               where: { id: record.id },
-              update: record as any,
-              create: record as any,
+              update: record,
+              create: record,
             });
             count++;
           } catch (e) {
