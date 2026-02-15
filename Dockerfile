@@ -66,6 +66,7 @@ FROM deps AS source
 COPY --link tsconfig*.json next.config.ts postcss.config.mjs ./
 COPY --link tailwind.config.ts eslint.config.mjs ./
 COPY --link src ./src
+COPY --link packages ./packages
 COPY --link apps ./apps
 COPY --link public ./public
 COPY --link content ./content
