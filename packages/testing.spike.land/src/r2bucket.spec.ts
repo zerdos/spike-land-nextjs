@@ -29,7 +29,7 @@ describe("R2BucketHandler", () => {
       } as R2Bucket,
       // Add all required properties with mock implementations
       OPENAI_API_KEY: "mock-key",
-      CLAUDE_CODE_OAUTH_TOKEN: "mock-key",
+      ANTHROPIC_AUTH_TOKEN: "mock-key",
       REPLICATE_API_TOKEN: "mock-token",
       CF_REAL_TURN_TOKEN: "mock-turn-token",
       AI: {

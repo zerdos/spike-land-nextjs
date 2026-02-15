@@ -1,1 +1,0 @@
-{"version":3,"file":"EventDelegation.d.ts","sourceRoot":"","sources":["../../../src/react-dom/events/EventDelegation.ts"],"names":[],"mappings":"AAqBA,wBAAgB,cAAc,CAAC,IAAI,EAAE,IAAI,EAAE,KAAK,EAAE,OAAO,GAAG,IAAI,CAE/D;AAED,wBAAgB,cAAc,CAAC,IAAI,EAAE,IAAI,EAAE,KAAK,EAAE,MAAM,CAAC,MAAM,EAAE,OAAO,CAAC,GAAG,IAAI,CAE/E;AAsGD,wBAAgB,0BAA0B,CAAC,SAAS,EAAE,OAAO,GAAG,IAAI,CA4BnE"}

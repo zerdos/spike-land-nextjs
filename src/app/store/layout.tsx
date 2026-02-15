@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "App Store | Spike Land",
-  description: "Discover MCP-powered apps that supercharge your workflow. AI image creation, brand management, social media automation, and DevOps monitoring.",
+  title: "Skill Store | Spike Land",
+  description: "Browse and install Claude Code skills for AI-assisted development. Quality gates, testing frameworks, and workflow automation.",
 };
 
 export default function StoreLayout({

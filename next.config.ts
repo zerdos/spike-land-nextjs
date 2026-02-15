@@ -62,10 +62,9 @@ const nextConfig: NextConfig = {
     },
   },
   // Transpile ESM packages to avoid runtime resolution issues with PnP
-  // NOTE: @spike-npm-land/code and @spike-npm-land/video are excluded because they are standalone tools
-  // (Vite app / Remotion) whose build artifacts might be missing in production/CI builds where
-  // SKIP_TS_BUILD_CHECK=true, causing "Cannot read properties of undefined (reading 'length')"
-  transpilePackages: ["next-mdx-remote", "@spike-npm-land/shared", "react-ts-worker"],
+  // NOTE: @spike-npm-land/code is excluded because it's a dev-only tool (Vite app) and its build artifacts
+  // might be missing in production/CI builds where SKIP_TS_BUILD_CHECK=true, causing "Cannot read properties of undefined (reading 'length')"
+  transpilePackages: ["next-mdx-remote", "@spike-npm-land/shared"],
   typescript: {
     // TypeScript checking is handled by CI's `tsc --noEmit` step
     // Skip during build to reduce memory usage when SKIP_TS_BUILD_CHECK=true
@@ -164,29 +163,6 @@ const nextConfig: NextConfig = {
         destination: "/store/skills/bazdmeg",
         permanent: false,
       },
-      // Landing theme pages → dynamic pages
-      { source: "/landing/apple", destination: "/p/landing-apple", permanent: true },
-      { source: "/landing/stripe", destination: "/p/landing-stripe", permanent: true },
-      { source: "/landing/vercel", destination: "/p/landing-vercel", permanent: true },
-      { source: "/landing/linear", destination: "/p/landing-linear", permanent: true },
-      { source: "/landing/figma", destination: "/p/landing-figma", permanent: true },
-      { source: "/landing/notion", destination: "/p/landing-notion", permanent: true },
-      { source: "/landing/discord", destination: "/p/landing-discord", permanent: true },
-      { source: "/landing/framer", destination: "/p/landing-framer", permanent: true },
-      { source: "/landing/supabase", destination: "/p/landing-supabase", permanent: true },
-      { source: "/landing/brutalist", destination: "/p/landing-brutalist", permanent: true },
-      { source: "/landing", destination: "/p/landing-gallery", permanent: true },
-      // Feature pages → dynamic pages
-      { source: "/features/ab-testing", destination: "/p/features-ab-testing", permanent: true },
-      { source: "/features/ai-calendar", destination: "/p/features-ai-calendar", permanent: true },
-      { source: "/features/ai-tools", destination: "/p/features-ai-tools", permanent: true },
-      { source: "/features/analytics", destination: "/p/features-analytics", permanent: true },
-      { source: "/features/brand-brain", destination: "/p/features-brand-brain", permanent: true },
-      { source: "/features/calendar", destination: "/p/features-calendar", permanent: true },
-      { source: "/features", destination: "/p/features", permanent: true },
-      // Persona pages → dynamic pages
-      { source: "/personas/:slug", destination: "/p/persona-:slug", permanent: true },
-      { source: "/personas", destination: "/p/personas", permanent: true },
     ];
   },
   // Webpack configuration for Yarn PnP compatibility
@@ -209,10 +185,10 @@ export default withSentryConfig(nextConfig, {
   // Suppress source map upload logs during build
   silent: !process.env.CI,
 
-  // Disable source map uploads in CI — Vercel handles its own source map uploads
-  // during deployment. The CI build is validation-only.
+  // Skip source map upload on PR branches to reduce build overhead and memory usage
   sourcemaps: {
-    disable: !process.env.SENTRY_AUTH_TOKEN || process.env.CI === "true",
+    disable: !process.env.SENTRY_AUTH_TOKEN ||
+      (process.env.CI === "true" && process.env["GITHUB_REF"] !== "refs/heads/main"),
   },
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size

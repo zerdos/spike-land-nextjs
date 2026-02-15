@@ -1,1 +1,0 @@
-{"version":3,"file":"event-serializer.d.ts","sourceRoot":"","sources":["../../../src/react-worker-dom/bridge/event-serializer.ts"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAAE,sBAAsB,EAAE,MAAM,cAAc,CAAC;AAM3D,wBAAgB,cAAc,CAAC,WAAW,EAAE,KAAK,EAAE,QAAQ,EAAE,MAAM,GAAG,sBAAsB,CAkD3F"}

@@ -187,48 +187,4 @@ export function registerTrackingTools(
         return textResult(text);
       }, { timeoutMs: 30_000 }),
   });
-
-  const RecordEngagementSchema = z.object({
-    visitor_id: z.string().min(1).describe("Visitor ID."),
-    session_id: z.string().min(1).describe("Visitor session ID."),
-    page: z.string().min(1).describe("Page path."),
-    scroll_depth: z.number().min(0).max(100).describe("Maximum scroll depth percentage."),
-    time_ms: z.number().min(0).describe("Time on page in milliseconds."),
-    sections_viewed: z.array(z.string()).optional().describe("IDs of page sections viewed."),
-  });
-
-  registry.register({
-    name: "tracking_record_engagement",
-    description: "Record page engagement data for a visitor including scroll depth, time on page, and sections viewed.",
-    category: "tracking",
-    tier: "free",
-    inputSchema: RecordEngagementSchema.shape,
-    handler: async (args: z.infer<typeof RecordEngagementSchema>): Promise<CallToolResult> =>
-      safeToolCall("tracking_record_engagement", async () => {
-        const prisma = (await import("@/lib/prisma")).default;
-        await prisma.analyticsEvent.create({
-          data: {
-            sessionId: args.session_id,
-            name: "page_engagement",
-            category: "engagement",
-            value: args.scroll_depth,
-            metadata: {
-              visitorId: args.visitor_id,
-              page: args.page,
-              scrollDepth: args.scroll_depth,
-              timeMs: args.time_ms,
-              sectionsViewed: args.sections_viewed ?? [],
-            },
-          },
-        });
-        return textResult(
-          `**Engagement Recorded**\n\n` +
-          `Visitor: ${args.visitor_id}\n` +
-          `Page: ${args.page}\n` +
-          `Scroll: ${args.scroll_depth}%\n` +
-          `Time: ${Math.round(args.time_ms / 1000)}s\n` +
-          `Sections: ${(args.sections_viewed ?? []).length}`
-        );
-      }),
-  });
 }

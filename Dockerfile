@@ -32,9 +32,6 @@ COPY --link packages/js.spike.land/package.json ./packages/js.spike.land/
 COPY --link packages/code/package.json ./packages/code/
 COPY --link packages/testing.spike.land/package.json ./packages/testing.spike.land/
 COPY --link packages/shared/package.json ./packages/shared/
-COPY --link packages/video/package.json ./packages/video/
-COPY --link packages/vibe-dev/package.json ./packages/vibe-dev/
-COPY --link packages/react-ts-worker/package.json ./packages/react-ts-worker/
 COPY --link prisma ./prisma
 
 # ============================================================================

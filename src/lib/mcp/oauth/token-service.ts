@@ -43,7 +43,6 @@ export async function generateTokenPair(
   clientId: string,
   scope: string,
   resource?: string,
-  ttlMs: number = ACCESS_TOKEN_TTL_MS,
 ): Promise<TokenPair> {
   const accessToken = generateToken();
   const refreshToken = generateToken();
@@ -71,7 +70,7 @@ export async function generateTokenPair(
       userId,
       scope,
       resource,
-      expiresAt: new Date(now.getTime() + ttlMs),
+      expiresAt: new Date(now.getTime() + ACCESS_TOKEN_TTL_MS),
       refreshTokenId: refreshRecord.id,
     },
   });
@@ -79,7 +78,7 @@ export async function generateTokenPair(
   return {
     accessToken,
     refreshToken,
-    expiresIn: Math.floor(ttlMs / 1000),
+    expiresIn: Math.floor(ACCESS_TOKEN_TTL_MS / 1000),
     tokenType: "Bearer",
     scope,
   };

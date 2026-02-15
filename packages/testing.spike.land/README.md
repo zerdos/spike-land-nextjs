@@ -72,7 +72,7 @@ Required environment variables:
 
 ```bash
 OPENAI_API_KEY=your_openai_key
-CLAUDE_CODE_OAUTH_TOKEN=your_anthropic_oauth_token
+ANTHROPIC_AUTH_TOKEN=your_anthropic_oauth_token
 ```
 
 For local development, create a `.dev.vars` file with these variables.
@@ -124,7 +124,7 @@ For local development, create a `.dev.vars` file with these variables.
 
 ```bash
 OPENAI_API_KEY=your_openai_key
-CLAUDE_CODE_OAUTH_TOKEN=your_anthropic_oauth_token
+ANTHROPIC_AUTH_TOKEN=your_anthropic_oauth_token
 ```
 
 2. Start local development server:

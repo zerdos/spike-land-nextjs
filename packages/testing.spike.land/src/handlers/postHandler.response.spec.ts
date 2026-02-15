@@ -46,10 +46,8 @@ describe("PostHandler - Response", () => {
     setupStorageServiceMock(StorageService, mockStorageService);
 
     // Mock AI SDK helpers to pass through their config
-    vi.mocked(tool).mockImplementation(<TParameters, TResult>(
-      config: { description?: string; parameters: TParameters; execute?: (args: unknown) => Promise<TResult> | TResult }
-    ) => config);
-    vi.mocked(jsonSchema).mockImplementation(<T>(schema: T) => schema);
+    vi.mocked(tool).mockImplementation((config: any) => config);
+    vi.mocked(jsonSchema).mockImplementation((schema: any) => schema);
 
     postHandler = new PostHandler(mockCode, mockEnv);
   });
@@ -171,7 +169,7 @@ describe("PostHandler - Response", () => {
         experimental_usage: {},
       } as unknown as StreamResult;
 
-      vi.mocked(streamText).mockResolvedValue(mockStreamResponse);
+      vi.mocked(streamText).mockResolvedValue(mockStreamResponse as any);
 
       const googleProvider = vi.fn().mockReturnValue("gemini-3-flash-preview");
       vi.mocked(createGoogleGenerativeAI).mockReturnValue(
@@ -269,7 +267,7 @@ describe("PostHandler - Response", () => {
         experimental_usage: {},
       } as unknown as StreamResult;
 
-      vi.mocked(streamText).mockResolvedValue(mockStreamResponse);
+      vi.mocked(streamText).mockResolvedValue(mockStreamResponse as any);
 
       const googleProvider = vi.fn().mockReturnValue("gemini-3-flash-preview");
       vi.mocked(createGoogleGenerativeAI).mockReturnValue(

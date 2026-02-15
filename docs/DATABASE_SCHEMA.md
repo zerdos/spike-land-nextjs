@@ -2579,46 +2579,6 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
-"dynamic_pages" {
-  String id PK
-  String slug UK
-  String title
-  String description "nullable"
-  PageLayout layout
-  PageStatus status
-  Json themeData "nullable"
-  String seoTitle "nullable"
-  String seoDescription "nullable"
-  String ogImageUrl "nullable"
-  Int viewCount
-  String tags
-  String customCss "nullable"
-  DateTime publishedAt "nullable"
-  DateTime createdAt
-  DateTime updatedAt
-  String userId FK
-  String parentId FK "nullable"
-}
-"page_blocks" {
-  String id PK
-  String pageId FK
-  BlockType blockType
-  String variant "nullable"
-  Json content
-  Int sortOrder
-  Boolean isVisible
-  DateTime createdAt
-  DateTime updatedAt
-}
-"page_versions" {
-  String id PK
-  String pageId FK
-  Int version
-  Json snapshot
-  String changedBy
-  String changeNote "nullable"
-  DateTime createdAt
-}
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
 "campaign_briefs" }o--o| "workspaces" : workspace
@@ -2873,10 +2833,6 @@ erDiagram
 "agent_audit_logs" }o--o| "agent_capability_tokens" : capabilityToken
 "agent_trust_scores" |o--|| "claude_code_agents" : agent
 "agent_trust_scores" }o--|| "users" : user
-"dynamic_pages" }o--|| "users" : user
-"dynamic_pages" }o--o| "dynamic_pages" : parent
-"page_blocks" }o--|| "dynamic_pages" : page
-"page_versions" }o--|| "dynamic_pages" : page
 ```
 
 ### `users`
@@ -6101,52 +6057,3 @@ Properties as follows:
 - `autoApproveTools`:
 - `createdAt`:
 - `updatedAt`:
-
-### `dynamic_pages`
-
-Properties as follows:
-
-- `id`:
-- `slug`:
-- `title`:
-- `description`:
-- `layout`:
-- `status`:
-- `themeData`:
-- `seoTitle`:
-- `seoDescription`:
-- `ogImageUrl`:
-- `viewCount`:
-- `tags`:
-- `customCss`:
-- `publishedAt`:
-- `createdAt`:
-- `updatedAt`:
-- `userId`:
-- `parentId`:
-
-### `page_blocks`
-
-Properties as follows:
-
-- `id`:
-- `pageId`:
-- `blockType`:
-- `variant`:
-- `content`:
-- `sortOrder`:
-- `isVisible`:
-- `createdAt`:
-- `updatedAt`:
-
-### `page_versions`
-
-Properties as follows:
-
-- `id`:
-- `pageId`:
-- `version`:
-- `snapshot`:
-- `changedBy`:
-- `changeNote`:
-- `createdAt`:

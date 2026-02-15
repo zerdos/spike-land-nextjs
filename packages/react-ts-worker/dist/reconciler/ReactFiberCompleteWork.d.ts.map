@@ -1,1 +1,0 @@
-{"version":3,"file":"ReactFiberCompleteWork.d.ts","sourceRoot":"","sources":["../../src/reconciler/ReactFiberCompleteWork.ts"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAAE,KAAK,EAAa,MAAM,sBAAsB,CAAC;AAC7D,OAAO,KAAK,EAAE,KAAK,EAAE,MAAM,qBAAqB,CAAC;AA4EjD,wBAAgB,YAAY,CAC1B,OAAO,EAAE,KAAK,GAAG,IAAI,EACrB,cAAc,EAAE,KAAK,EACrB,YAAY,EAAE,KAAK,GAClB,KAAK,GAAG,IAAI,CAqHd"}

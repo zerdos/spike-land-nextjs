@@ -28,10 +28,10 @@ Items are prioritized P0 (critical) through P3 (minor/nice-to-have).
 
 #### TD-P0-3: Sentry MCP token lacks API scopes
 
-- **Status**: Resolved
+- **Status**: Open
 - **Impact**: Sentry MCP integration is non-functional (all API calls return 403)
 - **Details**: The `SENTRY_AUTH_TOKEN` in `.mcp.json` is a source-map upload token, not an API token. It lacks `org:read`, `project:read`, and `issue:read` scopes.
-- **Resolution**: Split token usage — `SENTRY_AUTH_TOKEN` for source-map uploads only, `SENTRY_MCP_AUTH_TOKEN` for all Sentry API calls (bridge, admin, MCP tools). All code paths updated to read from `SENTRY_MCP_AUTH_TOKEN`.
+- **Action**: Create a separate Sentry API token with proper scopes and configure it for MCP.
 
 ### P1 - High Priority
 

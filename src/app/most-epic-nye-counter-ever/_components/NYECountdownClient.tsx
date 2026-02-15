@@ -155,14 +155,13 @@ export default function NYECountdownClient() {
   }, []);
 
   // Calculate year progress (how much of 2025 has passed)
-  // Calculate year progress - recalculated every second
   const yearProgress = useMemo(() => {
     const startOf2025 = new Date("2025-01-01T00:00:00").getTime();
     const endOf2025 = new Date("2026-01-01T00:00:00").getTime();
     const now = Date.now();
     const progress = ((now - startOf2025) / (endOf2025 - startOf2025)) * 100;
     return Math.min(100, Math.max(0, progress));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally using seconds as trigger to recalculate Date.now()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `seconds` is used as a trigger to recalculate `Date.now()`
   }, [seconds]);
 
   // Calculate total seconds remaining
@@ -213,7 +212,7 @@ export default function NYECountdownClient() {
     minutes,
   ]);
 
-  // Calculate which cities have already celebrated - recalculated every second
+  // Calculate which cities have already celebrated
   const worldCelebrationStatus = useMemo(() => {
     const utcMidnight2026 = new Date("2026-01-01T00:00:00Z").getTime();
     const currentUtc = Date.now();
@@ -223,12 +222,12 @@ export default function NYECountdownClient() {
       const hasCelebrated = currentUtc >= cityMidnight;
       return { ...city, hasCelebrated };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally using seconds as trigger to recalculate Date.now()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `seconds` is used as a trigger to recalculate `Date.now()`
   }, [seconds]);
 
   const celebratedCount = worldCelebrationStatus.filter((c) => c.hasCelebrated).length;
 
-  // Find the next city to celebrate - recalculated every second
+  // Find the next city to celebrate
   const nextCityToCelebrate = useMemo(() => {
     const utcMidnight2026 = new Date("2026-01-01T00:00:00Z").getTime();
     const currentUtc = Date.now();
@@ -251,7 +250,7 @@ export default function NYECountdownClient() {
       }
     }
     return null; // All cities have celebrated!
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally using seconds as trigger to recalculate Date.now()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `seconds` is used as a trigger to recalculate `Date.now()`
   }, [seconds]);
 
   // Hype meter - increases as we get closer

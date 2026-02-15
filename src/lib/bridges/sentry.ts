@@ -27,7 +27,7 @@ interface SentryIssueDetail extends SentryIssue {
 }
 
 function getAuth(): string | null {
-  return process.env.SENTRY_MCP_AUTH_TOKEN ?? null;
+  return process.env.SENTRY_AUTH_TOKEN ?? null;
 }
 
 function getOrgSlug(): string {

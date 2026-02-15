@@ -110,7 +110,7 @@ export function registerDashboardTools(
 
         // External service config checks
         const configChecks = [
-          { name: "Sentry", envVar: "SENTRY_MCP_AUTH_TOKEN" },
+          { name: "Sentry", envVar: "SENTRY_AUTH_TOKEN" },
           { name: "Vercel", envVar: "VERCEL_TOKEN" },
           { name: "GitHub", envVar: "GITHUB_TOKEN" },
         ];

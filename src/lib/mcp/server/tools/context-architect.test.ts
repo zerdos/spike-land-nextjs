@@ -463,38 +463,6 @@ import bar from "../bar";`;
       expect(text).not.toContain("Detected tech stack");
     });
 
-    it("should sort top directories even when file counts are equal", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          sha: "abc",
-          url: "",
-          tree: [
-            { path: "alpha/file1.ts", type: "blob", size: 100 },
-            { path: "alpha/file2.ts", type: "blob", size: 100 },
-            { path: "beta/file1.ts", type: "blob", size: 100 },
-            { path: "beta/file2.ts", type: "blob", size: 100 },
-            { path: "gamma/file1.ts", type: "blob", size: 100 },
-            { path: "gamma/file2.ts", type: "blob", size: 100 },
-          ],
-          truncated: false,
-        }),
-      });
-
-      const handler = registry.handlers.get("context_index_repo")!;
-      const result = await handler({
-        repo_url: "https://github.com/test/equal-dirs",
-        branch: "main",
-      });
-
-      expect(isError(result)).toBe(false);
-      const text = getText(result);
-      // All three directories should appear with equal counts
-      expect(text).toContain("alpha/ (2 files)");
-      expect(text).toContain("beta/ (2 files)");
-      expect(text).toContain("gamma/ (2 files)");
-    });
-
     it("should store index in repoIndex map", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -792,30 +760,6 @@ import bar from "../bar";`;
       const text = getText(result);
       expect(text).toContain("...and");
       expect(text).toContain("more");
-    });
-
-    it("should return invalid GitHub URL when repo_url is not a GitHub URL after successful index", async () => {
-      // Manually put a non-GitHub URL into the repo index to simulate
-      // a scenario where the index exists but the URL fails parseGitHubUrl
-      const fakeUrl = "https://gitlab.com/test/repo";
-      const key = repoKey(userId, fakeUrl);
-      repoIndex.set(key, {
-        url: fakeUrl,
-        branch: "main",
-        files: [
-          { path: "src/index.ts", size: 100, type: "ts" },
-        ],
-        indexedAt: new Date(),
-      });
-
-      const handler = registry.handlers.get("context_get_deps")!;
-      const result = await handler({
-        repo_url: fakeUrl,
-        file_path: "src/index.ts",
-      });
-
-      expect(isError(result)).toBe(true);
-      expect(getText(result)).toContain("Invalid GitHub URL");
     });
 
     it("should show no sibling files when directory has only non-code files", async () => {

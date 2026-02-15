@@ -307,14 +307,6 @@ describe("dashboard tools", () => {
       const result = await handler({ widget_id: "deployments" });
       expect(getText(result)).toContain("No recent deployments");
     });
-
-    it("should return unknown widget message for unrecognized widget_id", async () => {
-      const handler = registry.handlers.get("dash_widget_data")!;
-      // Bypass enum validation to exercise the default switch branch
-      const result = await handler({ widget_id: "nonexistent_widget" });
-      expect(getText(result)).toContain("Unknown widget");
-      expect(getText(result)).toContain("nonexistent_widget");
-    });
   });
 
   describe("requireAdminRole", () => {

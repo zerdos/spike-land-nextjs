@@ -34,7 +34,6 @@ export default async function McpHealthPage() {
       { name: "spike-land", status: "not_configured", lastHeartbeat: null, responseTimeMs: null, errorCount: 0 },
       { name: "bridgemind", status: "not_configured", lastHeartbeat: null, responseTimeMs: null, errorCount: 0 },
       { name: "playwright", status: "not_configured", lastHeartbeat: null, responseTimeMs: null, errorCount: 0 },
-      { name: "sentry", status: "not_configured", lastHeartbeat: null, responseTimeMs: null, errorCount: 0 },
     ];
   }
 

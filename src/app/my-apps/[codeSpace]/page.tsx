@@ -2,6 +2,7 @@
 
 import {
   AgentProgressIndicator,
+  type AgentStage,
 } from "@/components/my-apps/AgentProgressIndicator";
 import { MiniPreview } from "@/components/my-apps/MiniPreview";
 import { PreviewModal } from "@/components/my-apps/PreviewModal";
@@ -18,21 +19,94 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/components/ui/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { useAppWorkspace } from "@/hooks/useAppWorkspace";
-import { formatFileSize } from "@/lib/apps/format";
+import type { APP_BUILD_STATUSES } from "@/lib/validations/app";
 import { motion } from "framer-motion";
 import { FileText, ImagePlus, Paperclip, StopCircle, Trash2, X } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
-import { useParams, useSearchParams } from "next/navigation";
+import { redirect, useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
+
+// Types
+interface AppMessage {
+  id: string;
+  role: "USER" | "AGENT" | "SYSTEM";
+  content: string;
+  createdAt: string;
+  attachments?: Array<{
+    image: {
+      id: string;
+      originalUrl: string;
+    };
+  }>;
+  // Version associated with this message (for AGENT messages)
+  codeVersion?: {
+    id: string;
+    createdAt: string;
+  };
+}
+
+interface AppData {
+  id: string;
+  name: string;
+  description: string | null;
+  status: (typeof APP_BUILD_STATUSES)[number];
+  codespaceId: string | null;
+  codespaceUrl: string | null;
+  isPublic: boolean;
+  isCurated: boolean;
+  lastAgentActivity: string | null;
+  agentWorking: boolean;
+  createdAt: string;
+  updatedAt: string;
+  requirements: Array<{ id: string; content: string; }>;
+  monetizationModels: Array<{ id: string; model: string; }>;
+  statusHistory: Array<{
+    id: string;
+    status: string;
+    message: string | null;
+    createdAt: string;
+  }>;
+  _count: {
+    messages: number;
+    images: number;
+  };
+}
+
+interface PendingImage {
+  id: string;
+  file: File;
+  previewUrl: string;
+}
+
+interface PendingFile {
+  id: string;
+  file: File;
+}
+
+type PageMode = "loading" | "prompt" | "workspace";
+
+// Session cache TTL (5 minutes)
+const SESSION_CACHE_TTL_MS = 5 * 60 * 1000;
+
+// Helper to get session cache key
+function getSessionCacheKey(codeSpace: string): string {
+  return `app-session-${codeSpace}`;
+}
+
+// Helper functions
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 // Markdown components for chat rendering
 const markdownComponents: Components = {
@@ -72,10 +146,11 @@ const markdownComponents: Components = {
   h3: ({ children }) => <h3 className="text-sm font-bold mb-1">{children}</h3>,
 };
 
-function MarkdownContent({ content }: { content: string }) {
+function MarkdownContent({ content }: { content: string; }) {
   return <ReactMarkdown components={markdownComponents}>{content}</ReactMarkdown>;
 }
 
+// Main page component
 export default function CodeSpacePage() {
   const router = useRouter();
   const params = useParams();
@@ -83,42 +158,311 @@ export default function CodeSpacePage() {
   const codeSpace = params["codeSpace"] as string;
   const templateId = searchParams.get("template");
 
-  const workspace = useAppWorkspace(codeSpace, router);
+  // Page state
+  const [mode, setMode] = useState<PageMode>("loading");
+  const [, setHasContent] = useState(false); // Track content availability for SSE updates
+  const [app, setApp] = useState<AppData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const {
-    mode, app, error,
-    messages, clearMessages, clearingChat,
-    agentWorking, streamingResponse, isSyncing, syncFlashKey,
-    isStreaming, sendingMessage, movingToBin,
-    agentStage, currentTool, agentStartTime, agentError,
-    previewModalOpen, setPreviewModalOpen, previewModalUrl, previewModalVersion,
-    versionMap, totalVersions,
-    pendingImages, pendingFiles, setPendingFiles, uploadingImages,
-    handleFileSelect, handleImageSelect, handleRemoveFile, handleRemoveImage,
-    uploadImages, fileInputRef, imageInputRef,
-    handleCreateApp, handleSendMessage, handleMoveToBin,
-    handleCancelAgent, handleOpenPreview, refreshIframe,
-  } = workspace;
-
-  // Local UI state
+  // Workspace state
+  const [messages, setMessages] = useState<AppMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [agentWorking, setAgentWorking] = useState(false);
+  const [, setIframeKey] = useState(0); // Track preview refreshes for SSE updates
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [streamingResponse, setStreamingResponse] = useState("");
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncFlashKey, setSyncFlashKey] = useState(0); // Triggers animation reset
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [clearingChat, setClearingChat] = useState(false);
+  const [movingToBin, setMovingToBin] = useState(false);
+
+  // Preview modal state
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewModalUrl, setPreviewModalUrl] = useState<string>("");
+  const [previewModalVersion, setPreviewModalVersion] = useState<string | undefined>();
+
+  // Agent progress state
+  const [agentStage, setAgentStage] = useState<AgentStage | null>(null);
+  const [currentTool, setCurrentTool] = useState<string | undefined>();
+  const [agentStartTime, setAgentStartTime] = useState<number | undefined>();
+  const [agentError, setAgentError] = useState<string | undefined>();
+
+  // Scroll tracking for floating indicator
   const [isAtBottom, setIsAtBottom] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Ref to track current messages for stale closure prevention in polling
+  const messagesRef = useRef<AppMessage[]>(messages);
 
   const codespaceUrl = `/api/codespace/${codeSpace}/embed`;
 
-  // Debounced scroll to bottom
-  const scrollToBottom = useMemo(() => {
-    let timeout: NodeJS.Timeout | null = null;
-    return () => {
-      if (timeout) clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
-    };
-  }, []);
+  // Memoize version number calculation to avoid O(n²) complexity in render loop
+  // Maps messageId -> versionNumber for messages with code versions
+  const versionMap = useMemo(() => {
+    const agentMessagesWithCode = messages.filter(
+      (m) => m.role === "AGENT" && m.codeVersion,
+    );
+    return new Map(agentMessagesWithCode.map((m, i) => [m.id, i + 1]));
+  }, [messages]);
 
+  const totalVersions = versionMap.size;
+
+  // Keep messagesRef in sync with messages state to prevent stale closures
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Validate codespace name and check for backward compatibility
+  useEffect(() => {
+    // Check if this looks like a cuid (backward compatibility)
+    if (/^c[a-z0-9]{20,}$/i.test(codeSpace)) {
+      // This might be an old URL format - try to find the app by ID
+      fetch(`/api/apps/${codeSpace}`)
+        .then((res) => {
+          if (res.ok) return res.json();
+          throw new Error("Not found");
+        })
+        .then((appData) => {
+          // If app has codespaceId, redirect to the new URL format
+          if (appData.codespaceId && appData.codespaceId !== codeSpace) {
+            redirect(`/my-apps/${appData.codespaceId}`);
+          }
+        })
+        .catch(() => {
+          // Not found by ID, continue with normal flow
+        });
+    }
+  }, [codeSpace]);
+
+  // Initial load - check if app exists (with local cache for faster loads)
+  useEffect(() => {
+    const sessionCacheKey = getSessionCacheKey(codeSpace);
+
+    async function checkCodeSpace() {
+      try {
+        // Phase 3: Local-first session caching
+        // Check sessionStorage for cached app data to avoid redundant API calls
+        if (typeof window !== "undefined") {
+          const cached = sessionStorage.getItem(sessionCacheKey);
+          if (cached) {
+            try {
+              const cachedData = JSON.parse(cached);
+              // Validate cache freshness (5 minutes)
+              if (Date.now() - cachedData.timestamp < SESSION_CACHE_TTL_MS) {
+                console.log("[codeSpace] Using cached session data");
+                if (cachedData.app) {
+                  setApp(cachedData.app);
+                  setAgentWorking(cachedData.app.agentWorking || false);
+                  setHasContent(cachedData.hasContent || false);
+                  setMode("workspace");
+                  return; // Skip API call, use cached data
+                } else if (cachedData.isPromptMode) {
+                  setMode("prompt");
+                  return;
+                }
+              }
+            } catch (error) {
+              // Invalid or expired cache - continue with fresh API call
+              console.debug(
+                "[MyApps] Invalid session cache, fetching fresh:",
+                error instanceof Error ? error.message : String(error),
+              );
+              sessionStorage.removeItem(sessionCacheKey);
+            }
+          }
+        }
+
+        const response = await fetch(
+          `/api/apps/by-codespace/${encodeURIComponent(codeSpace)}`,
+        );
+
+        if (response.status === 401) {
+          // Not authenticated - redirect to sign in
+          router.push(
+            `/auth/signin?callbackUrl=${encodeURIComponent(`/my-apps/${codeSpace}`)}`,
+          );
+          return;
+        }
+
+        if (!response.ok) {
+          if (response.status === 400) {
+            setError("Invalid codespace name");
+          } else {
+            setError("Failed to load codespace");
+          }
+          setMode("prompt");
+          return;
+        }
+
+        const data = await response.json();
+        setHasContent(data.hasContent || false);
+
+        if (data.app) {
+          // App exists - show workspace
+          setApp(data.app);
+          setAgentWorking(data.app.agentWorking || false);
+          setMode("workspace");
+
+          // Cache the result in sessionStorage for faster subsequent loads
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem(
+              sessionCacheKey,
+              JSON.stringify({
+                app: data.app,
+                hasContent: data.hasContent,
+                timestamp: Date.now(),
+              }),
+            );
+          }
+        } else {
+          // No app yet - show prompt form
+          setMode("prompt");
+
+          // Cache the prompt mode state
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem(
+              sessionCacheKey,
+              JSON.stringify({
+                isPromptMode: true,
+                timestamp: Date.now(),
+              }),
+            );
+          }
+        }
+      } catch (error) {
+        // Network error or unexpected failure
+        console.error(
+          "[MyApps] Failed to load codespace:",
+          error instanceof Error ? error.message : String(error),
+        );
+        setError("Failed to load codespace");
+        setMode("prompt");
+      }
+    }
+
+    checkCodeSpace();
+  }, [codeSpace, router]);
+
+  // Fetch messages when in workspace mode
+  const fetchMessages = useCallback(async () => {
+    if (!app?.id) return;
+
+    try {
+      const response = await fetch(`/api/apps/${app.id}/messages`);
+      if (!response.ok) throw new Error("Failed to fetch messages");
+      const data = await response.json();
+      setMessages((data.messages || []).reverse());
+    } catch (error) {
+      console.error(
+        "[MyApps] Failed to load messages:",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }, [app?.id]);
+
+  useEffect(() => {
+    if (mode === "workspace" && app?.id) {
+      fetchMessages();
+    }
+  }, [mode, app?.id, fetchMessages]);
+
+  // Set up SSE connection for workspace mode
+  useEffect(() => {
+    if (mode !== "workspace" || !app?.id) return;
+
+    const eventSource = new EventSource(`/api/apps/${app.id}/messages/stream`);
+    eventSourceRef.current = eventSource;
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        switch (data.type) {
+          case "message":
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === data.data.id)) return prev;
+              return [...prev, data.data];
+            });
+            if (data.data.role === "AGENT") {
+              setIframeKey((prev) => prev + 1);
+              setHasContent(true);
+            }
+            break;
+
+          case "status":
+            setApp((
+              prev,
+            ) => (prev ? { ...prev, status: data.data.status } : null));
+            // Invalidate cache on status change to ensure fresh data on page revisit
+            sessionStorage.removeItem(getSessionCacheKey(codeSpace));
+            break;
+
+          case "agent_working":
+            setAgentWorking(data.data.isWorking);
+            // Invalidate cache when agent status changes
+            sessionStorage.removeItem(getSessionCacheKey(codeSpace));
+            break;
+
+          case "code_updated":
+            setIframeKey((prev) => prev + 1);
+            setHasContent(true);
+            // Clear sync state after brief delay to show completion
+            setTimeout(() => setIsSyncing(false), 500);
+            // Invalidate cache on code updates
+            sessionStorage.removeItem(getSessionCacheKey(codeSpace));
+            break;
+
+          case "sync_in_progress":
+            setIsSyncing(data.data.isSyncing);
+            if (data.data.isSyncing) {
+              setSyncFlashKey((prev) => prev + 1); // Reset animation
+            }
+            break;
+        }
+      } catch (error) {
+        console.error(
+          "[MyApps] Failed to parse SSE event:",
+          error instanceof Error ? error.message : String(error),
+        );
+      }
+    };
+
+    eventSource.onerror = () => {
+      console.error("SSE connection error");
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+      eventSourceRef.current = null;
+    };
+  }, [mode, app?.id, codeSpace]);
+
+  // Debounced scroll to bottom for performance
+  const scrollToBottom = useMemo(
+    () => {
+      let timeout: NodeJS.Timeout | null = null;
+      return () => {
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      };
+    },
+    [],
+  );
+
+  // Scroll to bottom when messages change (debounced)
   useEffect(() => {
     scrollToBottom();
   }, [messages, streamingResponse, scrollToBottom]);
@@ -127,66 +471,461 @@ export default function CodeSpacePage() {
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
+
     const handleScroll = () => {
-      const threshold = 100;
+      const threshold = 100; // px from bottom to consider "at bottom"
       const scrollBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
       setIsAtBottom(scrollBottom < threshold);
     };
-    container.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [mode]);
 
-  const onCreateApp = useCallback(async () => {
-    if (!newMessage.trim() && pendingFiles.length === 0) return;
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    // Initial check
+    handleScroll();
+
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [mode]); // Re-attach when mode changes
+
+  // File handling for prompt mode
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles: PendingFile[] = [];
+    for (let i = 0; i < Math.min(files.length, 10); i++) {
+      const file = files[i];
+      if (file && !file.type.startsWith("image/")) {
+        newFiles.push({
+          id: `pending-${Date.now()}-${i}`,
+          file,
+        });
+      }
+    }
+    setPendingFiles((prev) => [...prev, ...newFiles].slice(0, 10));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveFile = (id: string) => {
+    setPendingFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  // Image handling for workspace mode
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newImages: PendingImage[] = [];
+    for (let i = 0; i < Math.min(files.length, 5); i++) {
+      const file = files[i];
+      if (file && file.type.startsWith("image/")) {
+        newImages.push({
+          id: `pending-${Date.now()}-${i}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+        });
+      }
+    }
+    setPendingImages((prev) => [...prev, ...newImages].slice(0, 5));
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveImage = (id: string) => {
+    setPendingImages((prev) => {
+      const image = prev.find((img) => img.id === id);
+      if (image) {
+        URL.revokeObjectURL(image.previewUrl);
+      }
+      return prev.filter((img) => img.id !== id);
+    });
+  };
+
+  const uploadImages = async (): Promise<string[]> => {
+    if (pendingImages.length === 0 || !app?.id) return [];
+
+    setUploadingImages(true);
     try {
-      await handleCreateApp(newMessage, templateId, pendingFiles);
+      const formData = new FormData();
+      pendingImages.forEach((img) => {
+        formData.append("images", img.file);
+      });
+
+      const response = await fetch(`/api/apps/${app.id}/images`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to upload images");
+
+      const data = await response.json();
+      return data.images.map((img: { id: string; }) => img.id);
+    } finally {
+      setUploadingImages(false);
+      pendingImages.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      setPendingImages([]);
+    }
+  };
+
+  // Retry logic for fetching messages with exponential backoff
+  const fetchMessagesWithRetry = useCallback(
+    async (appId: string, retries = 3): Promise<AppMessage[]> => {
+      for (let i = 0; i < retries; i++) {
+        // Only delay between retries, not before first attempt
+        if (i > 0) {
+          await new Promise((r) => setTimeout(r, 500 * Math.pow(2, i - 1)));
+        }
+        try {
+          const response = await fetch(`/api/apps/${appId}/messages`);
+          if (response.ok) {
+            const data = await response.json();
+            return (data.messages || []).reverse();
+          }
+        } catch (error) {
+          console.error(
+            `[MyApps] Retry ${i + 1}/${retries} failed for messages fetch:`,
+            error instanceof Error ? error.message : String(error),
+          );
+        }
+      }
+      return [];
+    },
+    [],
+  );
+
+  // Shared helper to process a message with the agent (streaming)
+  const processMessageWithAgent = useCallback(
+    async (appId: string, content: string, imageIds: string[] = []) => {
+      setIsStreaming(true);
+      setStreamingResponse("");
+
+      // Initialize agent progress tracking
+      setAgentStage("initialize");
+      setAgentStartTime(Date.now());
+      setCurrentTool(undefined);
+      setAgentError(undefined);
+
+      // Create new AbortController for this request
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
+
+      try {
+        const response = await fetch(`/api/apps/${appId}/agent/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: content || "[Image attached]",
+            imageIds,
+          }),
+          signal,
+        });
+
+        if (!response.ok) throw new Error("Failed to send message to agent");
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (!reader) throw new Error("No reader available");
+
+        let buffer = "";
+        let receivedChunks = false; // Track if we received actual content (direct mode)
+        let isQueueMode = false; // Track if response indicates queue mode
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(line.substring(6));
+                // Handle different event types
+                if (data.type === "chunk") {
+                  receivedChunks = true;
+                  setStreamingResponse((prev) => prev + data.content);
+                } else if (data.type === "stage") {
+                  // Update agent stage
+                  setAgentStage(data.stage as AgentStage);
+                  if (data.tool) {
+                    setCurrentTool(data.tool);
+                  }
+                } else if (data.type === "status" && data.content?.includes("queued")) {
+                  // Queue mode detected
+                  isQueueMode = true;
+                } else if (data.type === "error") {
+                  setAgentStage("error");
+                  setAgentError(data.content);
+                  toast.error(`Agent error: ${data.content}`);
+                }
+              } catch {
+                // Intentionally silent: Partial or invalid JSON chunks during streaming are expected.
+              }
+            }
+          }
+        }
+
+        // In queue mode, poll for agent response
+        if (isQueueMode && !receivedChunks) {
+          // Keep processing stage active while waiting
+          setAgentStage("processing");
+
+          // Poll for agent response (max 2 minutes with increasing intervals)
+          const maxPollTime = 120000; // 2 minutes
+          const startTime = Date.now();
+          let pollInterval = 2000; // Start at 2 seconds
+
+          const pollForResponse = async (): Promise<void> => {
+            while (Date.now() - startTime < maxPollTime) {
+              await new Promise((r) => setTimeout(r, pollInterval));
+
+              // Check if we have new messages
+              const messagesRes = await fetch(`/api/apps/${appId}/messages`);
+              if (messagesRes.ok) {
+                const data = await messagesRes.json();
+                const msgs = (data.messages || []).reverse();
+
+                // Check if there's a new agent message (use ref to avoid stale closure)
+                const hasAgentResponse = msgs.some(
+                  (m: { role: string; id: string; }) =>
+                    m.role === "AGENT" &&
+                    !messagesRef.current.some((existing) => existing.id === m.id),
+                );
+
+                if (hasAgentResponse) {
+                  setMessages(msgs);
+                  setAgentStage("complete");
+                  setIframeKey((prev) => prev + 1);
+                  setHasContent(true);
+                  return;
+                }
+              }
+
+              // Increase poll interval (max 5 seconds)
+              pollInterval = Math.min(pollInterval * 1.5, 5000);
+            }
+
+            // Timeout - notify user and still fetch messages in case we missed something
+            toast.warning("Agent is taking longer than expected. Refreshing...");
+            await fetchMessages();
+          };
+
+          await pollForResponse();
+        } else {
+          // Direct mode - fetch final messages and update preview
+          await fetchMessages();
+          setIframeKey((prev) => prev + 1);
+          setHasContent(true);
+        }
+      } catch (e) {
+        // Handle abort gracefully
+        if (e instanceof Error && e.name === "AbortError") {
+          console.log("Agent request cancelled by user");
+          setAgentStage(null);
+          setAgentError(undefined);
+        } else {
+          console.error("Failed to process message with agent", e);
+          setAgentStage("error");
+          setAgentError(e instanceof Error ? e.message : "Unknown error");
+        }
+      } finally {
+        abortControllerRef.current = null;
+        setIsStreaming(false);
+        setStreamingResponse("");
+        // Reset agent progress after a short delay to show completion
+        // Use longer timeout for errors so users can read the message
+        const displayMs = agentError ? 10000 : 1500;
+        setTimeout(() => {
+          setAgentStage(null);
+          setAgentStartTime(undefined);
+          setCurrentTool(undefined);
+          setAgentError(undefined);
+        }, displayMs);
+      }
+    },
+    [fetchMessages, agentError], // messages removed - using messagesRef to prevent stale closures
+  );
+
+  // Create app from prompt (prompt mode)
+
+  const handleCreateApp = async () => {
+    if ((!newMessage.trim() && pendingFiles.length === 0) || sendingMessage) {
+      return;
+    }
+
+    const content = newMessage.trim();
+    setSendingMessage(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("prompt", content || "[Files attached]");
+      formData.append("codespaceId", codeSpace);
+      if (templateId) {
+        formData.append("templateId", templateId);
+      }
+
+      pendingFiles.forEach((pf) => {
+        formData.append("files", pf.file);
+      });
+
+      const response = await fetch("/api/apps", {
+        method: "POST",
+        body: pendingFiles.length > 0 ? formData : JSON.stringify({
+          prompt: content,
+          codespaceId: codeSpace,
+          ...(templateId && { templateId }),
+        }),
+        headers: pendingFiles.length > 0
+          ? undefined
+          : { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to create app");
+      }
+
+      const newApp = await response.json();
+
+      // Update state to show workspace
+      setApp(newApp);
       setNewMessage("");
       setPendingFiles([]);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to create app. Please try again.");
-    }
-  }, [newMessage, templateId, pendingFiles, handleCreateApp, setPendingFiles]);
+      setMode("workspace");
 
-  const onSendMessage = useCallback(async () => {
-    if ((!newMessage.trim() && pendingImages.length === 0) || sendingMessage || isStreaming) return;
+      // Fetch messages for the new app with retry logic
+      const fetchedMessages = await fetchMessagesWithRetry(newApp.id);
+      setMessages(fetchedMessages);
+
+      // Trigger agent to process the initial message
+      // NOTE: The user's message is already saved to DB by POST /api/apps
+      // Now we call the agent to generate a response
+      // Note: Images are currently only supported in workspace mode - prompt mode uses files only
+      await processMessageWithAgent(newApp.id, content || "[Files attached]");
+    } catch (e) {
+      console.error("Failed to create app", e);
+      toast.error(e instanceof Error ? e.message : "Failed to create app. Please try again.");
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Send message in workspace mode
+  const handleSendMessage = async () => {
+    if (
+      (!newMessage.trim() && pendingImages.length === 0) || sendingMessage ||
+      isStreaming
+    ) return;
+    if (!app?.id) return;
+
     const content = newMessage.trim();
     setNewMessage("");
+    setSendingMessage(true);
+
     try {
       const imageIds = await uploadImages();
-      await handleSendMessage(content, imageIds);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to send message");
-    }
-  }, [newMessage, pendingImages, sendingMessage, isStreaming, uploadImages, handleSendMessage]);
 
-  const onMoveToBin = useCallback(async () => {
+      // Optimistically add user message
+      const optimId = `temp-${Date.now()}`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: optimId,
+          role: "USER",
+          content: content || "[Image attached]",
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+
+      // Use shared helper for agent processing
+      await processMessageWithAgent(app.id, content, imageIds);
+    } catch (e) {
+      console.error("Failed to send message", e);
+      setAgentStage("error");
+      setAgentError(e instanceof Error ? e.message : "Unknown error");
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Clear chat
+  const handleClearChat = async () => {
+    if (clearingChat || !app?.id) return;
+
+    setClearingChat(true);
     try {
-      const appName = await handleMoveToBin();
-      if (appName) {
-        toast.success(`"${appName}" moved to bin`);
-        router.push("/my-apps");
+      const response = await fetch(`/api/apps/${app.id}/messages`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to clear chat");
+      setMessages([]);
+    } catch (error) {
+      console.error(
+        "[MyApps] Failed to clear chat:",
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      setClearingChat(false);
+    }
+  };
+
+  // Move to bin
+  const handleMoveToBin = async () => {
+    if (movingToBin || !app?.id) return;
+
+    setMovingToBin(true);
+    try {
+      const appIdentifier = app.codespaceId || codeSpace;
+      const response = await fetch(`/api/apps/${appIdentifier}/bin`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to move to bin");
       }
+
+      toast.success(`"${app.name}" moved to bin`);
+      router.push("/my-apps");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to move to bin");
+    } finally {
+      setMovingToBin(false);
     }
-  }, [handleMoveToBin, router]);
-
-  const onCancelAgent = useCallback(() => {
-    handleCancelAgent();
-    toast.info("Agent processing cancelled");
-  }, [handleCancelAgent]);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (mode === "prompt") {
-        onCreateApp();
+        handleCreateApp();
       } else {
-        onSendMessage();
+        handleSendMessage();
       }
     }
   };
+
+  // Cancel agent processing
+  const handleCancelAgent = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      toast.info("Agent processing cancelled");
+    }
+  };
+
+  // Open preview modal for a specific version
+  const handleOpenPreview = useCallback((url: string, versionLabel?: string) => {
+    setPreviewModalUrl(url);
+    setPreviewModalVersion(versionLabel);
+    setPreviewModalOpen(true);
+  }, []);
 
   // Loading state
   if (mode === "loading") {
@@ -206,7 +945,7 @@ export default function CodeSpacePage() {
     );
   }
 
-  // Error state
+  // Error state (invalid codespace name)
   if (error && !app) {
     return (
       <div className="min-h-screen bg-background">
@@ -214,19 +953,20 @@ export default function CodeSpacePage() {
           <Card className="mx-auto max-w-md">
             <CardHeader>
               <CardTitle>Invalid Codespace</CardTitle>
-              <p className="text-sm text-muted-foreground">{error}</p>
+              <CardDescription>{error}</CardDescription>
             </CardHeader>
-            <div className="p-6 pt-0">
+            <CardContent>
               <Link href="/my-apps">
                 <Button>Back to My Apps</Button>
               </Link>
-            </div>
+            </CardContent>
           </Card>
         </div>
       </div>
     );
   }
 
+  // Render based on mode
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 overflow-x-hidden relative selection:bg-teal-500/30">
       {/* Ambient Glow Effects */}
@@ -250,7 +990,10 @@ export default function CodeSpacePage() {
               <span className="font-medium">Back</span>
             </Link>
             {mode === "prompt" && (
-              <Badge variant="secondary" className="bg-amber-500/20 text-amber-200 border-amber-500/30">
+              <Badge
+                variant="secondary"
+                className="bg-amber-500/20 text-amber-200 border-amber-500/30"
+              >
                 New App
               </Badge>
             )}
@@ -292,7 +1035,7 @@ export default function CodeSpacePage() {
                       Cancel
                     </AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={onMoveToBin}
+                      onClick={handleMoveToBin}
                       className="bg-red-600 hover:bg-red-500 text-white"
                     >
                       Move to Bin
@@ -312,8 +1055,9 @@ export default function CodeSpacePage() {
           )}
         </div>
 
-        {/* Main Content */}
+        {/* Main Content - Single Column Chat with Inline Previews */}
         <div className="max-w-4xl mx-auto">
+          {/* Chat Panel */}
           <Card className="flex flex-col min-h-[600px] max-h-[calc(100vh-200px)] bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl overflow-hidden ring-1 ring-white/5">
             <CardHeader className="border-b border-white/5 bg-white/[0.02] px-6 py-3">
               <div className="flex items-center justify-between">
@@ -334,7 +1078,9 @@ export default function CodeSpacePage() {
                     </AlertDialogTrigger>
                     <AlertDialogContent className="bg-zinc-900 border-white/10">
                       <AlertDialogHeader>
-                        <AlertDialogTitle className="text-zinc-100">Clear chat history?</AlertDialogTitle>
+                        <AlertDialogTitle className="text-zinc-100">
+                          Clear chat history?
+                        </AlertDialogTitle>
                         <AlertDialogDescription className="text-zinc-400">
                           This will permanently delete all messages. This action cannot be undone.
                         </AlertDialogDescription>
@@ -344,7 +1090,7 @@ export default function CodeSpacePage() {
                           Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={clearMessages}
+                          onClick={handleClearChat}
                           className="bg-red-600 hover:bg-red-500 text-white"
                         >
                           Clear Chat
@@ -368,6 +1114,7 @@ export default function CodeSpacePage() {
               >
                 {mode === "prompt"
                   ? (
+                    // Prompt mode - welcome state
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -376,19 +1123,35 @@ export default function CodeSpacePage() {
                     >
                       <div className="space-y-6 max-w-md">
                         <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-teal-500/20 to-purple-500/20 mx-auto flex items-center justify-center border border-white/10 shadow-lg shadow-teal-500/5">
-                          <svg className="w-10 h-10 text-teal-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                          <svg
+                            className="w-10 h-10 text-teal-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                            />
                           </svg>
                         </div>
                         <div className="space-y-3">
-                          <h3 className="text-2xl font-semibold text-zinc-100">Start with a prompt</h3>
+                          <h3 className="text-2xl font-semibold text-zinc-100">
+                            Start with a prompt
+                          </h3>
                           <p className="text-zinc-400 leading-relaxed">
                             Describe what you want to build and our AI will create it for you.
                           </p>
                         </div>
                         <div className="flex flex-wrap justify-center gap-2 pt-2">
                           {["PDF", "TXT", "JSON", "CSV", "MD"].map((type) => (
-                            <span key={type} className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-zinc-400">
+                            <span
+                              key={type}
+                              className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-zinc-400"
+                            >
                               .{type.toLowerCase()}
                             </span>
                           ))}
@@ -398,25 +1161,50 @@ export default function CodeSpacePage() {
                   )
                   : messages.length === 0
                   ? (
+                    // Workspace mode - no messages yet
                     <div className="flex h-full items-center justify-center text-center text-zinc-500">
                       <div className="space-y-4 max-w-xs">
                         <div className="w-16 h-16 rounded-2xl bg-white/5 mx-auto flex items-center justify-center border border-white/5">
-                          <svg className="w-8 h-8 text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          <svg
+                            className="w-8 h-8 text-zinc-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                            />
                           </svg>
                         </div>
-                        <p className="text-lg font-medium text-zinc-300">No messages yet</p>
-                        <p className="text-sm">Start a conversation to begin building your app.</p>
+                        <p className="text-lg font-medium text-zinc-300">
+                          No messages yet
+                        </p>
+                        <p className="text-sm">
+                          Start a conversation to begin building your app.
+                        </p>
                       </div>
                     </div>
                   )
                   : (
+                    // Workspace mode - messages
                     <div className="space-y-6">
                       {messages.map((message) => (
                         <div
                           key={message.id}
-                          className={`flex ${message.role === "USER" ? "justify-end" : "justify-start"}`}
-                          data-testid={message.role === "USER" ? "user-message" : message.role === "AGENT" ? "agent-message" : "system-message"}
+                          className={`flex ${
+                            message.role === "USER"
+                              ? "justify-end"
+                              : "justify-start"
+                          }`}
+                          data-testid={message.role === "USER"
+                            ? "user-message"
+                            : message.role === "AGENT"
+                            ? "agent-message"
+                            : "system-message"}
                         >
                           <div
                             className={`max-w-[85%] rounded-2xl px-5 py-3 shadow-sm ${
@@ -430,9 +1218,14 @@ export default function CodeSpacePage() {
                             <div className="leading-relaxed">
                               {message.role === "AGENT"
                                 ? <MarkdownContent content={message.content} />
-                                : <p className="whitespace-pre-wrap">{message.content}</p>}
+                                : (
+                                  <p className="whitespace-pre-wrap">
+                                    {message.content}
+                                  </p>
+                                )}
                             </div>
-                            {message.attachments && message.attachments.length > 0 && (
+                            {message.attachments &&
+                              message.attachments.length > 0 && (
                               <div className="mt-3 flex flex-wrap gap-2">
                                 {message.attachments.map((attachment) => (
                                   <Image
@@ -447,12 +1240,17 @@ export default function CodeSpacePage() {
                                 ))}
                               </div>
                             )}
+                            {/* Inline preview for agent messages with code versions */}
                             {message.role === "AGENT" && message.codeVersion && (() => {
+                              // Use memoized versionMap for O(1) lookup instead of O(n²) inline calculation
                               const versionNumber = versionMap.get(message.id) ?? 1;
                               const isLatest = versionNumber === totalVersions;
+
+                              // Use versioned URLs for historical versions
                               const versionedUrl = isLatest
                                 ? codespaceUrl
                                 : `/api/codespace/${codeSpace}/version/${versionNumber}/embed`;
+
                               return (
                                 <MiniPreview
                                   codespaceUrl={versionedUrl}
@@ -467,12 +1265,27 @@ export default function CodeSpacePage() {
                                   syncFlashKey={syncFlashKey}
                                   versionId={message.codeVersion?.id}
                                   appId={app?.id}
-                                  onRestore={refreshIframe}
+                                  onRestore={() => {
+                                    setIframeKey((prev) => prev + 1);
+                                    fetchMessages();
+                                  }}
                                 />
                               );
                             })()}
-                            <p className={`mt-1.5 text-xs ${message.role === "USER" ? "text-teal-100/70" : "text-zinc-500"}`}>
-                              {new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            <p
+                              className={`mt-1.5 text-xs ${
+                                message.role === "USER"
+                                  ? "text-teal-100/70"
+                                  : "text-zinc-500"
+                              }`}
+                            >
+                              {new Date(message.createdAt).toLocaleTimeString(
+                                [],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
                             </p>
                           </div>
                         </div>
@@ -486,12 +1299,15 @@ export default function CodeSpacePage() {
                         <MarkdownContent content={streamingResponse} />
                         <span className="inline-block w-2 h-4 ml-1 bg-teal-500 animate-pulse rounded-full align-middle" />
                       </div>
+
+                      {/* Live Preview during generation */}
                       {isSyncing && (
                         <div className="mt-4">
                           <MiniPreview
                             codespaceUrl={codespaceUrl}
                             isLatest={true}
-                            onClick={() => handleOpenPreview(codespaceUrl, "Live Preview (Working...)")}
+                            onClick={() =>
+                              handleOpenPreview(codespaceUrl, "Live Preview (Working...)")}
                             isSyncing={true}
                             syncFlashKey={syncFlashKey}
                           />
@@ -504,7 +1320,7 @@ export default function CodeSpacePage() {
               </div>
             </CardContent>
 
-            {/* Inline Agent Progress Indicator */}
+            {/* Inline Agent Progress Indicator - shows when at bottom */}
             {isStreaming && isAtBottom && (
               <div className="mx-4 mb-2">
                 <AgentProgressIndicator
@@ -519,7 +1335,7 @@ export default function CodeSpacePage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={onCancelAgent}
+                    onClick={handleCancelAgent}
                     className="text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-full px-4 h-8 text-sm gap-2"
                   >
                     <StopCircle className="h-4 w-4" />
@@ -529,7 +1345,7 @@ export default function CodeSpacePage() {
               </div>
             )}
 
-            {/* Floating Agent Progress Indicator */}
+            {/* Floating Agent Progress Indicator - shows when scrolled up */}
             {isStreaming && !isAtBottom && (
               <AgentProgressIndicator
                 stage={agentStage}
@@ -544,14 +1360,22 @@ export default function CodeSpacePage() {
 
             {/* Message Input */}
             <div className="border-t border-white/5 bg-white/[0.02] p-4">
+              {/* Pending Files Preview (prompt mode) */}
               {mode === "prompt" && pendingFiles.length > 0 && (
                 <div className="flex gap-2 mb-3 flex-wrap">
                   {pendingFiles.map((pf) => (
-                    <div key={pf.id} className="relative group flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                    <div
+                      key={pf.id}
+                      className="relative group flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10"
+                    >
                       <FileText className="h-5 w-5 text-zinc-400" />
                       <div className="flex flex-col">
-                        <span className="text-xs text-zinc-300 truncate max-w-[120px]">{pf.file.name}</span>
-                        <span className="text-[10px] text-zinc-500">{formatFileSize(pf.file.size)}</span>
+                        <span className="text-xs text-zinc-300 truncate max-w-[120px]">
+                          {pf.file.name}
+                        </span>
+                        <span className="text-[10px] text-zinc-500">
+                          {formatFileSize(pf.file.size)}
+                        </span>
                       </div>
                       <button
                         type="button"
@@ -566,6 +1390,7 @@ export default function CodeSpacePage() {
                 </div>
               )}
 
+              {/* Pending Images Preview (workspace mode) */}
               {mode === "workspace" && pendingImages.length > 0 && (
                 <div className="flex gap-2 mb-3 flex-wrap">
                   {pendingImages.map((img) => (
@@ -619,49 +1444,76 @@ export default function CodeSpacePage() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={() => (mode === "prompt" ? fileInputRef.current?.click() : imageInputRef.current?.click())}
-                  disabled={sendingMessage || uploadingImages || (mode === "prompt" ? pendingFiles.length >= 10 : pendingImages.length >= 5)}
+                  onClick={() => (mode === "prompt"
+                    ? fileInputRef.current?.click()
+                    : imageInputRef.current?.click())}
+                  disabled={sendingMessage ||
+                    uploadingImages ||
+                    (mode === "prompt"
+                      ? pendingFiles.length >= 10
+                      : pendingImages.length >= 5)}
                   className="h-10 w-10 rounded-xl text-zinc-500 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-                  aria-label={mode === "prompt" ? "Attach files" : "Attach images"}
+                  aria-label={mode === "prompt"
+                    ? "Attach files"
+                    : "Attach images"}
                 >
-                  {mode === "prompt" ? <Paperclip className="h-5 w-5" /> : <ImagePlus className="h-5 w-5" />}
+                  {mode === "prompt"
+                    ? <Paperclip className="h-5 w-5" />
+                    : <ImagePlus className="h-5 w-5" />}
                 </Button>
                 <Textarea
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={mode === "prompt" ? "E.g., A personal finance tracker with charts..." : "Type your message..."}
+                  placeholder={mode === "prompt"
+                    ? "E.g., A personal finance tracker with charts..."
+                    : "Type your message..."}
                   autoComplete="off"
                   className="min-h-[60px] max-h-[200px] resize-none bg-black/20 border-white/10 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 rounded-2xl pl-4 pr-14 py-3 text-zinc-200 placeholder:text-zinc-600 backdrop-blur-sm transition-all"
-                  disabled={sendingMessage || (mode === "workspace" && app?.status === "ARCHIVED")}
+                  disabled={sendingMessage ||
+                    (mode === "workspace" && app?.status === "ARCHIVED")}
+                  // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional UX: focus input in prompt mode for immediate typing
                   autoFocus={mode === "prompt"}
                   data-testid="chat-input"
                 />
                 <Button
-                  onClick={mode === "prompt" ? onCreateApp : onSendMessage}
-                  disabled={
-                    (mode === "prompt" ? !newMessage.trim() && pendingFiles.length === 0 : !newMessage.trim() && pendingImages.length === 0) ||
+                  onClick={mode === "prompt"
+                    ? handleCreateApp
+                    : handleSendMessage}
+                  disabled={(mode === "prompt"
+                    ? !newMessage.trim() && pendingFiles.length === 0
+                    : !newMessage.trim() && pendingImages.length === 0) ||
                     sendingMessage ||
                     uploadingImages ||
-                    (mode === "workspace" && app?.status === "ARCHIVED")
-                  }
-                  aria-label={mode === "prompt" ? "Start building" : "Send message"}
+                    (mode === "workspace" && app?.status === "ARCHIVED")}
+                  aria-label={mode === "prompt"
+                    ? "Start building"
+                    : "Send message"}
                   className={`absolute right-2 bottom-2 h-10 ${
                     mode === "prompt" ? "px-4" : "w-10 p-0"
                   } rounded-xl transition-all duration-300 ${
-                    (mode === "prompt" ? !newMessage.trim() && pendingFiles.length === 0 : !newMessage.trim() && pendingImages.length === 0) ||
-                    sendingMessage ||
-                    uploadingImages
+                    (mode === "prompt"
+                        ? !newMessage.trim() && pendingFiles.length === 0
+                        : !newMessage.trim() && pendingImages.length === 0) ||
+                      sendingMessage ||
+                      uploadingImages
                       ? "bg-white/5 text-zinc-500"
                       : "bg-teal-500 hover:bg-teal-400 text-white shadow-[0_0_20px_-5px_rgba(20,184,166,0.6)]"
                   }`}
                 >
                   {sendingMessage || uploadingImages
-                    ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ? (
+                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    )
                     : mode === "prompt"
                     ? <span className="font-medium">Start</span>
                     : (
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 ml-0.5">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="w-5 h-5 ml-0.5"
+                      >
                         <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
                       </svg>
                     )}
@@ -670,16 +1522,20 @@ export default function CodeSpacePage() {
               <div className="mt-2 text-center">
                 <p className="text-[10px] text-zinc-600">
                   Press{" "}
-                  <kbd className="font-sans px-1 py-0.5 bg-white/5 rounded border border-white/10 text-zinc-500">Enter</kbd>{" "}
-                  to {mode === "prompt" ? "start" : "send"} • Click{" "}
-                  {mode === "prompt" ? <Paperclip className="inline h-3 w-3" /> : <ImagePlus className="inline h-3 w-3" />}{" "}
-                  to attach {mode === "prompt" ? "files" : "images"}
+                  <kbd className="font-sans px-1 py-0.5 bg-white/5 rounded border border-white/10 text-zinc-500">
+                    Enter
+                  </kbd>{" "}
+                  to {mode === "prompt" ? "start" : "send"} • Click {mode === "prompt"
+                    ? <Paperclip className="inline h-3 w-3" />
+                    : <ImagePlus className="inline h-3 w-3" />} to attach{" "}
+                  {mode === "prompt" ? "files" : "images"}
                 </p>
               </div>
             </div>
           </Card>
         </div>
 
+        {/* Preview Modal - Opens when clicking on MiniPreview */}
         <PreviewModal
           open={previewModalOpen}
           onClose={() => setPreviewModalOpen(false)}

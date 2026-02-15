@@ -12,7 +12,7 @@ import { safeToolCall, textResult } from "./tool-helpers";
 export function registerSentryBridgeTools(registry: ToolRegistry, _userId: string): void {
   registry.register({
     name: "sentry_issues",
-    description: "List recent Sentry issues for the project. Requires SENTRY_MCP_AUTH_TOKEN.",
+    description: "List recent Sentry issues for the project. Requires SENTRY_AUTH_TOKEN.",
     category: "sentry",
     tier: "workspace",
     inputSchema: {
@@ -21,7 +21,7 @@ export function registerSentryBridgeTools(registry: ToolRegistry, _userId: strin
     },
     handler: async ({ query, limit = 25 }: { query?: string; limit?: number }): Promise<CallToolResult> =>
       safeToolCall("sentry_issues", async () => {
-        if (!process.env.SENTRY_MCP_AUTH_TOKEN) return textResult("Sentry not configured (SENTRY_MCP_AUTH_TOKEN missing).");
+        if (!process.env.SENTRY_AUTH_TOKEN) return textResult("Sentry not configured (SENTRY_AUTH_TOKEN missing).");
         const { listSentryIssues } = await import("@/lib/bridges/sentry");
         const issues = await listSentryIssues({ query, limit });
         if (!issues || issues.length === 0) return textResult("No Sentry issues found.");
@@ -41,7 +41,7 @@ export function registerSentryBridgeTools(registry: ToolRegistry, _userId: strin
     inputSchema: { issue_id: z.string().min(1).describe("Sentry issue ID") },
     handler: async ({ issue_id }: { issue_id: string }): Promise<CallToolResult> =>
       safeToolCall("sentry_issue_detail", async () => {
-        if (!process.env.SENTRY_MCP_AUTH_TOKEN) return textResult("Sentry not configured.");
+        if (!process.env.SENTRY_AUTH_TOKEN) return textResult("Sentry not configured.");
         const { getSentryIssueDetail } = await import("@/lib/bridges/sentry");
         const issue = await getSentryIssueDetail(issue_id);
         if (!issue) return textResult("Issue not found.");
@@ -62,7 +62,7 @@ export function registerSentryBridgeTools(registry: ToolRegistry, _userId: strin
     inputSchema: {},
     handler: async (): Promise<CallToolResult> =>
       safeToolCall("sentry_stats", async () => {
-        if (!process.env.SENTRY_MCP_AUTH_TOKEN) return textResult("Sentry not configured.");
+        if (!process.env.SENTRY_AUTH_TOKEN) return textResult("Sentry not configured.");
         const { getSentryStats } = await import("@/lib/bridges/sentry");
         const stats = await getSentryStats();
         if (!stats) return textResult("Could not fetch Sentry stats.");

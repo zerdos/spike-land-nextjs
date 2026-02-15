@@ -192,11 +192,6 @@ declare global {
 
       // Sentry
       SENTRY_AUTH_TOKEN?: string;
-      SENTRY_MCP_AUTH_TOKEN?: string;
-      SENTRY_DSN?: string;
-      NEXT_PUBLIC_SENTRY_DSN?: string;
-      NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE?: string;
-      NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE?: string;
       SENTRY_TRACES_SAMPLE_RATE?: string;
       NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE?: string;
       NEXT_PUBLIC_VERCEL_ENV?: "development" | "preview" | "production";

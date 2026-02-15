@@ -506,7 +506,7 @@ describe("brand-brain tools", () => {
       mockPrisma.policyViolation.findMany.mockResolvedValue([]);
       const handler = registry.handlers.get("brand_list_violations")!;
       await handler({ workspace_slug: "my-ws" });
-      const call = mockPrisma.policyViolation.findMany.mock.calls[0]![0];
+      const call = mockPrisma.policyViolation.findMany.mock.calls[0][0];
       expect(call.where).not.toHaveProperty("severity");
     });
   });

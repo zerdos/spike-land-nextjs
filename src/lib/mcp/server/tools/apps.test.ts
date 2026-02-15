@@ -40,8 +40,8 @@ describe("apps tools", () => {
     registerAppsTools(registry, userId);
   });
 
-  it("should register 14 apps tools", () => {
-    expect(registry.register).toHaveBeenCalledTimes(14);
+  it("should register 11 apps tools", () => {
+    expect(registry.register).toHaveBeenCalledTimes(11);
     expect(registry.handlers.has("apps_create")).toBe(true);
     expect(registry.handlers.has("apps_list")).toBe(true);
     expect(registry.handlers.has("apps_get")).toBe(true);
@@ -53,9 +53,6 @@ describe("apps tools", () => {
     expect(registry.handlers.has("apps_delete_permanent")).toBe(true);
     expect(registry.handlers.has("apps_list_versions")).toBe(true);
     expect(registry.handlers.has("apps_batch_status")).toBe(true);
-    expect(registry.handlers.has("apps_clear_messages")).toBe(true);
-    expect(registry.handlers.has("apps_upload_images")).toBe(true);
-    expect(registry.handlers.has("apps_generate_codespace_id")).toBe(true);
   });
 
   describe("apps_create", () => {
@@ -788,79 +785,6 @@ describe("apps tools", () => {
       const text = getText(result);
       expect(text).toContain("Succeeded:** 1/2");
       expect(text).toContain("Unknown error");
-    });
-  });
-
-  describe("apps_clear_messages", () => {
-    it("should call DELETE on messages endpoint", async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ success: true }),
-      });
-
-      const handler = registry.handlers.get("apps_clear_messages")!;
-      const result = await handler({ app_id: "my-app" });
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/apps/my-app/messages"),
-        expect.objectContaining({ method: "DELETE" }),
-      );
-      const text = getText(result);
-      expect(text).toContain("Chat Cleared!");
-      expect(text).toContain("my-app");
-    });
-
-    it("should handle API errors", async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        status: 404,
-        text: () => Promise.resolve(JSON.stringify({ error: "App not found" })),
-      });
-
-      const handler = registry.handlers.get("apps_clear_messages")!;
-      const result = await handler({ app_id: "nonexistent" });
-
-      expect(result).toEqual(expect.objectContaining({ isError: true }));
-    });
-  });
-
-  describe("apps_upload_images", () => {
-    it("should return upload instructions with correct app_id and count", async () => {
-      const handler = registry.handlers.get("apps_upload_images")!;
-      const result = await handler({ app_id: "my-app", image_count: 3 });
-
-      const text = getText(result);
-      expect(text).toContain("Image Upload Instructions");
-      expect(text).toContain("`my-app`");
-      expect(text).toContain("3");
-      expect(text).toContain("/api/apps/my-app/images");
-      expect(text).toContain("apps_chat");
-    });
-
-    it("should include upload requirements", async () => {
-      const handler = registry.handlers.get("apps_upload_images")!;
-      const result = await handler({ app_id: "test-app", image_count: 1 });
-
-      const text = getText(result);
-      expect(text).toContain("Max per request: 5");
-      expect(text).toContain("image/*");
-      expect(text).toContain("multipart form");
-    });
-  });
-
-  describe("apps_generate_codespace_id", () => {
-    it("should return a generated codespace ID in expected format", async () => {
-      const handler = registry.handlers.get("apps_generate_codespace_id")!;
-      const result = await handler({});
-
-      const text = getText(result);
-      expect(text).toContain("Generated Codespace ID");
-      expect(text).toContain("apps_create");
-      // The ID should have 4 dot-separated parts
-      const match = text.match(/`([a-z]+\.[a-z]+\.[a-z]+\.[a-z0-9]+)`/);
-      expect(match).not.toBeNull();
-      const parts = match![1]!.split(".");
-      expect(parts).toHaveLength(4);
     });
   });
 });

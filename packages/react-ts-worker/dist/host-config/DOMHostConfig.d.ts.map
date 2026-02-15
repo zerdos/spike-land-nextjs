@@ -1,1 +1,0 @@
-{"version":3,"file":"DOMHostConfig.d.ts","sourceRoot":"","sources":["../../src/host-config/DOMHostConfig.ts"],"names":[],"mappings":"AAEA,OAAO,KAAK,EAAE,UAAU,EAAE,gBAAgB,EAAE,MAAM,0BAA0B,CAAC;AA2J7E,eAAO,MAAM,aAAa,EAAE,UAAU,CACpC,MAAM,EACN,MAAM,CAAC,MAAM,EAAE,OAAO,CAAC,EACvB,OAAO,EACP,OAAO,EACP,IAAI,EACJ,gBAAgB,EAChB,OAAO,CAiKR,CAAC;AAEF,eAAe,aAAa,CAAC"}

@@ -32,40 +32,6 @@ export async function transpileCode(
 }
 
 /**
- * Transpile code for Worker-DOM rendering mode.
- *
- * Identical to transpileCode() but uses `react-ts-worker/react` as the JSX import source
- * instead of `@emotion/react`, so the generated JSX calls resolve to the custom React
- * implementation that runs inside a Web Worker.
- */
-export async function transpileCodeWorkerDom(
-  code: string,
-  _origin = "https://spike.land",
-): Promise<string> {
-  const { ensureEsbuildReady } = await import("./esbuild-init");
-  await ensureEsbuildReady();
-  const { transform } = await import("esbuild-wasm");
-  const result = await transform(code, {
-    loader: "tsx",
-    format: "esm",
-    treeShaking: true,
-    platform: "browser",
-    minify: false,
-    charset: "utf8",
-    keepNames: true,
-    tsconfigRaw: {
-      compilerOptions: {
-        jsx: "react-jsx",
-        jsxFragmentFactory: "Fragment",
-        jsxImportSource: "react-ts-worker/react",
-      },
-    },
-    target: "es2024",
-  });
-  return result.code;
-}
-
-/**
  * Parse transpilation error messages to extract line numbers and structured errors.
  * Ported from packages/testing.spike.land/src/routes/apiRoutes.ts
  */
