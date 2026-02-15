@@ -67,6 +67,14 @@ describe("vault crypto", () => {
       const key2 = deriveUserKey(masterKey, "user-1");
       expect(key1.toString("hex")).toBe(key2.toString("hex"));
     });
+
+    it("should throw for invalid userId format", () => {
+      const masterKey = getMasterKey();
+      expect(() => deriveUserKey(masterKey, "user/1")).toThrow("Invalid userId format");
+      expect(() => deriveUserKey(masterKey, "user.1")).toThrow("Invalid userId format");
+      expect(() => deriveUserKey(masterKey, "user:1")).toThrow("Invalid userId format");
+      expect(() => deriveUserKey(masterKey, "")).toThrow("Invalid userId format");
+    });
   });
 
   describe("encryptSecret / decryptSecret", () => {

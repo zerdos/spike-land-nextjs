@@ -21,6 +21,12 @@ const TAG_LENGTH = 16; // GCM auth tag
  * Uses HMAC-SHA256 as a simplified HKDF-Extract+Expand for deterministic key derivation.
  */
 export function deriveUserKey(masterKey: Buffer, userId: string): Buffer {
+  // Validate userId format to ensure it's not arbitrary secret material
+  // Allows CUIDs, UUIDs, and standard alphanumeric IDs
+  if (!/^[a-zA-Z0-9_-]+$/.test(userId)) {
+    throw new Error("Invalid userId format: must be alphanumeric (CUID/UUID compatible)");
+  }
+
   const hmac = createHmac("sha256", masterKey);
   hmac.update(`vault-secret-key:${userId}`);
   return hmac.digest();
