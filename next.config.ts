@@ -209,10 +209,10 @@ export default withSentryConfig(nextConfig, {
   // Suppress source map upload logs during build
   silent: !process.env.CI,
 
-  // Skip source map upload on PR branches to reduce build overhead and memory usage
+  // Disable source map uploads in CI — Vercel handles its own source map uploads
+  // during deployment. The CI build is validation-only.
   sourcemaps: {
-    disable: !process.env.SENTRY_AUTH_TOKEN ||
-      (process.env.CI === "true" && process.env["GITHUB_REF"] !== "refs/heads/main"),
+    disable: !process.env.SENTRY_AUTH_TOKEN || process.env.CI === "true",
   },
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
