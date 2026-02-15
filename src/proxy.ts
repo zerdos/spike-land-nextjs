@@ -249,7 +249,7 @@ export async function proxy(request: NextRequest) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
   const isStagingDomain = appUrl === "https://next.spike.land" || appUrl.includes("localhost");
   const isProduction = process.env.NODE_ENV === "production" &&
-    process.env.VERCEL_ENV === "production" &&
+    process.env.APP_ENV === "production" &&
     !isStagingDomain;
 
   // Check for E2E bypass via header (primary method)
@@ -282,7 +282,7 @@ export async function proxy(request: NextRequest) {
       method: bypassMethod,
       environment: {
         NODE_ENV: process.env.NODE_ENV,
-        VERCEL_ENV: process.env.VERCEL_ENV,
+        APP_ENV: process.env.APP_ENV,
       },
     });
     return applyHeaders(NextResponse.next({

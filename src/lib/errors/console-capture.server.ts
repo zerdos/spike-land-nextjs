@@ -80,7 +80,7 @@ function isFromStructuredLogger(): boolean {
 function getBaseUrl(): string {
   return (
     process.env.NEXTAUTH_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+    process.env.NEXT_PUBLIC_APP_URL ||
     "http://localhost:3000"
   );
 }

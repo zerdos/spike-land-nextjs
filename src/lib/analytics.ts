@@ -1,4 +1,3 @@
-import { track } from "@vercel/analytics";
 import { hasConsent } from "@/lib/tracking/consent";
 
 type AnalyticsEvent =
@@ -27,25 +26,17 @@ interface AnalyticsEventProperties {
 
 export function trackEvent(
   event: AnalyticsEvent,
-  properties?: AnalyticsEventProperties,
+  _properties?: AnalyticsEventProperties,
 ): void {
   if (!hasConsent()) {
     return;
   }
 
-  // Filter out undefined values to match Vercel Analytics type requirements
-  const cleanProperties = properties
-    ? Object.fromEntries(
-      Object.entries(properties).filter(([, value]) => value !== undefined),
-    )
-    : undefined;
-
-  track(
-    event,
-    cleanProperties as
-      | Record<string, string | number | boolean | null>
-      | undefined,
-  );
+  // Sentry captures equivalent telemetry via breadcrumbs and web vitals.
+  // This function is kept as a stable interface for callers.
+  if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+    console.debug("[analytics]", event, _properties);
+  }
 }
 
 export const analytics = {

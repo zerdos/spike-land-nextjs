@@ -48,14 +48,14 @@ interface VercelAnalyticsConfig {
  * Check if Vercel Analytics is configured
  */
 export function isVercelAnalyticsConfigured(): boolean {
-  return !!process.env.VERCEL_ACCESS_TOKEN;
+  return !!process.env["VERCEL_ACCESS_TOKEN"];
 }
 
 /**
  * Get configuration from environment
  */
 export function getVercelAnalyticsConfig(): VercelAnalyticsConfig | null {
-  const accessToken = process.env.VERCEL_ACCESS_TOKEN;
+  const accessToken = process.env["VERCEL_ACCESS_TOKEN"];
 
   if (!accessToken) {
     return null;
@@ -63,8 +63,8 @@ export function getVercelAnalyticsConfig(): VercelAnalyticsConfig | null {
 
   return {
     accessToken,
-    projectId: process.env.VERCEL_PROJECT_ID,
-    teamId: process.env.VERCEL_TEAM_ID,
+    projectId: process.env["VERCEL_PROJECT_ID"],
+    teamId: process.env["VERCEL_TEAM_ID"],
   };
 }
 
@@ -143,7 +143,7 @@ export class VercelAnalyticsClient {
     }
 
     // Try to detect from VERCEL_URL environment variable
-    const vercelUrl = process.env.VERCEL_URL;
+    const vercelUrl = process.env["VERCEL_URL"];
     if (vercelUrl) {
       // Extract project name from URL (e.g., spike-land.vercel.app -> spike-land)
       const match = vercelUrl.match(/^([^.]+)\.vercel\.app$/);

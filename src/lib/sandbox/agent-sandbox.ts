@@ -55,9 +55,9 @@ interface SpawnResult {
  * Get the callback URL for sandbox results
  */
 function getCallbackUrl(): string {
-  // In production, use the Vercel URL
-  if (process.env["VERCEL_URL"]) {
-    return `https://${process.env["VERCEL_URL"]}/api/agent/sandbox/callback`;
+  // In production, use the app URL
+  if (process.env["NEXT_PUBLIC_APP_URL"]) {
+    return `${process.env["NEXT_PUBLIC_APP_URL"]}/api/agent/sandbox/callback`;
   }
   // In development, use localhost (sandbox can't reach this - for testing only)
   return `http://localhost:3000/api/agent/sandbox/callback`;

@@ -229,11 +229,20 @@ resource "aws_ecs_task_definition" "workerd" {
       protocol      = "tcp"
     }]
 
-    environment = [
-      { name = "REDIS_URL", value = var.redis_url },
-      { name = "DATABASE_URL", value = var.database_url },
-      { name = "AWS_REGION", value = var.region },
-    ]
+    environment = concat(
+      [
+        { name = "REDIS_URL", value = var.redis_url },
+        { name = "AWS_REGION", value = var.region },
+      ],
+      var.dynamodb_table != "" ? [{ name = "DYNAMODB_TABLE", value = var.dynamodb_table }] : [],
+      var.s3_bucket != "" ? [{ name = "S3_BUCKET", value = var.s3_bucket }] : [],
+    )
+
+    secrets = concat(
+      var.ssm_openai_api_key_arn != "" ? [{ name = "OPENAI_API_KEY", valueFrom = var.ssm_openai_api_key_arn }] : [],
+      var.ssm_anthropic_api_key_arn != "" ? [{ name = "ANTHROPIC_API_KEY", valueFrom = var.ssm_anthropic_api_key_arn }] : [],
+      var.ssm_jwt_secret_arn != "" ? [{ name = "JWT_SECRET", valueFrom = var.ssm_jwt_secret_arn }] : [],
+    )
 
     healthCheck = {
       command     = ["CMD-SHELL", "curl -f http://localhost:8080/ping || exit 1"]
@@ -310,12 +319,25 @@ resource "aws_ecs_task_definition" "nextjs" {
       protocol      = "tcp"
     }]
 
-    environment = [
-      { name = "DATABASE_URL", value = var.database_url },
-      { name = "REDIS_URL", value = var.redis_url },
-      { name = "WORKERD_URL", value = "https://${aws_lb.nlb.dns_name}" },
-      { name = "AWS_REGION", value = var.region },
-    ]
+    environment = concat(
+      [
+        { name = "DATABASE_URL", value = var.database_url },
+        { name = "REDIS_URL", value = var.redis_url },
+        { name = "WORKERD_URL", value = "https://${aws_lb.nlb.dns_name}" },
+        { name = "AWS_REGION", value = var.region },
+      ],
+      var.app_env != "" ? [{ name = "APP_ENV", value = var.app_env }] : [],
+      var.app_url != "" ? [
+        { name = "NEXT_PUBLIC_APP_URL", value = var.app_url },
+        { name = "NEXTAUTH_URL", value = var.app_url },
+      ] : [],
+      var.cron_secret != "" ? [{ name = "CRON_SECRET", value = var.cron_secret }] : [],
+    )
+
+    secrets = concat(
+      var.ssm_auth_secret_arn != "" ? [{ name = "AUTH_SECRET", valueFrom = var.ssm_auth_secret_arn }] : [],
+      var.ssm_sentry_dsn_arn != "" ? [{ name = "SENTRY_DSN", valueFrom = var.ssm_sentry_dsn_arn }] : [],
+    )
 
     healthCheck = {
       command     = ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]

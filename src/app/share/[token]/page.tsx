@@ -57,7 +57,7 @@ export async function generateMetadata({
 
   // Construct absolute URL for the OG image
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
-    process.env.VERCEL_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
     "http://localhost:3000";
   const protocol = baseUrl.startsWith("http") ? "" : "https://";
   const ogImageUrl = `${protocol}${baseUrl}/share/${token}/opengraph-image`;

@@ -64,6 +64,7 @@ const config :Workerd.Config = (
           (name = "AWS_REGION", text = "${AWS_REGION}"),
           (name = "DYNAMODB_TABLE", text = "${DYNAMODB_TABLE}"),
           (name = "S3_BUCKET", text = "${S3_BUCKET}"),
+          (name = "AWS_ENDPOINT_URL", text = "${AWS_ENDPOINT_URL}"),
         ],
         globalOutbound = "internet",
       )

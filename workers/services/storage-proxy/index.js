@@ -258,6 +258,7 @@ function awsConfig(env) {
     region: env.AWS_REGION || "us-east-1",
     table: env.DYNAMODB_TABLE || "spike-land-kv",
     bucket: env.S3_BUCKET || "spike-land-storage",
+    endpointUrl: env.AWS_ENDPOINT_URL || null,
   };
 }
 
@@ -266,7 +267,7 @@ function awsConfig(env) {
 // ---------------------------------------------------------------------------
 
 async function dynamoRequest(action, payload, cfg) {
-  const url = `https://dynamodb.${cfg.region}.amazonaws.com/`;
+  const url = cfg.endpointUrl || `https://dynamodb.${cfg.region}.amazonaws.com/`;
   const body = JSON.stringify(payload);
 
   const response = await signedFetch({
@@ -340,19 +341,20 @@ async function kvDelete(key, env) {
 // S3 helpers (R2-style operations)
 // ---------------------------------------------------------------------------
 
-function s3Url(bucket, region, key) {
+function s3Url(bucket, region, key, endpointUrl) {
   // Use path-style URL for compatibility
+  const base = endpointUrl || `https://s3.${region}.amazonaws.com`;
   if (key) {
-    return `https://s3.${region}.amazonaws.com/${bucket}/${key}`;
+    return `${base}/${bucket}/${key}`;
   }
-  return `https://s3.${region}.amazonaws.com/${bucket}`;
+  return `${base}/${bucket}`;
 }
 
 async function r2Get(key, env) {
   const cfg = awsConfig(env);
   console.log(`[storage-proxy] R2 GET: ${key}`);
 
-  const url = s3Url(cfg.bucket, cfg.region, key);
+  const url = s3Url(cfg.bucket, cfg.region, key, cfg.endpointUrl);
   const response = await signedFetch({
     method: "GET",
     url,
@@ -378,7 +380,7 @@ async function r2Put(key, body, contentType, env) {
   const cfg = awsConfig(env);
   console.log(`[storage-proxy] R2 PUT: ${key}`);
 
-  const url = s3Url(cfg.bucket, cfg.region, key);
+  const url = s3Url(cfg.bucket, cfg.region, key, cfg.endpointUrl);
   const response = await signedFetch({
     method: "PUT",
     url,
@@ -402,7 +404,7 @@ async function r2Delete(key, env) {
   const cfg = awsConfig(env);
   console.log(`[storage-proxy] R2 DELETE: ${key}`);
 
-  const url = s3Url(cfg.bucket, cfg.region, key);
+  const url = s3Url(cfg.bucket, cfg.region, key, cfg.endpointUrl);
   const response = await signedFetch({
     method: "DELETE",
     url,
@@ -428,7 +430,7 @@ async function r2List(prefix, env) {
     queryParams += `&prefix=${encodeURIComponent(prefix)}`;
   }
 
-  const url = `${s3Url(cfg.bucket, cfg.region, null)}?${queryParams}`;
+  const url = `${s3Url(cfg.bucket, cfg.region, null, cfg.endpointUrl)}?${queryParams}`;
   const response = await signedFetch({
     method: "GET",
     url,

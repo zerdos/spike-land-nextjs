@@ -66,7 +66,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // Determine redirect URI based on environment
   const redirectUri = process.env.LINKEDIN_CALLBACK_URL || (() => {
     const baseUrl = process.env.NEXTAUTH_URL ||
-      process.env.VERCEL_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
       "http://localhost:3000";
     return `${
       baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`

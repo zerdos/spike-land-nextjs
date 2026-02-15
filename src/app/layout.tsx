@@ -15,8 +15,6 @@ import { MetaPixel } from "@/components/tracking/MetaPixel";
 import { SessionTracker } from "@/components/tracking/SessionTracker";
 import { Toaster } from "@/components/ui/sonner";
 import { getNonce } from "@/lib/security/csp-nonce-server";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ViewTransitions } from "next-view-transitions";
 
 const geistSans = Geist({
@@ -123,8 +121,6 @@ export default async function RootLayout({
             <CookieConsent />
           </ThemeProvider>
         </ViewTransitions>
-        <Analytics />
-        <SpeedInsights />
         <ConsoleCapture />
         <IframeErrorBridge />
         <MetaPixel nonce={nonce ?? undefined} />

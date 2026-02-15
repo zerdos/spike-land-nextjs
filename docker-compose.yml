@@ -23,12 +23,13 @@ services:
       - ./workers/services:/app/services
       - ./workers/entrypoint.sh:/app/entrypoint.sh
     environment:
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=http://redis-rest-proxy:8079
       - REDIS_TOKEN=
       - DATABASE_URL=postgresql://dev:dev@postgres:5432/spike_land
       - AWS_REGION=us-east-1
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_ENDPOINT_URL=http://localstack:4566
       - DYNAMODB_TABLE=spike-land-kv
       - S3_BUCKET=spike-land-storage
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
@@ -37,7 +38,9 @@ services:
       - JWT_SECRET=${AUTH_SECRET:-dev-secret}
       - AUTH_ISSUER=spike.land
     depends_on:
-      redis:
+      redis-rest-proxy:
+        condition: service_healthy
+      localstack:
         condition: service_healthy
       postgres:
         condition: service_healthy
@@ -76,6 +79,8 @@ services:
       - REDIS_URL=redis://redis:6379
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     command: sh -c "yarn db:migrate:deploy && yarn dev"
     healthcheck:
@@ -127,6 +132,48 @@ services:
       - ci
 
   # ──────────────────────────────────────────────────────────────────────
+  # Infrastructure: LocalStack (S3 + DynamoDB)
+  # ──────────────────────────────────────────────────────────────────────
+  localstack:
+    image: localstack/localstack:3
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3,dynamodb
+      DEFAULT_REGION: us-east-1
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - ./scripts/localstack-init.sh:/etc/localstack/init/ready.d/init.sh
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 3s
+      start_period: 15s
+      retries: 5
+    restart: unless-stopped
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Infrastructure: Redis REST Proxy (Upstash-compatible HTTP interface)
+  # ──────────────────────────────────────────────────────────────────────
+  redis-rest-proxy:
+    build: ./scripts/redis-rest-proxy
+    ports:
+      - "8079:8079"
+    environment:
+      - REDIS_HOST=redis
+      - PORT=8079
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8079').then(r=>process.exit(r.status===405?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ──────────────────────────────────────────────────────────────────────
   # Infrastructure: PostgreSQL
   # ──────────────────────────────────────────────────────────────────────
   postgres:
@@ -168,3 +215,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  localstack_data:

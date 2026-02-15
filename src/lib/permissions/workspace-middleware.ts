@@ -58,7 +58,7 @@ async function getE2EBypassMembership(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
   const isStagingDomain = appUrl === "https://next.spike.land" || appUrl.includes("localhost");
   const isStrictProduction = process.env.NODE_ENV === "production" &&
-    process.env.VERCEL_ENV === "production" &&
+    process.env.APP_ENV === "production" &&
     !isStagingDomain;
 
   const headerBypassEnabled = !isStrictProduction &&

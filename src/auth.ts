@@ -504,7 +504,7 @@ export const auth = async () => {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
   const isStagingDomain = appUrl === "https://next.spike.land" || appUrl.includes("localhost");
   const isProduction = process.env.NODE_ENV === "production" &&
-    process.env.VERCEL_ENV === "production" &&
+    process.env.APP_ENV === "production" &&
     !isStagingDomain;
   const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
 

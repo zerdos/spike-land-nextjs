@@ -1,0 +1,1 @@
+{"name": "redis-rest-proxy", "private": true, "type": "module", "dependencies": {"ioredis": "^5"}}

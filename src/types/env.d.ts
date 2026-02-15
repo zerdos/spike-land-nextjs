@@ -29,10 +29,11 @@ declare global {
       PORT?: string;
       CI?: string;
 
-      // Vercel
+      // Application Environment
+      APP_ENV?: "development" | "staging" | "production";
+
+      // Vercel (legacy - retained for Vercel analytics client)
       VERCEL?: string;
-      VERCEL_ENV?: "development" | "preview" | "production";
-      VERCEL_URL?: string;
       VERCEL_ACCESS_TOKEN?: string;
       VERCEL_PROJECT_ID?: string;
       VERCEL_TEAM_ID?: string;
@@ -188,7 +189,6 @@ declare global {
 
       // Workflow
       WORKFLOW_RUNTIME?: string;
-      STANDALONE?: string;
 
       // Sentry
       SENTRY_AUTH_TOKEN?: string;
@@ -199,7 +199,6 @@ declare global {
       NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE?: string;
       SENTRY_TRACES_SAMPLE_RATE?: string;
       NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE?: string;
-      NEXT_PUBLIC_VERCEL_ENV?: "development" | "preview" | "production";
     }
   }
 }
