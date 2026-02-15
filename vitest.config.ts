@@ -25,7 +25,10 @@ export default defineConfig({
       "src/lib/ab-test/**/*.{test,spec}.{ts,tsx}",
       "src/lib/bazdmeg/**/*.{test,spec}.{ts,tsx}",
       "src/lib/dynamic-pages/**/*.{test,spec}.{ts,tsx}",
+      "src/lib/generate/**/*.{test,spec}.{ts,tsx}",
+      "src/lib/arena/**/*.{test,spec}.{ts,tsx}",
       "src/app/store/**/*.{test,spec}.{ts,tsx}",
+      "src/middleware.{test,spec}.{ts,tsx}",
     ],
     exclude: [
       "**/node_modules/**",

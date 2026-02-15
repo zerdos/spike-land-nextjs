@@ -2619,6 +2619,59 @@ erDiagram
   String changeNote "nullable"
   DateTime createdAt
 }
+"generated_routes" {
+  String id PK
+  String slug UK
+  String originalUrl
+  String title "nullable"
+  String description "nullable"
+  GeneratedRouteStatus status
+  String category "nullable"
+  String codespaceId "nullable"
+  String codespaceUrl "nullable"
+  Json planJson "nullable"
+  String generatedCode "nullable"
+  String bridgemindTaskId "nullable"
+  Int githubIssueNumber "nullable"
+  String requestedById FK "nullable"
+  Int creditsCost
+  String plannerAgentId "nullable"
+  String coderAgentId "nullable"
+  Int viewCount
+  Int generationTimeMs "nullable"
+  Int attempts
+  String lastError "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+  DateTime publishedAt "nullable"
+}
+"route_reviews" {
+  String id PK
+  String routeId FK
+  String reviewerAgentId
+  ReviewPhase phase
+  ReviewDecision decision
+  String feedback "nullable"
+  Float score "nullable"
+  Int eloAtReview
+  Int eloChange "nullable"
+  Boolean eloSettled
+  DateTime createdAt
+}
+"agent_reviewer_elos" {
+  String id PK
+  String agentId UK
+  String agentModel
+  Int elo
+  Int wins
+  Int losses
+  Int draws
+  Int streak
+  Int bestElo
+  Int totalReviews
+  DateTime createdAt
+  DateTime updatedAt
+}
 "campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
 "campaign_briefs" }o--o| "workspaces" : workspace
@@ -2877,6 +2930,8 @@ erDiagram
 "dynamic_pages" }o--o| "dynamic_pages" : parent
 "page_blocks" }o--|| "dynamic_pages" : page
 "page_versions" }o--|| "dynamic_pages" : page
+"generated_routes" }o--o| "users" : requestedBy
+"route_reviews" }o--|| "generated_routes" : route
 ```
 
 ### `users`
@@ -6150,3 +6205,65 @@ Properties as follows:
 - `changedBy`:
 - `changeNote`:
 - `createdAt`:
+
+### `generated_routes`
+
+Properties as follows:
+
+- `id`:
+- `slug`:
+- `originalUrl`:
+- `title`:
+- `description`:
+- `status`:
+- `category`:
+- `codespaceId`:
+- `codespaceUrl`:
+- `planJson`:
+- `generatedCode`:
+- `bridgemindTaskId`:
+- `githubIssueNumber`:
+- `requestedById`:
+- `creditsCost`:
+- `plannerAgentId`:
+- `coderAgentId`:
+- `viewCount`:
+- `generationTimeMs`:
+- `attempts`:
+- `lastError`:
+- `createdAt`:
+- `updatedAt`:
+- `publishedAt`:
+
+### `route_reviews`
+
+Properties as follows:
+
+- `id`:
+- `routeId`:
+- `reviewerAgentId`:
+- `phase`:
+- `decision`:
+- `feedback`:
+- `score`:
+- `eloAtReview`:
+- `eloChange`:
+- `eloSettled`:
+- `createdAt`:
+
+### `agent_reviewer_elos`
+
+Properties as follows:
+
+- `id`:
+- `agentId`:
+- `agentModel`:
+- `elo`:
+- `wins`:
+- `losses`:
+- `draws`:
+- `streak`:
+- `bestElo`:
+- `totalReviews`:
+- `createdAt`:
+- `updatedAt`:

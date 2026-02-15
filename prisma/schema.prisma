@@ -96,6 +96,7 @@ model User {
   agentAuditLogs           AgentAuditLog[]
   agentTrustScores         AgentTrustScore[]
   dynamicPages             DynamicPage[]
+  generatedRoutes          GeneratedRoute[]
 
   @@map("users")
 }
@@ -4616,6 +4617,27 @@ enum CreatedAppStatus {
   FAILED
 }
 
+enum GeneratedRouteStatus {
+  NEW
+  PLANNING
+  PLAN_REVIEW
+  CODING
+  TRANSPILING
+  CODE_REVIEW
+  PUBLISHED
+  FAILED
+}
+
+enum ReviewPhase {
+  PLAN_REVIEW
+  CODE_REVIEW
+}
+
+enum ReviewDecision {
+  APPROVED
+  REJECTED
+}
+
 enum SyncSource {
   BRIDGEMIND
   GITHUB
@@ -5321,4 +5343,75 @@ model PageVersion {
 
   @@index([pageId, version])
   @@map("page_versions")
+}
+
+model GeneratedRoute {
+  id               String               @id @default(cuid())
+  slug             String               @unique
+  originalUrl      String
+  title            String?
+  description      String?
+  status           GeneratedRouteStatus @default(NEW)
+  category         String?
+  codespaceId      String?
+  codespaceUrl     String?
+  planJson         Json?
+  generatedCode    String?
+  bridgemindTaskId String?
+  githubIssueNumber Int?
+  requestedById    String?
+  creditsCost      Int                  @default(36)
+  plannerAgentId   String?
+  coderAgentId     String?
+  viewCount        Int                  @default(0)
+  generationTimeMs Int?
+  attempts         Int                  @default(0)
+  lastError        String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  publishedAt      DateTime?
+
+  requestedBy      User?                @relation(fields: [requestedById], references: [id])
+  reviews          RouteReview[]
+
+  @@index([status])
+  @@index([slug])
+  @@map("generated_routes")
+}
+
+model RouteReview {
+  id              String         @id @default(cuid())
+  routeId         String
+  reviewerAgentId String
+  phase           ReviewPhase
+  decision        ReviewDecision
+  feedback        String?
+  score           Float?
+  eloAtReview     Int
+  eloChange       Int?
+  eloSettled      Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+
+  route           GeneratedRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@index([routeId])
+  @@index([reviewerAgentId])
+  @@map("route_reviews")
+}
+
+model AgentReviewerElo {
+  id           String @id @default(cuid())
+  agentId      String @unique
+  agentModel   String @default("haiku")
+  elo          Int    @default(1200)
+  wins         Int    @default(0)
+  losses       Int    @default(0)
+  draws        Int    @default(0)
+  streak       Int    @default(0)
+  bestElo      Int    @default(1200)
+  totalReviews Int    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("agent_reviewer_elos")
 }
