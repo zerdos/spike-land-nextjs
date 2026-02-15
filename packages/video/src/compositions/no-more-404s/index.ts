@@ -1,9 +1,11 @@
 export { NoMore404s } from "./NoMore404s";
 export { Scene01_Hook } from "./Scene01_Hook";
-export { Scene02_Problem } from "./Scene02_Problem";
-export { Scene03_Pipeline } from "./Scene03_Pipeline";
-export { Scene04_Reviewers } from "./Scene04_Reviewers";
-export { Scene05_Demo } from "./Scene05_Demo";
+export { Scene02_Platform } from "./Scene02_Problem";
+export { Scene03_Codespace } from "./Scene03_Pipeline";
+export { Scene04_LearnIT } from "./Scene04_Reviewers";
+export { Scene05_Generate } from "./Scene05_Demo";
 export { Scene06_BridgeMind } from "./Scene06_BridgeMind";
-export { Scene07_Flywheel } from "./Scene07_Flywheel";
-export { Scene08_EndCard } from "./Scene08_EndCard";
+export { Scene07_BAZDMEG } from "./Scene07_Flywheel";
+export { Scene08_Breakthrough } from "./Scene08_EndCard";
+export { Scene09_Agents } from "./Scene09_Agents";
+export { Scene10_EndCard } from "./Scene10_EndCard";

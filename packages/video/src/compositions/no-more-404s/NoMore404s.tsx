@@ -7,23 +7,27 @@ import { N404_DURATIONS, N404_TIMING } from "../../lib/n404-constants";
 import { getN404SceneAudioEntries } from "../../lib/n404-narration";
 
 import { Scene01_Hook } from "./Scene01_Hook";
-import { Scene02_Problem } from "./Scene02_Problem";
-import { Scene03_Pipeline } from "./Scene03_Pipeline";
-import { Scene04_Reviewers } from "./Scene04_Reviewers";
-import { Scene05_Demo } from "./Scene05_Demo";
+import { Scene02_Platform } from "./Scene02_Problem";
+import { Scene03_Codespace } from "./Scene03_Pipeline";
+import { Scene04_LearnIT } from "./Scene04_Reviewers";
+import { Scene05_Generate } from "./Scene05_Demo";
 import { Scene06_BridgeMind } from "./Scene06_BridgeMind";
-import { Scene07_Flywheel } from "./Scene07_Flywheel";
-import { Scene08_EndCard } from "./Scene08_EndCard";
+import { Scene07_BAZDMEG } from "./Scene07_Flywheel";
+import { Scene08_Breakthrough } from "./Scene08_EndCard";
+import { Scene09_Agents } from "./Scene09_Agents";
+import { Scene10_EndCard } from "./Scene10_EndCard";
 
 const SCENES = [
   { component: Scene01_Hook, duration: N404_DURATIONS.hook },
-  { component: Scene02_Problem, duration: N404_DURATIONS.problem },
-  { component: Scene03_Pipeline, duration: N404_DURATIONS.pipeline },
-  { component: Scene04_Reviewers, duration: N404_DURATIONS.reviewers },
-  { component: Scene05_Demo, duration: N404_DURATIONS.demo },
+  { component: Scene02_Platform, duration: N404_DURATIONS.platform },
+  { component: Scene03_Codespace, duration: N404_DURATIONS.codespace },
+  { component: Scene04_LearnIT, duration: N404_DURATIONS.learnit },
+  { component: Scene05_Generate, duration: N404_DURATIONS.generate },
   { component: Scene06_BridgeMind, duration: N404_DURATIONS.bridgemind },
-  { component: Scene07_Flywheel, duration: N404_DURATIONS.flywheel },
-  { component: Scene08_EndCard, duration: N404_DURATIONS.endCard },
+  { component: Scene07_BAZDMEG, duration: N404_DURATIONS.bazdmeg },
+  { component: Scene08_Breakthrough, duration: N404_DURATIONS.breakthrough },
+  { component: Scene09_Agents, duration: N404_DURATIONS.agents },
+  { component: Scene10_EndCard, duration: N404_DURATIONS.endCard },
 ] as const;
 
 const sceneAudioEntries = getN404SceneAudioEntries();

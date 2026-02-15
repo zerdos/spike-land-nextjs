@@ -43,11 +43,11 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Claude CLI globally
-RUN npm install -g @anthropic-ai/claude-code
+# Install Claude CLI globally (pinned for reproducibility)
+RUN npm install -g @anthropic-ai/claude-code@1.0.17
 
-# Install Playwright browsers
-RUN npx playwright install chromium
+# Install Playwright browsers (pinned for reproducibility)
+RUN npx playwright@1.50.1 install chromium
 
 # Set up working directory
 WORKDIR /app
@@ -62,7 +62,7 @@ RUN corepack enable && npm install
 COPY . .
 
 # Build the CLI
-RUN npm run build || true
+RUN npm run build
 
 # Create live directory for code files
 RUN mkdir -p /app/live

@@ -24,7 +24,7 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "you'd", start: 3.100, end: 3.262 },
       { word: "see", start: 3.297, end: 3.448 },
       { word: "this", start: 3.483, end: 3.680 },
-      { word: "—", start: 3.796, end: 3.855 },
+      { word: "\u2014", start: 3.796, end: 3.855 },
       { word: "a", start: 3.901, end: 3.971 },
       { word: "404.", start: 4.040, end: 4.841 },
       { word: "But", start: 5.224, end: 5.375 },
@@ -41,8 +41,8 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "Instantly.", start: 9.950, end: 10.820 },
     ],
   },
-  problem: {
-    sceneId: "problem",
+  platform: {
+    sceneId: "platform",
     audioDurationSeconds: 15.975,
     words: [
       { word: "The", start: 0.000, end: 0.151 },
@@ -64,7 +64,7 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "a", start: 7.361, end: 7.384 },
       { word: "missed", start: 7.430, end: 7.639 },
       { word: "opportunity", start: 7.663, end: 8.290 },
-      { word: "—", start: 8.336, end: 8.382 },
+      { word: "\u2014", start: 8.336, end: 8.382 },
       { word: "a", start: 8.707, end: 8.742 },
       { word: "question", start: 8.812, end: 9.137 },
       { word: "that", start: 9.172, end: 9.265 },
@@ -88,8 +88,8 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "useful?", start: 15.163, end: 15.975 },
     ],
   },
-  pipeline: {
-    sceneId: "pipeline",
+  codespace: {
+    sceneId: "codespace",
     audioDurationSeconds: 22.291,
     words: [
       { word: "Here's", start: 0.000, end: 0.267 },
@@ -135,7 +135,7 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "app", start: 18.100, end: 18.297 },
       { word: "goes", start: 18.367, end: 18.588 },
       { word: "live", start: 18.657, end: 19.017 },
-      { word: "—", start: 19.087, end: 19.273 },
+      { word: "\u2014", start: 19.087, end: 19.273 },
       { word: "all", start: 19.389, end: 19.551 },
       { word: "in", start: 19.598, end: 19.667 },
       { word: "seconds.", start: 19.725, end: 20.283 },
@@ -147,8 +147,8 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "blindly.", start: 21.513, end: 22.291 },
     ],
   },
-  reviewers: {
-    sceneId: "reviewers",
+  learnit: {
+    sceneId: "learnit",
     audioDurationSeconds: 24.009,
     words: [
       { word: "Two", start: 0.000, end: 0.279 },
@@ -174,7 +174,7 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "an", start: 7.848, end: 7.918 },
       { word: "ELO", start: 8.034, end: 8.382 },
       { word: "rating", start: 8.429, end: 8.800 },
-      { word: "—", start: 9.009, end: 9.056 },
+      { word: "\u2014", start: 9.009, end: 9.056 },
       { word: "like", start: 9.381, end: 9.567 },
       { word: "chess.", start: 9.601, end: 10.147 },
       { word: "Correct", start: 10.530, end: 10.844 },
@@ -191,7 +191,7 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "uses", start: 16.289, end: 16.579 },
       { word: "softmax-weighted", start: 16.649, end: 17.577 },
       { word: "selection", start: 17.624, end: 18.123 },
-      { word: "—", start: 18.274, end: 18.425 },
+      { word: "\u2014", start: 18.274, end: 18.425 },
       { word: "better", start: 18.599, end: 18.843 },
       { word: "reviewers", start: 18.889, end: 19.273 },
       { word: "get", start: 19.319, end: 19.458 },
@@ -206,8 +206,8 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "automatically.", start: 22.964, end: 24.009 },
     ],
   },
-  demo: {
-    sceneId: "demo",
+  generate: {
+    sceneId: "generate",
     audioDurationSeconds: 21.873,
     words: [
       { word: "Watch", start: 0.000, end: 0.255 },
@@ -235,7 +235,7 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "React", start: 13.328, end: 13.665 },
       { word: "app", start: 13.746, end: 13.944 },
       { word: "appears", start: 13.990, end: 14.443 },
-      { word: "—", start: 14.559, end: 14.733 },
+      { word: "\u2014", start: 14.559, end: 14.733 },
       { word: "playable", start: 14.803, end: 15.197 },
       { word: "Tetris,", start: 15.232, end: 15.848 },
       { word: "right", start: 16.057, end: 16.242 },
@@ -295,7 +295,7 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "history", start: 12.527, end: 12.899 },
       { word: "is", start: 12.980, end: 13.131 },
       { word: "auditable", start: 13.212, end: 13.874 },
-      { word: "—", start: 13.932, end: 14.071 },
+      { word: "\u2014", start: 13.932, end: 14.071 },
       { word: "which", start: 14.245, end: 14.466 },
       { word: "agent", start: 14.547, end: 14.872 },
       { word: "generated", start: 14.919, end: 15.395 },
@@ -311,8 +311,8 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "had.", start: 18.448, end: 19.087 },
     ],
   },
-  flywheel: {
-    sceneId: "flywheel",
+  bazdmeg: {
+    sceneId: "bazdmeg",
     audioDurationSeconds: 15.418,
     words: [
       { word: "This", start: 0.000, end: 0.197 },
@@ -341,7 +341,7 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "spike.land", start: 10.890, end: 11.981 },
       { word: "grows", start: 12.051, end: 12.307 },
       { word: "organically", start: 12.365, end: 12.910 },
-      { word: "—", start: 12.980, end: 13.026 },
+      { word: "\u2014", start: 12.980, end: 13.026 },
       { word: "from", start: 13.270, end: 13.433 },
       { word: "the", start: 13.468, end: 13.537 },
       { word: "URLs", start: 13.607, end: 13.978 },
@@ -349,6 +349,16 @@ export const N404_NARRATION_TIMESTAMPS: Record<string, N404SceneTimestamps> = {
       { word: "actually", start: 14.362, end: 14.733 },
       { word: "want.", start: 14.779, end: 15.418 },
     ],
+  },
+  breakthrough: {
+    sceneId: "breakthrough",
+    audioDurationSeconds: 0,
+    words: [],
+  },
+  agents: {
+    sceneId: "agents",
+    audioDurationSeconds: 0,
+    words: [],
   },
   endCard: {
     sceneId: "endCard",

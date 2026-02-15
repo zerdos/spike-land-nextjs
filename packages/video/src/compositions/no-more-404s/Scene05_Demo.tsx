@@ -7,40 +7,45 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { COLORS, SPRING_CONFIGS, TYPOGRAPHY } from "../../lib/constants";
-import { typewriter, progressBar } from "../../lib/animations";
+import { COLORS, SPRING_CONFIGS, TYPOGRAPHY, VERITASIUM_COLORS } from "../../lib/constants";
+import { typewriter } from "../../lib/animations";
+import { FourOhFourSkull } from "../../components/animations/FourOhFourSkull";
+import { RoutePipelineDiagram } from "../../components/diagrams/RoutePipelineDiagram";
+import { ReviewerAgentCard } from "../../components/ui/ReviewerAgentCard";
+import { ELOChartDiagram } from "../../components/diagrams/ELOChartDiagram";
 import { BrowserFrame } from "../../components/mockups/BrowserFrame";
-import { SplitScreenReveal } from "../../components/animations/SplitScreenReveal";
-import { CodeBlock } from "../../components/ui/CodeBlock";
-import { ProgressBar } from "../../components/ui/ProgressBar";
 
-const DEMO_CODE = `export default function Tetris() {
-  const [board, setBoard] = useState(
-    createEmptyBoard()
-  );
-  const [piece, setPiece] = useState(
-    randomPiece()
-  );
-
-  useKeyboard(({ key }) => {
-    if (key === "ArrowLeft") moveLeft();
-    if (key === "ArrowRight") moveRight();
-    if (key === "ArrowDown") drop();
-    if (key === "Space") rotate();
-  });
-
-  return <Board cells={board} />;
-}`;
-
-export const Scene05_Demo: React.FC = () => {
+export const Scene05_Generate: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const demoUrl = "spike.land/games/tetris";
-  const visibleDemoUrl = typewriter(frame, fps, demoUrl, 20, 15);
+  const browserUrl = typewriter(frame, fps, "spike.land/create/anything", 25, 10);
 
-  // Progress bar for generation phase
-  const genProgress = progressBar(frame, fps, 550, 900, 0, 100);
+  // Skull fade out around frame 200
+  const skullOpacity = interpolate(frame, [180, 220], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  // "Building..." text fades in after skull fades out
+  const buildingOpacity = interpolate(frame, [220, 260], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  // Pipeline reveal count: animate from 0 to 6 across frames 400-750
+  const pipelineRevealCount = Math.floor(
+    interpolate(frame, [400, 750], [0, 6], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    }),
+  );
+
+  // "Better reviewers..." text fade-in
+  const betterReviewersOpacity = interpolate(frame, [1050, 1100], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
 
   return (
     <AbsoluteFill
@@ -49,8 +54,8 @@ export const Scene05_Demo: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Browser with URL + "Route doesn't exist" (0-500) */}
-      <Sequence from={0} durationInFrames={500}>
+      {/* Part 1: FourOhFourSkull + BrowserFrame (0-400) */}
+      <Sequence from={0} durationInFrames={400}>
         <AbsoluteFill
           style={{
             display: "flex",
@@ -58,10 +63,10 @@ export const Scene05_Demo: React.FC = () => {
             alignItems: "center",
             justifyContent: "center",
             gap: 40,
-            padding: 80,
+            padding: "60px 80px",
           }}
         >
-          <BrowserFrame url={visibleDemoUrl} width={1400} height={700}>
+          <BrowserFrame url={browserUrl} width={900} height={500}>
             <div
               style={{
                 display: "flex",
@@ -69,207 +74,156 @@ export const Scene05_Demo: React.FC = () => {
                 alignItems: "center",
                 justifyContent: "center",
                 height: "100%",
-                gap: 20,
                 background: `linear-gradient(135deg, ${COLORS.darkBg}, #1a0f1a)`,
+                position: "relative",
               }}
             >
-              {/* Initial 404 state */}
-              <div
-                style={{
-                  fontSize: 96,
-                  fontWeight: 900,
-                  color: COLORS.error,
-                  fontFamily: TYPOGRAPHY.fontFamily.mono,
-                  opacity: interpolate(frame, [60, 80, 200, 230], [0, 1, 1, 0], {
-                    extrapolateLeft: "clamp",
-                    extrapolateRight: "clamp",
-                  }),
-                  textShadow: `0 0 40px ${COLORS.error}50`,
-                }}
-              >
-                404
-              </div>
-              <div
-                style={{
-                  fontSize: 24,
-                  color: COLORS.textMuted,
-                  opacity: interpolate(frame, [80, 100, 200, 230], [0, 1, 1, 0], {
-                    extrapolateLeft: "clamp",
-                    extrapolateRight: "clamp",
-                  }),
-                }}
-              >
-                Route doesn&apos;t exist... yet
+              {/* 404 Skull */}
+              <div style={{ opacity: skullOpacity }}>
+                <FourOhFourSkull delay={0} />
               </div>
 
-              {/* Generation activating */}
+              {/* "Building..." text replaces skull */}
               <div
                 style={{
-                  fontSize: 32,
-                  fontWeight: 700,
-                  color: COLORS.cyan,
-                  fontFamily: TYPOGRAPHY.fontFamily.mono,
-                  opacity: interpolate(frame, [250, 280], [0, 1], {
-                    extrapolateLeft: "clamp",
-                    extrapolateRight: "clamp",
-                  }),
-                  textShadow: `0 0 30px ${COLORS.cyan}50`,
+                  position: "absolute",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 16,
+                  opacity: buildingOpacity,
                 }}
               >
-                Generation Pipeline Activated
+                <div
+                  style={{
+                    fontSize: 48,
+                    fontWeight: 800,
+                    color: COLORS.cyan,
+                    fontFamily: TYPOGRAPHY.fontFamily.mono,
+                    textShadow: `0 0 40px ${COLORS.cyan}60`,
+                  }}
+                >
+                  Building...
+                </div>
+                {/* Animated dots / spinner bar */}
+                <div
+                  style={{
+                    width: 200,
+                    height: 4,
+                    borderRadius: 2,
+                    background: `${COLORS.cyan}30`,
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 80,
+                      height: 4,
+                      borderRadius: 2,
+                      background: COLORS.cyan,
+                      transform: `translateX(${interpolate(
+                        frame % 60,
+                        [0, 60],
+                        [-80, 200],
+                      )}px)`,
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </BrowserFrame>
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: Split screen - code generation left, progress right (500-1000) */}
-      <Sequence from={500} durationInFrames={500}>
-        <SplitScreenReveal
-          leftContent={
-            <AbsoluteFill
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                background: `linear-gradient(135deg, ${COLORS.darkBg}, #0f0f1a)`,
-                padding: 40,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: TYPOGRAPHY.fontSize.lg,
-                  fontWeight: 600,
-                  color: COLORS.textSecondary,
-                  marginBottom: 20,
-                }}
-              >
-                Code Generation
-              </div>
-              <div style={{ width: "90%" }}>
-                <CodeBlock
-                  code={DEMO_CODE}
-                  language="tsx"
-                  borderColor={COLORS.cyan}
-                  delay={520}
-                  typingSpeed={50}
-                />
-              </div>
-            </AbsoluteFill>
-          }
-          rightContent={
-            <AbsoluteFill
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                background: `linear-gradient(135deg, ${COLORS.darkBg}, #0f1a0f)`,
-                padding: 40,
-                gap: 30,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: TYPOGRAPHY.fontSize.lg,
-                  fontWeight: 600,
-                  color: COLORS.textSecondary,
-                  marginBottom: 10,
-                }}
-              >
-                Build Progress
-              </div>
-              <div style={{ width: "80%" }}>
-                <ProgressBar
-                  progress={genProgress}
-                  label="Generating..."
-                  delay={530}
-                  color={COLORS.cyan}
-                />
-              </div>
-              <div style={{ width: "80%", marginTop: 20 }}>
-                <ProgressBar
-                  progress={Math.max(0, genProgress - 30)}
-                  label="Reviewing..."
-                  delay={600}
-                  color={COLORS.purple}
-                />
-              </div>
-              <div style={{ width: "80%", marginTop: 20 }}>
-                <ProgressBar
-                  progress={Math.max(0, genProgress - 60)}
-                  label="Transpiling..."
-                  delay={670}
-                  color={COLORS.amber}
-                />
-              </div>
-            </AbsoluteFill>
-          }
-          delay={510}
-        />
-      </Sequence>
-
-      {/* Part 3: Browser showing completed Tetris app (1000-1500) */}
-      <Sequence from={1000} durationInFrames={500}>
+      {/* Part 2: Six-Stage Pipeline (400-800) */}
+      <Sequence from={400} durationInFrames={400}>
         <AbsoluteFill
           style={{
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: 80,
+            gap: 60,
+            padding: "80px 60px",
           }}
         >
-          <BrowserFrame url="spike.land/games/tetris" width={1400} height={750}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                background: `linear-gradient(135deg, ${COLORS.darkBg}, #0f1a0f)`,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 20,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 96,
-                    fontWeight: 800,
-                    color: COLORS.success,
-                    fontFamily: TYPOGRAPHY.fontFamily.mono,
-                    textShadow: `0 0 40px ${COLORS.success}60, 0 0 80px ${COLORS.success}30`,
-                    transform: `scale(${spring({
-                      frame: frame - 1020,
-                      fps,
-                      config: SPRING_CONFIGS.bouncy,
-                    })})`,
-                  }}
-                >
-                  TETRIS
-                </div>
-                <div
-                  style={{
-                    fontSize: 20,
-                    color: COLORS.success,
-                    fontFamily: TYPOGRAPHY.fontFamily.mono,
-                    opacity: interpolate(frame, [1060, 1080], [0, 1], {
-                      extrapolateLeft: "clamp",
-                      extrapolateRight: "clamp",
-                    }),
-                  }}
-                >
-                  Live and playable in the browser
-                </div>
-              </div>
-            </div>
-          </BrowserFrame>
+          <div
+            style={{
+              fontSize: TYPOGRAPHY.fontSize["4xl"],
+              fontWeight: 700,
+              color: COLORS.textPrimary,
+              opacity: spring({
+                frame: frame - 410,
+                fps,
+                config: SPRING_CONFIGS.smooth,
+              }),
+            }}
+          >
+            Six-Stage Pipeline
+          </div>
+
+          <RoutePipelineDiagram
+            revealCount={pipelineRevealCount}
+            delay={420}
+          />
+        </AbsoluteFill>
+      </Sequence>
+
+      {/* Part 3: Reviewer Cards + ELO Chart (800-1200) */}
+      <Sequence from={800} durationInFrames={400}>
+        <AbsoluteFill
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            gap: 40,
+            padding: "60px 60px",
+          }}
+        >
+          {/* Two reviewer cards side by side */}
+          <div
+            style={{
+              display: "flex",
+              gap: 40,
+              justifyContent: "center",
+            }}
+          >
+            <ReviewerAgentCard
+              name="Plan Reviewer"
+              model="claude-opus-4-6"
+              elo={1650}
+              wins={142}
+              losses={28}
+              color={VERITASIUM_COLORS.planning}
+              delay={810}
+            />
+            <ReviewerAgentCard
+              name="Code Reviewer"
+              model="claude-sonnet-4-5"
+              elo={1420}
+              wins={98}
+              losses={52}
+              color={COLORS.amber}
+              delay={830}
+            />
+          </div>
+
+          {/* ELO Chart */}
+          <ELOChartDiagram delay={870} />
+
+          {/* "Better reviewers get selected more often" */}
+          <div
+            style={{
+              fontSize: TYPOGRAPHY.fontSize["2xl"],
+              fontWeight: 600,
+              color: COLORS.textSecondary,
+              textAlign: "center",
+              opacity: betterReviewersOpacity,
+            }}
+          >
+            Better reviewers get selected more often
+          </div>
         </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>

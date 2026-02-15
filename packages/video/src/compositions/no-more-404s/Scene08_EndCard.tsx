@@ -3,18 +3,15 @@ import {
   AbsoluteFill,
   interpolate,
   Sequence,
-  spring,
   useCurrentFrame,
-  useVideoConfig,
 } from "remotion";
-import { COLORS, SPRING_CONFIGS, TYPOGRAPHY } from "../../lib/constants";
-import { SpikeLandLogo } from "../../components/branding/SpikeLandLogo";
-import { GradientMesh } from "../../components/branding/GradientMesh";
+import { COLORS, TYPOGRAPHY } from "../../lib/constants";
 import { KineticText } from "../../components/ui/KineticText";
+import { ComparisonTable } from "../../components/diagrams/ComparisonTable";
+import { BarChart } from "../../components/ui/BarChart";
 
-export const Scene08_EndCard: React.FC = () => {
+export const Scene08_Breakthrough: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
 
   return (
     <AbsoluteFill
@@ -23,91 +20,103 @@ export const Scene08_EndCard: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Logo with gradient mesh (0-300) */}
-      <Sequence from={0} durationInFrames={300}>
-        <AbsoluteFill>
-          <GradientMesh animationSpeed={0.02} opacity={0.8} />
-          <AbsoluteFill
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <SpikeLandLogo size={200} delay={10} />
-          </AbsoluteFill>
+      {/* Part 1: The Breakthrough - ComparisonTable (0-350) */}
+      <Sequence from={0} durationInFrames={350}>
+        <AbsoluteFill
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 40,
+          }}
+        >
+          <KineticText
+            text="The Breakthrough"
+            fontSize={64}
+            color={COLORS.textPrimary}
+            type="reveal"
+            delay={10}
+          />
+          <ComparisonTable
+            delay={20}
+            rows={[
+              { label: "E2E Test", before: "30-300s", after: "<1ms" },
+              { label: "CI Suite", before: "45 min", after: "3 min" },
+              { label: "CI Shards", before: "1", after: "4 parallel" },
+              { label: "Dev Setup", before: "5 min", after: "<1s" },
+              { label: "Build Time", before: "30 min", after: "10s" },
+            ]}
+          />
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: Tagline (300-600) */}
-      <Sequence from={300} durationInFrames={300}>
-        <AbsoluteFill>
-          <GradientMesh animationSpeed={0.02} opacity={0.6} />
-          <AbsoluteFill
+      {/* Part 2: BarChart - Speedup Factors (350-700) */}
+      <Sequence from={350} durationInFrames={350}>
+        <AbsoluteFill
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 40,
+          }}
+        >
+          <div
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 30,
+              fontSize: TYPOGRAPHY.fontSize["4xl"],
+              fontWeight: 700,
+              color: COLORS.textPrimary,
+              textAlign: "center",
+              opacity: interpolate(frame, [360, 380], [0, 1], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+              }),
             }}
           >
-            <SpikeLandLogo size={120} delay={0} animate={false} />
-            <KineticText
-              text="Every URL is an app waiting to be born"
-              fontSize={48}
-              color={COLORS.cyan}
-              type="reveal"
-              delay={320}
-            />
-          </AbsoluteFill>
+            Speedup Factors
+          </div>
+          <BarChart
+            data={[
+              { label: "E2E", value: 300000, color: COLORS.cyan },
+              { label: "CI", value: 15, color: COLORS.purple },
+              { label: "Dev", value: 300, color: COLORS.amber },
+              { label: "Build", value: 180, color: COLORS.success },
+            ]}
+            maxValue={300000}
+            height={350}
+            barWidth={120}
+            gap={40}
+            delay={370}
+          />
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 3: Credits and CTA (600-900) */}
-      <Sequence from={600} durationInFrames={300}>
-        <AbsoluteFill>
-          <GradientMesh animationSpeed={0.015} opacity={0.5} />
-          <AbsoluteFill
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 40,
-            }}
-          >
-            <SpikeLandLogo size={100} delay={0} animate={false} />
-            <div
-              style={{
-                fontSize: TYPOGRAPHY.fontSize["2xl"],
-                fontWeight: 600,
-                color: COLORS.textSecondary,
-                textAlign: "center",
-                lineHeight: 1.8,
-                opacity: spring({
-                  frame: frame - 620,
-                  fps,
-                  config: SPRING_CONFIGS.smooth,
-                }),
-              }}
-            >
-              Open source on GitHub
-            </div>
-            <div
-              style={{
-                fontSize: TYPOGRAPHY.fontSize.xl,
-                color: COLORS.textMuted,
-                textAlign: "center",
-                opacity: interpolate(frame, [680, 710], [0, 1], {
-                  extrapolateLeft: "clamp",
-                  extrapolateRight: "clamp",
-                }),
-              }}
-            >
-              Built for the BridgeMind Vibeathon 2026
-            </div>
-          </AbsoluteFill>
+      {/* Part 3: Dramatic closing (700-1050) */}
+      <Sequence from={700} durationInFrames={350}>
+        <AbsoluteFill
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 30,
+          }}
+        >
+          <KineticText
+            text="Your half-hour build"
+            fontSize={56}
+            color={COLORS.textPrimary}
+            type="reveal"
+            delay={720}
+          />
+          <KineticText
+            text="gets to ten seconds"
+            fontSize={72}
+            color={COLORS.cyan}
+            type="scale"
+            delay={780}
+          />
         </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>

@@ -21,14 +21,25 @@ dotenv.config({ path: envPath });
 // Narration text (duplicated from n404-narration.ts to avoid @/ alias)
 // ---------------------------------------------------------------------------
 const N404_NARRATION_TEXT: Record<string, string> = {
-  hook: `You type a URL. The page doesn't exist. Normally, you'd see this — a 404. But on spike.land, something different happens. The URL becomes an app. Instantly.`,
-  problem: `The internet is full of dead ends. Broken links, missing pages, abandoned projects. Every 404 is a missed opportunity — a question that went unanswered, a tool that was never built. What if instead of nothing, every URL led somewhere useful?`,
-  pipeline: `Here's how it works. When you visit an unknown URL on spike.land, an AI agent analyzes the path. /games/tetris tells it to build a game. /tools/calculator means a calculator. The agent generates React code, transpiles it with esbuild, and the app goes live — all in seconds. But we don't ship code blindly.`,
-  reviewers: `Two AI reviewer agents inspect every generated app. One reviews the plan. The other reviews the code. Each reviewer has an ELO rating — like chess. Correct approvals raise their score. Wrong approvals lower it. The system uses softmax-weighted selection — better reviewers get chosen more often. Over time, review quality improves automatically.`,
-  demo: `Watch it happen. A user visits spike.land/games/tetris. The route doesn't exist. The generation pipeline activates. Code is written, reviewed, transpiled. A live React app appears — playable Tetris, right in the browser. The first visitor waits a few seconds. Every visitor after gets it instantly from cache.`,
-  bridgemind: `Every generated page is tracked. A ticket is automatically created on BridgeMind with the URL, generation metadata, and reviewer decisions. These sync to GitHub Issues and Projects. The entire history is auditable — which agent generated it, which reviewers approved it, and what ELO they had.`,
-  flywheel: `This creates a flywheel. More visitors generate more pages. Reviewer ELOs improve. The platform gets richer. Every URL becomes a permanent, cached application. spike.land grows organically — from the URLs people actually want.`,
-  endCard: `spike.land. Every URL is an app waiting to be born. Open source on GitHub. Built for the BridgeMind Vibeathon 2026.`,
+  hook: `Your build takes thirty minutes. Ours takes ten seconds. Your tests run for an hour. Ours finish before you blink. This is not a demo. This is not a prototype. This is spike.land — and this hackathon changed everything about how we build software.`,
+
+  platform: `spike.land is four products in one. A codespace where you describe an app and AI builds it live. A blog with syntax highlighting and read-aloud. A knowledge wiki that generates content on any topic. And a dynamic page generator where every URL becomes a working application. Let me show you each one.`,
+
+  codespace: `In the codespace, you describe what you want in plain English. The AI generates React code in real-time. You see a live preview updating as the code is written. Version history tracks every change. Server-sent events broadcast updates to every connected client. It is a full IDE — chat on the left, live app on the right.`,
+
+  learnit: `LearnIT is an AI-powered wiki. Type any topic — Python lambda functions, quantum computing, Byzantine fault tolerance — and the system generates a complete article. Streaming. With wiki-style links that build a knowledge graph. The blog supports MDX, syntax highlighting, and text-to-speech. Every piece of content is generated, not curated.`,
+
+  generate: `Visit any URL that does not exist, and the system builds it. The pipeline has six stages — planning, plan review, coding, transpiling, code review, published. Two AI reviewers inspect every generation. Each has an ELO rating — like chess. Better reviewers get selected more often via softmax weighting. The system gets smarter with every page it generates.`,
+
+  bridgemind: `BridgeMind and this hackathon made our project adopt MCPs. Before this event, spike.land was a monolith with manual deployments and slow tests. The hackathon forced us to think in tools — forty-plus MCP tools across thirty categories. Progressive disclosure: five gateway tools, everything else discoverable. One hundred sixty-four tool files. Seventy-nine test files. Nearly one to one.`,
+
+  bazdmeg: `The bazdmeg method came from this hackathon. Seven principles. One: Requirements are the product — if you cannot explain the problem, the AI will hallucinate. Two: Discipline before automation — five gates must pass before any AI touches your code. Three: Context is architecture — five layers, cached and optimized. Four: Test the lies — the hourglass model: seventy percent MCP tool tests, twenty percent E2E, ten percent UI. Five: Orchestrate, do not operate. Six: Trust is earned in pull requests, not promises. Seven: Own what you ship — if you cannot explain it at 3 AM, do not deploy it.`,
+
+  breakthrough: `This is huge. We are able to run end-to-end tests in unit test time. A traditional E2E test takes thirty to three hundred seconds. Our MCP tool tests take less than one millisecond. The full CI suite went from forty-five minutes to three minutes. Four parallel shards. Dev iteration from five minutes of setup down to under one second. Your half-hour build gets to ten seconds.`,
+
+  agents: `This video was built by eight agents working in parallel. One handled constants and narration. Two built the demo scenes. One built the methodology scenes. One handled the metrics. One coordinated dependencies. The same MCP architecture that powers spike.land powered the creation of this video. Orchestrate, do not operate.`,
+
+  endCard: `spike.land. Open source on GitHub. Every URL is an app waiting to be born. The bazdmeg method is documented, the MCP tools are tested, and the platform is live. Try it. Star it. Fork it. Built with gratitude for BridgeMind and the Vibeathon twenty twenty-six.`,
 };
 
 // ---------------------------------------------------------------------------

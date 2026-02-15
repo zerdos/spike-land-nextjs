@@ -3,17 +3,19 @@ import {
   AbsoluteFill,
   interpolate,
   Sequence,
+  spring,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { COLORS, TYPOGRAPHY } from "../../lib/constants";
-import { GlitchText } from "../../components/ui/GlitchText";
+import { COLORS, SPRING_CONFIGS, TYPOGRAPHY } from "../../lib/constants";
 import { KineticText } from "../../components/ui/KineticText";
+import { PlatformCard } from "../../components/ui/PlatformCard";
+import { BrowserFrame } from "../../components/mockups/BrowserFrame";
 import { GradientMesh } from "../../components/branding/GradientMesh";
 
-export const Scene02_Problem: React.FC = () => {
+export const Scene02_Platform: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps: _fps } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
   return (
     <AbsoluteFill
@@ -22,85 +24,141 @@ export const Scene02_Problem: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Stacked 404 error messages with glitch (0-350) */}
-      <Sequence from={0} durationInFrames={350}>
+      {/* Part 1: Four platform cards (0-400) */}
+      <Sequence from={0} durationInFrames={400}>
         <AbsoluteFill
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            gap: 40,
+            gap: 24,
+            padding: 60,
           }}
         >
-          {[
-            { text: "PAGE NOT FOUND", size: 72, d: 10, color: COLORS.error },
-            { text: "404", size: 140, d: 40, color: COLORS.error },
-            { text: "DEAD LINK", size: 56, d: 70, color: COLORS.textMuted },
-            { text: "CONNECTION REFUSED", size: 40, d: 100, color: COLORS.textMuted },
-          ].map((item, i) => {
-            const itemOpacity = interpolate(
-              frame,
-              [item.d, item.d + 20],
-              [0, 1],
-              { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-            );
+          <div style={{ marginBottom: 30 }}>
+            <KineticText
+              text="Four Products, One Platform"
+              fontSize={56}
+              color={COLORS.textPrimary}
+              type="reveal"
+              delay={10}
+            />
+          </div>
+          <PlatformCard
+            icon="⌨️"
+            title="Codespace"
+            subtitle="Describe → AI builds live"
+            color={COLORS.cyan}
+            delay={30}
+          />
+          <PlatformCard
+            icon="📝"
+            title="Blog"
+            subtitle="Syntax + read-aloud"
+            color={COLORS.purple}
+            delay={50}
+          />
+          <PlatformCard
+            icon="📚"
+            title="LearnIT Wiki"
+            subtitle="AI-generated knowledge"
+            color={COLORS.amber}
+            delay={70}
+          />
+          <PlatformCard
+            icon="🔗"
+            title="Dynamic Pages"
+            subtitle="Every URL → working app"
+            color={COLORS.success}
+            delay={90}
+          />
+        </AbsoluteFill>
+      </Sequence>
 
-            return (
+      {/* Part 2: Browser frame mockup (400-800) */}
+      <Sequence from={400} durationInFrames={400}>
+        <AbsoluteFill
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 60,
+          }}
+        >
+          <div
+            style={{
+              opacity: spring({
+                frame: frame - 410,
+                fps,
+                config: SPRING_CONFIGS.smooth,
+              }),
+              transform: `scale(${interpolate(
+                spring({
+                  frame: frame - 410,
+                  fps,
+                  config: SPRING_CONFIGS.smooth,
+                }),
+                [0, 1],
+                [0.95, 1],
+              )})`,
+              width: 920,
+              height: 700,
+            }}
+          >
+            <BrowserFrame url="spike.land" width={920} height={700}>
               <div
-                key={i}
                 style={{
-                  opacity: itemOpacity,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "100%",
+                  gap: 30,
+                  background: `linear-gradient(135deg, ${COLORS.darkBg}, #1a1a2e)`,
                 }}
               >
-                <GlitchText
-                  text={item.text}
-                  fontSize={item.size}
-                  color={item.color}
-                  glitchIntensity={6}
-                  isGlitching={frame > item.d + 10 && frame < item.d + 200}
-                  delay={item.d}
-                />
+                <div
+                  style={{
+                    fontSize: 72,
+                    fontWeight: 700,
+                    fontFamily: TYPOGRAPHY.fontFamily.mono,
+                    color: COLORS.textPrimary,
+                    opacity: interpolate(frame, [420, 450], [0, 1], {
+                      extrapolateLeft: "clamp",
+                      extrapolateRight: "clamp",
+                    }),
+                  }}
+                >
+                  spike<span style={{ color: COLORS.amber }}>.land</span>
+                </div>
+                <div
+                  style={{
+                    fontSize: 28,
+                    color: COLORS.textSecondary,
+                    fontWeight: 500,
+                    textAlign: "center",
+                    maxWidth: 700,
+                    opacity: interpolate(frame, [470, 510], [0, 1], {
+                      extrapolateLeft: "clamp",
+                      extrapolateRight: "clamp",
+                    }),
+                  }}
+                >
+                  Every URL is an app waiting to be born
+                </div>
               </div>
-            );
-          })}
+            </BrowserFrame>
+          </div>
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: Stats and missed opportunity text (350-700) */}
-      <Sequence from={350} durationInFrames={350}>
-        <AbsoluteFill
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 60,
-          }}
-        >
-          <KineticText
-            text="Billions of broken links"
-            fontSize={72}
-            color={COLORS.textPrimary}
-            type="reveal"
-            delay={360}
-          />
-          <KineticText
-            text="Every 404 is a missed opportunity"
-            fontSize={48}
-            color={COLORS.amber}
-            type="slide"
-            delay={430}
-          />
-        </AbsoluteFill>
-      </Sequence>
-
-      {/* Part 3: The question with gradient mesh (700-1050) */}
-      <Sequence from={700} durationInFrames={350}>
+      {/* Part 3: Closing statement (800-1200) */}
+      <Sequence from={800} durationInFrames={400}>
         <AbsoluteFill>
           <GradientMesh
             animationSpeed={0.02}
-            opacity={interpolate(frame, [700, 760], [0, 0.6], {
+            opacity={interpolate(frame, [800, 860], [0, 0.8], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
             })}
@@ -108,25 +166,16 @@ export const Scene02_Problem: React.FC = () => {
           <AbsoluteFill
             style={{
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 40,
             }}
           >
             <KineticText
-              text="What if every URL"
+              text="Let me show you each one"
               fontSize={64}
               color={COLORS.textPrimary}
-              type="reveal"
-              delay={720}
-            />
-            <KineticText
-              text="led somewhere useful?"
-              fontSize={64}
-              color={COLORS.cyan}
               type="scale"
-              delay={790}
+              delay={830}
             />
           </AbsoluteFill>
         </AbsoluteFill>

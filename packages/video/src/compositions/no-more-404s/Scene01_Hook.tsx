@@ -8,18 +8,27 @@ import {
   useVideoConfig,
 } from "remotion";
 import { COLORS, SPRING_CONFIGS, TYPOGRAPHY } from "../../lib/constants";
-import { typewriter } from "../../lib/animations";
-import { BrowserFrame } from "../../components/mockups/BrowserFrame";
-import { FourOhFourSkull } from "../../components/animations/FourOhFourSkull";
+import { fadeIn } from "../../lib/animations";
 import { KineticText } from "../../components/ui/KineticText";
+import { GlitchText } from "../../components/ui/GlitchText";
 import { GradientMesh } from "../../components/branding/GradientMesh";
+import { SpikeLandLogo } from "../../components/branding/SpikeLandLogo";
 
 export const Scene01_Hook: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const url = "spike.land/games/tetris";
-  const visibleUrl = typewriter(frame, fps, url, 20, 15);
+  // Part 1: Countdown from 30:00 (1800s) to 0:10 (10s)
+  const countdownProgress = interpolate(frame, [0, 280], [1800, 10], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const totalSeconds = Math.round(countdownProgress);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const timerDisplay = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+  const subtitleOpacity = fadeIn(frame, fps, 0.8, 30);
 
   return (
     <AbsoluteFill
@@ -28,64 +37,87 @@ export const Scene01_Hook: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: Browser frame with typewriter URL (0-250) */}
-      <Sequence from={0} durationInFrames={250}>
+      {/* Part 1: Countdown timer (0-300) */}
+      <Sequence from={0} durationInFrames={300}>
         <AbsoluteFill
           style={{
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: 80,
+            gap: 30,
           }}
         >
-          <BrowserFrame url={visibleUrl} width={1400} height={750}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                background: `linear-gradient(135deg, ${COLORS.darkBg}, #1a1a2e)`,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 72,
-                  fontWeight: 700,
-                  color: COLORS.textMuted,
-                  fontFamily: TYPOGRAPHY.fontFamily.mono,
-                  opacity: interpolate(frame, [80, 110], [0, 1], {
-                    extrapolateLeft: "clamp",
-                    extrapolateRight: "clamp",
-                  }),
-                }}
-              >
-                Loading...
-              </div>
-            </div>
-          </BrowserFrame>
+          <div
+            style={{
+              fontSize: 120,
+              fontWeight: 700,
+              fontFamily: TYPOGRAPHY.fontFamily.mono,
+              color: COLORS.cyan,
+              letterSpacing: "0.05em",
+              textShadow: `0 0 40px ${COLORS.cyan}60, 0 0 80px ${COLORS.cyan}30`,
+            }}
+          >
+            {timerDisplay}
+          </div>
+          <div
+            style={{
+              fontSize: 32,
+              color: COLORS.textSecondary,
+              opacity: subtitleOpacity,
+              fontWeight: 500,
+            }}
+          >
+            Your build time
+          </div>
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: 404 skull transforms into live app (250-500) */}
-      <Sequence from={250} durationInFrames={250}>
+      {/* Part 2: Bold statements (300-600) */}
+      <Sequence from={300} durationInFrames={300}>
         <AbsoluteFill
           style={{
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            gap: 50,
           }}
         >
-          <FourOhFourSkull delay={0} />
+          <GlitchText
+            text="This is not a demo"
+            fontSize={64}
+            color={COLORS.textPrimary}
+            glitchIntensity={4}
+            isGlitching={frame > 310 && frame < 500}
+            delay={310}
+          />
+          <GlitchText
+            text="This is not a prototype"
+            fontSize={64}
+            color={COLORS.textPrimary}
+            glitchIntensity={4}
+            isGlitching={frame > 360 && frame < 520}
+            delay={360}
+          />
+          <div style={{ marginTop: 20 }}>
+            <KineticText
+              text="This is spike.land"
+              fontSize={80}
+              color={COLORS.cyan}
+              type="scale"
+              delay={430}
+            />
+          </div>
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 3: Tagline with gradient mesh (500-750) */}
-      <Sequence from={500} durationInFrames={250}>
+      {/* Part 3: Logo + tagline (600-900) */}
+      <Sequence from={600} durationInFrames={300}>
         <AbsoluteFill>
           <GradientMesh
             animationSpeed={0.015}
-            opacity={interpolate(frame, [500, 560], [0, 1], {
+            opacity={interpolate(frame, [600, 660], [0, 1], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
             })}
@@ -96,37 +128,30 @@ export const Scene01_Hook: React.FC = () => {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 30,
+              gap: 40,
             }}
           >
+            <SpikeLandLogo size={140} delay={620} />
             <KineticText
-              text="Every URL is an app"
-              fontSize={80}
+              text="No More 404s"
+              fontSize={72}
               color={COLORS.textPrimary}
-              type="reveal"
-              delay={520}
-            />
-            <KineticText
-              text="waiting to be born"
-              fontSize={80}
-              color={COLORS.cyan}
               type="scale"
-              delay={580}
+              delay={670}
             />
             <div
               style={{
-                marginTop: 30,
-                fontSize: 24,
+                fontSize: 28,
                 color: COLORS.textSecondary,
-                fontFamily: TYPOGRAPHY.fontFamily.sans,
+                fontWeight: 500,
                 opacity: spring({
-                  frame: frame - 640,
+                  frame: frame - 720,
                   fps,
                   config: SPRING_CONFIGS.smooth,
                 }),
               }}
             >
-              No More 404s
+              Vibeathon 2026
             </div>
           </AbsoluteFill>
         </AbsoluteFill>

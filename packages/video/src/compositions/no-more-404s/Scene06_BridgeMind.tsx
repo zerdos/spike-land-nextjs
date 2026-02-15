@@ -3,17 +3,23 @@ import {
   AbsoluteFill,
   interpolate,
   Sequence,
+  spring,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { COLORS, TYPOGRAPHY } from "../../lib/constants";
-import { BridgeMindBoardView } from "../../components/mockups/BridgeMindBoardView";
-import { GitHubSyncFlow } from "../../components/diagrams/GitHubSyncFlow";
-import { ChatBubble } from "../../components/ui/ChatBubble";
+import { COLORS, SPRING_CONFIGS, TYPOGRAPHY } from "../../lib/constants";
+import { countUp } from "../../lib/animations";
+import { KineticText } from "../../components/ui/KineticText";
+import { GlassmorphismCard } from "../../components/ui/GlassmorphismCard";
+
+const CLAMP = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
+
+const beforeItems = ["Monolith", "Manual deploys", "Slow tests"];
+const afterItems = ["40+ MCP Tools", "30 Categories", "Progressive Disclosure"];
 
 export const Scene06_BridgeMind: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps: _fps } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
   return (
     <AbsoluteFill
@@ -22,7 +28,7 @@ export const Scene06_BridgeMind: React.FC = () => {
         fontFamily: TYPOGRAPHY.fontFamily.sans,
       }}
     >
-      {/* Part 1: BridgeMind board view (0-350) */}
+      {/* Part 1: Before/After comparison (0-350) */}
       <Sequence from={0} durationInFrames={350}>
         <AbsoluteFill
           style={{
@@ -30,27 +36,95 @@ export const Scene06_BridgeMind: React.FC = () => {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            gap: 30,
+            gap: 40,
+            padding: "60px 40px",
           }}
         >
+          <KineticText
+            text="BridgeMind × MCP"
+            fontSize={TYPOGRAPHY.fontSize["5xl"]}
+            type="reveal"
+            delay={10}
+          />
+
           <div
             style={{
-              fontSize: TYPOGRAPHY.fontSize["4xl"],
-              fontWeight: 700,
-              color: COLORS.textPrimary,
-              opacity: interpolate(frame, [10, 30], [0, 1], {
-                extrapolateLeft: "clamp",
-                extrapolateRight: "clamp",
-              }),
+              display: "flex",
+              flexDirection: "row",
+              gap: 30,
+              marginTop: 40,
             }}
           >
-            BridgeMind Project Board
+            <GlassmorphismCard width={450} color={COLORS.error} delay={30}>
+              <div style={{ padding: 30 }}>
+                <div
+                  style={{
+                    fontSize: TYPOGRAPHY.fontSize["2xl"],
+                    fontWeight: 700,
+                    color: COLORS.error,
+                    marginBottom: 20,
+                  }}
+                >
+                  Before
+                </div>
+                {beforeItems.map((item, i) => (
+                  <div
+                    key={item}
+                    style={{
+                      fontSize: TYPOGRAPHY.fontSize.xl,
+                      color: COLORS.textSecondary,
+                      marginBottom: 12,
+                      opacity: interpolate(
+                        frame,
+                        [50 + i * 15, 65 + i * 15],
+                        [0, 1],
+                        CLAMP,
+                      ),
+                    }}
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </GlassmorphismCard>
+
+            <GlassmorphismCard width={450} color={COLORS.success} delay={50}>
+              <div style={{ padding: 30 }}>
+                <div
+                  style={{
+                    fontSize: TYPOGRAPHY.fontSize["2xl"],
+                    fontWeight: 700,
+                    color: COLORS.success,
+                    marginBottom: 20,
+                  }}
+                >
+                  After
+                </div>
+                {afterItems.map((item, i) => (
+                  <div
+                    key={item}
+                    style={{
+                      fontSize: TYPOGRAPHY.fontSize.xl,
+                      color: COLORS.textSecondary,
+                      marginBottom: 12,
+                      opacity: interpolate(
+                        frame,
+                        [70 + i * 15, 85 + i * 15],
+                        [0, 1],
+                        CLAMP,
+                      ),
+                    }}
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </GlassmorphismCard>
           </div>
-          <BridgeMindBoardView delay={20} />
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 2: GitHub sync flow diagram (350-700) */}
+      {/* Part 2: Animated metric counters (350-700) */}
       <Sequence from={350} durationInFrames={350}>
         <AbsoluteFill
           style={{
@@ -58,87 +132,147 @@ export const Scene06_BridgeMind: React.FC = () => {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            gap: 40,
+            gap: 50,
           }}
         >
           <div
             style={{
-              fontSize: TYPOGRAPHY.fontSize["3xl"],
-              fontWeight: 700,
-              color: COLORS.textPrimary,
-              opacity: interpolate(frame, [360, 380], [0, 1], {
-                extrapolateLeft: "clamp",
-                extrapolateRight: "clamp",
-              }),
+              display: "flex",
+              flexDirection: "row",
+              gap: 80,
+              alignItems: "center",
             }}
           >
-            Automatic Sync Pipeline
+            {/* 164 tool files */}
+            <div style={{ textAlign: "center" }}>
+              <div
+                style={{
+                  fontSize: 96,
+                  fontWeight: 800,
+                  color: COLORS.cyan,
+                  fontFamily: TYPOGRAPHY.fontFamily.mono,
+                }}
+              >
+                {countUp(frame, fps, 164, 1.5, 370)}
+              </div>
+              <div
+                style={{
+                  fontSize: TYPOGRAPHY.fontSize.xl,
+                  color: COLORS.textSecondary,
+                  marginTop: 10,
+                  opacity: interpolate(frame, [380, 400], [0, 1], CLAMP),
+                }}
+              >
+                Tool Files
+              </div>
+            </div>
+
+            {/* 79 test files */}
+            <div style={{ textAlign: "center" }}>
+              <div
+                style={{
+                  fontSize: 96,
+                  fontWeight: 800,
+                  color: COLORS.purple,
+                  fontFamily: TYPOGRAPHY.fontFamily.mono,
+                }}
+              >
+                {countUp(frame, fps, 79, 1.5, 400)}
+              </div>
+              <div
+                style={{
+                  fontSize: TYPOGRAPHY.fontSize.xl,
+                  color: COLORS.textSecondary,
+                  marginTop: 10,
+                  opacity: interpolate(frame, [410, 430], [0, 1], CLAMP),
+                }}
+              >
+                Test Files
+              </div>
+            </div>
+
+            {/* 1:1 ratio */}
+            <div style={{ textAlign: "center" }}>
+              <div
+                style={{
+                  fontSize: 96,
+                  fontWeight: 800,
+                  color: COLORS.success,
+                  fontFamily: TYPOGRAPHY.fontFamily.mono,
+                  opacity: spring({
+                    frame: frame - 440,
+                    fps,
+                    config: SPRING_CONFIGS.snappy,
+                  }),
+                  transform: `scale(${spring({
+                    frame: frame - 440,
+                    fps,
+                    config: SPRING_CONFIGS.bouncy,
+                  })})`,
+                }}
+              >
+                1:1
+              </div>
+              <div
+                style={{
+                  fontSize: TYPOGRAPHY.fontSize.xl,
+                  color: COLORS.textSecondary,
+                  marginTop: 10,
+                  opacity: interpolate(frame, [460, 480], [0, 1], CLAMP),
+                }}
+              >
+                Ratio
+              </div>
+            </div>
           </div>
-          <GitHubSyncFlow delay={370} />
+
           <div
             style={{
-              fontSize: TYPOGRAPHY.fontSize.lg,
+              fontSize: TYPOGRAPHY.fontSize["2xl"],
               color: COLORS.textMuted,
-              opacity: interpolate(frame, [500, 530], [0, 1], {
-                extrapolateLeft: "clamp",
-                extrapolateRight: "clamp",
-              }),
+              opacity: interpolate(frame, [500, 530], [0, 1], CLAMP),
             }}
           >
-            Every page tracked, every decision auditable
+            Nearly one test file per tool file
           </div>
         </AbsoluteFill>
       </Sequence>
 
-      {/* Part 3: Chat bubbles showing audit trail (700-1050) */}
+      {/* Part 3: Progressive disclosure (700-1050) */}
       <Sequence from={700} durationInFrames={350}>
         <AbsoluteFill
           style={{
             display: "flex",
             flexDirection: "column",
+            alignItems: "center",
             justifyContent: "center",
-            padding: "60px 200px",
-            gap: 8,
+            gap: 50,
           }}
         >
+          <KineticText
+            text="Five gateway tools"
+            fontSize={TYPOGRAPHY.fontSize["5xl"]}
+            type="reveal"
+            delay={720}
+          />
+
+          <KineticText
+            text="Everything else discoverable"
+            fontSize={TYPOGRAPHY.fontSize["3xl"]}
+            color={COLORS.cyan}
+            type="scale"
+            delay={790}
+          />
+
           <div
             style={{
               fontSize: TYPOGRAPHY.fontSize["2xl"],
-              fontWeight: 700,
-              color: COLORS.textPrimary,
-              marginBottom: 30,
-              opacity: interpolate(frame, [710, 730], [0, 1], {
-                extrapolateLeft: "clamp",
-                extrapolateRight: "clamp",
-              }),
+              color: COLORS.textMuted,
+              opacity: interpolate(frame, [860, 890], [0, 1], CLAMP),
             }}
           >
-            Audit Trail
+            Progressive disclosure
           </div>
-          <ChatBubble
-            message="Generated /games/tetris via route-agent-v3"
-            isAi
-            delay={720}
-            typingSpeed={50}
-          />
-          <ChatBubble
-            message="Plan approved by Reviewer A (ELO: 1650)"
-            isAi
-            delay={790}
-            typingSpeed={50}
-          />
-          <ChatBubble
-            message="Code approved by Reviewer B (ELO: 1420)"
-            isAi
-            delay={860}
-            typingSpeed={50}
-          />
-          <ChatBubble
-            message="Transpiled and cached. Ticket #247 closed."
-            isAi
-            delay={930}
-            typingSpeed={50}
-          />
         </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>

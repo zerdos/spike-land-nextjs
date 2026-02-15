@@ -19,13 +19,15 @@ import { VeritasiumPitch, VERITASIUM_SCENE_DURATION } from "./compositions/verit
 import {
   NoMore404s,
   Scene01_Hook as N404_Scene01_Hook,
-  Scene02_Problem as N404_Scene02_Problem,
-  Scene03_Pipeline as N404_Scene03_Pipeline,
-  Scene04_Reviewers as N404_Scene04_Reviewers,
-  Scene05_Demo as N404_Scene05_Demo,
+  Scene02_Platform as N404_Scene02_Platform,
+  Scene03_Codespace as N404_Scene03_Codespace,
+  Scene04_LearnIT as N404_Scene04_LearnIT,
+  Scene05_Generate as N404_Scene05_Generate,
   Scene06_BridgeMind as N404_Scene06_BridgeMind,
-  Scene07_Flywheel as N404_Scene07_Flywheel,
-  Scene08_EndCard as N404_Scene08_EndCard,
+  Scene07_BAZDMEG as N404_Scene07_BAZDMEG,
+  Scene08_Breakthrough as N404_Scene08_Breakthrough,
+  Scene09_Agents as N404_Scene09_Agents,
+  Scene10_EndCard as N404_Scene10_EndCard,
 } from "./compositions/no-more-404s";
 
 // Component imports for preview compositions
@@ -134,14 +136,14 @@ export const RemotionRoot = () => {
         height={VIDEO_CONFIG.height}
       />
 
-      {/* No More 404s — 5-minute composition */}
+      {/* No More 404s — 5m30s portrait composition */}
       <Composition
         id="NoMore404s"
         component={NoMore404s}
         durationInFrames={N404_TIMING.totalFrames}
         fps={N404_TIMING.fps}
-        width={VIDEO_CONFIG.width}
-        height={VIDEO_CONFIG.height}
+        width={1080}
+        height={1920}
       />
 
       {/* Individual scenes for preview */}
@@ -228,71 +230,87 @@ export const RemotionRoot = () => {
         />
       </Folder>
 
-      {/* N404 individual scenes for preview */}
+      {/* N404 individual scenes for preview (portrait 1080×1920) */}
       <Folder name="N404-Scenes">
         <Composition
           id="N404-Scene01-Hook"
           component={N404_Scene01_Hook}
           durationInFrames={N404_DURATIONS.hook}
           fps={N404_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
+          width={1080}
+          height={1920}
         />
         <Composition
-          id="N404-Scene02-Problem"
-          component={N404_Scene02_Problem}
-          durationInFrames={N404_DURATIONS.problem}
+          id="N404-Scene02-Platform"
+          component={N404_Scene02_Platform}
+          durationInFrames={N404_DURATIONS.platform}
           fps={N404_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
+          width={1080}
+          height={1920}
         />
         <Composition
-          id="N404-Scene03-Pipeline"
-          component={N404_Scene03_Pipeline}
-          durationInFrames={N404_DURATIONS.pipeline}
+          id="N404-Scene03-Codespace"
+          component={N404_Scene03_Codespace}
+          durationInFrames={N404_DURATIONS.codespace}
           fps={N404_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
+          width={1080}
+          height={1920}
         />
         <Composition
-          id="N404-Scene04-Reviewers"
-          component={N404_Scene04_Reviewers}
-          durationInFrames={N404_DURATIONS.reviewers}
+          id="N404-Scene04-LearnIT"
+          component={N404_Scene04_LearnIT}
+          durationInFrames={N404_DURATIONS.learnit}
           fps={N404_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
+          width={1080}
+          height={1920}
         />
         <Composition
-          id="N404-Scene05-Demo"
-          component={N404_Scene05_Demo}
-          durationInFrames={N404_DURATIONS.demo}
+          id="N404-Scene05-Generate"
+          component={N404_Scene05_Generate}
+          durationInFrames={N404_DURATIONS.generate}
           fps={N404_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
+          width={1080}
+          height={1920}
         />
         <Composition
           id="N404-Scene06-BridgeMind"
           component={N404_Scene06_BridgeMind}
           durationInFrames={N404_DURATIONS.bridgemind}
           fps={N404_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
+          width={1080}
+          height={1920}
         />
         <Composition
-          id="N404-Scene07-Flywheel"
-          component={N404_Scene07_Flywheel}
-          durationInFrames={N404_DURATIONS.flywheel}
+          id="N404-Scene07-BAZDMEG"
+          component={N404_Scene07_BAZDMEG}
+          durationInFrames={N404_DURATIONS.bazdmeg}
           fps={N404_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
+          width={1080}
+          height={1920}
         />
         <Composition
-          id="N404-Scene08-EndCard"
-          component={N404_Scene08_EndCard}
+          id="N404-Scene08-Breakthrough"
+          component={N404_Scene08_Breakthrough}
+          durationInFrames={N404_DURATIONS.breakthrough}
+          fps={N404_TIMING.fps}
+          width={1080}
+          height={1920}
+        />
+        <Composition
+          id="N404-Scene09-Agents"
+          component={N404_Scene09_Agents}
+          durationInFrames={N404_DURATIONS.agents}
+          fps={N404_TIMING.fps}
+          width={1080}
+          height={1920}
+        />
+        <Composition
+          id="N404-Scene10-EndCard"
+          component={N404_Scene10_EndCard}
           durationInFrames={N404_DURATIONS.endCard}
           fps={N404_TIMING.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
+          width={1080}
+          height={1920}
         />
       </Folder>
 

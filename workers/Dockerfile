@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.20
 # Production workerd Docker image
 #
 # Runs workerd serve with capnp config, injecting environment variables
@@ -14,17 +15,33 @@
 
 FROM node:22-slim AS builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
-RUN npm install -g workerd@latest
+ARG TARGETARCH
+
+RUN --mount=type=cache,id=workerd-apt-${TARGETARCH},target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=workerd-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends curl
+
+RUN npm install -g workerd@1.20260214.0
 
 WORKDIR /app
-COPY config.capnp.template ./
-COPY config.capnp ./
-COPY services/ ./services/
+COPY --link config.capnp.template ./
+COPY --link config.capnp ./
 
-# Build the transpiler bundle (esbuild-wasm + worker code → single file)
+# Copy transpiler package.json first for dependency install caching
+COPY --link services/transpiler/package.json ./services/transpiler/package.json
+
 WORKDIR /app/services/transpiler
-RUN npm install --production && node build.mjs
+RUN npm install --production
+
+# Copy remaining services source for build
+WORKDIR /app
+COPY --link services/ ./services/
+
+# Build the transpiler bundle (esbuild-wasm + worker code -> single file)
+WORKDIR /app/services/transpiler
+RUN node build.mjs
 WORKDIR /app
 
 # Verify workerd binary works
@@ -33,20 +50,24 @@ RUN workerd --version
 # Production image: slim Node.js base (workerd needs libc++)
 FROM node:22-slim
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl gettext-base \
-    && rm -rf /var/lib/apt/lists/*
+ARG TARGETARCH
+
+RUN --mount=type=cache,id=workerd-prod-apt-${TARGETARCH},target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=workerd-prod-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends gettext-base
 
 # Copy workerd binary from builder
-COPY --from=builder /usr/local/lib/node_modules/workerd /usr/local/lib/node_modules/workerd
+COPY --link --from=builder /usr/local/lib/node_modules/workerd /usr/local/lib/node_modules/workerd
 RUN ln -s /usr/local/lib/node_modules/workerd/bin/workerd /usr/local/bin/workerd
 
 # Copy application
 WORKDIR /app
-COPY --from=builder /app/config.capnp.template ./
-COPY --from=builder /app/config.capnp ./
-COPY --from=builder /app/services/ ./services/
-COPY entrypoint.sh ./
+COPY --link --from=builder /app/config.capnp.template ./
+COPY --link --from=builder /app/config.capnp ./
+COPY --link --from=builder /app/services/ ./services/
+COPY --link entrypoint.sh ./
 RUN chmod +x /app/entrypoint.sh
 
 # Create non-root user
@@ -56,6 +77,6 @@ USER workerd
 EXPOSE 8080
 
 HEALTHCHECK --interval=15s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["curl", "-sf", "http://localhost:8080/ping"]
+    CMD node -e "fetch('http://localhost:8080/ping').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 ENTRYPOINT ["/app/entrypoint.sh"]

@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.20
 # Development workerd Docker image
 #
 # Uses `workerd serve --watch` for hot reload during development.
@@ -9,24 +10,38 @@
 
 FROM node:22-slim
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends gettext-base \
-    && rm -rf /var/lib/apt/lists/*
-RUN npm install -g workerd@latest
+ARG TARGETARCH
+
+RUN --mount=type=cache,id=workerd-dev-apt-${TARGETARCH},target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=workerd-dev-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends gettext-base
+
+RUN npm install -g workerd@1.20260214.0
 
 WORKDIR /app
 
 # Copy config (will be overridden by volume mount in dev)
-COPY config.capnp.template ./
-COPY config.capnp ./
-COPY services/ ./services/
+COPY --link config.capnp.template ./
+COPY --link config.capnp ./
 
-# Build the transpiler bundle (esbuild-wasm + worker code → single file)
+# Copy transpiler package.json first for dependency install caching
+COPY --link services/transpiler/package.json ./services/transpiler/package.json
+
 WORKDIR /app/services/transpiler
-RUN npm install --production && node build.mjs
+RUN npm install --production
+
+# Copy remaining services source for build
+WORKDIR /app
+COPY --link services/ ./services/
+
+# Build the transpiler bundle (esbuild-wasm + worker code -> single file)
+WORKDIR /app/services/transpiler
+RUN node build.mjs
 WORKDIR /app
 
-COPY entrypoint.sh ./
+COPY --link entrypoint.sh ./
 RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8080
